@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 import pandas as pd
 
+from realtwin.utils_lib.create_venv import venv_create, venv_delete
+
 
 class REALTWIN(object):
     """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group that
@@ -13,7 +15,8 @@ class REALTWIN(object):
 
         Args:
             input_dir (str): The directory containing the input files.
-            output_dir (str): The directory to save the output files. Default is None.
+            kwargs: Additional keyword arguments.
+                output_dir (str): The directory to save the output files. Default is None.
 
         Returns:
             None
@@ -40,12 +43,15 @@ class REALTWIN(object):
         else:
             self._output_dir = os.path.join(self._input_dir, 'output')
 
-    def env_setup(self, env_ctrl: list = ["SUMO"]) -> None:
+    def env_setup(self, env_ctrl: list = ["SUMO"], *, create_env: bool = False) -> None:
         """Set up the environment for the simulation.
 
         Args:
             env_ctrl (list): The list of simulation environments to be set up. Default is ["SUMO"].
         """
+        # 0 create a virtual environment
+        if create_env:
+            venv_create(folder_path=self._output_dir, env_name="realtwin_env")
 
         # 1. Check if SUMO is installed onto the system,
         # if not, run setup_sumo to install SUMO

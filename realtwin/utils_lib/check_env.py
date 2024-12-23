@@ -5,15 +5,20 @@
 # Author/Copyright: Mr. Xiangyong Luo
 ##############################################################
 '''
-import os
 import shutil
 import pyufunc as pf
 
 # Check required simulation environments
 
 
-def is_sumo_installed() -> bool:
+def is_sumo_installed(verbose: bool = True) -> bool:
     """Check if SUMO is installed onto the system.
+
+    Args:
+        verbose (bool): Whether to print the process info. Defaults to True.
+
+    Raises:
+        Exception: Unsupported OS, could not find SUMO executable
 
     Returns:
         bool: True if SUMO is installed, False otherwise.
@@ -24,10 +29,10 @@ def is_sumo_installed() -> bool:
         sumo_executable = "sumo.exe"  # For Windows
 
     elif pf.is_linux():
-        sumo_executable = "sumo.exe"  # TODO: Check the executable name
+        sumo_executable = None  # TODO: Check the executable name
 
     elif pf.is_mac():
-        sumo_executable = "sumo.app"  # TODO: Check the executable name
+        sumo_executable = None  # TODO: Check the executable name
 
     else:
         raise Exception("  :Unsupported OS, could not find SUMO executable.")
@@ -36,10 +41,11 @@ def is_sumo_installed() -> bool:
     sumo_path = shutil.which(sumo_executable)  # will return None if not found
 
     if sumo_path:
-        print(f"SUMO is installed. Found at: {sumo_path}")
+        if verbose:
+            print(f"  :SUMO is installed. Found at: {sumo_path}")
         return True
 
-    print("SUMO is not installed or not in the system PATH.")
+    print("  :SUMO is not installed or not in the system PATH.")
     return False
 
 
