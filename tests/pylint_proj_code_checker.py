@@ -78,7 +78,7 @@ def run_pylint_checker(disable_ids: list[str] = ["C0301"], ignore_paths: list[st
                         '--exit-zero'],
                        check=True,
                        stdout=subprocess.PIPE)
-        print('  :Pylint checker finished successfully!'
+        print('  :Pylint code checker finished successfully!'
               f' Check the report at {output_abs_path}')
         return
 
@@ -89,7 +89,7 @@ def run_pylint_checker(disable_ids: list[str] = ["C0301"], ignore_paths: list[st
                   f' Check the report at {output_abs_path}')
             return
 
-        print(f'  :Pylint checker failed! \n  :Error: {e}')
+        print(f'  :Pylint code checker failed! \n  :Error: {e}')
     return None
 
 
