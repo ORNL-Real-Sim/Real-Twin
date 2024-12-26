@@ -1,0 +1,99 @@
+************* Module te
+te.py:24:0: C0301: Line too long (126/100) (line-too-long)
+te.py:27:0: C0301: Line too long (116/100) (line-too-long)
+te.py:36:0: C0304: Final newline missing (missing-final-newline)
+te.py:15:4: C0103: Constant name "dir_input" doesn't conform to UPPER_CASE naming style (invalid-name)
+te.py:36:4: E1101: Instance of 'REALTWIN' has no 'visualize' member (no-member)
+************* Module realtwin._realtwin
+realtwin\_realtwin.py:75:0: C0301: Line too long (107/100) (line-too-long)
+realtwin\_realtwin.py:130:0: C0304: Final newline missing (missing-final-newline)
+realtwin\_realtwin.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+realtwin\_realtwin.py:8:0: R0205: Class 'REALTWIN' inherits from object, can be safely removed from bases in python3 (useless-object-inheritance)
+realtwin\_realtwin.py:28:12: W0719: Raising too general exception: Exception (broad-exception-raised)
+realtwin\_realtwin.py:46:4: W0102: Dangerous default value [] as argument (dangerous-default-value)
+realtwin\_realtwin.py:46:4: R1711: Useless return at end of function or method (useless-return)
+realtwin\_realtwin.py:46:24: W0613: Unused argument 'env_ctrl' (unused-argument)
+realtwin\_realtwin.py:105:0: W0613: Unused argument 'kwargs' (unused-argument)
+realtwin\_realtwin.py:2:0: W0611: Unused Path imported from pathlib (unused-import)
+realtwin\_realtwin.py:3:0: W0611: Unused pandas imported as pd (unused-import)
+realtwin\_realtwin.py:5:0: W0611: Unused venv_delete imported from realtwin.utils_lib.create_venv (unused-import)
+************* Module realtwin
+realtwin\__init__.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+************* Module realtwin.func_lib.analyzer.__init__
+realtwin\func_lib\analyzer\__init__.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.calibration.cali_aimsun
+realtwin\func_lib\calibration\cali_aimsun.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.calibration.cali_sumo
+realtwin\func_lib\calibration\cali_sumo.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.calibration.cali_vissim
+realtwin\func_lib\calibration\cali_vissim.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.calibration.__init__
+realtwin\func_lib\calibration\__init__.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.concrete_scenario.gen_app_interpreter
+realtwin\func_lib\concrete_scenario\gen_app_interpreter.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.concrete_scenario.gen_control
+realtwin\func_lib\concrete_scenario\gen_control.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.concrete_scenario.gen_network
+realtwin\func_lib\concrete_scenario\gen_network.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.concrete_scenario.gen_traffic
+realtwin\func_lib\concrete_scenario\gen_traffic.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.concrete_scenario.__init__
+realtwin\func_lib\concrete_scenario\__init__.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.install_simulator.install_aimsun
+realtwin\func_lib\install_simulator\install_aimsun.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.install_simulator.install_sumo
+realtwin\func_lib\install_simulator\install_sumo.py:52:19: W1510: 'subprocess.run' used without explicitly defining the value for 'check'. (subprocess-run-check)
+realtwin\func_lib\install_simulator\install_sumo.py:10:0: W0611: Unused import sys (unused-import)
+************* Module realtwin.func_lib.install_simulator.install_vissim
+realtwin\func_lib\install_simulator\install_vissim.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.install_simulator.__init__
+realtwin\func_lib\install_simulator\__init__.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.load_inputs.loader_application
+realtwin\func_lib\load_inputs\loader_application.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.load_inputs.loader_contorl
+realtwin\func_lib\load_inputs\loader_contorl.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.load_inputs.loader_network
+realtwin\func_lib\load_inputs\loader_network.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.load_inputs.loader_traffic
+realtwin\func_lib\load_inputs\loader_traffic.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.load_inputs.__init__
+realtwin\func_lib\load_inputs\__init__.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.simulation.sim_aimsun
+realtwin\func_lib\simulation\sim_aimsun.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.simulation.sim_sumo
+realtwin\func_lib\simulation\sim_sumo.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.simulation.sim_vissim
+realtwin\func_lib\simulation\sim_vissim.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.simulation.__init__
+realtwin\func_lib\simulation\__init__.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.func_lib.vis.__init__
+realtwin\func_lib\vis\__init__.py:9:0: C0305: Trailing newlines (trailing-newlines)
+************* Module realtwin.utils_lib.check_env
+realtwin\utils_lib\check_env.py:32:33: W0511: TODO: Check the executable name (fixme)
+realtwin\utils_lib\check_env.py:35:33: W0511: TODO: Check the executable name (fixme)
+realtwin\utils_lib\check_env.py:38:8: W0719: Raising too general exception: Exception (broad-exception-raised)
+************* Module realtwin.utils_lib.create_venv
+realtwin\utils_lib\create_venv.py:37:8: W0719: Raising too general exception: Exception (broad-exception-raised)
+realtwin\utils_lib\create_venv.py:39:8: W0719: Raising too general exception: Exception (broad-exception-raised)
+realtwin\utils_lib\create_venv.py:48:4: W1510: 'subprocess.run' used without explicitly defining the value for 'check'. (subprocess-run-check)
+realtwin\utils_lib\create_venv.py:56:8: W1510: 'subprocess.run' used without explicitly defining the value for 'check'. (subprocess-run-check)
+realtwin\utils_lib\create_venv.py:60:8: W1510: 'subprocess.run' used without explicitly defining the value for 'check'. (subprocess-run-check)
+realtwin\utils_lib\create_venv.py:73:14: W1510: 'subprocess.run' used without explicitly defining the value for 'check'. (subprocess-run-check)
+realtwin\utils_lib\create_venv.py:14:0: R1710: Either all return statements in a function should return an expression, or none of them should. (inconsistent-return-statements)
+realtwin\utils_lib\create_venv.py:83:0: R1711: Useless return at end of function or method (useless-return)
+************* Module realtwin.utils_lib
+realtwin\utils_lib\__init__.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+************* Module tests.pylint_checker
+tests\pylint_checker.py:14:0: R1711: Useless return at end of function or method (useless-return)
+************* Module tests.test_env
+tests\test_env.py:9:0: E0401: Unable to import 'test_setup' (import-error)
+tests\test_env.py:12:0: C0413: Import "from realtwin.utils_lib.check_env import is_sumo_installed, is_vissim_installed, is_aimsun_installed" should be placed at the top of the module (wrong-import-position)
+tests\test_env.py:15:0: C0116: Missing function or method docstring (missing-function-docstring)
+tests\test_env.py:12:0: W0611: Unused is_vissim_installed imported from realtwin.utils_lib.check_env (unused-import)
+tests\test_env.py:12:0: W0611: Unused is_aimsun_installed imported from realtwin.utils_lib.check_env (unused-import)
+************* Module tests.test_setup
+tests\test_setup.py:18:0: C0301: Line too long (101/100) (line-too-long)
+
+------------------------------------------------------------------
+Your code has been rated at 6.50/10 (previous run: 6.50/10, +0.00)
+
