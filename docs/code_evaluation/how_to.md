@@ -3,16 +3,19 @@
 ## Running pylint in the terminal
 
     1. Install pylint
-        Add Pylint to your working environment by running the following command:`pip install pylint`
+        Add Pylint to your working environment by running the following command:
+
+`	pip install pylint`
 
     2. Execute pylint
-        Run Pylint in your terminal to evaluate the code. Use the following command to generate a report:`pylint . --output=docs/code_evaluation/pylint_report.txt`
+        Run Pylint in your terminal to evaluate the code. Use the following command to generate a report:
 
+`	pylint . --output=docs/code_evaluation/pylint_report.txt --exit-zero`
 
 ## Running Pylint Using a Python Script
 
 To evaluate your code programmatically:
 
-    Open the pylint_checker.py script.
+    Open the pylint_proj_code_checker.py script.
 
 Run the script to generate the code evaluation report. The report will be saved in the docs/code_evaluation.

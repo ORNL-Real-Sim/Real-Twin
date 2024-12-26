@@ -13,12 +13,15 @@ import subprocess
 import pyufunc as pf
 
 
-def run_pylint_checker(ignore_ids: list[str] = ["C0301"]) -> None:
-    '''
-    Run pylint checker on the project
+def run_pylint_checker(disable_ids: list[str] = ["C0301"], ignore_paths: list[str] = []) -> None:
+    '''Run pylint checker on the project
 
     Args:
-        ignore_ids: list of strings, the pylint ids to ignore
+        disable_ids: list of strings, the pylint ids to ignore
+        ignore_paths: list of strings, the paths to ignore
+
+    Note:
+        This function for developers to run pylint checker on the project, not for the external users
 
     Raises:
         ValueError: if the pylint_checker.py is not under the tests or real-twin directory
@@ -35,7 +38,7 @@ def run_pylint_checker(ignore_ids: list[str] = ["C0301"]) -> None:
     elif dir_current.endswith('real-twin'):
         project_path = dir_current
     else:
-        raise ValueError("Could not run pylint checker,"
+        raise ValueError("  :Could not run pylint checker,"
                          " please confirm the pylint_checker.py under the tests or real-twin directory")
 
     # crate the current datetime
@@ -47,16 +50,28 @@ def run_pylint_checker(ignore_ids: list[str] = ["C0301"]) -> None:
     if not os.path.exists(f'{project_path}/docs/code_evaluation/'):
         os.makedirs(f'{project_path}/docs/code_evaluation/')
 
-    # check and generate the ignore ids
-    if not isinstance(ignore_ids, list):
-        raise ValueError('ignore_ids should be a list of strings')
+    # check and generate the disable ids
+    if not isinstance(disable_ids, list):
+        raise ValueError('  :ignore_ids should be a list of strings')
+    disable_ids_str = f"--disable={','.join(disable_ids)}"
 
-    ignore_str = f"--disable={','.join(ignore_ids)}"
+    # check and generate the ignore paths
+    if not isinstance(ignore_paths, list):
+        raise ValueError('  :ignore_paths should be a list of strings')
+
+    # convert the ignore paths to absolute paths
+    ignore_paths = [pf.path2linux(os.path.abspath(path)) for path in ignore_paths]
+
+    # check if the root drive is the capitalized letter, if not, capitalize it
+    ignore_paths += [path[0].upper() + path[1:] if path[1] == ':' else path for path in ignore_paths]
+
+    ignore_paths_str = f"""--ignore-paths={",".join(ignore_paths)}"""
 
     # run pylint checker to the project
     try:
         subprocess.run(['pylint',
-                        ignore_str,
+                        ignore_paths_str,
+                        disable_ids_str,
                         project_path,
                         f"--output={output_abs_path}",
                         "--msg-template='{path}:{line}:{column}:\n    {msg_id}({obj}): {msg} ({symbol})'",
@@ -79,4 +94,4 @@ def run_pylint_checker(ignore_ids: list[str] = ["C0301"]) -> None:
 
 
 if __name__ == '__main__':
-    run_pylint_checker()
+    run_pylint_checker(ignore_paths=["../te.py",])
