@@ -58,7 +58,7 @@ def venv_create(*, env_name: str = "", folder_path: str = "", verbose: bool = Tr
     env_path = os.path.join(folder_path, env_name)
 
     # Create the virtual environment
-    subprocess.run(["python", "-m", "venv", env_path])
+    subprocess.run(["python", "-m", "venv", env_path], check=True)
 
     if verbose:
         print(f"Virtual environment '{env_name}' created at: '{env_path}")
@@ -66,7 +66,7 @@ def venv_create(*, env_name: str = "", folder_path: str = "", verbose: bool = Tr
     # Activate the virtual environment
     if pf.is_windows():
         activate_path = pf.path2linux(os.path.join(env_path, "Scripts", "activate"))
-        subprocess.run([activate_path], shell=True)
+        subprocess.run([activate_path], shell=True, check=True)
 
     elif pf.is_linux():
         activate_path = os.path.join(env_path, "bin", "activate")
@@ -76,14 +76,13 @@ def venv_create(*, env_name: str = "", folder_path: str = "", verbose: bool = Tr
         pass
 
     else:
-        print("  :OS not supported")
-        return
+        raise Exception("  :Unsupported OS to crate virtual environment!")
 
     if verbose:
         print(f"  :Virtual environment '{env_name}' activated")
 
     # install the realtwin package in the virtual environment
-    exe_pip = subprocess.run(["pip", "install", "realtwin"])
+    exe_pip = subprocess.run(["pip", "install", "realtwin"], check=True)
     if exe_pip.returncode != 0:
         print("  :Failed to install the package realtwin in the virtual environment")
         return None

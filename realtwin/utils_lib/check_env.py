@@ -66,7 +66,7 @@ def is_vissim_installed() -> bool:
     Returns:
         bool: True if VISSIM is installed, False otherwise.
     """
-    return True
+    return False
 
 
 def is_aimsun_installed() -> bool:
@@ -75,4 +75,4 @@ def is_aimsun_installed() -> bool:
     Returns:
         bool: True if AIMSUN is installed, False otherwise.
     """
-    return True
+    return False

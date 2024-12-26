@@ -10,14 +10,14 @@
 # Xiangyong Roy Luo                                                          #
 ##############################################################################
 
+"""The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group"""
+
 import os
-from pathlib import Path
-import pandas as pd
 
-from realtwin.utils_lib.create_venv import venv_create, venv_delete
+from realtwin.utils_lib.create_venv import venv_create
 
 
-class REALTWIN(object):
+class REALTWIN:
     """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group that
     enables the simulation of twin-structured cities.
     """
@@ -35,10 +35,6 @@ class REALTWIN(object):
         """
         self._input_dir = input_dir
 
-        # TDD
-        if not isinstance(input_dir, str):
-            raise Exception("input_dir must be a string")
-
         # check if the input_dir is empty
         if not self._input_dir:
             self._input_dir = os.getcwd()
@@ -55,15 +51,23 @@ class REALTWIN(object):
         else:
             self._output_dir = os.path.join(self._input_dir, 'output')
 
-    def env_setup(self, env_ctrl: list = ["SUMO"], *, create_env: bool = False) -> None:
+    def env_setup(self, *, select_env: list = None, create_env: bool = False) -> None:
         """Set up the environment for the simulation.
 
         Args:
-            env_ctrl (list): The list of simulation environments to be set up. Default is ["SUMO"].
+            select_env (list): The list of simulation environments to be set up. Default is None.
+            create_env (bool): Whether to create a virtual environment. Default is False.
         """
+
         # 0 create a virtual environment
         if create_env:
             venv_create(folder_path=self._output_dir, env_name="realtwin_env")
+
+        # 1. Check if the sim_env is selected, set the default to SUMO
+        if not select_env:
+            select_env = ["SUMO"]
+
+        # 2. check if the selected sim_env is in the list of supported sim_env
 
         # 1. Check if SUMO is installed onto the system,
         # if not, run setup_sumo to install SUMO
@@ -117,6 +121,10 @@ class REALTWIN(object):
     def calibration(self, **kwargs) -> None:
         """Calibrate the simulation results.
         """
+
+        if 'calibration_data' in kwargs:
+            calibration_data = kwargs['calibration_data']
+            print(calibration_data)
 
         # 1. Calibrate the simulation results
         # 2. Save the calibrated results to the output directory

@@ -1,3 +1,14 @@
+##############################################################################
+# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# All rights reserved.                                                       #
+#                                                                            #
+# This file is part of RealTwin and is distributed under a __TBD__           #
+# license. For the licensing terms see the LICENSE file in the top-level     #
+# directory.                                                                 #
+#                                                                            #
+# Contributors (Add you name below to acknowledge your contribution):        #
+# Xiangyong Roy Luo                                                          #
+##############################################################################
 '''
 ##############################################################
 # Created Date: Thursday, December 26th 2024
@@ -13,7 +24,7 @@ import subprocess
 import pyufunc as pf
 
 
-def run_pylint_checker(disable_ids: list[str] = ["C0301"], ignore_paths: list[str] = []) -> None:
+def run_pylint_checker(*, disable_ids: list[str] = None, ignore_paths: list[str] = None) -> None:
     '''Run pylint checker on the project
 
     Args:
@@ -80,18 +91,20 @@ def run_pylint_checker(disable_ids: list[str] = ["C0301"], ignore_paths: list[st
                        stdout=subprocess.PIPE)
         print('  :Pylint code checker finished successfully!'
               f' Check the report at {output_abs_path}')
-        return
+        return None
 
     except subprocess.CalledProcessError as e:
         # check if the report generated
         if os.path.exists(output_abs_path) and os.path.getsize(output_abs_path) > 0:
             print('  :Pylint checker finished successfully!'
                   f' Check the report at {output_abs_path}')
-            return
+            return None
 
         print(f'  :Pylint code checker failed! \n  :Error: {e}')
     return None
 
 
 if __name__ == '__main__':
-    run_pylint_checker(ignore_paths=["../te.py",])
+    run_pylint_checker(
+        ignore_paths=["../te.py",],
+        disable_ids=["C0301", "C0413", "W0719", "R1711", "W0511"])

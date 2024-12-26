@@ -1,4 +1,3 @@
-
 ##############################################################################
 # Copyright (c) 2024, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
@@ -10,20 +9,10 @@
 # Contributors (Add you name below to acknowledge your contribution):        #
 # Xiangyong Roy Luo                                                          #
 ##############################################################################
-"""Control of module imports for the RealTwin package."""
-
-from realtwin._realtwin import REALTWIN
-from realtwin.utils_lib.create_venv import venv_create, venv_delete
-from realtwin.utils_lib.check_env import is_sumo_installed, is_vissim_installed, is_aimsun_installed
-
-__all__ = [
-    'REALTWIN',
-
-    # utils_lib.check_env
-    'is_sumo_installed', 'is_vissim_installed', 'is_aimsun_installed',
-
-    # utils_lib.create_venv
-    'venv_create', 'venv_delete',
-
-    # func_lib
-]
+'''
+##############################################################
+# Created Date: Thursday, December 26th 2024
+# Contact Info: luoxiangyong01@gmail.com
+# Author/Copyright: Mr. Xiangyong Luo
+##############################################################
+'''

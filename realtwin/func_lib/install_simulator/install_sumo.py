@@ -18,7 +18,6 @@
 '''
 import os
 import subprocess
-import sys
 from urllib import request
 import zipfile
 
@@ -60,7 +59,7 @@ def install_sumo_windows(sumo_version: str = "1.20.0", verbose: bool = True) -> 
 
     # Add the SUMO bin folder to the system PATH
     if sumo_bin_path not in os.environ['PATH']:
-        add_path = subprocess.run(["setx", "PATH", f"%PATH%;{sumo_bin_path}"], shell=True)
+        add_path = subprocess.run(["setx", "PATH", f"%PATH%;{sumo_bin_path}"], shell=True, check=True)
         if add_path.returncode == 0:
             print("  :SUMO is installed successfully.")
         else:

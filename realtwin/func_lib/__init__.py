@@ -9,3 +9,5 @@
 # Contributors (Add you name below to acknowledge your contribution):        #
 # Xiangyong Roy Luo                                                          #
 ##############################################################################
+
+"""Control of module imports from func_lib."""
