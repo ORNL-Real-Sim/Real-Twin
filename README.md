@@ -6,6 +6,19 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 ## Change Log
 
+### 2024-12-26
+
+* enable pylint for checking / evaluating coding for GitHub Action
+* add code evaluation fuction (local checking) to perform code checking and evaluation (navigate to tests folder: pylint_proj_code_checker.py)
+* update requirements.txt
+* add official copyright for each document for the requirement of software development under ORNL
+* add test functions
+
+#### TODO:
+
+* discuss the repository license: MIT, Apache, BSD etc..., as we are writing code, we need copyright licence text as Docstring at the top of each file created.
+* add more test functions perform object safety check
+
 ### 2024-12-23
 
 * re-design the realtwin development framework
