@@ -23,13 +23,13 @@ import sys
 from pathlib import Path
 
 
-def add_pkg_to_sys_path(pkg_name: str, verbose: bool = True) -> None:
+def add_pkg_to_sys_path(pkg_name: str, verbose: bool = True) -> bool:
     """Automatically finds an importable Python package by its name in the current directory,
     parent directories, or child directories, and adds it to the system path.
     This is useful when writing test functions and needing to import a package that is not installed.
 
     Args:
-        package_name (str): The name of the package to locate and add.
+        pkg_name (str): The name of the package to locate and add.
         verbose (bool): Whether to print the process info. Defaults to True.
 
     Location:
@@ -40,7 +40,7 @@ def add_pkg_to_sys_path(pkg_name: str, verbose: bool = True) -> None:
         >>> pf.add_pkg_to_sys_path('my_package', False)
 
     Returns:
-        None: None
+        bool: True if the package is found and added to the system path, False otherwise
 
     """
 
@@ -86,12 +86,12 @@ def add_pkg_to_sys_path(pkg_name: str, verbose: bool = True) -> None:
 
         if absolute_path_parent not in sys.path:
             sys.path.insert(0, str(absolute_path_parent))
-            if verbose:
-                print(f"Added {absolute_path_parent} to system path.")
-        else:
-            if verbose:
-                print(f"{absolute_path_parent} is already in the system path.")
-        return absolute_path
+
+        if verbose:
+            print(f"Added {absolute_path_parent} to system path.")
+
+        return True
 
     print(f"  :Importable package '{pkg_name}' not found"
           "in the current directory, parent directories, or children.")
+    return False

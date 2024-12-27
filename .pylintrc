@@ -99,21 +99,24 @@ enable=
 # --disable=W"
 
 disable=
-    attribute-defined-outside-init,
-    invalid-name,
-    missing-docstring,
-    protected-access,
-    too-few-public-methods,
-    # handled by black
-    format,
-    # We anticipate #3512 where it will become optional
-    fixme,
-    consider-using-assignment-expr,
     C0301,
     C0413,
     W0719,
     R1711,
     W0511,
+    C0411,
+    R6103,
+    C0103,
+    # attribute-defined-outside-init,
+    # invalid-name,
+    # missing-docstring,
+    # protected-access,
+    # too-few-public-methods,
+    # handled by black
+    # format,
+    # We anticipate #3512 where it will become optional
+    # fixme,
+    # consider-using-assignment-expr,
 
 
 [REPORTS]

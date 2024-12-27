@@ -24,7 +24,7 @@ import subprocess
 import pyufunc as pf
 
 
-def run_pylint_checker(*, disable_ids: list[str] = None, ignore_paths: list[str] = None) -> None:
+def run_pylint_checker(*, disable_ids: list[str] = None, ignore_paths: list[str] = None) -> bool:
     '''Run pylint checker on the project
 
     Args:
@@ -39,7 +39,7 @@ def run_pylint_checker(*, disable_ids: list[str] = None, ignore_paths: list[str]
         ValueError: if ignore_ids is not a list of strings
 
     Returns:
-        None
+        bool: True if the pylint checker finished successfully, False otherwise
     '''
 
     # generate the project path
@@ -75,12 +75,19 @@ def run_pylint_checker(*, disable_ids: list[str] = None, ignore_paths: list[str]
 
     # check if the root drive is the capitalized letter, if not, capitalize it
     ignore_paths += [path[0].upper() + path[1:] if path[1] == ':' else path for path in ignore_paths]
-
     ignore_paths_str = f"""--ignore-paths={",".join(ignore_paths)}"""
+
+    # include pylint configuration file if exists
+    if os.path.exists(f'{project_path}/.pylintrc'):
+        config_file_str = f'--rcfile={project_path}/.pylintrc'
+        # print(config_file_str)
+    else:
+        config_file_str = ''
 
     # run pylint checker to the project
     try:
         subprocess.run(['pylint',
+                        config_file_str,
                         ignore_paths_str,
                         disable_ids_str,
                         project_path,
@@ -91,17 +98,17 @@ def run_pylint_checker(*, disable_ids: list[str] = None, ignore_paths: list[str]
                        stdout=subprocess.PIPE)
         print('  :Pylint code checker finished successfully!'
               f' Check the report at {output_abs_path}')
-        return None
+        return True
 
     except subprocess.CalledProcessError as e:
         # check if the report generated
         if os.path.exists(output_abs_path) and os.path.getsize(output_abs_path) > 0:
             print('  :Pylint checker finished successfully!'
                   f' Check the report at {output_abs_path}')
-            return None
+            return True
 
         print(f'  :Pylint code checker failed! \n  :Error: {e}')
-    return None
+    return False
 
 
 if __name__ == '__main__':

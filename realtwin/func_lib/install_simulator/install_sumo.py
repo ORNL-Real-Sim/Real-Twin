@@ -22,11 +22,11 @@ from urllib import request
 import zipfile
 
 
-def install_sumo_windows(sumo_version: str = "1.20.0", verbose: bool = True) -> None:
+def install_sumo_windows(sumo_version: str = "1.20.0", verbose: bool = True) -> bool:
     """Install SUMO onto the windows system.
 
     Returns:
-        None
+        bool: True if the SUMO is installed successfully, False otherwise
     """
     # Download SUMO from the official website
     sumo_release_url = "https://sumo.dlr.de/releases/"
@@ -55,7 +55,7 @@ def install_sumo_windows(sumo_version: str = "1.20.0", verbose: bool = True) -> 
     sumo_bin_path = os.path.join(extract_path, sumo_version, "bin")
     if not os.path.exists(sumo_bin_path):
         print(f"Error: bin folder not found in extracted SUMO directory: {sumo_bin_path}")
-        return None
+        return False
 
     # Add the SUMO bin folder to the system PATH
     if sumo_bin_path not in os.environ['PATH']:
@@ -65,14 +65,14 @@ def install_sumo_windows(sumo_version: str = "1.20.0", verbose: bool = True) -> 
         else:
             print("  :Error: Failed to add SUMO bin folder to system PATH.")
 
-    return None
+    return True
 
 
-def install_sumo_linux() -> None:
+def install_sumo_linux() -> bool:
     """Install SUMO onto the linux system.
 
     Returns:
-        None
+        bool: True if the SUMO is installed successfully on Linux, False otherwise
     """
 
-    return None
+    return False

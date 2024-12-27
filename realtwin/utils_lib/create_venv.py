@@ -24,7 +24,7 @@ import shutil
 import pyufunc as pf
 
 
-def venv_create(*, env_name: str = "", folder_path: str = "", verbose: bool = True) -> None:
+def venv_create(*, env_name: str = "", folder_path: str = "", verbose: bool = True) -> bool:
     """Create a virtual environment in the specified folder with the specified name.
 
     Args:
@@ -36,7 +36,7 @@ def venv_create(*, env_name: str = "", folder_path: str = "", verbose: bool = Tr
         Exception: if env_name is not a string, or folder_path is not a string
 
     Returns:
-        None
+        bool: True if the virtual environment is created successfully, False otherwise
     """
     # Default values for env_name and folder_path if not provided
     if not env_name:
@@ -70,7 +70,7 @@ def venv_create(*, env_name: str = "", folder_path: str = "", verbose: bool = Tr
 
     elif pf.is_linux():
         activate_path = os.path.join(env_path, "bin", "activate")
-        subprocess.run(["source", activate_path], shell=True)
+        subprocess.run(["source", activate_path], shell=True, check=True)
 
     elif pf.is_mac():
         pass
@@ -85,14 +85,14 @@ def venv_create(*, env_name: str = "", folder_path: str = "", verbose: bool = Tr
     exe_pip = subprocess.run(["pip", "install", "realtwin"], check=True)
     if exe_pip.returncode != 0:
         print("  :Failed to install the package realtwin in the virtual environment")
-        return None
+        return False
     if verbose:
         print("  :Package realtwin installed in the virtual environment")
 
-    return None
+    return True
 
 
-def venv_delete(*, env_name: str = "", folder_path: str = "", verbose: bool = True) -> None:
+def venv_delete(*, env_name: str = "", folder_path: str = "", verbose: bool = True) -> bool:
     """Delete the virtual environment in the specified folder with the specified name.
 
     Args:
@@ -101,7 +101,7 @@ def venv_delete(*, env_name: str = "", folder_path: str = "", verbose: bool = Tr
         verbose (bool): whether to print the progress
 
     Returns:
-        None
+        bool: True if the virtual environment is deleted successfully, False otherwise
     """
     # Full path to the virtual environment
     env_path = os.path.join(folder_path, env_name)
@@ -112,4 +112,4 @@ def venv_delete(*, env_name: str = "", folder_path: str = "", verbose: bool = Tr
     if verbose:
         print(f"Virtual environment '{env_name}' deleted from '{env_path}")
 
-    return None
+    return True
