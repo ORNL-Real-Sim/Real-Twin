@@ -40,7 +40,7 @@ jobs:
 
     - name: Analyzing the code with Pylint
       run: |
-        pylint  $(git ls-files '*.py') --output=${{ matrix.python-version }}_lint.txt || true
+        pylint  $(git ls-files '*.py') --rcfile=.pylintrc --output=${{ matrix.python-version }}_lint.txt || true
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
