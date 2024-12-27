@@ -6,6 +6,17 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 ## Change Log
 
+### 2024-12-27
+
+* add .pylintrc file for project-wide coding control
+* refactored code to reach production-level
+* test the current functionalities: including create venv, delete venv, check SUMO and install SUMO
+
+TODO:
+
+* Discussion the repository license: MIT, Apache, BSD etc..., as we are writing code, we need copyright licence text as Docstring at the top of each file created.
+* Add test functions perform object safety check
+
 ### 2024-12-26
 
 * enable pylint for checking / evaluating coding for GitHub Action
