@@ -20,6 +20,37 @@ import os
 import subprocess
 from urllib import request
 import zipfile
+import pyufunc as pf
+
+from realtwin.func_lib.install_simulator.check_sim_env import is_sumo_installed
+
+
+def install_sumo(sumo_version: str = "1.20.0", verbose: bool = True) -> bool:
+    """Install the SUMO simulator.
+
+    Args:
+        sumo_version (str): The version of SUMO to be installed. Default is "1.20.0".
+        verbose (bool): If True, print the installation process. Default is True.
+
+    Returns:
+        bool: True if the SUMO is installed successfully, False otherwise
+    """
+
+    # Check if SUMO is already installed
+    if is_sumo_installed():
+        return True
+
+    if pf.is_windows():
+        return install_sumo_windows(sumo_version, verbose)
+    elif pf.is_linux():
+        print("  :Error: Linux is not supported yet.")
+        return False
+    elif pf.is_mac():
+        print("  :Error: MacOS is not supported yet.")
+        return False
+    else:
+        print("  :Error: Unsupported operating system.")
+        return False
 
 
 def install_sumo_windows(sumo_version: str = "1.20.0", verbose: bool = True) -> bool:
@@ -54,7 +85,7 @@ def install_sumo_windows(sumo_version: str = "1.20.0", verbose: bool = True) -> 
     # check if SUMO bin folder exists
     sumo_bin_path = os.path.join(extract_path, sumo_version, "bin")
     if not os.path.exists(sumo_bin_path):
-        print(f"Error: bin folder not found in extracted SUMO directory: {sumo_bin_path}")
+        print(f"  :Error: bin folder not found in extracted SUMO directory: {sumo_bin_path}")
         return False
 
     # Add the SUMO bin folder to the system PATH
@@ -68,7 +99,7 @@ def install_sumo_windows(sumo_version: str = "1.20.0", verbose: bool = True) -> 
     return True
 
 
-def install_sumo_linux() -> bool:
+def install_sumo_linux(sumo_version: str = "1.20.0", verbose: bool = True) -> bool:
     """Install SUMO onto the linux system.
 
     Returns:

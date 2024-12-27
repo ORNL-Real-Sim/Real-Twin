@@ -13,8 +13,10 @@
 """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group"""
 
 import os
+import pyufunc as pf
 
-from realtwin.utils_lib.create_venv import venv_create
+from realtwin.utils_lib.create_venv import venv_create, venv_delete
+from realtwin.func_lib.install_simulator.inst_sumo import install_sumo
 
 
 class REALTWIN:
@@ -22,22 +24,19 @@ class REALTWIN:
     enables the simulation of twin-structured cities.
     """
 
-    def __init__(self, input_dir: str = "", **kwargs) -> None:
+    def __init__(self, input_dir: str = "", **kwargs):
         """Initialize the REALTWIN object.
 
         Args:
             input_dir (str): The directory containing the input files.
             kwargs: Additional keyword arguments.
                 output_dir (str): The directory to save the output files. Default is None.
-
-        Returns:
-            None
         """
         self._input_dir = input_dir
 
         # check if the input_dir is empty
         if not self._input_dir:
-            self._input_dir = os.getcwd()
+            self._input_dir = pf.path2linux(os.getcwd())
 
         # check if the input directory exists
         if not os.path.exists(self._input_dir):
@@ -47,38 +46,52 @@ class REALTWIN:
         if 'output_dir' in kwargs:
             self._output_dir = kwargs['output_dir']
             if not os.path.exists(self._output_dir):
-                self._output_dir = os.path.join(self._input_dir, 'output')
+                self._output_dir = pf.path2linux(os.path.join(self._input_dir, 'output'))
         else:
-            self._output_dir = os.path.join(self._input_dir, 'output')
+            self._output_dir = pf.path2linux(os.path.join(self._input_dir, 'output'))
 
-    def env_setup(self, *, select_env: list = None, create_env: bool = False) -> None:
-        """Set up the environment for the simulation.
+        # add venv_create and delete as object methods
+        self.venv_create = venv_create
+        self.venv_delete = venv_delete
+        self._venv_name = "rt_venv"
+
+        # extract data from kwargs
+        self.verbose = kwargs["verbose"] if "verbose" in kwargs else False
+
+    def env_setup(self, *, sel_sim: list = None, create_venv: bool = False) -> None:
+        """Check and set up the environment for the simulation.
 
         Args:
-            select_env (list): The list of simulation environments to be set up. Default is None.
+            sel_sim (list): select simulator to be set up. Default is None.
+                Currently available options are ["SUMO", "VISSIM", "AIMSUN"].
             create_env (bool): Whether to create a virtual environment. Default is False.
         """
 
         # 0 create a virtual environment
-        if create_env:
-            venv_create(folder_path=self._output_dir, env_name="realtwin_env")
+        if create_venv:
+            print(f"Creating a virtual environment: {self._venv_name}")
+            self.venv_create(venv_name=self._venv_name,
+                             venv_dir=self._output_dir,
+                             verbose=True)
 
-        # 1. Check if the sim_env is selected, set the default to SUMO
-        if not select_env:
-            select_env = ["SUMO"]
+        # 0. Check if the sim_env is selected,
+        #    default to SUMO, case insensitive
+        sel_sim = ["sumo"] if not sel_sim else [sim.lower() for sim in sel_sim]
 
-        # 2. check if the selected sim_env is in the list of supported sim_env
+        # 1. Check simulator installation - mapping function
+        sim_install = {
+            "sumo": install_sumo,
+            "vissim": None,
+            "aimsun": None,
+        }
 
-        # 1. Check if SUMO is installed onto the system,
-        # if not, run setup_sumo to install SUMO
-
-        # 2. Check if VISSIM is installed onto the system,
-        # if not, warn the user to install VISUM, or some functionalities will not be available
-
-        # 3. Check if AIMSUN is installed onto the system,
-        # if not, warn the user to install AIMSUN, or some functionalities will not be available
-
-        # 4. Future extension: Additional simulation env setup
+        # 2. check if the simulator is installed, if not, install it
+        print("\nChecking and installing the selected simulators:")
+        for sim in sel_sim:
+            try:
+                sim_install.get(sim)()
+            except Exception as e:
+                print(f"  :Could not install {sim} due to error: {e}")
 
         return None
 

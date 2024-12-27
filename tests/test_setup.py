@@ -33,7 +33,7 @@ def add_pkg_to_sys_path(pkg_name: str, verbose: bool = True) -> bool:
         verbose (bool): Whether to print the process info. Defaults to True.
 
     Location:
-        pyufunc/util_pathio/_path.py
+        realtwin/tests/test_setup.py
 
     Examples:
         >>> import pyufunc as pf
