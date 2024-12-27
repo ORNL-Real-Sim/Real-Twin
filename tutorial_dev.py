@@ -35,6 +35,11 @@ if __name__ == '__main__':
     # simulate the scenario
     twin.simulate()  # keywards arguments can be passed to specify the simulation options
 
+    # perform calibration
+    # keyword arguments can be passed to specify the calibration options
+    # or change from internal and external configuration files
+    twin.calibrate()
+
     # post-process the simulation results
     twin.post_process()  # keywards arguments can be passed to specify the post-processing options
 
