@@ -11,8 +11,11 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 * add .pylintrc file for project-wide coding control
 * refactored code to reach production-level
 * test the current functionalities: including create venv, delete venv, check SUMO and install SUMO
+* tutorial_dev.py
 
-TODO:
+  ![1735336343305](docs/readme/1735336343305.png)
+
+#### TODO:
 
 * Discussion the repository license: MIT, Apache, BSD etc..., as we are writing code, we need copyright licence text as Docstring at the top of each file created.
 * Add test functions perform object safety check
