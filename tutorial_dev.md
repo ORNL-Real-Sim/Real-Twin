@@ -1,14 +1,27 @@
 - [Run the realtwin package on your device (Code Implementation and Explanation)](#run-the-realtwin-package-on-your-device-code-implementation-and-explanation)
+  - [Code Health \& Standards Check (Optional - for developers)](#code-health--standards-check-optional---for-developers)
   - [Installation](#installation)
   - [Create and delete virtual environment (Optional)](#create-and-delete-virtual-environment-optional)
-
     - [Create venv](#create-venv)
     - [Activate venv](#activate-venv)
     - [Delete venv](#delete-venv)
   - [Setup simulation environment](#setup-simulation-environment)
 
-
 # Run the realtwin package on your device (Code Implementation and Explanation)
+
+**This tutorial will eventually be embedded in README.md (currently maintained as a single file for development).**
+
+## Code Health & Standards Check (Optional - for developers)
+
+Ensure the project code is well-maintained and adheres to established standards.
+
+```python
+# Step 1: navigate to the file: tests/proj_std_check.py
+
+# Step 2: run the file and then the report file will be generated under foldedr: docs/code_evaluation
+
+# Step 3: fix bugs or refactor codes from generated report and push onto GitHub
+```
 
 ## Installation
 

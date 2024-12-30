@@ -53,7 +53,7 @@ class REALTWIN:
         # add venv_create and delete as object methods
         self.venv_create = venv_create
         self.venv_delete = venv_delete
-        self._venv_name = "rt_venv"
+        self._venv_name = "venv_rt"
 
         # extract data from kwargs
         self.verbose = kwargs["verbose"] if "verbose" in kwargs else False

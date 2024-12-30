@@ -1,0 +1,5 @@
+pandas==2.2.3
+pyufunc==0.3.7
+pylint
+pytest
+sphinx

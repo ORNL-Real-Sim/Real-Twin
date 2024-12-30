@@ -6,6 +6,19 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 ## Change Log
 
+**Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
+
+### 2024-12-30
+
+* add tutorial_dev.md file for user & developer reference
+* add test functions for the input_dir, output_dir ect...
+  figure
+
+#### TODO
+
+* get familiar with input loads (request access to shared local testing files)
+* get familiar with existing visualizations (coordinate with group members and request access to their local files)
+
 ### 2024-12-27
 
 * add .pylintrc file for project-wide coding control
@@ -13,7 +26,7 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 * test the current functionalities: including create venv, delete venv, check SUMO and install SUMO
 * tutorial_dev.py
 
-  ![1735336343305](docs/readme/1735336343305.png)
+  ![1735336343305](image/README/1735336343305.png)
 
 #### TODO:
 
@@ -41,7 +54,7 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 * add utility functions: venv_create, venv_delete
 * add func_lib in install_simulator: install_sumo_windows
 * add test function: test_is_sumo_installed
-* ![1734989040637](docs/readme/1734989040637.png)
+* ![1734989040637](image/README/1734989040637.png)
 
 #### TODO:
 
