@@ -42,7 +42,7 @@ def venv_create(*, venv_name: str = "", venv_dir: str = "", pkg_name: str = "rea
     """
     # Default values for env_name and folder_path if not provided
     if not venv_name:
-        venv_name = "env_rt"
+        venv_name = "venv_rt"
 
     if not venv_dir:
         venv_dir = os.getcwd()
@@ -109,6 +109,14 @@ def venv_delete(*, venv_name: str = "", venv_dir: str = "", verbose: bool = True
     Returns:
         bool: True if the virtual environment is deleted successfully, False otherwise
     """
+
+    # Default values for env_name and folder_path if not provided
+    if not venv_name:
+        venv_name = "venv_rt"
+
+    if not venv_dir:
+        venv_dir = os.getcwd()
+
     # Full path to the virtual environment
     venv_path = pf.path2linux(os.path.join(venv_dir, venv_name))
 
@@ -117,8 +125,11 @@ def venv_delete(*, venv_name: str = "", venv_dir: str = "", verbose: bool = True
         print(f"  :Virtual environment: {venv_path} does not exist, please check your inputs")
         return False
 
+    if verbose:
+        print(f"  :Deleting virtual environment '{venv_name}'")
+
     # Delete the virtual environment
     shutil.rmtree(venv_path)
-    print(f"  :Virtual environment '{venv_name}' deleted from '{venv_path}")
+    print(f"  :Virtual environment '{venv_name}' deleted successfully.")
 
     return True

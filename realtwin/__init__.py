@@ -14,7 +14,11 @@
 
 from realtwin._realtwin import REALTWIN
 from realtwin.utils_lib.create_venv import venv_create, venv_delete
-from realtwin.func_lib.install_simulator.check_sim_env import is_sumo_installed, is_vissim_installed, is_aimsun_installed
+from realtwin.func_lib.install_simulator.check_sim_env import (is_sumo_installed,
+                                                               is_vissim_installed,
+                                                               is_aimsun_installed)
+
+__version__ = '0.1.0'
 
 __all__ = [
     'REALTWIN',
