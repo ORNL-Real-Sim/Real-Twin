@@ -64,7 +64,7 @@ class REALTWIN:
         Args:
             sel_sim (list): select simulator to be set up. Default is None.
                 Currently available options are ["SUMO", "VISSIM", "AIMSUN"].
-            create_env (bool): Whether to create a virtual environment. Default is False.
+            create_venv (bool): Whether to create a virtual environment. Default is False.
         """
 
         # 0 create a virtual environment
@@ -131,7 +131,7 @@ class REALTWIN:
 
         return None
 
-    def calibration(self, **kwargs) -> None:
+    def calibrate(self, **kwargs) -> None:
         """Calibrate the simulation results.
         """
 
@@ -153,7 +153,7 @@ class REALTWIN:
 
         return None
 
-    def visualization(self) -> None:
+    def visualize(self) -> None:
         """Visualize the simulation results.
         """
 

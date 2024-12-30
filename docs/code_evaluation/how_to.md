@@ -16,6 +16,6 @@
 
 To evaluate your code programmatically:
 
-    Open the pylint_proj_code_checker.py script.
+    Open the tests/proj_std_check.py script.
 
 Run the script to generate the code evaluation report. The report will be saved in the docs/code_evaluation.

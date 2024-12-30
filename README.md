@@ -16,6 +16,7 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 #### TODO
 
+* check sumo version if sumo pre-installed on user's device
 * get familiar with input loads (request access to shared local testing files)
 * get familiar with existing visualizations (coordinate with group members and request access to their local files)
 

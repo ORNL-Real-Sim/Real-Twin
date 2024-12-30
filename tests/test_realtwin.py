@@ -15,6 +15,7 @@ from realtwin import REALTWIN
 
 
 class TestREALTWIN:
+    """Test the REALTWIN class"""
 
     def setup_class(self):
         """Set up the class"""
