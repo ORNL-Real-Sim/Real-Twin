@@ -23,25 +23,42 @@ import zipfile
 import pyufunc as pf
 
 from realtwin.func_lib.install_simulator.check_sim_env import is_sumo_installed
+from realtwin.utils_lib.download_file_from_web import download_single_file_from_web
 
 
-def install_sumo(sumo_version: str = "1.20.0", verbose: bool = True) -> bool:
+def install_sumo(sumo_version: str = "1.20.0",
+                 sel_dir: list = None,
+                 strict_sumo_version: bool = False,
+                 verbose: bool = True, **kwargs) -> bool:
     """Install the SUMO simulator.
 
     Args:
         sumo_version (str): The version of SUMO to be installed. Default is "1.20.0".
+        sel_dir (list): A list of directories to search for the SUMO executable. Defaults to None.
+        strict_sumo_version (bool): If True, check and install the exact version of SUMO. Default is False.
         verbose (bool): If True, print the installation process. Default is True.
+        kwargs: Additional keyword arguments.
 
     Returns:
         bool: True if the SUMO is installed successfully, False otherwise
     """
 
+    # check sel_dir is a list
+    if not isinstance(sel_dir, (list, type(None))):
+        raise ValueError("sel_dir should be a list.")
+
     # Check if SUMO is already installed
-    if is_sumo_installed():
-        return True
+    version_lst = is_sumo_installed(sel_dir=sel_dir, verbose=verbose)
+    if version_lst:
+        # Check if the exact version of SUMO is installed
+        if strict_sumo_version and sumo_version not in version_lst:
+            print(f"  :SUMO {sumo_version} is not installed yet.")
+        else:
+            print(f"  :SUMO {sumo_version} is already installed.")
+            return True
 
     if pf.is_windows():
-        return install_sumo_windows(sumo_version, verbose)
+        return install_sumo_windows(sumo_version, verbose=verbose, **kwargs)
     elif pf.is_linux():
         print("  :Error: Linux is not supported yet.")
         return False
@@ -59,18 +76,22 @@ def install_sumo_windows(sumo_version: str = "1.20.0", verbose: bool = True) -> 
     Returns:
         bool: True if the SUMO is installed successfully, False otherwise
     """
+
+    print(f"  :Installing SUMO {sumo_version} for Windows...")
+
     # Download SUMO from the official website
     sumo_release_url = "https://sumo.dlr.de/releases/"
     sumo_version_win = f"sumo-win64-{sumo_version}.zip"
 
-    download_path = os.path.join(os.getcwd(), "sumo.zip")
-    extract_path = os.path.join(os.getcwd(), "SUMO")
+    download_path = pf.path2linux(os.path.join(os.getcwd(), "sumo.zip"))
+    extract_path = pf.path2linux(os.path.join(os.getcwd(), "SUMO"))
 
     # Download the SUMO zip file from the official website
-    if verbose:
-        print(f"  :Downloading SUMO {sumo_version} for Windows...")
+    sumo_zip_url = f"{sumo_release_url}{sumo_version}/{sumo_version_win}"
+    id_download = download_single_file_from_web(sumo_zip_url, download_path)
 
-    request.urlretrieve(sumo_release_url + sumo_version_win, download_path)
+    if not id_download:
+        return False
 
     # Extract the SUMO zip file
     if verbose:
@@ -83,18 +104,23 @@ def install_sumo_windows(sumo_version: str = "1.20.0", verbose: bool = True) -> 
     os.remove(download_path)
 
     # check if SUMO bin folder exists
-    sumo_bin_path = os.path.join(extract_path, sumo_version, "bin")
+    sumo_bin_path = os.path.join(extract_path, f"sumo-{sumo_version}", "bin")
+    sumo_bin_path = pf.path2linux(sumo_bin_path)
     if not os.path.exists(sumo_bin_path):
         print(f"  :Error: bin folder not found in extracted SUMO directory: {sumo_bin_path}")
         return False
 
     # Add the SUMO bin folder to the system PATH
     if sumo_bin_path not in os.environ['PATH']:
-        add_path = subprocess.run(["setx", "PATH", f"%PATH%;{sumo_bin_path}"], shell=True, check=True)
-        if add_path.returncode == 0:
-            print("  :SUMO is installed successfully.")
-        else:
-            print("  :Error: Failed to add SUMO bin folder to system PATH.")
+
+        os.environ["PATH"] += os.pathsep + sumo_bin_path[0].upper() + sumo_bin_path[1:]
+        os.environ["PATH"] += os.pathsep + sumo_bin_path[0].lower() + sumo_bin_path[1:]
+
+        # add_path = subprocess.run(["setx", "PATH", f"%PATH%;{sumo_bin_path}"], shell=True, check=True)
+        # if add_path.returncode == 0:
+        #     print("  :SUMO is installed successfully.")
+        # else:
+        #     print("  :Error: Failed to add SUMO bin folder to system PATH.")
 
     return True
 

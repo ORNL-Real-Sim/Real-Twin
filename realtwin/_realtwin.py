@@ -58,13 +58,19 @@ class REALTWIN:
         # extract data from kwargs
         self.verbose = kwargs["verbose"] if "verbose" in kwargs else False
 
-    def env_setup(self, *, sel_sim: list = None, create_venv: bool = False) -> None:
+    def env_setup(self, *, sel_sim: list = None, create_venv: bool = False, **kwargs) -> None:
         """Check and set up the environment for the simulation.
 
         Args:
             sel_sim (list): select simulator to be set up. Default is None.
                 Currently available options are ["SUMO", "VISSIM", "AIMSUN"].
             create_venv (bool): Whether to create a virtual environment. Default is False.
+            kwargs: Additional keyword arguments.
+                - sumo_version (str): The version of SUMO to be installed. Default is "1.20.0".
+                - sel_dir (list): A list of directories to search for the executables. Defaults to None.
+                - strict_sumo_version (bool): Whether to strictly check the version is installed.
+                    Default is False.
+
         """
 
         # 0 create a virtual environment
@@ -89,8 +95,10 @@ class REALTWIN:
         print("\nChecking and installing the selected simulators:")
         for sim in sel_sim:
             try:
-                sim_install.get(sim)()
+                sim_install.get(sim)(**{**kwargs, 'verbose': self.verbose})
+                print()
             except Exception as e:
+                print()
                 print(f"  :Could not install {sim} due to error: {e}")
 
         return None

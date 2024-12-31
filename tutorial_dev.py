@@ -31,7 +31,17 @@ if __name__ == '__main__':
 
     # environment setup
     # Check if SUMO, VISSIM, AIMSUN, etc... are installed
+
+    # redundant check
     twin.env_setup(sel_sim=["SUMO", "VISSIM"], create_venv=False)
+
+    # NOTE redundant check including selection of directories
+    new_dir = [r"C:\Users\xh8\ornl_workspace\github_workspace\Real-Twin\SUMO\sumo-1.20.0\bin"]
+    # change the new_dir to your own directory where the SUMO is installed (multiple versions)
+    twin.env_setup(sel_sim=["SUMO", "VISSIM"], create_venv=False, sel_dir=new_dir)
+
+    # NOTE Strict version check
+    twin.env_setup(sel_sim=["SUMO", "VISSIM"], create_venv=False, strict_sumo_version=True, sel_dir=new_dir)
 
     # twin.venv_delete(venv_name=twin._venv_name,
     #                  venv_dir=twin._output_dir)
