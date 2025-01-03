@@ -15,7 +15,7 @@ def download_single_file_from_web(url: str, dest_filename: str, chunk_size=1024)
 
     Args:
         url (str): The URL of the file to download.
-        dest_filename (str): Path to save the downloaded file.
+        dest_filename (str): filename or path to the filename to save the downloaded file.
         chunk_size (int): Size of each chunk to read in bytes (default: 1024).
 
     Returns:
@@ -24,6 +24,11 @@ def download_single_file_from_web(url: str, dest_filename: str, chunk_size=1024)
     try:
         with urllib.request.urlopen(url) as response, open(dest_filename, 'wb') as out_file:
             total_size = int(response.getheader('Content-Length', 0))
+
+            if total_size == 0:
+                print("  :An error occurred: File size is 0.")
+                return False
+
             downloaded = 0
 
             print(f"  :Starting download: {url}")

@@ -8,14 +8,21 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-01-03
+
+* add several test functions: find executable, download file, simulation environment ect...
+* get familiar with existing framework, eg. scenariogeneration, utdf singal conversion from Guanhao's code ect...
+
+#### TODO
+
+* need more time to get familar with the currently framework - current SOW, time plan, develiverables ect...
+
 ### 2024-12-31
 
 * add func: sumo version check from all existing exectuables
 * add func: enable strick sumo version check: if not installed, will install the specific version of sumo
-
 * add func: download large single file from web with security check and process checking
 * add func: find executable from system path
-
 * add func: find executable from selected directory
 * fmt: format print out message for better progress representation
 

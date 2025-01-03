@@ -8,7 +8,7 @@
 import os
 import pytest
 import pyufunc as pf
-from .test_setup import add_pkg_to_sys_path
+from tests.proj_add_sys_path import add_pkg_to_sys_path
 add_pkg_to_sys_path("realtwin")
 
 from realtwin import REALTWIN

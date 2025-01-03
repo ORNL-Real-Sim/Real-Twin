@@ -47,15 +47,15 @@ if __name__ == '__main__':
     #                  venv_dir=twin._output_dir)
 
     # load the dataset
-    # print out the general informations,
+    # print out the general information,
     # such as # of nodes, # of edges, # signalized intersections, etc.
     twin.load_inputs()
 
     # generate scenarios
-    twin.generate_concrete_scenario()  # keywards arguments can be passed to specify the scenario generation options
+    twin.generate_concrete_scenario()  # keywords arguments can be passed to specify the scenario generation options
 
     # simulate the scenario
-    twin.simulate()  # keywards arguments can be passed to specify the simulation options
+    twin.simulate()  # keywords arguments can be passed to specify the simulation options
 
     # perform calibration
     # keyword arguments can be passed to specify the calibration options
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     twin.calibrate()
 
     # post-process the simulation results
-    twin.post_process()  # keywards arguments can be passed to specify the post-processing options
+    twin.post_process()  # keywords arguments can be passed to specify the post-processing options
 
     # visualize the simulation results
-    twin.visualize()  # keywards arguments can be passed to specify the visualization options
+    twin.visualize()  # keywords arguments can be passed to specify the visualization options

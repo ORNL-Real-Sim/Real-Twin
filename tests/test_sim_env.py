@@ -6,7 +6,7 @@
 ##############################################################
 '''
 
-from .test_setup import add_pkg_to_sys_path
+from tests.proj_add_sys_path import add_pkg_to_sys_path
 add_pkg_to_sys_path("realtwin")
 
 from realtwin.func_lib.install_simulator.check_sim_env import (
