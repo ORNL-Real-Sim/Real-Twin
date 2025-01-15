@@ -1,2 +1,3 @@
 pandas==2.2.3
 pyufunc==0.3.7
+pyyaml==5.1.2

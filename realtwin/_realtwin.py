@@ -13,7 +13,10 @@
 """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group"""
 
 import os
+import warnings
+
 import pyufunc as pf
+import yaml
 
 from realtwin.utils_lib.create_venv import venv_create, venv_delete
 from realtwin.func_lib.install_simulator.inst_sumo import install_sumo
@@ -24,15 +27,34 @@ class REALTWIN:
     enables the simulation of twin-structured cities.
     """
 
-    def __init__(self, input_dir: str = "", **kwargs):
+    def __init__(self, input_config_file: str = "", **kwargs):
         """Initialize the REALTWIN object.
 
         Args:
-            input_dir (str): The directory containing the input files.
+            input_config_file (str): The directory containing the input files.
             kwargs: Additional keyword arguments.
                 output_dir (str): The directory to save the output files. Default is None.
         """
-        self._input_dir = input_dir
+
+        # TDD - check if the input_config_file is empty
+        if not input_config_file:
+            warnings.warn("  Input configuration file is not provided.")
+            self._input_dir = None
+
+        else:
+            # check if the input_config_file is in YAML format
+            if not (input_config_file.endswith('.yaml')
+                    or input_config_file.endswith('.yml')):
+                raise ValueError("  Input configuration file should be in YAML format.")
+
+            # load the input configuration file
+            with open(input_config_file, 'r') as stream:
+                try:
+                    self.input_config = yaml.safe_load(stream)
+                except yaml.YAMLError as exc:
+                    print(exc)
+
+            self._input_dir = self.input_config['input_dir']
 
         # check if the input_dir is empty
         if not self._input_dir:

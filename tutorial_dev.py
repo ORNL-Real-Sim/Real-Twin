@@ -27,7 +27,7 @@ if __name__ == '__main__':
     INPUT_DIR = "./datasets/scenario_dummy/"
 
     # initialize the realtwin object
-    twin = rt.REALTWIN(input_dir=INPUT_DIR)
+    twin = rt.REALTWIN(input_config_file="")
 
     # environment setup
     # Check if SUMO, VISSIM, AIMSUN, etc... are installed
