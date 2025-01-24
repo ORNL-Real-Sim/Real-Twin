@@ -42,12 +42,11 @@ def find_executable_from_PATH_on_win(exe_name: str,
         for path in sel_dir:
             if os.path.isdir(path):
                 os.environ["PATH"] += os.pathsep + path
-            else:
-                if verbose:
-                    print(f"  :The directory: {path} does not exist. Skipped.")
+            elif verbose:
+                print(f"  :The directory: {path} does not exist. Skipped.")
 
     # check if exe_name has the extension
-    file_name, ext_str = os.path.splitext(exe_name)
+    _, ext_str = os.path.splitext(exe_name)
     if not ext_str:
         if verbose:
             print(f"  :The executable: {exe_name} has no extension. Added {ext} as the extension.")

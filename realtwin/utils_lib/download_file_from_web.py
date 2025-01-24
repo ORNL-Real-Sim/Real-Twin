@@ -32,12 +32,13 @@ def download_single_file_from_web(url: str, dest_filename: str, chunk_size=1024)
             downloaded = 0
 
             print(f"  :Starting download: {url}")
-            print(f"  :Total size: {total_size / (1024 * 1024):.2f} MB")
+            # print(f"  :Total size: {total_size / (1024 * 1024):.2f} MB")
 
             while chunk := response.read(chunk_size):
                 out_file.write(chunk)
                 downloaded += len(chunk)
-                print(f"\r  :Downloaded: {downloaded / (1024 * 1024):.2f} MB", end="")
+                print(f"\r  :Downloaded: {downloaded / (1024 * 1024):.2f} / {total_size / (1024 * 1024):.2f}  MB",
+                      end="")
 
     except Exception as e:
         print(f"  :An error occurred: {e}")

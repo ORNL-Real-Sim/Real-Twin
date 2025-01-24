@@ -42,7 +42,7 @@ def download_elevation_tif_by(bbox: tuple | list, output_file: str) -> None:
     # API parameters
     params = {
         "datasets": "National Elevation Dataset (NED) 1/3 arc-second",
-        "bbox": ",".join(map(str, bbox)),
+        "bbox": ",".join([str(x) for x in bbox]),
         "outputFormat": "json",
         "extentType": "bbox"
     }
@@ -73,7 +73,7 @@ def download_elevation_tif_by(bbox: tuple | list, output_file: str) -> None:
             return None
 
     # Find the URL with the latest date
-    latest_url = max(tiff_url_list, key=lambda url: extract_date(url))
+    latest_url = max(tiff_url_list, key=extract_date)
     print(f"Downloading GeoTIFF file from: {latest_url}")
 
     # Download the TIFF file

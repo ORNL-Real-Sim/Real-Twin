@@ -1,0 +1,38 @@
+'''
+class to host route element of Concrete scenario
+'''
+import os
+import pandas as pd
+import pyufunc as pf
+
+
+class Route:
+    '''The route class to host the route element of Concrete scenario
+    '''
+    def __init__(self):
+        self.TurningRatio = {}
+
+    def is_empty(self):
+        """Check if the Route object is empty."""
+        pass
+
+    def generate_route(self, AbsScn):
+        """Generate route data from the abstract scenario."""
+        # =================================
+        # Generate route
+        # =================================
+        Turn = AbsScn.Traffic.TurningRatio
+        # Read this for now
+        path_lookup = AbsScn.config_dict["Traffic"].get("GridSmart_lookup")
+        path_lookup_abs = pf.path2linux(os.path.join(AbsScn.config_dict.get("input_dir"), path_lookup))
+
+        IDRef = pd.read_csv(path_lookup_abs)
+        IDRef = IDRef.dropna(subset=['OpenDriveFromID', 'OpenDriveToID'])
+        IDRef = IDRef.astype({'OpenDriveFromID': int, 'OpenDriveToID': int})
+        IDRef = IDRef.astype(str)
+
+        MergedDf2 = pd.merge(Turn, IDRef, on=['IntersectionName', 'Turn'], how='left')
+        Turn['OpenDriveFromID'] = MergedDf2['OpenDriveFromID']
+        Turn['OpenDriveToID'] = MergedDf2['OpenDriveToID']
+        Turn = Turn.dropna(subset=['OpenDriveFromID', 'OpenDriveToID'])
+        self.TurningRatio = Turn.copy()
