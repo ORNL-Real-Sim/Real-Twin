@@ -1,6 +1,8 @@
 # additional ignores
 te.py
 **/code_evaluation/pylint_report**.txt
+**.tif
+**/**.tif
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
