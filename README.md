@@ -8,6 +8,23 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-01-24
+
+* realtwin package enables Abstrace Scenario, Concrete Scenario, and Simulation generation using SUMO
+* code checking and updates to score of 9.5+ / 10
+
+* updated test functions
+* update gitignore file to ignore .tif files as .tif files are too large (100MB+)
+* update tutorial_dev to make clear explanation for both user and internal developers
+* update requirements to enable simulation
+* update configuration file to auto load  and fill missing data from loading
+
+  ![1737750085833](image/README/1737750085833.png)
+
+#### TODO
+
+* Explore calibration codes for sumo
+
 ### 2025-01-03
 
 * add several test functions: find executable, download file, simulation environment ect...
