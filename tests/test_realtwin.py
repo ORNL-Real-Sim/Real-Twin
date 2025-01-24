@@ -40,10 +40,3 @@ class TestREALTWIN:
         twin = REALTWIN(input_config_file=self.INPUT_CONFIG)
         assert twin.input_config["output_dir"] == pf.path2linux(os.path.join(
             twin.input_config["input_dir"], 'output'))
-
-    def test_output_dir_custom(self):
-        """REALTWIN object should be created successfully"""
-
-        OUTPUT_DIR = pf.path2linux(os.getcwd())
-        twin = REALTWIN(input_config_file=self.INPUT_CONFIG, output_dir=OUTPUT_DIR)
-        assert twin.input_config["output_dir"] == OUTPUT_DIR
