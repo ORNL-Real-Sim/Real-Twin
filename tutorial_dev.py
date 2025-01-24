@@ -24,38 +24,34 @@ import realtwin as rt
 
 if __name__ == '__main__':
 
-    INPUT_DIR = "./datasets/scenario_dummy/"
+    CONFIG_FILE = "./public_configs.yaml"
 
     # initialize the realtwin object
-    twin = rt.REALTWIN(input_config_file="")
+    twin = rt.REALTWIN(input_config_file=CONFIG_FILE, verbose=True)
 
-    # environment setup
-    # Check if SUMO, VISSIM, AIMSUN, etc... are installed
+    # NOTE optional: crate or delete a Python virtual environment for the simulation
+    # twin.venv_create(venv_name=twin._venv_name, venv_dir=twin.input_config["output_dir"])
+    # twin.venv_delete(venv_name=twin._venv_name, venv_dir=twin.input_config["output_dir"])
 
-    # redundant check
-    twin.env_setup(sel_sim=["SUMO", "VISSIM"], create_venv=False)
+    # check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
+    twin.env_setup(sel_sim=["SUMO", "VISSIM"])
 
-    # NOTE redundant check including selection of directories
-    new_dir = [r"C:\Users\xh8\ornl_workspace\github_workspace\Real-Twin\SUMO\sumo-1.20.0\bin"]
+    # NOTE optional: check simulator including additional selection of directories
     # change the new_dir to your own directory where the SUMO is installed (multiple versions)
-    twin.env_setup(sel_sim=["SUMO", "VISSIM"], create_venv=False, sel_dir=new_dir)
+    # new_dir = [r"C:\Users\xh8\ornl_workspace\github_workspace\Real-Twin\SUMO\sumo-1.20.0\bin"]
+    # twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir)
 
-    # NOTE Strict version check
-    twin.env_setup(sel_sim=["SUMO", "VISSIM"], create_venv=False, strict_sumo_version=True, sel_dir=new_dir)
+    # NOTE optional: strict simulator check, if the version is not matched, install the required version
+    # twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir, sumo_version="1.21.0", strict_sumo_version=True)
 
-    # twin.venv_delete(venv_name=twin._venv_name,
-    #                  venv_dir=twin._output_dir)
-
-    # load the dataset
-    # print out the general information,
-    # such as # of nodes, # of edges, # signalized intersections, etc.
-    twin.load_inputs()
+    # generate abstract scenario
+    twin.generate_abstract_scenario()
 
     # generate scenarios
-    twin.generate_concrete_scenario()  # keywords arguments can be passed to specify the scenario generation options
+    twin.generate_concrete_scenario()
 
     # simulate the scenario
-    twin.simulate()  # keywords arguments can be passed to specify the simulation options
+    twin.prepare_simulation()
 
     # perform calibration
     # keyword arguments can be passed to specify the calibration options

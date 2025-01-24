@@ -14,13 +14,17 @@
 # We will provide the default values for the configurations
 # user can override these values by providing the same key and different values
 
-input_dir: tools\ScenarioGenerator\datasets
+input_dir: C:\Users\xh8\ornl_workspace\github_workspace\Real-Twin\datasets\chattanooga
+output_dir:  # optional
 Traffic:
     Volume: GridSmart_demand.csv
     TurningRatio: GridSmart_demand.csv
+    GridSmart_lookup: GridSmart_lookuptable.csv
 Network:
     NetworkName: chatt
     NetworkVertices: (-85.14977588011192, 35.040346288414916), (-85.15823020212477, 35.04345144844759), (-85.15829457513502, 35.043293338482925), (-85.14986171079225, 35.04018378032611)
-    ElevationMap: chatt_elev.tif
+    Net_BoundingBox:  # optional
+    ElevationMap: chatt_elev.tif  # optional
 Control:
     Signal: Synchro_signal.csv
+    Synchro_lookup: Synchro_lookuptable.csv
