@@ -9,7 +9,7 @@
 from tests.proj_add_sys_path import add_pkg_to_sys_path
 add_pkg_to_sys_path("realtwin")
 
-from realtwin.func_lib.install_simulator.check_sim_env import (
+from realtwin.func_lib._a_install_simulator.check_sim_env import (
     is_sumo_installed,
     is_vissim_installed,
     is_aimsun_installed)

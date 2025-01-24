@@ -6,7 +6,6 @@
 ##############################################################
 '''
 import os
-import pytest
 from tests.proj_add_sys_path import add_pkg_to_sys_path
 add_pkg_to_sys_path("realtwin")
 
@@ -14,6 +13,7 @@ from realtwin.utils_lib.download_file_from_web import download_single_file_from_
 
 
 def test_download_failure():
+    """Test the download_single_file_from_web function"""
     url = "https://www.google.com"
     dest_filename = "not_valid.zip"
     assert not download_single_file_from_web(url, dest_filename)
@@ -22,6 +22,7 @@ def test_download_failure():
 
 
 def test_download_success():
+    """Test the download_single_file_from_web function"""
     url = "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"
     dest_filename = "test.png"
     assert download_single_file_from_web(url, dest_filename)

@@ -114,4 +114,4 @@ def run_pylint_checker(*, disable_ids: list[str] = None, ignore_paths: list[str]
 if __name__ == '__main__':
     run_pylint_checker(
         ignore_paths=["../te.py",],
-        disable_ids=["C0301", "C0413", "W0719", "R1711", "W0511"])
+        disable_ids=["C0301", "C0413", "W0719", "R1711", "W0511", "W0717", "R0903", "R0913", "W0107"])

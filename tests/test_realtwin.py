@@ -19,30 +19,31 @@ class TestREALTWIN:
 
     def setup_class(self):
         """Set up the class"""
-        self.INPUT_DIR = pf.path2linux(os.getcwd())
+        self.INPUT_CONFIG = "public_configs.yaml"
         self.INPUT_DIR_NOT_FOUND = "datasets/fake_dir/"
 
     def test_input_dir_not_found(self):
         """REALTWIN object should be created successfully"""
 
         with pytest.raises(FileNotFoundError):
-            twin = REALTWIN(input_dir=self.INPUT_DIR_NOT_FOUND)
+            REALTWIN(input_config_file=self.INPUT_DIR_NOT_FOUND)
 
-    def test_input_dir_found(self):
+    def test_input_config_found(self):
         """REALTWIN object should be created successfully"""
 
-        twin = REALTWIN(input_dir=self.INPUT_DIR)
-        assert twin._input_dir == self.INPUT_DIR
+        twin = REALTWIN(input_config_file=self.INPUT_CONFIG)
+        assert isinstance(twin.input_config, dict)
 
     def test_output_dir_default(self):
         """REALTWIN object should be created successfully"""
 
-        twin = REALTWIN(input_dir=self.INPUT_DIR)
-        assert twin._output_dir == pf.path2linux(os.path.join(self.INPUT_DIR, 'output'))
+        twin = REALTWIN(input_config_file=self.INPUT_CONFIG)
+        assert twin.input_config["output_dir"] == pf.path2linux(os.path.join(
+            twin.input_config["input_dir"], 'output'))
 
     def test_output_dir_custom(self):
         """REALTWIN object should be created successfully"""
 
         OUTPUT_DIR = pf.path2linux(os.getcwd())
-        twin = REALTWIN(input_dir=self.INPUT_DIR, output_dir=OUTPUT_DIR)
-        assert twin._output_dir == OUTPUT_DIR
+        twin = REALTWIN(input_config_file=self.INPUT_CONFIG, output_dir=OUTPUT_DIR)
+        assert twin.input_config["output_dir"] == OUTPUT_DIR

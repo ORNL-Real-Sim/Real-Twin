@@ -14,6 +14,8 @@ from realtwin.utils_lib.find_exe_from_PATH import find_executable_from_PATH_on_w
 
 
 class TestFindExeOnWin:
+    """Test the find_executable_from_PATH_on_win function"""
+
     def setup_class(self):
         """Set up the class"""
         self.EXE_NAME = "sumo.exe"
