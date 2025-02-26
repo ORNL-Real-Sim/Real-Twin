@@ -40,6 +40,9 @@ class SimPrep:
             pass
         else:
             raise ValueError("  :seed must be an integer or a list of integers.")
+        if len(seed) > 1:
+            print("  :Multiple seeds are provided, the first one will be used.")
+            seed = seed[0]
 
         self.SUMOSim.importNetwork(ConcreteScn)
         self.SUMOSim.importDemand(ConcreteScn,

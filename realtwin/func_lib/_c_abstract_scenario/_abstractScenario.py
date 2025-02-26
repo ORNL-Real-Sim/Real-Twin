@@ -41,7 +41,7 @@ def load_traffic_volume(path_demand: str) -> pd.DataFrame:
                       "\n  :No traffic volume data loaded from input file")
         return None
 
-    if not os.path.exists(path_demand):
+    if not os.path.isfile(path_demand):
         warnings.warn(f"\n  :File not found: {path_demand}")
         return None
 
@@ -87,7 +87,7 @@ def load_traffic_turning_ratio(path_turning_ratio: str) -> pd.DataFrame:
                       "\n  :No traffic turning ratio data loaded from input file")
         return None
 
-    if not os.path.exists(path_turning_ratio):
+    if not os.path.isfile(path_turning_ratio):
         warnings.warn(f"  :File not found: {path_turning_ratio}")
         return None
 
@@ -146,7 +146,7 @@ def load_control_signal(path_signal: str) -> dict:
                       "\n  :No signal data loaded from input file")
         return None
 
-    if not os.path.exists(path_signal):
+    if not os.path.isfile(path_signal):
         warnings.warn(f"  :File not found: {path_signal}")
         return None
 

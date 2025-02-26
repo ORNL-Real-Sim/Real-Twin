@@ -14,7 +14,7 @@
 # We will provide the default values for the configurations
 # user can override these values by providing the same key and different values
 
-input_dir: C:\Users\xh8\ornl_workspace\github_workspace\Real-Twin\datasets\chattanooga
+input_dir: C:\Users\xh8\ornl_work\github_workspace\Real-Twin\datasets\chattanooga
 output_dir:  # optional
 Traffic:
     Volume: GridSmart_demand.csv
@@ -29,6 +29,5 @@ Control:
     Signal: Synchro_signal.csv
     Synchro_lookup: Synchro_lookuptable.csv
 Calibration:
-    path_turn: 
+    path_turn:
     path_inflow:
-    

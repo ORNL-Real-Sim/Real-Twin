@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2025-01-24 15:08:29 by Eclipse SUMO netconvert Version 1.21.0
+<!-- generated on 2025-02-26 17:03:25 by Eclipse SUMO netconvert Version 1.21.0
 <netconvertConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
 
     <input>
-        <sumo-net-file value="C:/Users/xh8/ornl_workspace/github_workspace/Real-Twin/datasets/chattanooga/output/OpenDrive/chatt_WithElevation.net.xml"/>
+        <sumo-net-file value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin/datasets/chattanooga/output/OpenDrive/chatt_WithElevation.net.xml"/>
     </input>
 
     <output>
-        <opendrive-output value="C:/Users/xh8/ornl_workspace/github_workspace/Real-Twin/datasets/chattanooga/output/OpenDrive/chatt_WithElevation.xodr"/>
+        <opendrive-output value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin/datasets/chattanooga/output/OpenDrive/chatt_WithElevation.xodr"/>
     </output>
 
     <processing>
@@ -32,7 +32,7 @@
 -->
 
 <OpenDRIVE>
-    <header revMajor="1" revMinor="4" name="" version="1.00" date="Fri Jan 24 15:08:29 2025" north="919.81" south="0.00" east="1377.14" west="0.00">
+    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Feb 26 17:03:25 2025" north="919.81" south="0.00" east="1377.14" west="0.00">
         <geoReference>
  <![CDATA[
  +proj=utm +zone=16 +ellps=WGS84 +datum=WGS84 +units=m +no_defs

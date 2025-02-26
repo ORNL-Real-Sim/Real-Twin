@@ -158,7 +158,7 @@ class SUMOPrep:
         for Seed in SeedSet:
             # Create the .rou.xml for each random seed
             path_sumo_demand = pf.path2linux(
-                os.path.join(self.SUMOPath, f'{NetworkName}_Seed{Seed}.rou.xml'))
+                os.path.join(self.SUMOPath, f'{NetworkName}.rou.xml'))
 
             os.system(f'cmd/c "jtrrouter -r {path_sumo_flow}'
                       f' -t {path_sumo_turn}'
@@ -195,7 +195,7 @@ class SUMOPrep:
             ET.SubElement(input_val, 'net-file',
                           {'value': f'{NetworkName}.net.xml'})
             ET.SubElement(input_val, 'route-files',
-                          {'value': f'{NetworkName}_Seed{Seed}.rou.xml'})
+                          {'value': f'{NetworkName}.rou.xml'})
 
             ET.SubElement(root, 'output')
 
@@ -219,7 +219,7 @@ class SUMOPrep:
             xml_string = prettify(root)
             # Write the XML string to a file
 
-            path_sumo_cfg = pf.path2linux(os.path.join(self.SUMOPath, f'{NetworkName}_Seed{Seed}.sumocfg'))
+            path_sumo_cfg = pf.path2linux(os.path.join(self.SUMOPath, f'{NetworkName}.sumocfg'))
             with open(path_sumo_cfg, 'w', encoding="utf-8") as file:
                 file.write(xml_string)
 

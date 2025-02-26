@@ -52,14 +52,14 @@ class OpenDriveNetwork:
         path_openDrive = pf.path2linux(os.path.join(self._output_dir, 'OpenDrive'))
 
         if not os.path.exists(self._output_dir):
-            os.mkdir(self._output_dir)
+            os.makedirs(self._output_dir, exist_ok=True)
 
         if os.path.exists(path_openDrive):
             # Delete existing directory and its contents
             shutil.rmtree(path_openDrive)
 
         # Create new directory
-        os.mkdir(path_openDrive)
+        os.makedirs(path_openDrive, exist_ok=True)
 
         self.GetRoad()
         # self.OpenDrive_network = pf.path2linux(f'{path_openDrive}/{self._net_name}.xodr')
@@ -246,7 +246,7 @@ class OSMRoad:
                 df_edge.at[i, 'numLanes'] = np.nan
 
         # df_edge=df_edge.fillna(np.nan)
-        print(df_edge.head())
+        # print(df_edge.head())
 
         path_edge = pf.path2linux(os.path.join(self._output_dir, 'OpenDrive/edges.edg.xml'))
         df_edge.to_xml(path_edge,

@@ -3,3 +3,5 @@ pyufunc==0.3.7
 pyyaml==5.1.2
 osmnx==2.0.1
 lxml==5.3.0
+pygad
+matplotlib

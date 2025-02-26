@@ -67,6 +67,9 @@ def load_input_config(path_config: str) -> dict:
     if config.get('input_dir') is None:
         # set input_dir to current working directory if not specified
         config['input_dir'] = pf.path2linux(os.getcwd())
+    else:
+        # convert input_dir to linux format
+        config['input_dir'] = pf.path2linux(config['input_dir'])
 
     # check output_dir from input configuration file
     if config.get('output_dir') is None:

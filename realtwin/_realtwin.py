@@ -11,7 +11,7 @@
 ##############################################################################
 
 """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group"""
-
+import os
 from realtwin.utils_lib.create_venv import venv_create, venv_delete
 from realtwin.func_lib._a_install_simulator.inst_sumo import install_sumo
 from realtwin.func_lib._b_load_inputs.loader_config import load_input_config
@@ -46,6 +46,7 @@ class REALTWIN:
         self.venv_create = venv_create
         self.venv_delete = venv_delete
         self._venv_name = "venv_rt"
+        self._proj_dir = os.getcwd()  # get current working directory
 
         # extract data from kwargs
         self.verbose = kwargs["verbose"] if "verbose" in kwargs else False
@@ -139,9 +140,9 @@ class REALTWIN:
             try:
                 sim_install.get(sim)(**kwargs)
                 print()
-            except Exception as e:
+            except Exception:
                 print()
-                print(f"  :Could not install {sim} due to error: {e}")
+                print(f"  :Could not install {sim} on your operation system \n")
 
     def generate_abstract_scenario(self):
         """Generate the abstract scenario.
@@ -202,16 +203,51 @@ class REALTWIN:
 
         # 1. prepare Simulate docs from the concrete scenario
         # 2. Save results to the output directory
+        # TODO according sel_sim to run different simulators
         self.sim = SimPrep()
         self.sim.create_sumo_sim(self.concrete_scenario, start_time, end_time, seed, step_length)
 
-    def calibrate(self, **kwargs):
+    def calibrate(self, *, sel_algo: list = None, **kwargs):
         """Calibrate the simulation results.
-        """
 
-        if 'calibration_data' in kwargs:
-            calibration_data = kwargs['calibration_data']
-            print(calibration_data)
+        Args:
+            sel_algo (list): The list of algorithms to be used for calibration.
+                Default is None, will use genetic algorithm.
+            kwargs: Additional keyword arguments.
+
+        """
+        # TDD
+        if sel_algo is None:
+            sel_algo = ["ga"]
+
+        if not isinstance(sel_algo, list):
+            raise ValueError("  :sel_algo must be a list, "
+                             "including Genetic Algorithm, Simulated Annealing or Tabu Search.")
+
+        # lower case
+        sel_algo = [algo.lower() for algo in sel_algo]
+
+        # check if the algorithm is valid
+        cali_ga = False
+        cali_sa = False
+        cali_ts = False
+        if "ga" in sel_algo:  # Genetic Algorithm
+            cali_ga = True
+        elif "sa" in sel_algo:  # Simulated Annealing
+            cali_sa = True
+        elif "ts" in sel_algo:  # Tabu Search
+            cali_ts = True
+        else:
+            raise ValueError("  :sel_algo must be a list, "
+                             "including ga or GA representing Genetic Algorithm, "
+                             "sa or SA representing Simulated Annealing or "
+                             "ts or TS representing Tabu Search.")
+
+
+        # Calibrate Turn and Inflow
+
+
+        # Calibrate the Behavioral Parameters
 
         # 1. Calibrate the simulation results
         # 2. Save the calibrated results to the output directory

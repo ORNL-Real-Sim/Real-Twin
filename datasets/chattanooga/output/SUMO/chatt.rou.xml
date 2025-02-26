@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2025-01-24 15:08:29 by Eclipse SUMO jtrrouter Version 1.21.0
+<!-- generated on 2025-02-26 17:03:25 by Eclipse SUMO jtrrouter Version 1.21.0
 <jtrrouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/jtrrouterConfiguration.xsd">
 
     <input>
-        <net-file value="C:/Users/xh8/ornl_workspace/github_workspace/Real-Twin/datasets/chattanooga/output/SUMO/chatt.net.xml"/>
-        <route-files value="C:/Users/xh8/ornl_workspace/github_workspace/Real-Twin/datasets/chattanooga/output/SUMO/chatt.flow.xml"/>
-        <turn-ratio-files value="C:/Users/xh8/ornl_workspace/github_workspace/Real-Twin/datasets/chattanooga/output/SUMO/chatt.turn.xml"/>
+        <net-file value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin/datasets/chattanooga/output/SUMO/chatt.net.xml"/>
+        <route-files value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin/datasets/chattanooga/output/SUMO/chatt.flow.xml"/>
+        <turn-ratio-files value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin/datasets/chattanooga/output/SUMO/chatt.turn.xml"/>
     </input>
 
     <output>
-        <output-file value="C:/Users/xh8/ornl_workspace/github_workspace/Real-Twin/datasets/chattanooga/output/SUMO/chatt_Seed101.rou.xml"/>
+        <output-file value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin/datasets/chattanooga/output/SUMO/chatt.rou.xml"/>
     </output>
 
     <processing>

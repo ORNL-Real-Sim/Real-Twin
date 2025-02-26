@@ -5,7 +5,7 @@
     </random>
     <input>
         <net-file value="chatt.net.xml"/>
-        <route-files value="chatt_Seed101.rou.xml"/>
+        <route-files value="chatt.rou.xml"/>
     </input>
     <output/>
     <time>
