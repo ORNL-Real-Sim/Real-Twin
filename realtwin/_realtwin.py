@@ -12,13 +12,23 @@
 
 """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group"""
 import os
+
+# environment setup
 from realtwin.utils_lib.create_venv import venv_create, venv_delete
 from realtwin.func_lib._a_install_simulator.inst_sumo import install_sumo
+
+# input data loading
 from realtwin.func_lib._b_load_inputs.loader_config import load_input_config
 
+# scenario generation
 from realtwin.func_lib._c_abstract_scenario._abstractScenario import AbstractScenario
 from realtwin.func_lib._d_concrete_scenario._concreteScenario import ConcreteScenario
+
+# simulation
 from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
+
+# calibration
+from realtwin.func_lib._f_calibration.algo_sumo._sumo_calibration import cali_sumo
 
 
 class REALTWIN:
@@ -111,11 +121,11 @@ class REALTWIN:
                              verbose=True)
 
         # 0. Check if the sim_env is selected,
-        #    default to SUMO, case insensitive
-        sel_sim = ["sumo"] if not sel_sim else [sim.lower() for sim in sel_sim]
+        #    default to SUMO, case insensitive and add self.sel_sim as a class attribute
+        self.sel_sim = ["sumo"] if not sel_sim else [sim.lower() for sim in sel_sim]
 
         # 1. Check simulator installation - mapping function
-        sim_install = {
+        simulator_installation = {
             "sumo": install_sumo,
             "vissim": None,
             "aimsun": None,
@@ -136,16 +146,17 @@ class REALTWIN:
 
         kwargs['verbose'] = self.verbose
 
-        for sim in sel_sim:
+        for simulator in self.sel_sim:
             try:
-                sim_install.get(sim)(**kwargs)
+                simulator_installation.get(simulator)(**kwargs)
                 print()
             except Exception:
                 print()
-                print(f"  :Could not install {sim} on your operation system \n")
+                self.sel_sim.remove(simulator)
+                print(f"  :Could not install {simulator} on your operation system \n")
 
     def generate_abstract_scenario(self):
-        """Generate the abstract scenario.
+        """Generate the abstract scenario: create OpenDrive files
         """
         # 1. Generate the abstract scenario based on the input data
         self.abstract_scenario = AbstractScenario(self.input_config)
@@ -153,7 +164,7 @@ class REALTWIN:
         print("  :Abstract Scenario successfully generated.")
 
     def generate_concrete_scenario(self):
-        """Generate the concrete scenario.
+        """Generate the concrete scenario: generate unified scenario from abstract scenario
         """
 
         # 1. Generate the concrete scenario based on abstract scenario
@@ -170,9 +181,9 @@ class REALTWIN:
     def prepare_simulation(self,
                            start_time: float = 3600 * 8,
                            end_time: float = 3600 * 10,
-                           seed: list | int = [101],
+                           seed: list | int = 812,
                            step_length: float = 0.1):
-        """Simulate the concrete scenario.
+        """Simulate the concrete scenario: generate simulation files for the selected simulator
 
         Args:
             start_time (float): The start time of the simulation. Default is 3600 * 8.
@@ -203,54 +214,62 @@ class REALTWIN:
 
         # 1. prepare Simulate docs from the concrete scenario
         # 2. Save results to the output directory
+
+        sim_prep = {
+            "sumo": SimPrep().create_sumo_sim,
+            "vissim": SimPrep().create_vissim_sim,
+            "aimsun": SimPrep().create_aimsun_sim,
+        }
+
         # TODO according sel_sim to run different simulators
         self.sim = SimPrep()
-        self.sim.create_sumo_sim(self.concrete_scenario, start_time, end_time, seed, step_length)
+        for simulator in self.sel_sim:
+            sim_prep.get(simulator)(self.concrete_scenario,
+                                    start_time=start_time,
+                                    end_time=end_time,
+                                    seed=seed,
+                                    step_length=step_length)
+            print(f"  :{simulator.upper()} simulation successfully completed.")
 
-    def calibrate(self, *, sel_algo: list = None, **kwargs):
-        """Calibrate the simulation results.
+    def calibrate(self, *, sel_algo: dict = None):
+        """Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.
 
         Args:
             sel_algo (list): The list of algorithms to be used for calibration.
-                Default is None, will use genetic algorithm.
+                Default is None, will use genetic algorithm. Options are: ["ga", "sa", "ts"].
             kwargs: Additional keyword arguments.
 
         """
         # TDD
-        if sel_algo is None:
-            sel_algo = ["ga"]
+        if sel_algo is None:  # default to genetic algorithm
+            sel_algo = {"turn_inflow": "ga",
+                        "behavior": "ga"}
 
-        if not isinstance(sel_algo, list):
-            raise ValueError("  :sel_algo must be a list, "
-                             "including Genetic Algorithm, Simulated Annealing or Tabu Search.")
+        if not isinstance(sel_algo, dict):
+            print("  :Error:parameter sel_algo must be a dict with"
+                  " keys of 'turn_inflow' and 'behavior', using"
+                  " genetic algorithm as default values.")
+            sel_algo = {"turn_inflow": "ga",
+                        "behavior": "ga"}
 
-        # lower case
-        sel_algo = [algo.lower() for algo in sel_algo]
+        # check if the selected algorithm is supported within the package
+        # convert the algorithm to lower case
+        if algo := sel_algo["turn_inflow"].lower() not in ["ga", "sa", "ts"]:
+            print(f"  :Selected algorithms are {sel_algo}")
+            print(f"  :{algo} for turn and inflow calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
+            return
 
-        # check if the algorithm is valid
-        cali_ga = False
-        cali_sa = False
-        cali_ts = False
-        if "ga" in sel_algo:  # Genetic Algorithm
-            cali_ga = True
-        elif "sa" in sel_algo:  # Simulated Annealing
-            cali_sa = True
-        elif "ts" in sel_algo:  # Tabu Search
-            cali_ts = True
-        else:
-            raise ValueError("  :sel_algo must be a list, "
-                             "including ga or GA representing Genetic Algorithm, "
-                             "sa or SA representing Simulated Annealing or "
-                             "ts or TS representing Tabu Search.")
+        if algo := sel_algo["behavior"].lower() not in ["ga", "sa", "ts"]:
+            print(f"  :Selected algorithms are {sel_algo}")
+            print(f"  :{algo} for behavior calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
+            return
 
+        # run calibration based on the selected algorithm
+        cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)
 
-        # Calibrate Turn and Inflow
+        print("  :Calibration successfully completed.")
 
-
-        # Calibrate the Behavioral Parameters
-
-        # 1. Calibrate the simulation results
-        # 2. Save the calibrated results to the output directory
+        return True
 
     def post_process(self):
         """Post-process the simulation results.

@@ -122,7 +122,8 @@ def update_turn_flow_from_solution(df_turn: pd.DataFrame,
 
 
 def create_rou_turn_flow_xml(network_name: str, sim_start_time: float, sim_end_time: float,
-                             df_turn: pd.DataFrame, df_inflow: pd.DataFrame, ical: str,
+                             df_turn: pd.DataFrame,
+                             df_inflow: pd.DataFrame, ical: str,
                              input_dir: str,
                              output_dir: str,
                              remove_old_files: bool = True) -> bool:
@@ -254,7 +255,7 @@ def run_SUMO_create_EdgeData(sim_name: str, sim_end_time: float) -> bool:
     return True
 
 
-def result_analysis_on_EdgeData(path_summary: str,
+def result_analysis_on_EdgeData(path_summary: str | pd.DataFrame,
                                 path_EdgeData: str,
                                 calibration_target: dict,
                                 sim_start_time: float,
@@ -275,7 +276,13 @@ def result_analysis_on_EdgeData(path_summary: str,
     # mapping of sumo id with GridSmart Intersection from user input
 
     # 1. Filter and group the summary data
-    df_summary = pd.read_excel(path_summary)
+    if isinstance(path_summary, str):
+        df_summary = pd.read_excel(path_summary)
+    elif isinstance(path_summary, pd.DataFrame):
+        df_summary = path_summary
+    else:
+        raise ValueError("path_summary must be either a str or a pd.DataFrame")
+
     df_filtered = df_summary.loc[df_summary["realcount"].notna()].copy()
     approach_summary = df_filtered.groupby(['IntersectionName',
                                             'entrance_sumo',
@@ -371,8 +378,8 @@ def run_SUMO(sim_name: str, sim_end_time: float) -> bool:
 
 
 def generate_demand(network_name: str, sim_start_time: float, sim_end_time: float,
-                        df_turn: pd.DataFrame, df_inflow: pd.DataFrame, ical,
-                        output_dir: str = "None"):
+                    df_turn: pd.DataFrame, df_inflow: pd.DataFrame, ical,
+                    output_dir: str = "None"):
 
     # create the copy of turn and inflow dataframes for internal operations
     TurnDf = df_turn.copy()
@@ -509,7 +516,10 @@ def assign_new_turn(df_turn: pd.DataFrame, df_inflow: pd.DataFrame, initial_solu
     return (TurnDf, InflowDf)
 
 
-def result_analysis(df_summary: pd.DataFrame, calibration_target: dict, sim_start_time: float, sim_end_time: float) -> tuple:
+def result_analysis(df_summary: str | pd.DataFrame,
+                    calibration_target: dict,
+                    sim_start_time: float,
+                    sim_end_time: float) -> tuple:
     # Load and parse the new XML file
     # mapping of sumo id with GridSmart Intersection from user input
 

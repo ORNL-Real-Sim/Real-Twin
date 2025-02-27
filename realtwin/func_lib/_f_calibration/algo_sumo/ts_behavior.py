@@ -13,11 +13,12 @@ import numpy as np
 import pyufunc as pf
 import matplotlib.pyplot as plt
 
-from utils_cali import (fitness_func,
-                        get_travel_time_from_EdgeData_xml,
-                        update_flow_xml_from_solution,
-                        run_jtrrouter_to_create_rou_xml,
-                        result_analysis_on_EdgeData,)
+from realtwin.func_lib._f_calibration.algo_sumo.utils_cali_behavior import (
+    fitness_func,
+    get_travel_time_from_EdgeData_xml,
+    update_flow_xml_from_solution,
+    run_jtrrouter_to_create_rou_xml,
+    result_analysis_on_EdgeData,)
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -47,10 +48,10 @@ def generate_neighbors(solution: list | np.ndarray, param_ranges: dict, tabu_lis
     return neighbors
 
 
-class TabuSearch:
+class TabuSearchForBehavioral:
     """Tabu search algorithm for calibration"""
 
-    def __init__(self, ts_config: dict, scenario_config: dict, verbose: bool = True):
+    def __init__(self, scenario_config: dict, ts_config: dict, verbose: bool = True):
         self.ts_config = ts_config
         self.scenario_config = scenario_config
         self.verbose = verbose
@@ -64,10 +65,10 @@ class TabuSearch:
         self.__current_dir = os.getcwd()
         os.chdir(self.input_dir)
 
-        if path_edge := self.scenario_config.get("path_edge"):
+        if path_edge := self.scenario_config.get("path_edge", "EdgeData.xml"):
             self.path_edge_abs = pf.path2linux(Path(self.input_dir) / path_edge)
 
-    def run_TS(self):
+    def run_calibration(self):
 
         max_iteration = self.ts_config.get("max_iteration")
 
@@ -82,10 +83,11 @@ class TabuSearch:
         decimal_places = self.ts_config.get("decimal_places")
         tabu_list_size = self.ts_config.get("tabu_list_size")
 
-        EB_edge_list = self.scenario_config.get("EB_edge_list")
-        WB_edge_list = self.scenario_config.get("WB_edge_list")
-        EB_tt = self.scenario_config.get("EB_tt")
-        WB_tt = self.scenario_config.get("WB_tt")
+        EB_edge_list = self.ts_config.get("EB_edge_list")
+        WB_edge_list = self.ts_config.get("WB_edge_list")
+        EB_tt = self.ts_config.get("EB_tt")
+        WB_tt = self.ts_config.get("WB_tt")
+
         calibration_target = self.scenario_config.get("calibration_target")
         sim_start_time = self.scenario_config.get("sim_start_time")
         sim_end_time = self.scenario_config.get("sim_end_time")
@@ -185,6 +187,14 @@ if __name__ == "__main__":
         "num_neighbors": 5,
         "tabu_list_size": 10,
         "decimal_places": 5,
+        "EB_tt": 240,
+        "WB_tt": 180,
+        "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
+                         "-302", "-3221", "-322", "-313", "-284",
+                         "-328", "-304"],
+        "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
+                         "-315", "-321", "-300", "-2851", "-285",
+                         "-290", "-298", "-295"]
     }
 
     scenario_config = {
@@ -202,16 +212,9 @@ if __name__ == "__main__":
         "demand_interval": 15,
         "lower_bound": 0,   # For Tabu search only
         "upper_bound": 1,
-        "EB_tt": 240,
-        "WB_tt": 180,
-        "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
-                         "-302", "-3221", "-322", "-313", "-284",
-                         "-328", "-304"],
-        "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
-                         "-315", "-321", "-300", "-2851", "-285",
-                         "-290", "-298", "-295"]
+
     }
 
-    ts = TabuSearch(ts_config, scenario_config)
-    ts.run_TS()
+    ts = TabuSearchForBehavioral(ts_config, scenario_config)
+    ts.run_calibration()
     ts.run_vis()

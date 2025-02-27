@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
     <random>
-        <seed value="101"/>
+        <seed value="812"/>
     </random>
     <input>
         <net-file value="chatt.net.xml"/>

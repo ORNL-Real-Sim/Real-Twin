@@ -14,16 +14,17 @@ if 'SUMO_HOME' in os.environ:
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 
-from util_cali import (update_turn_flow_from_solution,  # step 1: update turning ratios and inflow counts
-                       create_rou_turn_flow_xml,  # step 2: create rou.xml file
-                       run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
-                       result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
+from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (
+    update_turn_flow_from_solution,  # step 1: update turning ratios and inflow counts
+    create_rou_turn_flow_xml,  # step 2: create rou.xml file
+    run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
+    result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
 
 
-class GeneticAlgorithm:
+class GeneticAlgorithmForTurnFlow:
     """Genetic Algorithm for optimization for running simulators"""
 
-    def __init__(self, ga_config: dict, scenario_config: dict, verbose: bool = True):
+    def __init__(self, scenario_config: dict, ga_config: dict, verbose: bool = True):
         """Input parameters are dictionaries containing configurations for Genetic Algorithm and scenario results.
 
         Args:
@@ -78,7 +79,7 @@ class GeneticAlgorithm:
         if path_summary := self.scenario_config.get("path_summary"):
             self.df_summary = pd.read_excel(pf.path2linux(Path(self.input_dir) / path_summary))
 
-        if path_edge := self.scenario_config.get("path_edge"):
+        if path_edge := self.scenario_config.get("path_edge", 'EdgeData.xml'):
             self.path_edge_abs = pf.path2linux(Path(self.input_dir) / path_edge)
 
     def run_single_calibration(self, initial_solution: np.array, ical: str, remove_old_files: bool = True) -> tuple:
@@ -108,14 +109,14 @@ class GeneticAlgorithm:
 
         # analyze EdgeData.xml to get best solution
         best_flag, best_value, best_percent = result_analysis_on_EdgeData(self.df_summary,
+                                                                          self.path_edge_abs,
                                                                           self.scenario_config["calibration_target"],
                                                                           self.scenario_config["sim_start_time"],
-                                                                          self.scenario_config["sim_end_time"],
-                                                                          self.path_edge_abs)
+                                                                          self.scenario_config["sim_end_time"])
         return (best_flag, best_value, best_percent)
 
     @pf.func_time
-    def run_GA(self, *, remove_old_files: bool = True) -> bool:
+    def run_calibration(self, *, remove_old_files: bool = True) -> bool:
         """ Run the Genetic Algorithm for finding the best solution for the given scenario. """
 
         if self.verbose:
@@ -282,7 +283,7 @@ if __name__ == "__main__":
     }
 
     scenario_config = {
-        "input_dir": r"C:\Users\xh8\ornl_work\gitlab_workspace\realtwintool\tools\SUMO\Calibration\xl_turn_and_flow\input_dir",
+        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin\datasets\chattanooga\output\SUMO",
         "network_name": "chatt",
         "sim_name": "chatt.sumocfg",
         "sim_start_time": 28800,
@@ -291,13 +292,13 @@ if __name__ == "__main__":
         "path_inflow": "inflow.xlsx",
         "path_summary": "summary.xlsx",
         "path_edge": 'EdgeData.xml',
-        "calibration_target": {'GEH': 5, 'GEHPercent': 0.85},
+        "calibration_target": {'GEH': 5, 'GEHPercent': 0.85},  # GEH:
         "calibration_interval": 60,
         "demand_interval": 15,
-        "lower_bound": 0,   # For Tabu search only
-        "upper_bound": 1,
+        # "lower_bound": 0,   # For Tabu search only
+        # "upper_bound": 1,
     }
 
-    ga = GeneticAlgorithm(ga_config, scenario_config)
-    ga.run_GA(remove_old_files=True)
+    ga = GeneticAlgorithmForTurnFlow(ga_config, scenario_config)
+    ga.run_calibration(remove_old_files=True)
     ga.run_vis()

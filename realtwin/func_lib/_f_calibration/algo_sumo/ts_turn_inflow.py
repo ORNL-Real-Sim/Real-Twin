@@ -24,16 +24,17 @@ import time
 calibration_start_time = time.time()
 rng = np.random.default_rng(812)
 
-from util_cali import (update_turn_flow_from_solution,  # step 1: update turning ratios and inflow counts
-                       create_rou_turn_flow_xml,  # step 2: create rou.xml file
-                       run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
-                       result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
+from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (
+    update_turn_flow_from_solution,  # step 1: update turning ratios and inflow counts
+    create_rou_turn_flow_xml,  # step 2: create rou.xml file
+    run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
+    result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
 
 
-class TabuSearch:
+class TabuSearchForTurnFlow:
     """Tabu search algorithm for calibration"""
 
-    def __init__(self, ts_config: dict, scenario_config: dict, verbose: bool = True):
+    def __init__(self, scenario_config: dict, ts_config: dict, verbose: bool = True):
         self.ts_config = ts_config
         self.scenario_config = scenario_config
         self.verbose = verbose
@@ -56,7 +57,7 @@ class TabuSearch:
         if path_summary := self.scenario_config.get("path_summary"):
             self.df_summary = pd.read_excel(pf.path2linux(Path(self.input_dir) / path_summary))
 
-        if path_edge := self.scenario_config.get("path_edge"):
+        if path_edge := self.scenario_config.get("path_edge", 'EdgeData.xml'):
             self.path_edge_abs = pf.path2linux(Path(self.input_dir) / path_edge)
 
     def is_close_to_tabu(self, solution, tabu_list: list, Np, threshold_p: float, threshold_c: float) -> int:
@@ -107,13 +108,13 @@ class TabuSearch:
 
         # analyze EdgeData.xml to get best solution
         best_flag, best_value, best_percent = result_analysis_on_EdgeData(self.df_summary,
+                                                                          self.path_edge_abs,
                                                                           self.scenario_config["calibration_target"],
                                                                           self.scenario_config["sim_start_time"],
-                                                                          self.scenario_config["sim_end_time"],
-                                                                          self.path_edge_abs)
+                                                                          self.scenario_config["sim_end_time"])
         return (best_flag, best_value, best_percent)
 
-    def run_TS(self, *, initial_solution: np.array = None, remove_old_files: bool = True) -> bool:
+    def run_calibration(self, *, initial_solution: np.array = None, remove_old_files: bool = True) -> bool:
         """ Run the Tabu Search algorithm for calibration """
 
         if self.verbose:
@@ -258,10 +259,11 @@ class TabuSearch:
             # analyze EdgeData.xml to get best solution
             flag, meanGEH, GEH_percent = result_analysis_on_EdgeData(
                 self.df_summary,
+                self.path_edge_abs,
                 self.scenario_config["calibration_target"],
                 self.scenario_config["sim_start_time"],
                 self.scenario_config["sim_end_time"],
-                self.path_edge_abs)
+                )
             print(f"  :In final results, {int(GEH_percent * 10000) / 100} percent GEH is lower than 5.")
 
             if flag:
@@ -339,6 +341,6 @@ if __name__ == "__main__":
         # Add more configurations as needed
     }
 
-    ts = TabuSearch(ts_config, scenario_config, verbose=True)
-    ts.run_TS(remove_old_files=False)
+    ts = TabuSearchForTurnFlow(ts_config, scenario_config, verbose=True)
+    ts.run_calibration(remove_old_files=False)
     ts.run_vis()

@@ -17,11 +17,12 @@ import pygad
 import subprocess
 from functools import partial
 
-from utils_cali import (fitness_func,
-                        get_travel_time_from_EdgeData_xml,
-                        update_flow_xml_from_solution,
-                        run_jtrrouter_to_create_rou_xml,
-                        result_analysis_on_EdgeData,)
+from realtwin.func_lib._f_calibration.algo_sumo.utils_cali_behavior import (
+    fitness_func,
+    get_travel_time_from_EdgeData_xml,
+    update_flow_xml_from_solution,
+    run_jtrrouter_to_create_rou_xml,
+    result_analysis_on_EdgeData,)
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -88,9 +89,9 @@ def fitness_func_tt(ept_, solution: list | np.ndarray, solution_idx: int, scenar
     return fitness_err
 
 
-class GeneticAlgorithm:
+class GeneticAlgorithmForBehavioral:
 
-    def __init__(self, ga_config: dict, scenario_config: dict, verbose: bool = True):
+    def __init__(self, scenario_config: dict, ga_config: dict, verbose: bool = True):
         """Input parameters are dictionaries containing configurations for Genetic Algorithm and scenario results.
         """
         self.ga_config = ga_config
@@ -107,10 +108,10 @@ class GeneticAlgorithm:
         os.chdir(self.input_dir)
 
         # initialize dataframes from the scenario config
-        if path_edge := self.scenario_config.get("path_edge"):
+        if path_edge := self.scenario_config.get("path_edge", "EdgeData.xml"):
             self.path_edge_abs = pf.path2linux(Path(self.input_dir) / path_edge)
 
-    def run_GA(self) -> bool:
+    def run_calibration(self) -> bool:
 
         # convert the initial parameters and ranges to numpy arrays
         initial_parameters = self.ga_config.get("initial_parameters")
@@ -120,16 +121,17 @@ class GeneticAlgorithm:
         if isinstance(param_ranges, dict):
             param_ranges = np.array(list(param_ranges.values()))
 
+        EB_edge_list = self.gs_config.get("EB_edge_list")
+        WB_edge_list = self.ga_config.get("WB_edge_list")
+        EB_tt = self.ga_config.get("EB_tt")
+        WB_tt = self.ga_config.get("WB_tt")
+
         network_name = self.scenario_config.get("network_name")
         path_net = pf.path2linux(Path(self.input_dir) / f"{network_name}.net.xml")
         path_flow = pf.path2linux(Path(self.input_dir) / f"{network_name}.flow.xml")
         path_turn = pf.path2linux(Path(self.input_dir) / self.scenario_config.get("path_turn"))
         path_rou = pf.path2linux(Path(self.input_dir) / f"{network_name}.rou.xml")
 
-        EB_edge_list = self.scenario_config.get("EB_edge_list")
-        WB_edge_list = self.scenario_config.get("WB_edge_list")
-        EB_tt = self.scenario_config.get("EB_tt")
-        WB_tt = self.scenario_config.get("WB_tt")
         calibration_target = self.scenario_config.get("calibration_target")
         sim_start_time = self.scenario_config.get("sim_start_time")
         sim_end_time = self.scenario_config.get("sim_end_time")
@@ -224,15 +226,15 @@ if __name__ == "__main__":
                                   "tau": (0.25, 1.25),
                                   "emergencyDecel": (5.0, 9.3)},
                  "num_generation": 50,
-                 "num_variables": 16,
-                 "num_turning_ratio": 12,  # remaining should be inflow
-                 "ubc": 200,  # inflow upper bound constant
-                 "population_size": 2,  # must be even
-                 "crossover_rate": 0.75,
-                 "mutation_rate": 0.1,
-                 "elitism_size": 1,  # Number of elite individuals to carry over
-                 "best_fitness_value": float('inf'),
-                 "max_no_improvement": 5,  # Stop if no improvement in 5 iterations
+
+                 "EB_tt": 240,
+                 "WB_tt": 180,
+                 "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
+                                  "-302", "-3221", "-322", "-313", "-284",
+                                  "-328", "-304"],
+                 "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
+                                  "-315", "-321", "-300", "-2851", "-285",
+                                  "-290", "-298", "-295"]
                  }
 
     scenario_config = {
@@ -248,17 +250,11 @@ if __name__ == "__main__":
         "calibration_target": {'GEH': 5, 'GEHPercent': 0.85},
         "calibration_interval": 60,
         "demand_interval": 15,
-        "lower_bound": 0,   # For Tabu search only
-        "upper_bound": 1,
-        "EB_tt": 240,
-        "WB_tt": 180,
-        "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
-                         "-302", "-3221", "-322", "-313", "-284",
-                         "-328", "-304"],
-        "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
-                         "-315", "-321", "-300", "-2851", "-285",
-                         "-290", "-298", "-295"]
+        # "lower_bound": 0,   # For Tabu search only
+        # "upper_bound": 1,
+
     }
 
-    ga = GeneticAlgorithm(ga_config, scenario_config)
-    ga.run_GA()
+    ga = GeneticAlgorithmForBehavioral(ga_config, scenario_config)
+    ga.run_calibration()
+    ga.run_vis()

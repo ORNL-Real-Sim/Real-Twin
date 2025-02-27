@@ -15,11 +15,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyufunc as pf
 
-from utils_cali import (fitness_func,
-                        get_travel_time_from_EdgeData_xml,
-                        update_flow_xml_from_solution,
-                        run_jtrrouter_to_create_rou_xml,
-                        result_analysis_on_EdgeData,)
+from realtwin.func_lib._f_calibration.algo_sumo.utils_cali_behavior import (
+    fitness_func,
+    get_travel_time_from_EdgeData_xml,
+    update_flow_xml_from_solution,
+    run_jtrrouter_to_create_rou_xml,
+    result_analysis_on_EdgeData,)
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -28,9 +29,10 @@ else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 
 
-class SimulatedAnnealing:
+class SimulatedAnnealingForBehavioral:
     """ Simulated Annealing algorithm for running the simulator """
-    def __init__(self, sa_config: dict, scenario_config: dict, verbose: bool = False):
+
+    def __init__(self, scenario_config: dict, sa_config: dict, verbose: bool = False):
         self.sa_config = sa_config
         self.scenario_config = scenario_config
         self.verbose = verbose
@@ -44,10 +46,10 @@ class SimulatedAnnealing:
         self.__current_dir = os.getcwd()
         os.chdir(self.input_dir)
 
-        if path_edge := self.scenario_config.get("path_edge"):
+        if path_edge := self.scenario_config.get("path_edge", "EdgeData.xml"):
             self.path_edge_abs = pf.path2linux(Path(self.input_dir) / path_edge)
 
-    def run_SA(self) -> bool:
+    def run_calibration(self) -> bool:
 
         init_temperature = self.sa_config.get("init_temperature", 100)
         max_iteration = self.sa_config.get("max_iteration")
@@ -61,10 +63,11 @@ class SimulatedAnnealing:
             param_ranges = np.array(list(param_ranges.values()))
 
         cooling_rate = self.sa_config.get("cooling_rate")
-        EB_edge_list = self.scenario_config.get("EB_edge_list")
-        WB_edge_list = self.scenario_config.get("WB_edge_list")
-        EB_tt = self.scenario_config.get("EB_tt")
-        WB_tt = self.scenario_config.get("WB_tt")
+        EB_edge_list = self.sa_config.get("EB_edge_list")
+        WB_edge_list = self.sa_config.get("WB_edge_list")
+        EB_tt = self.sa_config.get("EB_tt")
+        WB_tt = self.sa_config.get("WB_tt")
+
         calibration_target = self.scenario_config.get("calibration_target")
         sim_start_time = self.scenario_config.get("sim_start_time")
         sim_end_time = self.scenario_config.get("sim_end_time")
@@ -182,6 +185,14 @@ if __name__ == "__main__":
         "initial_temperature": 100,
         "max_iteration": 150,
         "cooling_rate": 0.9891,
+        "EB_tt": 240,
+        "WB_tt": 180,
+        "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
+                         "-302", "-3221", "-322", "-313", "-284",
+                         "-328", "-304"],
+        "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
+                         "-315", "-321", "-300", "-2851", "-285",
+                         "-290", "-298", "-295"]
     }
 
     scenario_config = {
@@ -199,16 +210,9 @@ if __name__ == "__main__":
         "demand_interval": 15,
         "lower_bound": 0,   # For Tabu search only
         "upper_bound": 1,
-        "EB_tt": 240,
-        "WB_tt": 180,
-        "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
-                         "-302", "-3221", "-322", "-313", "-284",
-                         "-328", "-304"],
-        "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
-                         "-315", "-321", "-300", "-2851", "-285",
-                         "-290", "-298", "-295"]
+
     }
 
-    sa = SimulatedAnnealing(sa_config, scenario_config)
-    sa.run_SA()
+    sa = SimulatedAnnealingForBehavioral(sa_config, scenario_config)
+    sa.run_calibration()
     sa.run_vis()

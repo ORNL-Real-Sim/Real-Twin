@@ -24,15 +24,17 @@ import time
 calibration_start_time = time.time()
 rng = np.random.default_rng(812)
 
-from util_cali import (update_turn_flow_from_solution,  # step 1: update turning ratios and inflow counts
-                       create_rou_turn_flow_xml,  # step 2: create rou.xml file
-                       run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
-                       result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
+from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (
+    update_turn_flow_from_solution,  # step 1: update turning ratios and inflow counts
+    create_rou_turn_flow_xml,  # step 2: create rou.xml file
+    run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
+    result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
 
 
-class SimulatedAnnealing:
+class SimulatedAnnealingForTurnFlow:
     """ Simulated Annealing algorithm for running the simulator """
-    def __init__(self, sa_config: dict, scenario_config: dict, verbose: bool = False):
+
+    def __init__(self, scenario_config: dict, sa_config: dict, verbose: bool = False):
         self.sa_config = sa_config
         self.scenario_config = scenario_config
         self.verbose = verbose
@@ -55,7 +57,7 @@ class SimulatedAnnealing:
         if path_summary := self.scenario_config.get("path_summary"):
             self.df_summary = pd.read_excel(pf.path2linux(Path(self.input_dir) / path_summary))
 
-        if path_edge := self.scenario_config.get("path_edge"):
+        if path_edge := self.scenario_config.get("path_edge", 'EdgeData.xml'):
             self.path_edge_abs = pf.path2linux(Path(self.input_dir) / path_edge)
 
     def run_single_calibration(self, initial_solution: np.array, ical: str, remove_old_files: bool = True) -> tuple:
@@ -85,10 +87,10 @@ class SimulatedAnnealing:
 
         # analyze EdgeData.xml to get best solution
         best_flag, best_value, best_percent = result_analysis_on_EdgeData(self.df_summary,
+                                                                          self.path_edge_abs,
                                                                           self.scenario_config["calibration_target"],
                                                                           self.scenario_config["sim_start_time"],
-                                                                          self.scenario_config["sim_end_time"],
-                                                                          self.path_edge_abs)
+                                                                          self.scenario_config["sim_end_time"])
         return (best_flag, best_value, best_percent)
 
     def generate_neighbor(self, current_params, step_size=0.05):
@@ -106,7 +108,7 @@ class SimulatedAnnealing:
             return np.exp(-(neighbor_cost - current_cost) / temperature)
 
     @pf.func_running_time
-    def run_SA(self, *, init_solution: np.array = None, remove_old_files: bool = True) -> bool:
+    def run_calibration(self, *, init_solution: np.array = None, remove_old_files: bool = True) -> bool:
         """ Run the Simulated Annealing algorithm for finding the best solution from the given scenario """
 
         if self.verbose:
@@ -265,6 +267,6 @@ if __name__ == "__main__":
         # Add more configurations as needed
     }
 
-    sa = SimulatedAnnealing(sa_config, scenario_config, verbose=True)
-    sa.run_SA()
+    sa = SimulatedAnnealingForTurnFlow(sa_config, scenario_config, verbose=True)
+    sa.run_calibration()
     sa.run_vis()
