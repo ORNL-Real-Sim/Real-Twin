@@ -94,6 +94,7 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
     # print(f"  : algo_config: {algo_config}")
 
     # run calibration based on the selected algorithm: optimize turn and inflow
+    print("\n  :Optimize Turn and Inflow")
     turn_inflow = algo_turn_flow.get(sel_algo["turn_inflow"])(scenario_config_turn_inflow,
                                                               algo_config.get(sel_algo["turn_inflow"]),
                                                               verbose=verbose)
@@ -105,7 +106,7 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
     scenario_config_behavior = copy.deepcopy(scenario_config_turn_inflow)
     scenario_config_behavior["path_turn"] = f"{scenario_config_behavior.get("network_name")}.turn.xml"
     scenario_config_behavior["path_inflow"] = f"{scenario_config_behavior.get("network_name")}.flow.xml"
-
+    print("\n  :Optimize Behavior parameters based on the optimized turn and inflow")
     behavior = algo_behavior.get(sel_algo["behavior"])(scenario_config_behavior,
                                                        algo_config.get(sel_algo["behavior"]),
                                                        verbose=verbose)

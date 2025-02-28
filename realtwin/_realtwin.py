@@ -161,7 +161,10 @@ class REALTWIN:
     def generate_abstract_scenario(self, *, incl_elevation_tif: bool = True):
         """Generate the abstract scenario: create OpenDrive files
         """
-        if not os.path.exists(self.input_config.get("Network").get("ElevationMap")):
+        # check whether the elevation tif data is provided
+        path_elev = pf.path2linux(
+            Path(self.input_config.get("input_dir")) / self.input_config.get("Network").get("ElevationMap"))
+        if not os.path.exists(path_elev):
             print("  :Elevation map is not provided. we will download from network BBOX.")
             if incl_elevation_tif:
                 print("  :Downloading elevation map from network BBOX.")

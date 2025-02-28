@@ -56,7 +56,7 @@ if __name__ == '__main__':
     # perform calibration
     # keyword arguments can be passed to specify the calibration options
     # or change from internal and external configuration files
-    twin.calibrate(sel_algo={"turn_inflow": "TS", "behavior": "GA"})
+    twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "SA"})
 
     # post-process the simulation results
     twin.post_process()  # keywords arguments can be passed to specify the post-processing options

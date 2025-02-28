@@ -60,8 +60,8 @@ class SimulatedAnnealingForBehavioral:
         max_iteration = self.sa_config.get("max_iteration")
 
         # convert the initial parameters and ranges to numpy arrays
-        initial_parameters = self.ga_config.get("initial_params")
-        param_ranges = self.ga_config.get("params_ranges")
+        initial_parameters = self.sa_config.get("initial_params")
+        param_ranges = self.sa_config.get("params_ranges")
         if isinstance(initial_parameters, dict):
             initial_parameters = np.array(list(initial_parameters.values()))
         if isinstance(param_ranges, dict):
@@ -83,20 +83,25 @@ class SimulatedAnnealingForBehavioral:
         # print out current travel time values and original fitness value
         travel_time_EB_orig = get_travel_time_from_EdgeData_xml(self.path_edge_abs, EB_edge_list)
         travel_time_WB_orig = get_travel_time_from_EdgeData_xml(self.path_edge_abs, WB_edge_list)
-        print(" :Current travel time values: ", travel_time_EB_orig, travel_time_WB_orig)
+        print("  :Current travel time values: ", travel_time_EB_orig, travel_time_WB_orig)
 
         fitness_rmse = np.sqrt(0.5 * ((EB_tt - travel_time_EB_orig)**2 + (WB_tt - travel_time_WB_orig)**2))
-        print("  :Original fitness value: ", fitness_rmse)
+        print("  :fitness value: ", fitness_rmse)
 
         # print out the initial Mean GEH and GEH percent
+        # add the EB_tt, WB_tt, EB_edge_list, WB_edge_list to the scenario_config
+        self.scenario_config["EB_tt"] = EB_tt
+        self.scenario_config["WB_tt"] = WB_tt
+        self.scenario_config["EB_edge_list"] = EB_edge_list
+        self.scenario_config["WB_edge_list"] = WB_edge_list
         fitness_func(self.scenario_config, initial_parameters)
         _, mean_geh, geh_percent = result_analysis_on_EdgeData(path_summary,
                                                                path_EdgeData,
                                                                calibration_target,
                                                                sim_start_time,
                                                                sim_end_time)
-        print("  :Original Mean GEH: ", mean_geh)
-        print("  :Original GEH Percent: ", geh_percent)
+        print("  :Mean GEH: ", mean_geh)
+        print("  :GEH Percent: ", geh_percent)
 
         # Perform the simulated annealing algorithm
         current_params = initial_parameters
