@@ -7,7 +7,7 @@
 '''
 from pathlib import Path
 import pyufunc as pf
-import shutil
+import copy
 
 from realtwin.func_lib._f_calibration.algo_sumo.ga_turn_inflow import GeneticAlgorithmForTurnFlow
 from realtwin.func_lib._f_calibration.algo_sumo.sa_turn_inflow import SimulatedAnnealingForTurnFlow
@@ -21,32 +21,36 @@ from realtwin.func_lib._f_calibration.algo_sumo.ts_behavior import TabuSearchFor
 def prepare_scenario_config(input_config: dict) -> dict:
     """Prepare scenario_config from input_config"""
 
-    scenario_config = input_config.get("Calibration").get("scenario_config")
+    scenario_config_dict = input_config.get("Calibration").get("scenario_config")
 
-    # add input_dir to scenario_config from generated SUMO dir(scenario generation)
-    generated_sumo_dir = pf.path2linux(Path(input_config["output_dir"]) / "sumo")
+    # TODO : use dummy input dir for calibration in beta version, change in the future
+    # # add input_dir to scenario_config from generated SUMO dir(scenario generation)
+    # generated_sumo_dir = pf.path2linux(Path(input_config["output_dir"]) / "sumo")
+    generated_sumo_dir = pf.path2linux(Path(__file__).parents[4] / "datasets/input_dir_dummy/")
+    print(f"  :use dummy input dir: {generated_sumo_dir} for calibration in beta version")
 
     if Path(generated_sumo_dir).is_dir():
-        scenario_config["input_dir"] = generated_sumo_dir
+        scenario_config_dict["input_dir"] = generated_sumo_dir
     else:
         print(f"  :{generated_sumo_dir} is not a directory, pls run generate_concrete_scenario() first")
         return None
 
     # add network name to scenario_config and sim_name
-    scenario_config["network_name"] = input_config.get("Network").get("NetworkName")
-    scenario_config["sim_name"] = f"{input_config.get("Network").get("NetworkName")}_sumocfg"
+    scenario_config_dict["network_name"] = input_config.get("Network").get("NetworkName")
+    scenario_config_dict["sim_name"] = f"{input_config.get("Network").get("NetworkName")}.sumocfg"
 
-    # check whether required files exist in the input dir
-    required_files = {key: value for key, value in scenario_config.items() if key.startswith("path_")}
+    # TODO not copy generated files to generated_sumo_dir in beta version
+#     # check whether required files exist in the input dir
+#     required_files = {key: value for key, value in scenario_config_dict.items() if key.startswith("path_")}
+#
+#     if not pf.check_files_in_dir(required_files.values(), input_config.get("input_dir")):
+#         return None
+#
+#     # copy required files to generated_sumo_dir
+#     for key, file in required_files.items():
+#         shutil.copy(Path(input_config["input_dir"]) / file, generated_sumo_dir)
 
-    if not pf.check_files_in_dir(required_files.values(), input_config.get("input_dir")):
-        return None
-
-    # copy required files to generated_sumo_dir
-    for key, file in required_files.items():
-        shutil.copy(Path(input_config["input_dir"]) / file, generated_sumo_dir)
-
-    return scenario_config
+    return scenario_config_dict
 
 
 # for the beta version
@@ -65,7 +69,7 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
                     "behavior": "ga"}
 
     # Prepare scenario_config and algo_config from input_config
-    scenario_config = prepare_scenario_config(input_config)
+    scenario_config_turn_inflow = prepare_scenario_config(input_config)
 
     # Prepare Algorithm configure: e.g. {"ga": {}, "sa": {}, "ts": {}}
     algo_config = {selected_algo: input_config["Calibration"][f"{selected_algo}_config"]
@@ -86,30 +90,25 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
         "sa": SimulatedAnnealingForBehavioral,
         "ts": TabuSearchForBehavioral}
 
-    # run calibration based on the selected algorithm
-    turn_inflow = algo_turn_flow.get(sel_algo["turn_inflow"])(scenario_config,
+    # print(f"  : scenario_config: {scenario_config_turn_inflow}")
+    # print(f"  : algo_config: {algo_config}")
+
+    # run calibration based on the selected algorithm: optimize turn and inflow
+    turn_inflow = algo_turn_flow.get(sel_algo["turn_inflow"])(scenario_config_turn_inflow,
                                                               algo_config.get(sel_algo["turn_inflow"]),
                                                               verbose=verbose)
     turn_inflow.run_calibration()
     turn_inflow.run_vis()
 
-    behavior = algo_behavior.get(sel_algo["behavior"])(
-        scenario_config,
-        algo_config.get(sel_algo["behavior"]),
-        verbose=verbose)
+    # run calibration based on the selected algorithm: optimize behavior
+    # update path_turn and path_flow to generated xml files
+    scenario_config_behavior = copy.deepcopy(scenario_config_turn_inflow)
+    scenario_config_behavior["path_turn"] = f"{scenario_config_behavior.get("network_name")}.turn.xml"
+    scenario_config_behavior["path_inflow"] = f"{scenario_config_behavior.get("network_name")}.flow.xml"
+
+    behavior = algo_behavior.get(sel_algo["behavior"])(scenario_config_behavior,
+                                                       algo_config.get(sel_algo["behavior"]),
+                                                       verbose=verbose)
     behavior.run_calibration()
     behavior.run_vis()
     return True
-
-
-# TODO Calibrate Turn and Inflow, Behavioral Parameters using different algorithms with control
-def sumo_cali_ga():
-    pass
-
-
-def sumo_cali_sa():
-    pass
-
-
-def sumo_cali_ts():
-    pass

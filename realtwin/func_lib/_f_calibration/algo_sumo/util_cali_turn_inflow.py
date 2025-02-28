@@ -8,6 +8,7 @@
 
 import os
 import sys
+from pathlib import Path
 import xml.etree.ElementTree as ET
 import shutil
 import subprocess
@@ -18,6 +19,8 @@ import pyufunc as pf
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
+    sys.path = list(set(sys.path))  # remove duplicates
+
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 
@@ -210,12 +213,9 @@ def create_rou_turn_flow_xml(network_name: str, sim_start_time: float, sim_end_t
 
     # Generate the route file using jtrrouter
     # Build the command (adjust if necessary for your platform)
-    path_net = pf.path2linux(os.path.join(
-        input_dir, f"{network_name}.net.xml"))
-    path_rou = pf.path2linux(os.path.join(
-        input_dir, f"{network_name}.rou.xml"))
-    path_temp_rou = pf.path2linux(os.path.join(
-        temp_route, f"{network_name}{ical}.rou.xml"))
+    path_net = pf.path2linux(os.path.join(input_dir, f"{network_name}.net.xml"))
+    path_rou = pf.path2linux(os.path.join(input_dir, f"{network_name}.rou.xml"))
+    path_temp_rou = pf.path2linux(os.path.join(temp_route, f"{network_name}{ical}.rou.xml"))
 
     cmd = (
         f'cmd /c "jtrrouter -r {inflow_xml_path} -t {turn_xml_path} '
@@ -224,6 +224,10 @@ def create_rou_turn_flow_xml(network_name: str, sim_start_time: float, sim_end_t
     )
     process = subprocess.Popen(cmd, shell=True)
     process.wait()
+
+    # check if the route file is generated successfully
+    if not Path(path_temp_rou).is_file():
+        raise FileNotFoundError(f"  :Error: {path_temp_rou} is not generated successfully")
 
     # Copy the generated route file to the desired location
     shutil.copy(path_temp_rou, path_rou)

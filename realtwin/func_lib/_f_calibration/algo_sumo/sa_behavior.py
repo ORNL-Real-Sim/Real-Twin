@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyufunc as pf
 
-from realtwin.func_lib._f_calibration.algo_sumo.utils_cali_behavior import (
+from realtwin.func_lib._f_calibration.algo_sumo.util_cali_behavior import (
     fitness_func,
     get_travel_time_from_EdgeData_xml,
     update_flow_xml_from_solution,
@@ -25,6 +25,8 @@ from realtwin.func_lib._f_calibration.algo_sumo.utils_cali_behavior import (
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
+    sys.path = list(set(sys.path))  # remove duplicates
+
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 
@@ -51,12 +53,15 @@ class SimulatedAnnealingForBehavioral:
 
     def run_calibration(self) -> bool:
 
+        if self.verbose:
+            print("\n  :Simulated Annealing algorithm is running...")
+
         init_temperature = self.sa_config.get("init_temperature", 100)
         max_iteration = self.sa_config.get("max_iteration")
 
         # convert the initial parameters and ranges to numpy arrays
-        initial_parameters = self.sa_config.get("initial_parameters")
-        param_ranges = self.sa_config.get("param_ranges")
+        initial_parameters = self.ga_config.get("initial_params")
+        param_ranges = self.ga_config.get("params_ranges")
         if isinstance(initial_parameters, dict):
             initial_parameters = np.array(list(initial_parameters.values()))
         if isinstance(param_ranges, dict):
@@ -73,7 +78,7 @@ class SimulatedAnnealingForBehavioral:
         sim_end_time = self.scenario_config.get("sim_end_time")
 
         path_summary = pf.path2linux(Path(self.input_dir) / self.scenario_config.get("path_summary"))
-        path_EdgeData = pf.path2linux(Path(self.input_dir) / self.scenario_config.get("path_edge"))
+        path_EdgeData = pf.path2linux(Path(self.input_dir) / self.scenario_config.get("path_edge", "EdgeData.xml"))
 
         # print out current travel time values and original fitness value
         travel_time_EB_orig = get_travel_time_from_EdgeData_xml(self.path_edge_abs, EB_edge_list)
@@ -208,9 +213,6 @@ if __name__ == "__main__":
         "calibration_target": {'GEH': 5, 'GEHPercent': 0.85},
         "calibration_interval": 60,
         "demand_interval": 15,
-        "lower_bound": 0,   # For Tabu search only
-        "upper_bound": 1,
-
     }
 
     sa = SimulatedAnnealingForBehavioral(sa_config, scenario_config)

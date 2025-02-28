@@ -8,6 +8,30 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-02-28
+
+#### Open Discussion
+
+1. Calibration section, the current implementation is:
+   Step 1: optimize Turn and Inflow, based on the optimized results(net, turn, flow, EdgeData, ect...)
+
+   Step 2: perform Behavior optimization to generate results
+
+   My question is: how can we make sure that we obtained the best reslution? Will step 2 change best results from step 1?
+
+   As this is multi-objective optimization problem, if it's possible to perform turn and inflow optimization as objective 1, behavior optimization as objective 2 and optimize best results then?
+2. Calibration fail on generated netwrokOne issue is that the generated network (abstract -> concreate -> simulation generation)  failed in calibration (I noticed that calibration section requires modified data and the generated network, such as chatt.net.xml, could not run in current stage). The generated network does not have additional files such as turn.xlsm, flow.xlsm, summary.csv ect...
+
+   In this regard, we have to separate between part 1: (abstract -> concrete -> simulation preparation) and part 2: Calibration section.  Current implementation(TODO):  We can generate the network from part 2, but on part 2, we will use default data (not generated network) to calibrate results.  Any feedback?
+
+Calibration integrated into realtwin package![1740770056567](image/README/1740770056567.png)
+
+#### TODO
+
+refactor codes
+
+clean up unnecessary inputs / configs
+
 ### 2025-02-27
 
 #### Discussion

@@ -85,10 +85,10 @@ def load_input_config(path_config: str) -> dict:
 
     # update network bbox if vertices are provided in the input configuration file
     if vertices := config.get('Network', {}).get('NetworkVertices'):
-        bbox = config.get('Network', {}).get('Net_BoundingBox')
+        bbox = config.get('Network', {}).get('Net_BBox')
 
         # update the bounding box if it is not provided
         if not bbox:
-            config['Network']['Net_BoundingBox'] = get_bounding_box_from(vertices)
+            config['Network']['Net_BBox'] = get_bounding_box_from(vertices)
 
     return config

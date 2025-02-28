@@ -13,7 +13,7 @@ import numpy as np
 import pyufunc as pf
 import matplotlib.pyplot as plt
 
-from realtwin.func_lib._f_calibration.algo_sumo.utils_cali_behavior import (
+from realtwin.func_lib._f_calibration.algo_sumo.util_cali_behavior import (
     fitness_func,
     get_travel_time_from_EdgeData_xml,
     update_flow_xml_from_solution,
@@ -23,6 +23,8 @@ from realtwin.func_lib._f_calibration.algo_sumo.utils_cali_behavior import (
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
+    sys.path = list(set(sys.path))  # remove duplicates
+
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 import time
@@ -70,11 +72,14 @@ class TabuSearchForBehavioral:
 
     def run_calibration(self):
 
+        if self.verbose:
+            print("\n  :Tabu Search is running...")
+
         max_iteration = self.ts_config.get("max_iteration")
 
         # convert the initial parameters and ranges to numpy arrays
-        initial_parameters = self.ts_config.get("initial_parameters")
-        param_ranges = self.ts_config.get("param_ranges")
+        initial_parameters = self.ga_config.get("initial_params")
+        param_ranges = self.ga_config.get("params_ranges")
         if isinstance(initial_parameters, dict):
             initial_parameters = np.array(list(initial_parameters.values()))
         if isinstance(param_ranges, dict):

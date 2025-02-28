@@ -45,7 +45,7 @@ if __name__ == '__main__':
     # twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir, sumo_version="1.21.0", strict_sumo_version=True)
 
     # generate abstract scenario
-    twin.generate_abstract_scenario()
+    twin.generate_abstract_scenario(incl_elevation_tif=True)
 
     # generate scenarios
     twin.generate_concrete_scenario()
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     # perform calibration
     # keyword arguments can be passed to specify the calibration options
     # or change from internal and external configuration files
-    twin.calibrate()
+    twin.calibrate(sel_algo={"turn_inflow": "TS", "behavior": "GA"})
 
     # post-process the simulation results
     twin.post_process()  # keywords arguments can be passed to specify the post-processing options

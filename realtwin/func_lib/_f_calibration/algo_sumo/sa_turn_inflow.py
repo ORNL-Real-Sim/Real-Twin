@@ -18,6 +18,8 @@ import matplotlib.pyplot as plt
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
+    sys.path = list(set(sys.path))  # remove duplicates
+
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 import time
@@ -195,8 +197,8 @@ class SimulatedAnnealingForTurnFlow:
             #     current_cost = neighbor_cost
 
             temperature *= cooling_rate
-            print(f'  :Calibration iteration {ical}:')
-            print(f'current best GEH is {current_cost}, '
+            print(f'  :Calibrate iteration {ical}:')
+            print(f'  :current best GEH is {current_cost}, '
                   f'best GEH to date is {best_value}')
             print(f"  :Current calibration time is {time.time() - calibration_start_time} sec.")
             self.best_values_over_time.append(best_value)
@@ -209,6 +211,9 @@ class SimulatedAnnealingForTurnFlow:
         shutil.copy(temp_rou_best, pf.path2linux(Path(self.output_dir) / f"{network_name}.rou.xml"))
         shutil.copy(temp_flow_best, pf.path2linux(Path(self.output_dir) / f"{network_name}.flow.xml"))
         shutil.copy(temp_turn_best, pf.path2linux(Path(self.output_dir) / f"{network_name}.turn.xml"))
+        shutil.copy(temp_rou_best, pf.path2linux(Path(self.input_dir) / f"{network_name}.rou.xml"))
+        shutil.copy(temp_flow_best, pf.path2linux(Path(self.input_dir) / f"{network_name}.flow.xml"))
+        shutil.copy(temp_turn_best, pf.path2linux(Path(self.input_dir) / f"{network_name}.turn.xml"))
 
         if remove_old_files:
             # delete temp route folder

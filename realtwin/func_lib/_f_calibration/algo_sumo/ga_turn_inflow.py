@@ -11,6 +11,7 @@ import pyufunc as pf
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
+    sys.path = list(set(sys.path))  # remove duplicates
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 
@@ -19,6 +20,12 @@ from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (
     create_rou_turn_flow_xml,  # step 2: create rou.xml file
     run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
     result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
+
+# from util_cali_turn_inflow import (
+#     update_turn_flow_from_solution,  # step 1: update turning ratios and inflow counts
+#     create_rou_turn_flow_xml,  # step 2: create rou.xml file
+#     run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
+#     result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
 
 
 class GeneticAlgorithmForTurnFlow:
@@ -67,6 +74,7 @@ class GeneticAlgorithmForTurnFlow:
         os.makedirs(self.output_dir, exist_ok=True)
 
         # change the current working directory to the input dir
+        # this will allow sumocfg and net, rou files to be found by SUMO using Traci
         os.chdir(self.input_dir)
 
         # initialize dataframes from the scenario config
@@ -120,7 +128,7 @@ class GeneticAlgorithmForTurnFlow:
         """ Run the Genetic Algorithm for finding the best solution for the given scenario. """
 
         if self.verbose:
-            print("  :Running Genetic Algorithm...")
+            print("\n  :Running Genetic Algorithm...")
 
         # get parameters from the config
         population_size = self.ga_config.get("population_size")
@@ -146,7 +154,7 @@ class GeneticAlgorithmForTurnFlow:
         # Evolution loop
         calibration_start_time = time.time()
         for generation in range(num_generations):
-            print(f'  :Calibration iteration {generation}')
+            print(f'  :Calibrate generation {generation}')
             # Evaluate fitness
             fitness = np.zeros(population_size)
             for i in range(population_size):
@@ -239,16 +247,21 @@ class GeneticAlgorithmForTurnFlow:
         path_best_solution = pf.path2linux(Path(self.output_dir) / 'GEH_best_solution.txt')
         np.savetxt(path_best_solution, best_solution_final, fmt='%.4f')
 
-        # delete the temp route folder
+        # copy the temp files to the input dir for future calibration\
         path_temp_route = pf.path2linux(Path(self.output_dir) / 'temp_route')
         temp_rou = pf.path2linux(Path(path_temp_route) / f"{network_name}{ical}.rou.xml")
         temp_flow = pf.path2linux(Path(path_temp_route) / f"{network_name}{ical}.flow.xml")
         temp_turn = pf.path2linux(Path(path_temp_route) / f"{network_name}{ical}.turn.xml")
 
+        shutil.copy(temp_rou, pf.path2linux(Path(self.input_dir) / f"{network_name}.rou.xml"))
+        shutil.copy(temp_flow, pf.path2linux(Path(self.input_dir) / f"{network_name}.flow.xml"))
+        shutil.copy(temp_turn, pf.path2linux(Path(self.input_dir) / f"{network_name}.turn.xml"))
         shutil.copy(temp_rou, pf.path2linux(Path(self.output_dir) / f"{network_name}.rou.xml"))
         shutil.copy(temp_flow, pf.path2linux(Path(self.output_dir) / f"{network_name}.flow.xml"))
         shutil.copy(temp_turn, pf.path2linux(Path(self.output_dir) / f"{network_name}.turn.xml"))
+
         if remove_old_files:
+            # delete the temp route folder
             path_temp_route = pf.path2linux(os.path.join(self.input_dir, 'genetic_algorithm_result/temp_route'))
             shutil.rmtree(path_temp_route)
 
@@ -283,7 +296,7 @@ if __name__ == "__main__":
     }
 
     scenario_config = {
-        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin\datasets\chattanooga\output\SUMO",
+        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin\datasets\input_dir_dummy",
         "network_name": "chatt",
         "sim_name": "chatt.sumocfg",
         "sim_start_time": 28800,
@@ -299,6 +312,6 @@ if __name__ == "__main__":
         # "upper_bound": 1,
     }
 
-    ga = GeneticAlgorithmForTurnFlow(ga_config, scenario_config)
+    ga = GeneticAlgorithmForTurnFlow(scenario_config, ga_config)
     ga.run_calibration(remove_old_files=True)
     ga.run_vis()

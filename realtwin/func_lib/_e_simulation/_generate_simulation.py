@@ -54,7 +54,7 @@ class SimPrep:
                                     end_time,
                                     seed,
                                     step_length)
-        print("  :SUMO simulation is prepared.")
+        # print("  :SUMO simulation is prepared.")
 
     def create_aimsun_sim(self, ConcreteScn, start_time, end_time):
         """Prepare Aimsun documents for simulation."""

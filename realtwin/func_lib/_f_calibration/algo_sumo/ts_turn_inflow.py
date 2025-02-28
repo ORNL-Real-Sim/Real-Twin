@@ -18,6 +18,8 @@ import matplotlib.pyplot as plt
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
     sys.path.append(tools)
+    sys.path = list(set(sys.path))  # remove duplicates
+
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 import time
@@ -157,7 +159,7 @@ class TabuSearchForTurnFlow:
         best_solution = initial_solution.copy()
 
         for each_iter in range(iterations):
-            print(f'Calibration iteration {each_iter}:')
+            print(f'Calibrate iteration {each_iter}:')
             flag_move = 0
             iloc = 0
             while (flag_move == 0 and iloc < max_no_improvement_local):
@@ -276,10 +278,14 @@ class TabuSearchForTurnFlow:
         path_best_solution = pf.path2linux(Path(self.output_dir) / 'GEH_best_solution.txt')
         np.savetxt(path_best_solution, best_solution, fmt='%.4f')
 
-        # copy best rou.xml, flow.xml, turn.xml to output dir
+        # copy best rou.xml, flow.xml, turn.xml to output dir, input dir for future use
         shutil.copy(temp_rou_best, pf.path2linux(Path(self.output_dir) / f"{network_name}.rou.xml"))
         shutil.copy(temp_flow_best, pf.path2linux(Path(self.output_dir) / f"{network_name}.flow.xml"))
         shutil.copy(temp_turn_best, pf.path2linux(Path(self.output_dir) / f"{network_name}.turn.xml"))
+        shutil.copy(temp_rou_best, pf.path2linux(Path(self.input_dir) / f"{network_name}.rou.xml"))
+        shutil.copy(temp_flow_best, pf.path2linux(Path(self.input_dir) / f"{network_name}.flow.xml"))
+        shutil.copy(temp_turn_best, pf.path2linux(Path(self.input_dir) / f"{network_name}.turn.xml"))
+
         if remove_old_files:
             # delete temp route folder
             path_temp_route = pf.path2linux(Path(self.output_dir) / 'temp_route')

@@ -15,6 +15,14 @@ import pandas as pd
 import numpy as np
 import pyufunc as pf
 
+if 'SUMO_HOME' in os.environ:
+    tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
+    sys.path.append(tools)
+    sys.path = list(set(sys.path))  # remove duplicates
+
+else:
+    sys.exit("please declare environment variable 'SUMO_HOME'")
+
 
 def get_travel_time_from_EdgeData_xml(path_EdgeData: str, edge_ids: list) -> float:
     """
@@ -199,8 +207,7 @@ def result_analysis_on_EdgeData(path_summary: str,
     edge_df = pd.DataFrame(edge_data)
 
     # 3. Ensure matching key types and merge data
-    approach_summary['entrance_sumo'] = approach_summary['entrance_sumo'].astype(
-        int)
+    approach_summary['entrance_sumo'] = approach_summary['entrance_sumo'].astype(int)
     edge_df['id'] = edge_df['id'].astype(int)
     merged = approach_summary.merge(edge_df,
                                     left_on='entrance_sumo',

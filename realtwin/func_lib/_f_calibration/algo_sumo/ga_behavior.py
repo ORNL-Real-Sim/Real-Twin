@@ -15,9 +15,9 @@ import pyufunc as pf
 import matplotlib.pyplot as plt
 import pygad
 import subprocess
-from functools import partial
+import copy
 
-from realtwin.func_lib._f_calibration.algo_sumo.utils_cali_behavior import (
+from realtwin.func_lib._f_calibration.algo_sumo.util_cali_behavior import (
     fitness_func,
     get_travel_time_from_EdgeData_xml,
     update_flow_xml_from_solution,
@@ -48,7 +48,7 @@ def on_generation(ga_instance):
         ga_instance.mutation_probability = 0.01
 
 
-def fitness_func_tt(ept_, solution: list | np.ndarray, solution_idx: int, scenario_config: dict):
+def fitness_func_gad(ept_, solution: list | np.ndarray, solution_idx: int, scenario_config: dict):
     # Set up SUMO command with car-following parameters
     if solution[5] >= 9.3:  # emergencyDecel
         solution[5] = 9.3
@@ -113,15 +113,18 @@ class GeneticAlgorithmForBehavioral:
 
     def run_calibration(self) -> bool:
 
+        if self.verbose:
+            print("\n  :Running Genetic Algorithm...")
+
         # convert the initial parameters and ranges to numpy arrays
-        initial_parameters = self.ga_config.get("initial_parameters")
-        param_ranges = self.ga_config.get("param_ranges")
+        initial_parameters = self.ga_config.get("initial_params")
+        param_ranges = self.ga_config.get("params_ranges")
         if isinstance(initial_parameters, dict):
             initial_parameters = np.array(list(initial_parameters.values()))
         if isinstance(param_ranges, dict):
             param_ranges = np.array(list(param_ranges.values()))
 
-        EB_edge_list = self.gs_config.get("EB_edge_list")
+        EB_edge_list = self.ga_config.get("EB_edge_list")
         WB_edge_list = self.ga_config.get("WB_edge_list")
         EB_tt = self.ga_config.get("EB_tt")
         WB_tt = self.ga_config.get("WB_tt")
@@ -139,7 +142,7 @@ class GeneticAlgorithmForBehavioral:
         path_summary = pf.path2linux(
             Path(self.input_dir) / self.scenario_config.get("path_summary"))
         path_EdgeData = pf.path2linux(
-            Path(self.input_dir) / self.scenario_config.get("path_edge"))
+            Path(self.input_dir) / self.scenario_config.get("path_edge", "EdgeData.xml"))
 
         # update the rou xml file
         run_jtrrouter_to_create_rou_xml(network_name, path_net, path_flow, path_turn, path_rou)
@@ -147,27 +150,32 @@ class GeneticAlgorithmForBehavioral:
         # print out current travel time values and original fitness value
         travel_time_EB_orig = get_travel_time_from_EdgeData_xml(self.path_edge_abs, EB_edge_list)
         travel_time_WB_orig = get_travel_time_from_EdgeData_xml(self.path_edge_abs, WB_edge_list)
-        print(" :Current travel time values: ", travel_time_EB_orig, travel_time_WB_orig)
+        print("  :Current travel time values: ", travel_time_EB_orig, travel_time_WB_orig)
 
         fitness_rmse = np.sqrt(0.5 * ((EB_tt - travel_time_EB_orig)**2 + (WB_tt - travel_time_WB_orig)**2))
-        print("  :Original fitness value: ", fitness_rmse)
+        print("  :fitness value: ", fitness_rmse)
 
         # print out the initial Mean GEH and GEH percent
+        # add the EB_tt, WB_tt, EB_edge_list, WB_edge_list to the scenario_config
+        self.scenario_config["EB_tt"] = EB_tt
+        self.scenario_config["WB_tt"] = WB_tt
+        self.scenario_config["EB_edge_list"] = EB_edge_list
+        self.scenario_config["WB_edge_list"] = WB_edge_list
         fitness_func(self.scenario_config, initial_parameters)
         _, mean_geh, geh_percent = result_analysis_on_EdgeData(path_summary,
                                                                path_EdgeData,
                                                                calibration_target,
                                                                sim_start_time,
                                                                sim_end_time)
-        print("  :Original Mean GEH: ", mean_geh)
-        print("  :Original GEH Percent: ", geh_percent)
+        print("  :Mean GEH: ", mean_geh)
+        print("  :GEH Percent: ", geh_percent)
 
         # Perform the genetic algorithm
         # Genetic Algorithm configuration
         # Create a partial function where param1 and param2 are preset.
-        ga_instance = pygad.GA(num_generations=50,
+        ga_instance = pygad.GA(num_generations=self.ga_config.get("num_generations", 50),
                                num_parents_mating=3,
-                               fitness_func=lambda _, sol, idx: fitness_func_tt(_, sol, idx, self.scenario_config),
+                               fitness_func=lambda _, sol, idx: fitness_func_gad(_, sol, idx, self.scenario_config),
                                sol_per_pop=20,
                                num_genes=18,
                                crossover_type="single_point",
@@ -184,7 +192,10 @@ class GeneticAlgorithmForBehavioral:
                                keep_parents=1,
                                mutation_by_replacement=True,
                                parent_selection_type="tournament",
-                               on_generation=on_generation)
+                               on_generation=on_generation,
+                               #  parallel_processing=os.cpu_count() - 1,  # unable to run in parallel
+                               random_seed=812,
+                               )
         # Run the GA
         ga_instance.run()
         ga_instance.plot_fitness()
@@ -198,7 +209,7 @@ class GeneticAlgorithmForBehavioral:
               f"emergencyDecel: {solution[5]}, Fitness: {solution_fitness}")
 
         best_fit_parameters = solution
-        fitness_func(best_fit_parameters)
+        fitness_func(self.scenario_config, best_fit_parameters)
         _, mean_geh, geh_percent = result_analysis_on_EdgeData(path_summary,
                                                                path_EdgeData,
                                                                calibration_target,

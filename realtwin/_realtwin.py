@@ -12,6 +12,8 @@
 
 """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group"""
 import os
+from pathlib import Path
+import pyufunc as pf
 
 # environment setup
 from realtwin.utils_lib.create_venv import venv_create, venv_delete
@@ -21,6 +23,7 @@ from realtwin.func_lib._a_install_simulator.inst_sumo import install_sumo
 from realtwin.func_lib._b_load_inputs.loader_config import load_input_config
 
 # scenario generation
+from realtwin.utils_lib.download_elevation_tif import download_elevation_tif_by
 from realtwin.func_lib._c_abstract_scenario._abstractScenario import AbstractScenario
 from realtwin.func_lib._d_concrete_scenario._concreteScenario import ConcreteScenario
 
@@ -155,9 +158,21 @@ class REALTWIN:
                 self.sel_sim.remove(simulator)
                 print(f"  :Could not install {simulator} on your operation system \n")
 
-    def generate_abstract_scenario(self):
+    def generate_abstract_scenario(self, *, incl_elevation_tif: bool = True):
         """Generate the abstract scenario: create OpenDrive files
         """
+        if not os.path.exists(self.input_config.get("Network").get("ElevationMap")):
+            print("  :Elevation map is not provided. we will download from network BBOX.")
+            if incl_elevation_tif:
+                print("  :Downloading elevation map from network BBOX.")
+                # download elevation map from network bbox
+                bbox = self.input_config.get("Network").get("Net_BBox")
+                output_file = pf.path2linux(Path(self.input_config.get("input_dir")) / "elevation_map.tif")
+                download_elevation_tif_by(bbox, output_file)
+
+                # update tif file in the input configuration
+                self.input_config.get("Network")["ElevationMap"] = "elevation_map.tif"
+
         # 1. Generate the abstract scenario based on the input data
         self.abstract_scenario = AbstractScenario(self.input_config)
         self.abstract_scenario.update_AbstractScenario_from_input()
@@ -229,7 +244,7 @@ class REALTWIN:
                                     end_time=end_time,
                                     seed=seed,
                                     step_length=step_length)
-            print(f"  :{simulator.upper()} simulation successfully completed.")
+            print(f"  :{simulator.upper()} simulation successfully Prepared.")
 
     def calibrate(self, *, sel_algo: dict = None):
         """Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.
@@ -241,6 +256,7 @@ class REALTWIN:
 
         """
         # TDD
+        print()
         if sel_algo is None:  # default to genetic algorithm
             sel_algo = {"turn_inflow": "ga",
                         "behavior": "ga"}
@@ -254,12 +270,13 @@ class REALTWIN:
 
         # check if the selected algorithm is supported within the package
         # convert the algorithm to lower case
-        if algo := sel_algo["turn_inflow"].lower() not in ["ga", "sa", "ts"]:
+        sel_algo = {key: value.lower() for key, value in sel_algo.items()}
+        if algo := sel_algo["turn_inflow"] not in ["ga", "sa", "ts"]:
             print(f"  :Selected algorithms are {sel_algo}")
             print(f"  :{algo} for turn and inflow calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
             return
 
-        if algo := sel_algo["behavior"].lower() not in ["ga", "sa", "ts"]:
+        if algo := sel_algo["behavior"] not in ["ga", "sa", "ts"]:
             print(f"  :Selected algorithms are {sel_algo}")
             print(f"  :{algo} for behavior calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
             return

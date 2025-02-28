@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2025-02-27 16:20:40 by Eclipse SUMO netconvert Version 1.21.0
+<!-- generated on 2025-02-28 14:16:05 by Eclipse SUMO netconvert Version 1.21.0
 <netconvertConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
 
     <input>
@@ -32,7 +32,7 @@
 -->
 
 <OpenDRIVE>
-    <header revMajor="1" revMinor="4" name="" version="1.00" date="Thu Feb 27 16:20:40 2025" north="919.81" south="0.00" east="1377.14" west="0.00">
+    <header revMajor="1" revMinor="4" name="" version="1.00" date="Fri Feb 28 14:16:05 2025" north="919.81" south="0.00" east="1377.14" west="0.00">
         <geoReference>
  <![CDATA[
  +proj=utm +zone=16 +ellps=WGS84 +datum=WGS84 +units=m +no_defs
