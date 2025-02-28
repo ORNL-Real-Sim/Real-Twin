@@ -28,9 +28,8 @@ Calibration integrated into realtwin package![1740770056567](image/README/174077
 
 #### TODO
 
-refactor codes
-
-clean up unnecessary inputs / configs
+* refactor codes
+* clean up unnecessary inputs / configs
 
 ### 2025-02-27
 
