@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2025-02-28 15:26:59 by Eclipse SUMO jtrrouter Version 1.21.0
+<!-- generated on 2025-03-03 16:36:20 by Eclipse SUMO jtrrouter Version 1.21.0
 <jtrrouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/jtrrouterConfiguration.xsd">
 
     <input>
@@ -26,7 +26,7 @@
 -->
 
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
-    <vType id="car" minGap="2.50" accel="2.6" decel="4.5" emergencyDecel="9.0" sigma="0.5" tau="1.0"/>
+    <vType id="car" minGap="2.97" accel="2.5702459588129667" decel="5.080152464783181" emergencyDecel="7.279857914910544" sigma="0.6992504010956355" tau="1.1452727567708436"/>
     <vehicle id="1.0" type="car" depart="28800.00">
         <route edges="-309 -296"/>
     </vehicle>
