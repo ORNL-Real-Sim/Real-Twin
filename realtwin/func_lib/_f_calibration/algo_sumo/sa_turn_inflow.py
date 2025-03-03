@@ -37,6 +37,7 @@ class SimulatedAnnealingForTurnFlow:
     """ Simulated Annealing algorithm for running the simulator """
 
     def __init__(self, scenario_config: dict, sa_config: dict, verbose: bool = False):
+        """ Initialize the Simulated Annealing algorithm with the given scenario and SA configurations """
         self.sa_config = sa_config
         self.scenario_config = scenario_config
         self.verbose = verbose
@@ -104,10 +105,11 @@ class SimulatedAnnealingForTurnFlow:
         return neighbor
 
     def acceptance_probability(self, current_cost, neighbor_cost, temperature):
+        """ Calculate the acceptance probability for the neighbor solution """
         if neighbor_cost < current_cost:
             return 1.0
-        else:
-            return np.exp(-(neighbor_cost - current_cost) / temperature)
+
+        return np.exp(-(neighbor_cost - current_cost) / temperature)
 
     @pf.func_running_time
     def run_calibration(self, *, init_solution: np.array = None, remove_old_files: bool = True) -> bool:
@@ -122,15 +124,15 @@ class SimulatedAnnealingForTurnFlow:
         # get parameters from config
         num_turning_ratio = self.sa_config.get("num_turning_ratio")
         ubc = self.sa_config.get("ubc")
-        cost_difference = self.sa_config.get("cost_difference")
-        accept_prob = self.sa_config.get("accept_prob")
+        # cost_difference = self.sa_config.get("cost_difference")
+        # accept_prob = self.sa_config.get("accept_prob")
         initial_temperature = self.sa_config.get("initial_temperature")
         # initial_temperature = -cost_difference/(math.log(accept_prob))  #2.885
         cooling_rate = self.sa_config.get("cooling_rate")
         stopping_temperature = self.sa_config.get("stopping_temperature")
-        max_iteration = self.sa_config.get("max_iteration")
-        lower_bound = self.sa_config.get("lower_bound")
-        upper_bound = self.sa_config.get("upper_bound")
+        # max_iteration = self.sa_config.get("max_iteration")
+        # lower_bound = self.sa_config.get("lower_bound")
+        # upper_bound = self.sa_config.get("upper_bound")
 
         network_name = self.scenario_config.get("network_name")
         ical = 1
@@ -172,7 +174,7 @@ class SimulatedAnnealingForTurnFlow:
                 current_cost = neighbor_cost
                 if neighbor_cost < best_value:
                     # update best_solution if best solution is found
-                    best_solution, best_value = neighbor, neighbor_cost
+                    _, best_value = neighbor, neighbor_cost
 
                     # Save best solution to temp files
                     temp_rou_best = pf.path2linux(Path(path_temp) / f"{network_name}_best.rou.xml")

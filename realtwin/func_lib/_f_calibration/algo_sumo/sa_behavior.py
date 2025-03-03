@@ -8,7 +8,7 @@
 
 import os
 import sys
-import xml.etree.ElementTree as ET
+# import xml.etree.ElementTree as ET
 from pathlib import Path
 import random
 import numpy as np
@@ -18,8 +18,8 @@ import pyufunc as pf
 from realtwin.func_lib._f_calibration.algo_sumo.util_cali_behavior import (
     fitness_func,
     get_travel_time_from_EdgeData_xml,
-    update_flow_xml_from_solution,
-    run_jtrrouter_to_create_rou_xml,
+    # update_flow_xml_from_solution,
+    # run_jtrrouter_to_create_rou_xml,
     result_analysis_on_EdgeData,)
 
 if 'SUMO_HOME' in os.environ:

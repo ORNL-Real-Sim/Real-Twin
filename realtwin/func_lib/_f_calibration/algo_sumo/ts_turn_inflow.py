@@ -37,6 +37,7 @@ class TabuSearchForTurnFlow:
     """Tabu search algorithm for calibration"""
 
     def __init__(self, scenario_config: dict, ts_config: dict, verbose: bool = True):
+        """ Initialize the Tabu Search algorithm for calibration"""
         self.ts_config = ts_config
         self.scenario_config = scenario_config
         self.verbose = verbose
@@ -63,6 +64,7 @@ class TabuSearchForTurnFlow:
             self.path_edge_abs = pf.path2linux(Path(self.input_dir) / path_edge)
 
     def is_close_to_tabu(self, solution, tabu_list: list, Np, threshold_p: float, threshold_c: float) -> int:
+        """ Check if the solution is close to any tabu solution in the tabu list """
         flag_p = 0
         flag_c = 0
         for tabu_solution in tabu_list:
@@ -146,8 +148,8 @@ class TabuSearchForTurnFlow:
         network_name = self.scenario_config.get("network_name")
 
         # get the best solution from the first run
-        best_flag, best_value, best_percent = self.run_single_calibration(initial_solution, "_init", True)
-        print('Initial mean GEH is {}.'.format(best_value))
+        _, best_value, _ = self.run_single_calibration(initial_solution, "_init", True)
+        print(f'Initial mean GEH is {best_value}.')
 
         # collect the best solution
         tabu_list = [initial_solution.tolist()]
@@ -191,9 +193,9 @@ class TabuSearchForTurnFlow:
                         #     break
 
                     ical = f'{each_iter}_{neighbor}'
-                    neighbor_flag, neighbor_value, neighbor_pct = self.run_single_calibration(neighborhood,
-                                                                                              ical,
-                                                                                              remove_old_files=False)
+                    _, neighbor_value, _ = self.run_single_calibration(neighborhood,
+                                                                       ical,
+                                                                       remove_old_files=False)
 
                     print(f'  :Neighbor {neighbor}: mean GEH is {neighbor_value}.')
 
@@ -259,13 +261,12 @@ class TabuSearchForTurnFlow:
                                     self.scenario_config.get("sim_end_time"))
 
             # analyze EdgeData.xml to get best solution
-            flag, meanGEH, GEH_percent = result_analysis_on_EdgeData(
+            flag, _, GEH_percent = result_analysis_on_EdgeData(
                 self.df_summary,
                 self.path_edge_abs,
                 self.scenario_config["calibration_target"],
                 self.scenario_config["sim_start_time"],
-                self.scenario_config["sim_end_time"],
-                )
+                self.scenario_config["sim_end_time"],)
             print(f"  :In final results, {int(GEH_percent * 10000) / 100} percent GEH is lower than 5.")
 
             if flag:
@@ -293,9 +294,10 @@ class TabuSearchForTurnFlow:
         return True
 
     def run_vis(self) -> bool:
+        """ Plot the GEH summary of the calibration process """
         if not hasattr(self, 'GEH_summary'):
             print("No GEH summary found. Please run the calibration first.")
-            return
+            return False
 
         df = pd.DataFrame(self.GEH_summary).T
         df.columns = np.arange(1, len(self.GEH_summary) + 1).tolist()

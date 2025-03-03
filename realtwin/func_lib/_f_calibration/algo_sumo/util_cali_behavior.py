@@ -51,12 +51,7 @@ def get_travel_time_from_EdgeData_xml(path_EdgeData: str, edge_ids: list) -> flo
 
 
 def update_flow_xml_from_solution(path_flow: str, solution: list | np.ndarray) -> bool:
-    # min_gap = solution["min_gap"]
-    # accel = solution["acceleration"]  # Example parameters to optimize
-    # decel = solution["deceleration"]
-    # sigma = solution["sigma"]
-    # tau = solution["tau"]
-    # emergencyDecel = solution["emergencyDecel"]
+    """Update the flow XML file with new car-following parameters."""
 
     min_gap, accel, decel, sigma, tau, emergencyDecel = solution
 
@@ -82,14 +77,15 @@ def update_flow_xml_from_solution(path_flow: str, solution: list | np.ndarray) -
 
 
 def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str, path_flow: str, path_turn: str, path_rou: str, verbose: bool = False) -> None:
-    """
-    Runs jtrrouter to generate a route file from flow and network files in SUMO.
+    """Runs jtrrouter to generate a route file from flow and network files in SUMO.
 
-    Parameters:
-    sumo_bin (str): Path to the SUMO bin directory.
-    net_file (str): Path to the network file.
-    flow_file (str): Path to the flow file.
-    output_file (str): Path to save the generated route file.
+    Args:
+        network_name (str): The name of the network.
+        path_net (str): The path to the network file.
+        path_flow (str): The path to the flow file.
+        path_turn (str): The path to the turn file.
+        path_rou (str): The path to the output route file.
+        verbose (bool): If True, print additional information. Defaults to False.
     """
 
     # Define the jtrrouter command with all necessary arguments
@@ -115,6 +111,8 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str, path_flow:
 
 
 def fitness_func(scenario_config: dict, solution: list | np.ndarray, error_func: str = "rmse"):
+    """ Evaluate the fitness of a given solution for SUMO calibration."""
+
     # Set up SUMO command with car-following parameters
     if error_func not in ["rmse", "mae"]:
         raise ValueError("error_func must be either 'rmse' or 'mae'")
@@ -158,10 +156,12 @@ def fitness_func(scenario_config: dict, solution: list | np.ndarray, error_func:
         fitness_err = -np.sqrt(0.5 * ((EB_tt - travel_time_EB)**2 + (WB_tt - travel_time_WB)**2))
     elif error_func == "mae":
         fitness_err = -((abs(EB_tt - travel_time_EB) + abs(WB_tt - travel_time_WB)) / 2)
+    else:
+        raise ValueError("error_func must be either 'rmse' or 'mae'")
     return fitness_err
 
 
-def result_analysis_on_EdgeData(path_summary: str,
+def result_analysis_on_EdgeData(path_summary: str | pd.DataFrame,
                                 path_EdgeData: str,
                                 calibration_target: dict,
                                 sim_start_time: float,
@@ -169,11 +169,11 @@ def result_analysis_on_EdgeData(path_summary: str,
     """Analyze the result of the simulation and return the flag, mean GEH, and GEH percent
 
     Args:
-        df_summary (pd.DataFrame): the summary dataframe from summary.xlsx in input dir
+        path_summary (str or pd.DataFrame): the summary dataframe from summary.xlsx in input dir
+        path_EdgeData (str): the path to the EdgeData.xml file in the input dir
         calibration_target (dict): the calibration target from the scenario config, it should contain GEH and GEHPercent
         sim_start_time (float): the start time of the simulation
         sim_end_time (float): the end time of the simulation
-        path_edge (str): the path to the EdgeData.xml file in the input dir
 
     Returns:
         tuple: (flag, mean GEH, geh percent)

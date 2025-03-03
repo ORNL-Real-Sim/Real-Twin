@@ -168,7 +168,7 @@ class GeneticAlgorithmForTurnFlow:
             # Check for improvement
             current_best_fitness = np.min(fitness)
             self.minGEH_set.append(current_best_fitness)
-            print('  :minimum mean GEH in this iteration is {}.'.format(current_best_fitness))
+            print(f'  :minimum mean GEH in this iteration is {current_best_fitness}.')
 
             if current_best_fitness < best_fitness_value:
                 best_fitness_value = current_best_fitness
@@ -178,7 +178,7 @@ class GeneticAlgorithmForTurnFlow:
 
             # Check if stopping criteria met
             if iterations_without_improvement >= max_no_improvement:
-                print("No improvement in the last {} iterations. Stopping early.".format(max_no_improvement))
+                print(f"No improvement in the last {max_no_improvement} iterations. Stopping early.")
                 break
 
             # Elitism
@@ -219,7 +219,7 @@ class GeneticAlgorithmForTurnFlow:
             # Update population
             if generation < num_generations - 1:  # avoid change population after final iteration
                 population = np.vstack((elite_individuals, offspring))
-            print("  :Current calibration time is {} sec.".format(time.time() - calibration_start_time))
+            print(f"  :Current calibration time is {time.time() - calibration_start_time} sec.")
             # print(population)
 
         # Find the best solution
@@ -269,6 +269,8 @@ class GeneticAlgorithmForTurnFlow:
         return True
 
     def run_vis(self):
+        """Visualize the results of the Genetic Algorithm."""
+
         if not hasattr(self, 'minGEH_set'):
             raise AttributeError("Please run the GA first.")
 

@@ -61,7 +61,7 @@ def download_elevation_tif_by(bbox: tuple | list, output_file: str) -> None:
 
     # Download the first available GeoTIFF file
     # tiff_url = data["items"][0]["downloadURL"]
-    tiff_url_list = list(set([item["downloadURL"] for item in data["items"]]))
+    tiff_url_list = set([item["downloadURL"] for item in data["items"]])
     print("Downloaded URLs: ", tiff_url_list)
 
     # Extract date from each URL

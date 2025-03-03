@@ -75,7 +75,7 @@ class REALTWIN:
                   strict_vissim_version: bool = False,
                   strict_aimsun_version: bool = False,
                   create_venv: bool = False,
-                  **kwargs):
+                  **kwargs) -> bool:
         """Check and set up the environment for the simulation
 
         Args:
@@ -113,7 +113,7 @@ class REALTWIN:
             >>>                sumo_version="1.21.0", strict_sumo_version=True)
 
         Returns:
-            None
+            bool: True if the environment is set up successfully, False otherwise.
         """
 
         # 0 create a virtual environment
@@ -158,6 +158,8 @@ class REALTWIN:
                 self.sel_sim.remove(simulator)
                 print(f"  :Could not install {simulator} on your operation system \n")
 
+        return True
+
     def generate_abstract_scenario(self, *, incl_elevation_tif: bool = True):
         """Generate the abstract scenario: create OpenDrive files
         """
@@ -200,7 +202,7 @@ class REALTWIN:
                            start_time: float = 3600 * 8,
                            end_time: float = 3600 * 10,
                            seed: list | int = 812,
-                           step_length: float = 0.1):
+                           step_length: float = 0.1) -> bool:
         """Simulate the concrete scenario: generate simulation files for the selected simulator
 
         Args:
@@ -227,7 +229,7 @@ class REALTWIN:
             >>> twin.prepare_simulation(start_time=3600 * 8, end_time=3600 * 10, seed=[101], step_length=0.1)
 
         Returns:
-            None
+            bool: True if the simulation is prepared successfully, False otherwise.
         """
 
         # 1. prepare Simulate docs from the concrete scenario
@@ -248,14 +250,14 @@ class REALTWIN:
                                     seed=seed,
                                     step_length=step_length)
             print(f"  :{simulator.upper()} simulation successfully Prepared.")
+        return True
 
-    def calibrate(self, *, sel_algo: dict = None):
+    def calibrate(self, *, sel_algo: dict = None) -> bool:
         """Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.
 
         Args:
-            sel_algo (list): The list of algorithms to be used for calibration.
-                Default is None, will use genetic algorithm. Options are: ["ga", "sa", "ts"].
-            kwargs: Additional keyword arguments.
+            sel_algo (dict): The dictionary of algorithms to be used for calibration.
+                Default is None, will use genetic algorithm. e.g. {"turn_inflow": "ga", "behavior": "ga"}.
 
         """
         # TDD
@@ -277,12 +279,12 @@ class REALTWIN:
         if algo := sel_algo["turn_inflow"] not in ["ga", "sa", "ts"]:
             print(f"  :Selected algorithms are {sel_algo}")
             print(f"  :{algo} for turn and inflow calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
-            return
+            return False
 
         if algo := sel_algo["behavior"] not in ["ga", "sa", "ts"]:
             print(f"  :Selected algorithms are {sel_algo}")
             print(f"  :{algo} for behavior calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
-            return
+            return False
 
         # run calibration based on the selected algorithm
         cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)

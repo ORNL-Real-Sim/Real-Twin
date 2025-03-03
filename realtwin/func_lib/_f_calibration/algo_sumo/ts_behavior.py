@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 from realtwin.func_lib._f_calibration.algo_sumo.util_cali_behavior import (
     fitness_func,
     get_travel_time_from_EdgeData_xml,
-    update_flow_xml_from_solution,
-    run_jtrrouter_to_create_rou_xml,
+    # update_flow_xml_from_solution,
+    # run_jtrrouter_to_create_rou_xml,
     result_analysis_on_EdgeData,)
 
 if 'SUMO_HOME' in os.environ:
@@ -27,11 +27,11 @@ if 'SUMO_HOME' in os.environ:
 
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
-import time
 rng = np.random.default_rng(812)
 
 
 def generate_neighbors(solution: list | np.ndarray, param_ranges: dict, tabu_list: list, decimal_places: float) -> list:
+    """ Generate neighbors for the given solution."""
 
     neighbors = []
     perturbVal = round(random.uniform(0, 0.5), decimal_places)
@@ -54,6 +54,7 @@ class TabuSearchForBehavioral:
     """Tabu search algorithm for calibration"""
 
     def __init__(self, scenario_config: dict, ts_config: dict, verbose: bool = True):
+        """ Initialize the Tabu Search algorithm."""
         self.ts_config = ts_config
         self.scenario_config = scenario_config
         self.verbose = verbose
@@ -71,6 +72,7 @@ class TabuSearchForBehavioral:
             self.path_edge_abs = pf.path2linux(Path(self.input_dir) / path_edge)
 
     def run_calibration(self):
+        """ Run the Tabu Search algorithm for calibration."""
 
         if self.verbose:
             print("\n  :Tabu Search is running...")
@@ -167,6 +169,7 @@ class TabuSearchForBehavioral:
         os.chdir(self.__current_dir)
 
     def run_vis(self):
+        """ Run the visualization of the Tabu Search algorithm."""
 
         if not hasattr(self, 'history'):
             print("Please run the algorithm first!")

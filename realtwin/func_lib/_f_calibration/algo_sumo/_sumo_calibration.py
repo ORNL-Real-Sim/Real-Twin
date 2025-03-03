@@ -55,6 +55,20 @@ def prepare_scenario_config(input_config: dict) -> dict:
 
 # for the beta version
 def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool = True) -> bool:
+    """Run SUMO calibration based on the selected algorithm and input configuration.
+
+    Args:
+        sel_algo (dict): the dictionary of selected algorithm for turn_inflow and behavior. Defaults to None.
+        input_config (dict): the dictionary contain configurations from input yaml file. Defaults to None.
+        verbose (bool): print out processing message. Defaults to True.
+
+    Raises:
+        ValueError: if algo_config is not a dict with two levels with keys of 'ga', 'sa', and 'ts'
+        ValueError: if sel_algo is not a dict with keys of 'turn_inflow' and 'behavior'
+
+    Returns:
+        bool: True if calibration is successful, False otherwise.
+    """
 
     # Test-driven Development: check selected algorithm from input
     if sel_algo is None:  # use default algorithm if not provided

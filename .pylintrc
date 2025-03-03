@@ -110,6 +110,8 @@ disable=
     W0718,
     W0212,
     W0201,
+    R0801,
+    R0914,
     # attribute-defined-outside-init,
     # invalid-name,
     # missing-docstring,

@@ -12,10 +12,8 @@ from pathlib import Path
 import random
 import numpy as np
 import pyufunc as pf
-import matplotlib.pyplot as plt
 import pygad
 import subprocess
-import copy
 
 from realtwin.func_lib._f_calibration.algo_sumo.util_cali_behavior import (
     fitness_func,
@@ -29,11 +27,12 @@ if 'SUMO_HOME' in os.environ:
     sys.path.append(tools)
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
-import time
 rng = np.random.default_rng(812)
 
 
 def on_generation(ga_instance):
+    """Callback function to be called at the end of each generation."""
+
     current_generation = ga_instance.generations_completed
     print(f"  :Generation {current_generation}:")
     print("  :Fitness of the best solution :", ga_instance.best_solution())
@@ -49,6 +48,8 @@ def on_generation(ga_instance):
 
 
 def fitness_func_gad(ept_, solution: list | np.ndarray, solution_idx: int, scenario_config: dict):
+    """ Fitness function for the genetic algorithm for pygad package."""
+
     # Set up SUMO command with car-following parameters
     if solution[5] >= 9.3:  # emergencyDecel
         solution[5] = 9.3
@@ -90,6 +91,7 @@ def fitness_func_gad(ept_, solution: list | np.ndarray, solution_idx: int, scena
 
 
 class GeneticAlgorithmForBehavioral:
+    """ Genetic Algorithm for Behavioral Calibration."""
 
     def __init__(self, scenario_config: dict, ga_config: dict, verbose: bool = True):
         """Input parameters are dictionaries containing configurations for Genetic Algorithm and scenario results.
@@ -104,7 +106,7 @@ class GeneticAlgorithmForBehavioral:
         os.makedirs(self.output_dir, exist_ok=True)
 
         # change the current working directory to the input dir
-        self.__current_dir = os.getcwd()
+        self._current_dir = os.getcwd()
         os.chdir(self.input_dir)
 
         # initialize dataframes from the scenario config
@@ -112,6 +114,7 @@ class GeneticAlgorithmForBehavioral:
             self.path_edge_abs = pf.path2linux(Path(self.input_dir) / path_edge)
 
     def run_calibration(self) -> bool:
+        """Run the calibration process using Genetic Algorithm."""
 
         if self.verbose:
             print("\n  :Running Genetic Algorithm...")
@@ -219,6 +222,7 @@ class GeneticAlgorithmForBehavioral:
         print("  :Optimized GEH Percent: ", geh_percent)
 
     def run_vis(self):
+        """Run the visualization process."""
         pass
 
 

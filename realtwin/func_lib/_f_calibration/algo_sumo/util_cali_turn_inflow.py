@@ -38,6 +38,8 @@ def update_turn_flow_from_solution(df_turn: pd.DataFrame,
         df_turn (pd.DataFrame): the turn dataframe from turn.xlsx
         df_inflow (pd.DataFrame): the inflow dataframe from inflow.xlsx
         initial_solution (np.array): the initial solution from the genetic algorithm
+        cali_interval (int): the calibration interval
+        demand_interval (int): the demand interval
 
     Returns:
         tuple: the updated turn and inflow dataframes
@@ -140,6 +142,7 @@ def create_rou_turn_flow_xml(network_name: str, sim_start_time: float, sim_end_t
         df_inflow (pd.DataFrame): the inflow dataframe
         ical (str): the iteration number for the calibration
         input_dir (str): the path to the input directory
+        output_dir (str): the path to the output directory
         remove_old_files (bool): whether to remove temporary files in time. Defaults to True.
 
     Returns:
@@ -267,11 +270,11 @@ def result_analysis_on_EdgeData(path_summary: str | pd.DataFrame,
     """Analyze the result of the simulation and return the flag, mean GEH, and GEH percent
 
     Args:
-        df_summary (pd.DataFrame): the summary dataframe from summary.xlsx in input dir
+        path_summary (str or pd.DataFrame): the summary dataframe from summary.xlsx in input dir
+        path_EdgeData (str): the path to the EdgeData.xml file in the input dir
         calibration_target (dict): the calibration target from the scenario config, it should contain GEH and GEHPercent
         sim_start_time (float): the start time of the simulation
         sim_end_time (float): the end time of the simulation
-        path_edge (str): the path to the EdgeData.xml file in the input dir
 
     Returns:
         tuple: (flag, mean GEH, geh percent)
@@ -358,244 +361,3 @@ def result_analysis_on_EdgeData(path_summary: str | pd.DataFrame,
         flag = 0
 
     return (flag, mean_geh, geh_percent)
-
-
-# old functions
-
-
-def run_SUMO(sim_name: str, sim_end_time: float) -> bool:
-    """run SUMO simulation using traci module
-
-    Args:
-        sim_name (str): the name of the simulation, it should be the .sumocfg file
-        sim_end_time (float): the end time of the simulation
-
-    Returns:
-        bool: True if the simulation is successful
-    """
-
-    traci.start(["sumo", "-c", sim_name])
-    while traci.simulation.getTime() < sim_end_time:
-        traci.simulationStep()
-    traci.close()
-    return True
-
-
-def generate_demand(network_name: str, sim_start_time: float, sim_end_time: float,
-                    df_turn: pd.DataFrame, df_inflow: pd.DataFrame, ical,
-                    output_dir: str = "None"):
-
-    # create the copy of turn and inflow dataframes for internal operations
-    TurnDf = df_turn.copy()
-    InflowDf = df_inflow.copy()
-    TurnDf['IntervalStart'] = TurnDf['IntervalStart'].astype(float)
-    TurnDf['IntervalEnd'] = TurnDf['IntervalEnd'].astype(float)
-    TurnDf = TurnDf[(TurnDf['IntervalStart'] >= sim_start_time)
-                    & (TurnDf['IntervalEnd'] <= sim_end_time)]
-    turns = ET.Element('turns')
-    # Create the 'interval' element
-    IntervalSet = TurnDf[['IntervalStart', 'IntervalEnd']
-                         ].drop_duplicates().reset_index(drop=True)
-    for index, IntervalData in IntervalSet.iterrows():
-        Interval = ET.SubElement(turns, 'interval')
-        Interval.set('begin', str(IntervalData['IntervalStart']))
-        Interval.set('end', str(IntervalData['IntervalEnd']))
-        TurnDfSubset = TurnDf[(TurnDf['IntervalStart'] == IntervalData['IntervalStart'])
-                              & (TurnDf['IntervalEnd'] == IntervalData['IntervalEnd'])]
-        TurnDictSubset = TurnDfSubset.to_dict(orient='records')
-        for TurnData in TurnDictSubset:
-            edge_relation = ET.SubElement(Interval, 'edgeRelation')
-            edge_relation.set('from', str(-int(TurnData['OpenDriveFromID'])))
-            edge_relation.set('to', str(-int(TurnData['OpenDriveToID'])))
-            edge_relation.set('probability', str(TurnData['TurnRatio']))
-    # <edgeRelation from="" probability="" to=""/>
-    TreeTurn = ET.ElementTree(turns)
-    # Write the XML to the file
-    TreeTurn.write('route/{}{}.turn.xml'.format(network_name,
-                   ical), encoding='utf-8', xml_declaration=True)
-    # Create the .flow.xml
-    InflowDf['IntervalStart'] = InflowDf['IntervalStart'].astype(float)
-    InflowDf['IntervalEnd'] = InflowDf['IntervalEnd'].astype(float)
-    InflowDf = InflowDf[(InflowDf['IntervalStart'] >= sim_start_time)
-                        & (InflowDf['IntervalEnd'] <= sim_end_time)]
-    routes = ET.Element('routes')
-    vtype = ET.SubElement(routes, 'vType')
-    vtype.set('id', 'car')
-    vtype.set('type', 'passenger')
-    InflowDict = InflowDf.to_dict(orient='records')
-    FlowID = 0
-    for InflowData in InflowDict:
-        FlowID += 1
-        flow = ET.SubElement(routes, 'flow')
-        flow.set('id', str(FlowID))
-        flow.set('begin', str(InflowData['IntervalStart']))
-        flow.set('end', str(InflowData['IntervalEnd']))
-        flow.set('from', str(-int(InflowData['OpenDriveFromID'])))
-        flow.set('number', str(int(InflowData['Count'])))
-        flow.set('type', 'car')
-    # <flow begin="0.0" end="3600.0" from="" id="" number="" type="car"/>
-    TreeInflow = ET.ElementTree(routes)
-    # TreeInflow.write('MyNetwork/SUMO/{}.flow.xml'.format(NetworkName), encoding='utf-8', xml_declaration=True)
-    TreeInflow.write(f'route/{network_name}{ical}.flow.xml',
-                     encoding='utf-8', xml_declaration=True)
-    # Create the .rou.xml
-    cmd = f'cmd /c "jtrrouter -r route/{network_name}{ical}.flow.xml -t route/{network_name}{ical}.turn.xml -n {network_name}.net.xml --accept-all-destinations --remove-loops True --randomize-flows -o route/{network_name}{ical}.rou.xml"'
-    process = subprocess.Popen(cmd, shell=True)
-    process.wait()
-    shutil.copy("route/{}{}.rou.xml".format(network_name, ical),
-                "{}.rou.xml".format(network_name))
-
-
-def assign_new_turn(df_turn: pd.DataFrame, df_inflow: pd.DataFrame, initial_solution: np.array) -> tuple:
-
-    TurnDf = df_turn.copy()
-    InflowDf = df_inflow.copy()
-
-    # Between Amin Dr. and  I-75 SB Off Ramp
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 290) & (TurnDf['OpenDriveToID'] == 298),
-               'TurnRatio'] = initial_solution[0]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 290) & (TurnDf['OpenDriveToID'] == 299),
-               'TurnRatio'] = 1 - initial_solution[0]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 331) & (TurnDf['OpenDriveToID'] == 297),
-               'TurnRatio'] = initial_solution[1]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 331) & (TurnDf['OpenDriveToID'] == 298),
-               'TurnRatio'] = 1 - initial_solution[1]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 293) & (TurnDf['OpenDriveToID'] == 299),
-               'TurnRatio'] = initial_solution[2]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 293) & (TurnDf['OpenDriveToID'] == 297),
-               'TurnRatio'] = 1 - initial_solution[2]
-    # Between Napier Rd. and Lifestyle Way1
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 315) & (TurnDf['OpenDriveToID'] == 321),
-               'TurnRatio'] = initial_solution[3]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 315) & (TurnDf['OpenDriveToID'] == 323),
-               'TurnRatio'] = 1 - initial_solution[3]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 320) & (TurnDf['OpenDriveToID'] == 3221),
-               'TurnRatio'] = initial_solution[4]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 320) & (TurnDf['OpenDriveToID'] == 321),
-               'TurnRatio'] = 1 - initial_solution[4]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 302) & (TurnDf['OpenDriveToID'] == 323),
-               'TurnRatio'] = initial_solution[5]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 302) & (TurnDf['OpenDriveToID'] == 3221),
-               'TurnRatio'] = 1 - initial_solution[5]
-    # Between Napier Rd. and Lifestyle Way2
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 281) & (TurnDf['OpenDriveToID'] == 315),
-               'TurnRatio'] = initial_solution[6]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 281) & (TurnDf['OpenDriveToID'] == 314),
-               'TurnRatio'] = 1 - initial_solution[6]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 316) & (TurnDf['OpenDriveToID'] == 313),
-               'TurnRatio'] = initial_solution[7]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 316) & (TurnDf['OpenDriveToID'] == 315),
-               'TurnRatio'] = 1 - initial_solution[7]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 322) & (TurnDf['OpenDriveToID'] == 314),
-               'TurnRatio'] = initial_solution[8]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 322) & (TurnDf['OpenDriveToID'] == 313),
-               'TurnRatio'] = 1 - initial_solution[8]
-    # Between  Lifestyle Way and Gunbarrel Road
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 330) & (TurnDf['OpenDriveToID'] == 327),
-               'TurnRatio'] = initial_solution[9]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 330) & (TurnDf['OpenDriveToID'] == 328),
-               'TurnRatio'] = 1 - initial_solution[9]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 307) & (TurnDf['OpenDriveToID'] == 329),
-               'TurnRatio'] = initial_solution[10]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 307) & (TurnDf['OpenDriveToID'] == 327),
-               'TurnRatio'] = 1 - initial_solution[10]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 284) & (TurnDf['OpenDriveToID'] == 328),
-               'TurnRatio'] = initial_solution[11]
-    TurnDf.loc[(TurnDf['OpenDriveFromID'] == 284) & (TurnDf['OpenDriveToID'] == 329),
-               'TurnRatio'] = 1 - initial_solution[11]
-    # Between Amin Dr. and  I-75 SB Off Ramp
-    InflowDf['Count'] = InflowDf['Count'].astype(float)
-    InflowDf.loc[(InflowDf['OpenDriveFromID'] == 331),
-                 'Count'] = initial_solution[12]
-    # Between Napier Rd. and Lifestyle Way1
-    InflowDf.loc[(InflowDf['OpenDriveFromID'] == 320),
-                 'Count'] = initial_solution[13]
-    # Between Napier Rd. and Lifestyle Way2
-    InflowDf.loc[(InflowDf['OpenDriveFromID'] == 316),
-                 'Count'] = initial_solution[14]
-    # Between  Lifestyle Way and Gunbarrel Road
-    InflowDf.loc[(InflowDf['OpenDriveFromID'] == 330),
-                 'Count'] = initial_solution[15]
-
-    return (TurnDf, InflowDf)
-
-
-def result_analysis(df_summary: str | pd.DataFrame,
-                    calibration_target: dict,
-                    sim_start_time: float,
-                    sim_end_time: float) -> tuple:
-    # Load and parse the new XML file
-    # mapping of sumo id with GridSmart Intersection from user input
-
-    RealSummary = df_summary.copy()
-    RealSummary = RealSummary[RealSummary["realcount"].notna()]
-    ApproachSummary = RealSummary.groupby(['IntersectionName',
-                                           'entrance_sumo',
-                                           'Bound']).agg({'realcount': 'sum'}).reset_index()
-    tree = ET.parse("EdgeData.xml")
-    root = tree.getroot()
-    edge_data = []
-    for interval in root.findall('.//interval'):
-        for edge in interval.findall('edge'):
-            edge_id = edge.get('id')
-            travel_time = edge.get('traveltime')
-            density = edge.get('density')
-            speed = edge.get('speed')
-            arrived = edge.get('arrived')
-            departed = edge.get('departed')
-            left = edge.get('left')
-            edge_data.append({'id': edge_id,
-                              'travel_time': travel_time,
-                              'arrived': arrived,
-                              'departed': departed,
-                              "left": left,
-                              'density': density,
-                              'speed': speed})
-    EdgeData = pd.DataFrame(edge_data)
-    EdgeData = EdgeData.astype({'id': int,
-                                'travel_time': float,
-                                'arrived': int,
-                                'departed': int,
-                                "left": int,
-                                'density': float,
-                                'speed': float})
-    ApproachSummary['entrance_sumo'] = ApproachSummary['entrance_sumo'].astype(
-        int)
-    EdgeData['id'] = EdgeData['id'].astype(int)
-    ApproachSummary = pd.merge(
-        ApproachSummary, EdgeData, left_on='entrance_sumo', right_on='id')
-    ApproachSummary.rename(columns={'left': 'count'}, inplace=True)
-    ApproachSummary.drop(columns=['id'], inplace=True)
-    ApproachSummary['flow'] = ApproachSummary['count'] / \
-        (sim_end_time - sim_start_time) * 3600
-    ApproachSummary['realflow'] = ApproachSummary['realcount'] / \
-        (sim_end_time - sim_start_time) * 3600
-    ApproachSummary['GEH'] = np.sqrt(2 * (ApproachSummary['count'] - ApproachSummary['realcount'])
-                                     ** 2 / (ApproachSummary['count'] + ApproachSummary['realcount']))
-    MeanGEH = ApproachSummary['GEH'].mean()
-    GEHPercent = (ApproachSummary['GEH'] < calibration_target['GEH']).mean()
-    flag = 1
-    # more than 85% of links have a GEH <= 5
-    if GEHPercent < calibration_target['GEHPercent']:
-        flag = 0
-    BadVolume = ApproachSummary[ApproachSummary['count'] < 0]
-    # within 100 vph for volumes < 700
-    df1 = ApproachSummary[ApproachSummary['realflow'] < 700]
-    if sum((df1['realflow'] - df1['flow']).abs() > 100) > 0:
-        flag = 0
-        BadVolume = pd.concat(
-            [BadVolume, (df1[(df1['realflow']-df1['flow']).abs() > 100])])
-    # within 15%  for volumes  700-2700
-    df2 = ApproachSummary[(ApproachSummary['realflow'] >= 700) & (
-        ApproachSummary['realflow'] <= 2700)]
-    if sum(((df2['realflow'] - df2['flow']) / -df2['realflow']).abs() > 0.15) > 0:
-        flag = 0
-        BadVolume = pd.concat(
-            [BadVolume, (df2[((df2['realflow'] - df2['flow']) / -df2['realflow']).abs() > 0.15])])
-    # within 400 vph for volumes > 2700
-    df3 = ApproachSummary[ApproachSummary['realflow'] > 2700]
-    if sum((df3['realflow'] - df3['flow']).abs() > 400) > 0:
-        flag = 0
-        BadVolume = pd.concat(
-            [BadVolume, (df3[(df3['realflow'] - df3['flow']).abs() > 400])])
-    return (flag, MeanGEH, GEHPercent)
