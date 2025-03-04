@@ -8,6 +8,11 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-03-04
+
+1. Create public repo: Real-Twin
+2. Rename old repo to: Real-Twin-Dev
+
 ### 2025-02-28
 
 #### Open Discussion
