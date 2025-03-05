@@ -34,9 +34,6 @@ class Demand:
         IDRef = IDRef.astype(str)
 
         MergedDf1 = pd.merge(Count, IDRef, on=['IntersectionName', 'Turn'], how='left')
-        # print("MergedDf1: ", MergedDf1)
-        # print()
-        # print("Count: ", Count)
         Count['OpenDriveFromID'] = MergedDf1['OpenDriveFromID']
         Count['OpenDriveToID'] = MergedDf1['OpenDriveToID']
         Count = Count.groupby(['IntervalStart',

@@ -8,6 +8,13 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-03-05
+
+1. Updated framework dragram
+
+   ![1741190944081](image/README/1741190944081.png)
+2. Explore mealpy...
+
 ### 2025-03-04
 
 1. Create public repo: Real-Twin
