@@ -110,13 +110,8 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str, path_flow:
         print(f"  :An error occurred while running jtrrouter: {e}")
 
 
-def fitness_func(solution_dict: dict) -> float:
+def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, error_func: str = "rmse") -> float:
     """ Evaluate the fitness of a given solution for SUMO calibration."""
-
-    # scenario_config: dict, solution: list | np.ndarray, error_func: str = "rmse"
-    scenario_config = solution_dict.get("scenario_config")
-    solution = solution_dict.get("solution")
-    error_func = solution_dict.get("error_func")
 
     # Set up SUMO command with car-following parameters
     if error_func not in ["rmse", "mae"]:

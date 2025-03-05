@@ -26,6 +26,8 @@ else:
 
 import traci
 
+rng = np.random.default_rng(seed=812)
+
 
 def update_turn_flow_from_solution(df_turn: pd.DataFrame,
                                    df_inflow: pd.DataFrame,
@@ -255,7 +257,7 @@ def run_SUMO_create_EdgeData(sim_name: str, sim_end_time: float) -> bool:
         bool: True if the simulation is successful
     """
 
-    traci.start(["sumo", "-c", sim_name])
+    traci.start(["sumo", "-c", sim_name], label=f"sim_{rng.random()}")
     while traci.simulation.getTime() < sim_end_time:
         traci.simulationStep()
     traci.close()
