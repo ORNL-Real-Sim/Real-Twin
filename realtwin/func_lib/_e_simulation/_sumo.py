@@ -13,12 +13,15 @@
 
 import os
 import shutil
+import warnings
 import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString
 import pandas as pd
 import io
 from lxml import etree
 import pyufunc as pf
+pd.options.mode.chained_assignment = None
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 class SUMOPrep:
@@ -377,8 +380,7 @@ class SUMOPrep:
                         [Synchro[ID]['plan'], new_df1])
                     Synchro[ID]['plan'] = pd.concat(
                         [Synchro[ID]['plan'], new_df2])
-                    Synchro[ID]['plan'] = pd.concat(
-                        [Synchro[ID]['plan'], new_df3])
+                    Synchro[ID]['plan'] = pd.concat([Synchro[ID]['plan'], new_df3])
 
             Synchro[ID]['plan'].dropna(how='all', inplace=True)
             Synchro[ID]['plan'].reset_index(drop=True, inplace=True)

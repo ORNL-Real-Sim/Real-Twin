@@ -119,7 +119,7 @@ class RealTwin:
 
         # 0. Check if the sim_env is selected,
         #    default to SUMO, case insensitive and add self.sel_sim as a class attribute
-        self.sel_sim = ["sumo"] if not sel_sim else [sim.lower() for sim in sel_sim]
+        sel_sim = ["sumo"] if not sel_sim else [sim.lower() for sim in sel_sim]
 
         # 1. Check simulator installation - mapping function
         simulator_installation = {
@@ -136,13 +136,21 @@ class RealTwin:
         kwargs['strict_aimsun_version'] = strict_aimsun_version
         kwargs['verbose'] = self.verbose
 
-        for simulator in self.sel_sim:
+        invalid_sim = []
+        for simulator in sel_sim:
             try:
-                simulator_installation.get(simulator)(**kwargs)
-                print()
+                sim_status = simulator_installation.get(simulator)(**kwargs)
+                if not sim_status:
+                    invalid_sim.append(simulator)
             except Exception:
-                self.sel_sim.remove(simulator)
+                invalid_sim.append(simulator)
                 print(f"\n  :Could not install {simulator} (strict version) on your operation system")
+
+        sel_sim_ = list(set(sel_sim) - set(invalid_sim))
+
+        if not sel_sim_:
+            raise Exception("  :Error: No simulator is available (strict version). Please select available version(s).")
+        self.sel_sim = sel_sim_
 
         return True
 
@@ -167,7 +175,7 @@ class RealTwin:
         # 1. Generate the abstract scenario based on the input data
         self.abstract_scenario = AbstractScenario(self.input_config)
         self.abstract_scenario.update_AbstractScenario_from_input()
-        print("  :Abstract Scenario successfully generated.")
+        print("\nAbstract Scenario successfully generated.")
 
     def generate_concrete_scenario(self):
         """Generate the concrete scenario: generate unified scenario from abstract scenario
@@ -182,7 +190,7 @@ class RealTwin:
 
         self.concrete_scenario = ConcreteScenario()
         self.concrete_scenario.get_unified_scenario(self.abstract_scenario)
-        print("  :Concrete Scenario successfully generated.")
+        print("\nConcrete Scenario successfully generated.")
 
     def prepare_simulation(self,
                            start_time: float = 3600 * 8,
@@ -235,7 +243,7 @@ class RealTwin:
                                     end_time=end_time,
                                     seed=seed,
                                     step_length=step_length)
-            print(f"  :{simulator.upper()} simulation successfully Prepared.")
+            print(f"\n{simulator.upper()} simulation successfully Prepared.")
         return True
 
     def calibrate(self, *, sel_algo: dict = None) -> bool:

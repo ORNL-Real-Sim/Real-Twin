@@ -27,6 +27,7 @@ if __name__ == '__main__':
     # twin.venv_delete(venv_name=twin._venv_name, venv_dir=twin.input_config["output_dir"])
 
     # check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
+    # twin.env_setup(sel_sim=["SUMO", "VISSIM"])
     twin.env_setup(sel_sim=["SUMO", "VISSIM"])
 
     # NOTE optional: check simulator including additional selection of directories

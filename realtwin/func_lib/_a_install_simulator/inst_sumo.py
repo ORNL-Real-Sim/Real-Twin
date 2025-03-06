@@ -48,19 +48,18 @@ def install_sumo(sel_dir: list = None,
     version_lst = is_sumo_installed(sel_dir=sel_dir, verbose=verbose)
     if version_lst:
         # Check if the exact version of SUMO is installed
-        if strict_sumo_version not in version_lst:
-            print(f"\n  :Installing strict_sumo_version SUMO version {strict_sumo_version} "
-                  f"(Available versions: {version_lst})...")
-
-        else:
+        if strict_sumo_version is None or strict_sumo_version in version_lst:
             print(f"  :SUMO is already installed, available versions: {version_lst}")
             return True
+
+        print(f"\n  :Installing strict_sumo_version SUMO version {strict_sumo_version} "
+              f"(Available versions: {version_lst})...")
 
     # If SUMO not installed,
     # Or strict_sumo_version is True and the version is not installed
     # Install the SUMO
     if pf.is_windows():
-        return install_sumo_windows(strict_sumo_version, verbose=verbose, **kwargs)
+        return install_sumo_windows(strict_sumo_version, verbose=verbose)
 
     if pf.is_linux():
         print("  :Error: Linux is not supported yet.")
