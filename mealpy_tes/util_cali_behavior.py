@@ -22,6 +22,25 @@ if 'SUMO_HOME' in os.environ:
 
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
+import traci
+
+
+def run_SUMO_create_EdgeData(sim_name: str, sim_end_time: float) -> bool:
+    """run SUMO simulation using traci module
+
+    Args:
+        sim_name (str): the name of the simulation, it should be the .sumocfg file
+        sim_end_time (float): the end time of the simulation
+
+    Returns:
+        bool: True if the simulation is successful
+    """
+
+    traci.start(["sumo", "-c", sim_name])
+    while traci.simulation.getTime() < sim_end_time:
+        traci.simulationStep()
+    traci.close()
+    return True
 
 
 def get_travel_time_from_EdgeData_xml(path_EdgeData: str, edge_ids: list) -> float:
@@ -112,7 +131,7 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str, path_flow:
 
 def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, error_func: str = "rmse") -> float:
     """ Evaluate the fitness of a given solution for SUMO calibration."""
-
+    print(f"  :solution: {solution}")
     # Set up SUMO command with car-following parameters
     if error_func not in ["rmse", "mae"]:
         raise ValueError("error_func must be either 'rmse' or 'mae'")
@@ -125,22 +144,26 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
 
     # get path from scenario_config
     network_name = scenario_config.get("network_name")
-    path_net = pf.path2linux(Path(scenario_config.get("input_dir")) / f"{network_name}.net.xml")
-    path_flow = pf.path2linux(Path(scenario_config.get("input_dir")) / f"{network_name}.flow.xml")
-    path_turn = pf.path2linux(Path(scenario_config.get("input_dir")) / f"{network_name}.turn.xml")
-    path_rou = pf.path2linux(Path(scenario_config.get("input_dir")) / f"{network_name}.rou.xml")
-    path_EdgeData = pf.path2linux(Path(scenario_config.get("input_dir")) / "EdgeData.xml")
+    sim_input_dir = Path(scenario_config.get("input_dir"))
+    path_net = pf.path2linux(sim_input_dir / f"{network_name}.net.xml")
+    path_flow = pf.path2linux(sim_input_dir / f"{network_name}.flow.xml")
+    path_turn = pf.path2linux(sim_input_dir / f"{network_name}.turn.xml")
+    path_rou = pf.path2linux(sim_input_dir / f"{network_name}.rou.xml")
+    path_EdgeData = pf.path2linux(sim_input_dir / "EdgeData.xml")
     EB_tt = scenario_config.get("EB_tt")
     WB_tt = scenario_config.get("WB_tt")
     EB_edge_list = scenario_config.get("EB_edge_list")
     WB_edge_list = scenario_config.get("WB_edge_list")
 
     sim_name = scenario_config.get("sim_name")
+    sim_end_time = scenario_config.get("sim_end_time")
 
     update_flow_xml_from_solution(path_flow, solution)
 
     run_jtrrouter_to_create_rou_xml(network_name, path_net, path_flow, path_turn, path_rou)
 
+    # change the working directory to the input directory for SUMO
+    os.chdir(sim_input_dir)
     # Define the command to run SUMO
     sumo_command = f"sumo -c \"{sim_name}\""
     sumoProcess = subprocess.Popen(sumo_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

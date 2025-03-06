@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2025-03-03 16:36:20 by Eclipse SUMO jtrrouter Version 1.21.0
+<!-- generated on 2025-03-06 17:18:19 by Eclipse SUMO jtrrouter Version 1.21.0
 <jtrrouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/jtrrouterConfiguration.xsd">
 
     <input>
-        <net-file value="c:/Users/xh8/ornl_work/github_workspace/Real-Twin/datasets/input_dir_dummy/chatt.net.xml"/>
-        <route-files value="c:/Users/xh8/ornl_work/github_workspace/Real-Twin/datasets/input_dir_dummy/chatt.flow.xml"/>
-        <turn-ratio-files value="c:/Users/xh8/ornl_work/github_workspace/Real-Twin/datasets/input_dir_dummy/chatt.turn.xml"/>
+        <net-file value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/mealpy_tes/input_dir_dummy/chatt.net.xml"/>
+        <route-files value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/mealpy_tes/input_dir_dummy/chatt.flow.xml"/>
+        <turn-ratio-files value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/mealpy_tes/input_dir_dummy/chatt.turn.xml"/>
     </input>
 
     <output>
-        <output-file value="c:/Users/xh8/ornl_work/github_workspace/Real-Twin/datasets/input_dir_dummy/chatt.rou.xml"/>
+        <output-file value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/mealpy_tes/input_dir_dummy/chatt.rou.xml"/>
     </output>
 
     <processing>
@@ -26,7 +26,7 @@
 -->
 
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
-    <vType id="car" minGap="2.97" accel="2.5702459588129667" decel="5.080152464783181" emergencyDecel="7.279857914910544" sigma="0.6992504010956355" tau="1.1452727567708436"/>
+    <vType id="car" minGap="2.70" accel="2.983366974434732" decel="4.14756562922086" emergencyDecel="9.248919555437144" sigma="0.08907880882115285" tau="1.1430182579847823"/>
     <vehicle id="1.0" type="car" depart="28800.00">
         <route edges="-309 -296"/>
     </vehicle>
