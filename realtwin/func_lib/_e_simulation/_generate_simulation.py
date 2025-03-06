@@ -54,6 +54,7 @@ class SimPrep:
                                     end_time,
                                     seed,
                                     step_length)
+        self.SUMOSim.importSignal(ConcreteScn)
         # print("  :SUMO simulation is prepared.")
 
     def create_aimsun_sim(self, ConcreteScn, start_time, end_time):

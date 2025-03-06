@@ -34,7 +34,7 @@ from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
 from realtwin.func_lib._f_calibration.algo_sumo._sumo_calibration import cali_sumo
 
 
-class REALTWIN:
+class RealTwin:
     """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group that
     enables the simulation of twin-structured cities.
     """
@@ -68,12 +68,9 @@ class REALTWIN:
                   *,
                   sel_sim: list = None,
                   sel_dir: list = None,
-                  sumo_version: str = "1.21.0",
-                  vissim_version: str = "",
-                  aimsun_version: str = "",
-                  strict_sumo_version: bool = False,
-                  strict_vissim_version: bool = False,
-                  strict_aimsun_version: bool = False,
+                  strict_sumo_version: str = None,
+                  strict_vissim_version: str = None,
+                  strict_aimsun_version: str = None,
                   create_venv: bool = False,
                   **kwargs) -> bool:
         """Check and set up the environment for the simulation
@@ -82,15 +79,12 @@ class REALTWIN:
             sel_sim (list): select simulator to be set up. Default is None.
                 Currently available options are ["SUMO", "VISSIM", "AIMSUN"].
             sel_dir (list): A list of directories to search for the executables. Defaults to None.
-            sumo_version (str): The version of SUMO to be installed. Default is "1.20.0".
-            vissim_version (str): The version of VISSIM to be installed. Default is "".
-            aimsun_version (str): The version of Aimsun to be installed. Default
-            strict_sumo_version (bool): Whether to strictly check the version is installed.
-                Default is False.
-            strict_vissim_version (bool): Whether to strictly check the version is installed.
-                Default is False.
-            strict_aimsun_version (bool): Whether to strictly check the version is installed.
-                Default is False.
+            strict_sumo_version (str): Whether to strictly check the version is installed.
+                if specified, will check and install the version. Default is None.
+            strict_vissim_version (str): Whether to strictly check the version is installed.
+                if specified, will check and install the version. Default is False.
+            strict_aimsun_version (str): Whether to strictly check the version is installed.
+                if specified, will check and install the version. Default is False.
             create_venv (bool): Whether to create a virtual environment. Default is False.
             kwargs: Additional keyword arguments.
 
@@ -135,18 +129,11 @@ class REALTWIN:
         }
 
         # 2. check if the simulator is installed, if not, install it
-        print("\nChecking and installing the selected simulators:")
+        print("\nCheck / install the selected simulators:")
         kwargs['sel_dir'] = sel_dir
-
-        kwargs['sumo_version'] = sumo_version
         kwargs['strict_sumo_version'] = strict_sumo_version
-
-        kwargs['vissim_version'] = vissim_version
         kwargs['strict_vissim_version'] = strict_vissim_version
-
-        kwargs['aimsun_version'] = aimsun_version
         kwargs['strict_aimsun_version'] = strict_aimsun_version
-
         kwargs['verbose'] = self.verbose
 
         for simulator in self.sel_sim:
@@ -154,9 +141,8 @@ class REALTWIN:
                 simulator_installation.get(simulator)(**kwargs)
                 print()
             except Exception:
-                print()
                 self.sel_sim.remove(simulator)
-                print(f"  :Could not install {simulator} on your operation system \n")
+                print(f"\n  :Could not install {simulator} (strict version) on your operation system")
 
         return True
 

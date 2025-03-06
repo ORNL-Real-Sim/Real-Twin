@@ -76,9 +76,8 @@ def is_sumo_installed(*, ext: str = "exe", sel_dir: list = None, verbose: bool =
                                                capture_output=True,
                                                text=True,
                                                check=True)
-
+                # find the version number from the output
                 if version_check.returncode == 0:
-                    # find the version number from the output
 
                     # Define the pattern to match the version number
                     pattern = r'Version (\d+\.\d+\.\d+)'
@@ -90,7 +89,7 @@ def is_sumo_installed(*, ext: str = "exe", sel_dir: list = None, verbose: bool =
                     if match:
                         version = match.group(1)
                         version_lst.append(str(version))
-                        print(f"  :SUMO version: {version} found at: {exe_path}")
+                        print(f"  :SUMO version: {version} found: {exe_path}")
                     else:
                         pass
 

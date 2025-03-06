@@ -554,3 +554,4 @@ class SUMOPrep:
         # Save the modified XML
         tree.write(self.Network,
                    pretty_print=True, xml_declaration=True, encoding='UTF-8')
+        print(f"  :SUMO signal updated at: {self.Network}.")
