@@ -1,19 +1,19 @@
 - [Run the realtwin package on your device (Implementation and Explanation)](#run-the-realtwin-package-on-your-device-implementation-and-explanation)
-  - [Code Health \& Standards Check (Optional - for developers)](#code-health--standards-check-optional---for-developers)
-  - [Installation](#installation)
-  - [Create \& Delete Virtual Environment (Optional)](#create--delete-virtual-environment-optional)
-    - [Create venv](#create-venv)
-    - [Activate venv](#activate-venv)
-    - [Delete venv](#delete-venv)
-  - [Simulation Environment Setup](#simulation-environment-setup)
-    - [General Setup](#general-setup)
-    - [Check simulator under additonal directories: Optional](#check-simulator-under-additonal-directories-optional)
-    - [Strict simulator version: if not found, will install the strick version then (SUMO Only): Optional](#strict-simulator-version-if-not-found-will-install-the-strick-version-then-sumo-only-optional)
-    - [Available arguments for environment setup](#available-arguments-for-environment-setup)
-  - [Abstract Scenario Generation](#abstract-scenario-generation)
-  - [Concrete Scenario Generation](#concrete-scenario-generation)
-  - [Simulation (Preparation)](#simulation-preparation)
-  - [Calibration](#calibration)
+    - [Code Health \& Standards Check (Optional - for developers)](#code-health--standards-check-optional---for-developers)
+    - [Installation](#installation)
+    - [Create \& Delete Virtual Environment (Optional)](#create--delete-virtual-environment-optional)
+        - [Create venv](#create-venv)
+        - [Activate venv](#activate-venv)
+        - [Delete venv](#delete-venv)
+    - [Simulation Environment Setup](#simulation-environment-setup)
+        - [General Setup](#general-setup)
+        - [Optional: Check the simulator in additonal directories](#optional-check-the-simulator-in-additonal-directories)
+        - [Optional: Strict simulator version](#optional-strict-simulator-version)
+        - [Available arguments for environment setup](#available-arguments-for-environment-setup)
+    - [Abstract Scenario Generation](#abstract-scenario-generation)
+    - [Concrete Scenario Generation](#concrete-scenario-generation)
+    - [Simulation (Preparation)](#simulation-preparation)
+    - [Calibration](#calibration)
 
 # Run the realtwin package on your device (Implementation and Explanation)
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
 ```
 
-### Check simulator under additonal directories: Optional
+### Optional: Check the simulator in additonal directories
 
 ```python
 import realtwin as rt
@@ -124,10 +124,12 @@ if __name__ == "__main__":
     twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir) # Pls note, sel_dir should be a list
 ```
 
-### Strict simulator version: if not found, will install the strick version then (SUMO Only): Optional
+### Optional: Strict simulator version
 
 ```python
 import realtwin as rt
+
+# If the strict version is not found, realtwin package will install it automatically (SUMO only)
 
 if __name__ == "__main__":
 
@@ -193,11 +195,25 @@ if __name__ == "__main__":
 
     # ~ previous implementations
 
-    # generate abstract scenario
+    # generate concrete scenario
     twin.generate_concrete_scenario()
 ```
 
 ## Simulation (Preparation)
+
+```python
+import realtwin as rt
+
+if __name__ == "__main__":
+
+    # ~ previous implementations
+
+    # perform simulation preparation
+    # simulate the scenario
+    twin.prepare_simulation()
+```
+
+## Calibration
 
 ```python
 import realtwin as rt
@@ -211,5 +227,3 @@ if __name__ == "__main__":
     # or change from internal and external configuration files
     twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "SA"})  # Available algos: GA, SA, TS
 ```
-
-## Calibration
