@@ -58,7 +58,7 @@ extensions = [
     "numpydoc",
 ]
 
-source_path = os.path.dirname(os.path.abspath(__file__))
+source_path = os.path.dirname(Path(__file__).absolute())
 pattern = os.environ.get("SPHINX_PATTERN")
 single_doc = pattern is not None and pattern not in ("-api", "whatsnew")
 include_api = pattern is None or pattern == "whatsnew"
@@ -130,7 +130,7 @@ html_theme_options = {
 
     "external_links": [],
 
-    "github_url": "https://github.com/ORNL-Real-Sim",
+    "github_url": "https://github.com/ORNL-Real-Sim/Real-Twin",
 
     "logo": {"image_dark": "./_static/realsim_logo.png"},
 
@@ -168,7 +168,7 @@ html_css_files = [
 html_use_modindex = True
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "pyufunc"
+htmlhelp_basename = "realtwin"
 
 # -- Options for nbsphinx ------------------------------------------------
 nbsphinx_allow_errors = True
