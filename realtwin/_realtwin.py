@@ -91,17 +91,17 @@ class RealTwin:
             >>> import realtwin as rt
             >>> twin = rt.REALTWIN(input_config_file="config.yaml", verbose=True)
 
-            # check simulator is installed or not, default to SUMO, optional: VISSIM, AIMSUN
+            check simulator is installed or not, default to SUMO, optional: VISSIM, AIMSUN
             >>> twin.env_setup(sel_sim=["SUMO"])
 
-            # add additional directories to search for the executables
+            add additional directories to search for the executables
             >>> additional_dir = [r"path-to-your-local-installed-sumo-bin"]
             >>> twin.env_setup(sel_sim=["SUMO"], sel_dir=additional_dir)
 
-            # strict version check: will install the required version if not found
+            strict version check: will install the required version if not found
             >>> twin.env_setup(sel_sim=["SUMO"], sumo_version="1.21.0", strict_sumo_version=True)
 
-            # or with additional directories
+            or with additional directories
             >>> twin.env_setup(sel_sim=["SUMO"], sel_dir=additional_dir,
             >>>                sumo_version="1.21.0", strict_sumo_version=True)
 
@@ -205,20 +205,20 @@ class RealTwin:
             step_length (float): The simulation step size. Default is 0.1.
 
         Examples:
-            # import realtwin package
+            import realtwin package
             >>> import realtwin as rt
 
-            # load the input configuration file
+            load the input configuration file
             >>> twin = rt.REALTWIN(input_config_file="config.yaml", verbose=True)
 
-            # check simulator is installed or not, default to SUMO
+            check simulator is installed or not, default to SUMO
             >>> twin.env_setup(sel_sim=["SUMO"])
 
-            # generate abstract scenario and concrete scenario
+            generate abstract scenario and concrete scenario
             >>> twin.generate_abstract_scenario()
             >>> twin.generate_concrete_scenario()
 
-            # prepare simulation with start time, end time, seed, and step size
+            prepare simulation with start time, end time, seed, and step size
             >>> twin.prepare_simulation(start_time=3600 * 8, end_time=3600 * 10, seed=[101], step_length=0.1)
 
         Returns:

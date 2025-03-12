@@ -39,7 +39,7 @@ def prepare_scenario_config(input_config: dict) -> dict:
     scenario_config_dict["network_name"] = input_config.get("Network").get("NetworkName")
     scenario_config_dict["sim_name"] = f"{input_config.get("Network").get("NetworkName")}.sumocfg"
 
-    # TODO not copy generated files to generated_sumo_dir in beta version
+    # TODO Do not copy generated files to generated_sumo_dir in beta version
 #     # check whether required files exist in the input dir
 #     required_files = {key: value for key, value in scenario_config_dict.items() if key.startswith("path_")}
 #

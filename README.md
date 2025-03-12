@@ -8,12 +8,19 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-03-12
+
+* updated behavior optimization using mealpy
+
+![1741810140658](image/README/1741810140658.png)
+
+TODO: Integrate BehaviorOpt into realtwin packagte. Convert Turn and Inflow (mealpy)
+
 ### 2025-03-06
 
 Update tuturial_dev.py and tutorial_dev.md for detailed examples
 
 refactorred realtwin code
-
 
 ### 2025-03-05
 
