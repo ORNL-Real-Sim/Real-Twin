@@ -10,11 +10,20 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
+import subprocess
+import random
 from functools import partial
 
 from mealpy import FloatVar, SA, GA, TS
-from util_cali_behavior import fitness_func
+from util_cali_behavior import (get_travel_time_from_EdgeData_xml,
+                                update_flow_xml_from_solution,
+                                run_jtrrouter_to_create_rou_xml,
+                                result_analysis_on_EdgeData,
+                                run_SUMO_create_EdgeData,
+                                update_turn_flow_from_solution,
+                                create_rou_turn_flow_xml)
 import numpy as np
+import pyufunc as pf
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -28,8 +37,121 @@ import traci
 rng = np.random.default_rng(seed=812)
 
 
-class BehaviorCalib:
-    """ Behavior Optimization class for SUMO calibration
+def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, error_func: str = "rmse") -> float:
+    """ Evaluate the fitness of a given solution for SUMO calibration."""
+    # print(f"  :solution: {solution}")
+    # Set up SUMO command with car-following parameters
+    if error_func not in ["rmse", "mae"]:
+        raise ValueError("error_func must be either 'rmse' or 'mae'")
+
+    if solution[5] >= 9.3:  # emergencyDecel
+        solution[5] = 9.3
+    if solution[5] < solution[2]:  # emergencyDecel < deceleration
+        solution[5] = solution[2] + random.randrange(1, 5)
+    # print("after emergencydecel update", solution)
+
+    # get path from scenario_config
+    network_name = scenario_config.get("network_name")
+    sim_input_dir = Path(scenario_config.get("input_dir"))
+    path_net = pf.path2linux(sim_input_dir / f"{network_name}.net.xml")
+    path_flow = pf.path2linux(sim_input_dir / f"{network_name}.flow.xml")
+    path_turn = pf.path2linux(sim_input_dir / f"{network_name}.turn.xml")
+    path_rou = pf.path2linux(sim_input_dir / f"{network_name}.rou.xml")
+    path_EdgeData = pf.path2linux(sim_input_dir / "EdgeData.xml")
+    EB_tt = scenario_config.get("EB_tt")
+    WB_tt = scenario_config.get("WB_tt")
+    EB_edge_list = scenario_config.get("EB_edge_list")
+    WB_edge_list = scenario_config.get("WB_edge_list")
+
+    sim_name = scenario_config.get("sim_name")
+    sim_end_time = scenario_config.get("sim_end_time")
+
+    update_flow_xml_from_solution(path_flow, solution)
+
+    run_jtrrouter_to_create_rou_xml(network_name, path_net, path_flow, path_turn, path_rou)
+
+    # change the working directory to the input directory for SUMO
+    os.chdir(sim_input_dir)
+    # Define the command to run SUMO
+    sumo_command = f"sumo -c \"{sim_name}\""
+    sumoProcess = subprocess.Popen(sumo_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    sumoProcess.wait()
+
+    # Read output file or TraCI to evaluate the fitness
+    # Example: calculate average travel time, lower is better
+    # Logic to read and calculate travel time from SUMO output
+    travel_time_EB = get_travel_time_from_EdgeData_xml(path_EdgeData, EB_edge_list)
+    travel_time_WB = get_travel_time_from_EdgeData_xml(path_EdgeData, WB_edge_list)
+
+    if error_func == "rmse":
+        fitness_err = -np.sqrt(0.5 * ((EB_tt - travel_time_EB)**2 + (WB_tt - travel_time_WB)**2))
+    elif error_func == "mae":
+        fitness_err = -((abs(EB_tt - travel_time_EB) + abs(WB_tt - travel_time_WB)) / 2)
+    else:
+        raise ValueError("error_func must be either 'rmse' or 'mae'")
+
+    # Calculate GEH from updated results
+    path_summary = pf.path2linux(sim_input_dir / "summary.xlsx")
+    calibration_target = scenario_config.get("calibration_target")
+    sim_start_time = scenario_config.get("sim_start_time")
+    sim_end_time = scenario_config.get("sim_end_time")
+    _, mean_geh, geh_percent = result_analysis_on_EdgeData(path_summary,
+                                                           path_EdgeData,
+                                                           calibration_target,
+                                                           sim_start_time,
+                                                           sim_end_time)
+    print(f"  :GEH: Mean Percentage: {mean_geh}, {geh_percent}")
+
+    return fitness_err
+
+
+def obj_func(solution: list | np.ndarray, scenario_config: dict = None) -> float:
+    """ Objective function for SUMO calibration."""
+    """ Run a single calibration iteration to get the best solution """
+
+    path_turn = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_turn"))
+    path_inflow = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_inflow"))
+    path_summary = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_summary"))
+    path_edge = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_edge"))
+
+    # TODO will remove in the future iteration
+    os.chdir(scenario_config.get("input_dir"))
+
+    # update turn and flow
+    df_turn, df_inflow = update_turn_flow_from_solution(path_turn,
+                                                        path_inflow,
+                                                        solution,
+                                                        scenario_config["calibration_interval"],
+                                                        scenario_config["demand_interval"])
+
+    # update rou.xml from updated turn and flow
+    create_rou_turn_flow_xml(scenario_config.get("network_name"),
+                             scenario_config.get("sim_start_time"),
+                             scenario_config.get("sim_end_time"),
+                             df_turn,
+                             df_inflow,
+                             scenario_config.get("input_dir"))
+
+    # run SUMO to get EdgeData.xml
+    run_SUMO_create_EdgeData(scenario_config.get("sim_name"),
+                             scenario_config.get("sim_end_time"))
+
+    # analyze EdgeData.xml to get best solution
+    best_flag, mean_GEH, GEH_percent = result_analysis_on_EdgeData(path_summary,
+                                                                   path_edge,
+                                                                   scenario_config["calibration_target"],
+                                                                   scenario_config["sim_start_time"],
+                                                                   scenario_config["sim_end_time"])
+    print(f"  :GEH: Mean Percentage: {mean_GEH}, {GEH_percent}")
+    return mean_GEH
+
+
+class TurnInflowCalib:
+    """ Behavior Optimization class for SUMO calibration.
+
+    See Also:
+        Problem_dict: https://mealpy.readthedocs.io/en/latest/pages/general/simple_guide.html
+        termination_dict: https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination
 
     Args:
         problem_dict (dict): dictionary containing the problem definition.
@@ -49,33 +171,6 @@ class BehaviorCalib:
                                "max_time": 3600,  # max time in seconds
                                "max_early_stop": 20,}
 
-    Notes:
-        We use the mealpy library for optimization. mealpy is a Python library for optimization algorithms.
-            https://mealpy.readthedocs.io/en/latest/index.html
-
-        1. The `init_solution` parameter is used to provide initial solutions for the population. None by default.
-        2. Behavior includes: min_gap(meters), acceleration(m/s^2), deceleration(m/s^2), sigma, tau, and emergencyDecel.
-
-    See Also:
-        Problem_dict: https://mealpy.readthedocs.io/en/latest/pages/general/simple_guide.html
-        termination_dict: https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination
-
-    Examples:
-        >>> from realtwin import BehaviorOpt
-        >>> prob_dict = {"obj_func": partial(fitness_func, scenario_config=scenario_config, error_func="rmse"),
-                        "bounds": FloatVar(lb=[1.0, 2.5, 4, 0.0, 0.25, 5.0], ub=[3.0, 3.0, 5.3, 1.0, 1.25, 9.3],),
-                        "minmax": "max",  # maximize or minimize
-                        "log_to": "console",
-                        "save_population": True}
-        >>> init_solution = [2.5, 2.6, 4.5, 0.5, 1.0, 9.0]
-        >>> term_dict = {"max_epoch": 500, "max_fe": 10000, "max_time": 3600, "max_early_stop": 20}
-        >>> opt = BehaviorOpt(problem_dict=prob_dict, init_solution=init_solution, term_dict=term_dict)
-        >>> g_best, model_opt = opt.run_GA(epoch=1000, pop_size=30, pc=0.95, pm=0.1, sel_model="BaseGA")
-
-        Save result figures to output_dir
-        >>> opt.run_vis(output_dir="output_dir", model=model_opt)
-        >>> print(g_best.solution)
-        >>> print(g_best.target.fitness)
     """
 
     def __init__(self, problem_dict: dict = None, init_solution: list = None, term_dict: dict = None):
@@ -146,9 +241,10 @@ class BehaviorCalib:
         """Run Genetic Algorithm (GA) for behavior optimization.
 
         Note:
-            1. The `ga_model` parameter allows you to choose different types of GA models. Default is "BaseGA". Options include "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", and "SingleGA".
-            2. Additional keyword arguments (`**kwargs`) can be passed for specific GA models.
-            3. Please check original GA model documentation for more kwargs in details: https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
+            1. The `init_solution` parameter is used to provide initial solutions for the population. None by default.
+            2. The `ga_model` parameter allows you to choose different types of GA models. Default is "BaseGA". Options include "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", and "SingleGA".
+            3. Additional keyword arguments (`**kwargs`) can be passed for specific GA models.
+            4. Please check original GA model documentation for more kwargs in details: https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
 
         See Also:
             https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
@@ -207,7 +303,7 @@ class BehaviorCalib:
         g_best = model_ga.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func(g_best.solution, scenario_config=scenario_config, error_func="rmse")
+        obj_func(g_best.solution, scenario_config=scenario_config)
 
         return (g_best, model_ga)
 
@@ -271,7 +367,7 @@ class BehaviorCalib:
         g_best = model_sa.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func(g_best.solution, scenario_config=scenario_config, error_func="rmse")
+        obj_func(g_best.solution, scenario_config=scenario_config)
 
         return (g_best, model_sa)
 
@@ -308,7 +404,7 @@ class BehaviorCalib:
         g_best = model_ts.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func(g_best.solution, scenario_config=scenario_config, error_func="rmse")
+        obj_func(g_best.solution, scenario_config=scenario_config)
 
         return (g_best, model_ts)
 
@@ -321,8 +417,8 @@ if __name__ == "__main__":
         "sim_name": "chatt.sumocfg",
         "sim_start_time": 28800,
         "sim_end_time": 32400,
-        "path_turn": "chatt.turn.xml",
-        "path_inflow": "chatt.inflow.xml",
+        "path_turn": "turn.xlsx",
+        "path_inflow": "inflow.xlsx",
         "path_summary": "summary.xlsx",
         "path_edge": 'EdgeData.xml',
         "calibration_target": {'GEH': 5, 'GEHPercent': 0.85},
@@ -339,9 +435,9 @@ if __name__ == "__main__":
     }
 
     problem_dict = {
-        "obj_func": partial(fitness_func, scenario_config=scenario_config, error_func="rmse"),
-        "bounds": FloatVar(lb=[1.0, 2.5, 4, 0.0, 0.25, 5.0], ub=[3.0, 3.0, 5.3, 1.0, 1.25, 9.3],),
-        "minmax": "max",  # maximize or minimize
+        "obj_func": partial(obj_func, scenario_config=scenario_config),
+        "bounds": FloatVar(lb=[0] * 12 + [50] * 4, ub=[1] * 12 + [200] * 4),
+        "minmax": "min",  # maximize or minimize
         "log_to": "console",
         # "log_to": "file",
         # "log_file": "result.log",
@@ -355,15 +451,15 @@ if __name__ == "__main__":
         "max_early_stop": 20,
     }
 
-    init_vals = [2.5, 2.6, 4.5, 0.5, 1.0, 9.0]
+    init_vals = [0.5] * 12 + [100] * 4  # initial values for the optimization
 
-    opt = BehaviorCalib(problem_dict=problem_dict, init_solution=init_vals, term_dict=term_dict)
+    opt = TurnInflowCalib(problem_dict=problem_dict, init_solution=init_vals, term_dict=term_dict)
 
     # Run Genetic Algorithm
-    # g_best = opt.run_GA(epoch=1000, pop_size=30, pc=0.95, pm=0.1, sel_model="BaseGA")
+    g_best = opt.run_GA(epoch=1000, pop_size=10, pc=0.95, pm=0.1, sel_model="BaseGA")
 
     # Run Simulated Annealing
     # g_best = opt.run_SA(epoch=1000, pop_size=2, temp_init=100, cooling_rate=0.98, scale=0.1, sel_model="OriginalSA")
 
     # Run Tabu Search
-    g_best = opt.run_TS(epoch=1000, pop_size=2, tabu_size=10, neighbour_size=10, perturbation_scale=0.1)
+    # g_best = opt.run_TS(epoch=1000, pop_size=2, tabu_size=10, neighbour_size=10, perturbation_scale=0.1)
