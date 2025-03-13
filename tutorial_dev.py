@@ -16,16 +16,18 @@ import realtwin as rt
 
 if __name__ == '__main__':
 
+    # Prepare your configuration file (in YAML format)
     CONFIG_FILE = "./public_configs.yaml"
 
     # initialize the realtwin object
-    twin = rt.REALTWIN(input_config_file=CONFIG_FILE, verbose=True)
+    twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
 
     # NOTE optional: crate or delete a Python virtual environment for the simulation
     # twin.venv_create(venv_name=twin._venv_name, venv_dir=twin.input_config["output_dir"])
     # twin.venv_delete(venv_name=twin._venv_name, venv_dir=twin.input_config["output_dir"])
 
     # check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
+    # twin.env_setup(sel_sim=["SUMO", "VISSIM"])
     twin.env_setup(sel_sim=["SUMO", "VISSIM"])
 
     # NOTE optional: check simulator including additional selection of directories
@@ -34,7 +36,7 @@ if __name__ == '__main__':
     # twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir)
 
     # NOTE optional: strict simulator check, if the version is not matched, install the required version
-    # twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir, sumo_version="1.21.0", strict_sumo_version=True)
+    # twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir, strict_sumo_version="1.21.0")
 
     # generate abstract scenario
     twin.generate_abstract_scenario(incl_elevation_tif=True)
@@ -46,8 +48,7 @@ if __name__ == '__main__':
     twin.prepare_simulation()
 
     # perform calibration
-    # keyword arguments can be passed to specify the calibration options
-    # or change from internal and external configuration files
+    # Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
     twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "SA"})
 
     # post-process the simulation results

@@ -1,13 +1,12 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
-# This file is part of RealTwin and is distributed under a __TBD__           #
+# This file is part of RealTwin and is distributed under a MIT               #
 # license. For the licensing terms see the LICENSE file in the top-level     #
 # directory.                                                                 #
 #                                                                            #
-# Contributors (Add you name below to acknowledge your contribution):        #
-# Xiangyong Roy Luo                                                          #
+# Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
 """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group"""
@@ -31,10 +30,10 @@ from realtwin.func_lib._d_concrete_scenario._concreteScenario import ConcreteSce
 from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
 
 # calibration
-from realtwin.func_lib._f_calibration.algo_sumo._sumo_calibration import cali_sumo
+from realtwin.func_lib._f_calibration.calibration_sumo import cali_sumo
 
 
-class REALTWIN:
+class RealTwin:
     """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group that
     enables the simulation of twin-structured cities.
     """
@@ -68,12 +67,9 @@ class REALTWIN:
                   *,
                   sel_sim: list = None,
                   sel_dir: list = None,
-                  sumo_version: str = "1.21.0",
-                  vissim_version: str = "",
-                  aimsun_version: str = "",
-                  strict_sumo_version: bool = False,
-                  strict_vissim_version: bool = False,
-                  strict_aimsun_version: bool = False,
+                  strict_sumo_version: str = None,
+                  strict_vissim_version: str = None,
+                  strict_aimsun_version: str = None,
                   create_venv: bool = False,
                   **kwargs) -> bool:
         """Check and set up the environment for the simulation
@@ -82,15 +78,12 @@ class REALTWIN:
             sel_sim (list): select simulator to be set up. Default is None.
                 Currently available options are ["SUMO", "VISSIM", "AIMSUN"].
             sel_dir (list): A list of directories to search for the executables. Defaults to None.
-            sumo_version (str): The version of SUMO to be installed. Default is "1.20.0".
-            vissim_version (str): The version of VISSIM to be installed. Default is "".
-            aimsun_version (str): The version of Aimsun to be installed. Default
-            strict_sumo_version (bool): Whether to strictly check the version is installed.
-                Default is False.
-            strict_vissim_version (bool): Whether to strictly check the version is installed.
-                Default is False.
-            strict_aimsun_version (bool): Whether to strictly check the version is installed.
-                Default is False.
+            strict_sumo_version (str): Whether to strictly check the version is installed.
+                if specified, will check and install the version. Default is None.
+            strict_vissim_version (str): Whether to strictly check the version is installed.
+                if specified, will check and install the version. Default is False.
+            strict_aimsun_version (str): Whether to strictly check the version is installed.
+                if specified, will check and install the version. Default is False.
             create_venv (bool): Whether to create a virtual environment. Default is False.
             kwargs: Additional keyword arguments.
 
@@ -98,17 +91,17 @@ class REALTWIN:
             >>> import realtwin as rt
             >>> twin = rt.REALTWIN(input_config_file="config.yaml", verbose=True)
 
-            # check simulator is installed or not, default to SUMO, optional: VISSIM, AIMSUN
+            check simulator is installed or not, default to SUMO, optional: VISSIM, AIMSUN
             >>> twin.env_setup(sel_sim=["SUMO"])
 
-            # add additional directories to search for the executables
+            add additional directories to search for the executables
             >>> additional_dir = [r"path-to-your-local-installed-sumo-bin"]
             >>> twin.env_setup(sel_sim=["SUMO"], sel_dir=additional_dir)
 
-            # strict version check: will install the required version if not found
+            strict version check: will install the required version if not found
             >>> twin.env_setup(sel_sim=["SUMO"], sumo_version="1.21.0", strict_sumo_version=True)
 
-            # or with additional directories
+            or with additional directories
             >>> twin.env_setup(sel_sim=["SUMO"], sel_dir=additional_dir,
             >>>                sumo_version="1.21.0", strict_sumo_version=True)
 
@@ -125,7 +118,7 @@ class REALTWIN:
 
         # 0. Check if the sim_env is selected,
         #    default to SUMO, case insensitive and add self.sel_sim as a class attribute
-        self.sel_sim = ["sumo"] if not sel_sim else [sim.lower() for sim in sel_sim]
+        sel_sim = ["sumo"] if not sel_sim else [sim.lower() for sim in sel_sim]
 
         # 1. Check simulator installation - mapping function
         simulator_installation = {
@@ -135,28 +128,28 @@ class REALTWIN:
         }
 
         # 2. check if the simulator is installed, if not, install it
-        print("\nChecking and installing the selected simulators:")
+        print("\nCheck / install the selected simulators:")
         kwargs['sel_dir'] = sel_dir
-
-        kwargs['sumo_version'] = sumo_version
         kwargs['strict_sumo_version'] = strict_sumo_version
-
-        kwargs['vissim_version'] = vissim_version
         kwargs['strict_vissim_version'] = strict_vissim_version
-
-        kwargs['aimsun_version'] = aimsun_version
         kwargs['strict_aimsun_version'] = strict_aimsun_version
-
         kwargs['verbose'] = self.verbose
 
-        for simulator in self.sel_sim:
+        invalid_sim = []
+        for simulator in sel_sim:
             try:
-                simulator_installation.get(simulator)(**kwargs)
-                print()
+                sim_status = simulator_installation.get(simulator)(**kwargs)
+                if not sim_status:
+                    invalid_sim.append(simulator)
             except Exception:
-                print()
-                self.sel_sim.remove(simulator)
-                print(f"  :Could not install {simulator} on your operation system \n")
+                invalid_sim.append(simulator)
+                print(f"\n  :Could not install {simulator} (strict version) on your operation system")
+
+        sel_sim_ = list(set(sel_sim) - set(invalid_sim))
+
+        if not sel_sim_:
+            raise Exception("  :Error: No simulator is available (strict version). Please select available version(s).")
+        self.sel_sim = sel_sim_
 
         return True
 
@@ -181,7 +174,7 @@ class REALTWIN:
         # 1. Generate the abstract scenario based on the input data
         self.abstract_scenario = AbstractScenario(self.input_config)
         self.abstract_scenario.update_AbstractScenario_from_input()
-        print("  :Abstract Scenario successfully generated.")
+        print("\nAbstract Scenario successfully generated.")
 
     def generate_concrete_scenario(self):
         """Generate the concrete scenario: generate unified scenario from abstract scenario
@@ -196,7 +189,7 @@ class REALTWIN:
 
         self.concrete_scenario = ConcreteScenario()
         self.concrete_scenario.get_unified_scenario(self.abstract_scenario)
-        print("  :Concrete Scenario successfully generated.")
+        print("\nConcrete Scenario successfully generated.")
 
     def prepare_simulation(self,
                            start_time: float = 3600 * 8,
@@ -212,20 +205,20 @@ class REALTWIN:
             step_length (float): The simulation step size. Default is 0.1.
 
         Examples:
-            # import realtwin package
+            import realtwin package
             >>> import realtwin as rt
 
-            # load the input configuration file
+            load the input configuration file
             >>> twin = rt.REALTWIN(input_config_file="config.yaml", verbose=True)
 
-            # check simulator is installed or not, default to SUMO
+            check simulator is installed or not, default to SUMO
             >>> twin.env_setup(sel_sim=["SUMO"])
 
-            # generate abstract scenario and concrete scenario
+            generate abstract scenario and concrete scenario
             >>> twin.generate_abstract_scenario()
             >>> twin.generate_concrete_scenario()
 
-            # prepare simulation with start time, end time, seed, and step size
+            prepare simulation with start time, end time, seed, and step size
             >>> twin.prepare_simulation(start_time=3600 * 8, end_time=3600 * 10, seed=[101], step_length=0.1)
 
         Returns:
@@ -249,7 +242,7 @@ class REALTWIN:
                                     end_time=end_time,
                                     seed=seed,
                                     step_length=step_length)
-            print(f"  :{simulator.upper()} simulation successfully Prepared.")
+            print(f"\n{simulator.upper()} simulation successfully Prepared.")
         return True
 
     def calibrate(self, *, sel_algo: dict = None) -> bool:

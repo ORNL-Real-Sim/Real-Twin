@@ -24,9 +24,8 @@ from realtwin.func_lib._a_install_simulator.check_sim_env import is_sumo_install
 from realtwin.utils_lib.download_file_from_web import download_single_file_from_web
 
 
-def install_sumo(sumo_version: str = "1.21.0",
-                 sel_dir: list = None,
-                 strict_sumo_version: bool = False,
+def install_sumo(sel_dir: list = None,
+                 strict_sumo_version: str = "1.21.0",
                  verbose: bool = True, **kwargs) -> bool:
     """Install the SUMO simulator.
 
@@ -49,19 +48,18 @@ def install_sumo(sumo_version: str = "1.21.0",
     version_lst = is_sumo_installed(sel_dir=sel_dir, verbose=verbose)
     if version_lst:
         # Check if the exact version of SUMO is installed
-        if strict_sumo_version and sumo_version not in version_lst:
-            print(f"  :SUMO {sumo_version} is not installed yet.")
-            print(f"  :Available versions: {version_lst}")
-            print("  :strict_sumo_version is enabled, installing the required version...")
-        else:
+        if strict_sumo_version is None or strict_sumo_version in version_lst:
             print(f"  :SUMO is already installed, available versions: {version_lst}")
             return True
+
+        print(f"\n  :Installing strict_sumo_version SUMO version {strict_sumo_version} "
+              f"(Available versions: {version_lst})...")
 
     # If SUMO not installed,
     # Or strict_sumo_version is True and the version is not installed
     # Install the SUMO
     if pf.is_windows():
-        return install_sumo_windows(sumo_version, verbose=verbose, **kwargs)
+        return install_sumo_windows(strict_sumo_version, verbose=verbose)
 
     if pf.is_linux():
         print("  :Error: Linux is not supported yet.")

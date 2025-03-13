@@ -12,7 +12,7 @@
 # We will provide the default values for the configurations
 # user can override these values by providing the same key and different values
 
-input_dir: C:\Users\xh8\ornl_work\github_workspace\Real-Twin\datasets\chattanooga
+input_dir: C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\chattanooga
 output_dir:  # optional
 
 # Absolute and Concrete Scenario Generation
@@ -87,6 +87,20 @@ Calibration:
             tau: [0.25, 1.25]
             emergencyDecel: [5.0, 9.3]
 
+        # For mealpy configuration
+        epoch: 1000  # number of generations
+        pop_size: 30  # population size
+        pc: 0.75  # crossover probability
+        pm: 0.1  # mutation probability
+
+        selection: "roulette"  # Options: roulette, tournament, random
+        key_way: 0.2  # key way for tournament selection
+        crossover: "uniform"  # Options: uniform, one_point, multi_point, arithmetic
+        mutation: "swap"  # Options: swap, flip
+        elite_best: 0.1  # percentage of the best in elite group, or int, the number of best elite
+        elite_worst: 0.3  # percentage of the worst in elite group, or int, the number of worst elite
+        model_selection: "BaseGA"  #  BaseGA, EliteSingleGA, EliteMultiGA, MultiGA, SingleGA
+
     # configuration for the Simulated Annealing
     sa_config:
         # turn and inflow and behavior
@@ -127,6 +141,14 @@ Calibration:
             sigma: [0.0, 1.0]
             tau: [0.25, 1.25]
             emergencyDecel: [5.0, 9.3]
+
+        # For mealpy configuration
+        epoch: 1000  # number of generations
+        temp_init: 100  # initial temperature
+        # cooling_rate: 0.891  # same as previous
+        scale: 0.1  # scale for the temperature
+        model_selection: "OriginalSA"  # OriginalSA, GaussianSA, SwarmSA
+
 
     # configuration for the Tabu Search
     ts_config:
@@ -171,3 +193,10 @@ Calibration:
             sigma: [0.0, 1.0]
             tau: [0.25, 1.25]
             emergencyDecel: [5.0, 9.3]
+
+        # For mealpy configuration
+        epoch: 1000  # number of generations
+        # tabu_size: 10  # size of the tabu list; same as previous value
+        neighbour_size: 10  # size of the neighbourhood for generating candidate solutions
+        perturbation_scale: 0.05  # scale of perturbation for the solution
+

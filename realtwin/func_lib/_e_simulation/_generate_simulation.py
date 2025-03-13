@@ -26,9 +26,9 @@ class SimPrep:
 
     def create_sumo_sim(self,
                         ConcreteScn,
-                        start_time: float,
-                        end_time: float,
-                        seed: list | int,
+                        start_time: float = 3600 * 8,
+                        end_time: float = 3600 * 10,
+                        seed: list | int = 812,
                         step_length: float = 0.1):
         """Prepare SUMO documents for simulation.
         """
@@ -54,13 +54,24 @@ class SimPrep:
                                     end_time,
                                     seed,
                                     step_length)
+        self.SUMOSim.importSignal(ConcreteScn)
         # print("  :SUMO simulation is prepared.")
 
-    def create_aimsun_sim(self, ConcreteScn, start_time, end_time):
+    def create_aimsun_sim(self,
+                          ConcreteScn,
+                          start_time: float = 3600 * 8,
+                          end_time: float = 3600 * 10,
+                          seed: list | int = 812,
+                          step_length: float = 0.1):
         """Prepare Aimsun documents for simulation."""
         self.AimsunSim.importDemand(ConcreteScn, start_time, end_time)
 
-    def create_vissim_sim(self, ConcreteScn, start_time, end_time):
+    def create_vissim_sim(self,
+                          ConcreteScn,
+                          start_time: float = 3600 * 8,
+                          end_time: float = 3600 * 10,
+                          seed: list | int = 812,
+                          step_length: float = 0.1):
         """Prepare VISSIM documents for simulation."""
         pass
 
