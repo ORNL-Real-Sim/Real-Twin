@@ -30,7 +30,7 @@ from realtwin.func_lib._d_concrete_scenario._concreteScenario import ConcreteSce
 from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
 
 # calibration
-from realtwin.func_lib._f_calibration.algo_sumo._sumo_calibration import cali_sumo
+from realtwin.func_lib._f_calibration.calibration_sumo import cali_sumo
 
 
 class RealTwin:

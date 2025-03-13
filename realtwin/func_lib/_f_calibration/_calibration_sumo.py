@@ -1,5 +1,14 @@
 '''
 ##############################################################
+# Created Date: Thursday, March 13th 2025
+# Contact Info: luoxiangyong01@gmail.com
+# Author/Copyright: Mr. Xiangyong Luo
+##############################################################
+'''
+
+
+'''
+##############################################################
 # Created Date: Wednesday, February 26th 2025
 # Contact Info: luoxiangyong01@gmail.com
 # Author/Copyright: Mr. Xiangyong Luo
@@ -9,13 +18,8 @@ from pathlib import Path
 import pyufunc as pf
 import copy
 
-from realtwin.func_lib._f_calibration.algo_sumo.ga_turn_inflow import GeneticAlgorithmForTurnFlow
-from realtwin.func_lib._f_calibration.algo_sumo.sa_turn_inflow import SimulatedAnnealingForTurnFlow
-from realtwin.func_lib._f_calibration.algo_sumo.ts_turn_inflow import TabuSearchForTurnFlow
-
-from realtwin.func_lib._f_calibration.algo_sumo.ga_behavior import GeneticAlgorithmForBehavioral
-from realtwin.func_lib._f_calibration.algo_sumo.sa_behavior import SimulatedAnnealingForBehavioral
-from realtwin.func_lib._f_calibration.algo_sumo.ts_behavior import TabuSearchForBehavioral
+from realtwin.func_lib._f_calibration.algo_sumo_.calib_turn_inflow import TurnInflowCalib
+from realtwin.func_lib._f_calibration.algo_sumo_.calib_behavior import BehaviorCalib
 
 
 def prepare_scenario_config(input_config: dict) -> dict:
@@ -26,7 +30,7 @@ def prepare_scenario_config(input_config: dict) -> dict:
     # TODO : use dummy input dir for calibration in beta version, change in the future
     # # add input_dir to scenario_config from generated SUMO dir(scenario generation)
     # generated_sumo_dir = pf.path2linux(Path(input_config["output_dir"]) / "sumo")
-    generated_sumo_dir = pf.path2linux(Path(__file__).parents[4] / "datasets/input_dir_dummy/")
+    generated_sumo_dir = pf.path2linux(Path(__file__).parents[3] / "datasets/input_dir_dummy/")
     print(f"  :use dummy input dir: {generated_sumo_dir} for calibration in beta version")
 
     if Path(generated_sumo_dir).is_dir():
@@ -95,14 +99,14 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
     # check whether configs are provided
 
     algo_turn_flow = {
-        "ga": GeneticAlgorithmForTurnFlow,
-        "sa": SimulatedAnnealingForTurnFlow,
-        "ts": TabuSearchForTurnFlow}
+        "ga": TurnInflowCalib,
+        "sa": TurnInflowCalib,
+        "ts": TurnInflowCalib}
 
     algo_behavior = {
-        "ga": GeneticAlgorithmForBehavioral,
-        "sa": SimulatedAnnealingForBehavioral,
-        "ts": TabuSearchForBehavioral}
+        "ga": BehaviorCalib,
+        "sa": BehaviorCalib,
+        "ts": BehaviorCalib}
 
     # print(f"  : scenario_config: {scenario_config_turn_inflow}")
     # print(f"  : algo_config: {algo_config}")
