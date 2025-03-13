@@ -436,7 +436,7 @@ if __name__ == "__main__":
 
     problem_dict = {
         "obj_func": partial(obj_func, scenario_config=scenario_config),
-        "bounds": FloatVar(lb=[-99999] * 16, ub=[99999] * 16),
+        "bounds": FloatVar(lb=[0] * 12 + [50] * 4, ub=[1] * 12 + [200] * 4),
         "minmax": "min",  # maximize or minimize
         "log_to": "console",
         # "log_to": "file",
@@ -451,10 +451,7 @@ if __name__ == "__main__":
         "max_early_stop": 20,
     }
 
-    init_vals = [0.5, 0.5, 0.5, 0.5, 0.5,
-                 0.5, 0.5, 0.5, 0.5, 0.5,
-                 0.5, 0.5, 100, 100, 100,
-                 100]
+    init_vals = [0.5] * 12 + [100] * 4  # initial values for the optimization
 
     opt = TurnInflowCalib(problem_dict=problem_dict, init_solution=init_vals, term_dict=term_dict)
 
