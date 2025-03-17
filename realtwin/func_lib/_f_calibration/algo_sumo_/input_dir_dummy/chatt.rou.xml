@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2025-03-12 13:56:52 by Eclipse SUMO jtrrouter Version 1.21.0
+<!-- generated on 2025-03-17 13:08:18 by Eclipse SUMO jtrrouter Version 1.21.0
 <jtrrouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/jtrrouterConfiguration.xsd">
 
     <input>
-        <net-file value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/mealpy_tes/input_dir_dummy/chatt.net.xml"/>
-        <route-files value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/mealpy_tes/input_dir_dummy/chatt.flow.xml"/>
-        <turn-ratio-files value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/mealpy_tes/input_dir_dummy/chatt.turn.xml"/>
+        <net-file value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/realtwin/func_lib/_f_calibration/algo_sumo_/input_dir_dummy/chatt.net.xml"/>
+        <route-files value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/realtwin/func_lib/_f_calibration/algo_sumo_/input_dir_dummy/chatt.flow.xml"/>
+        <turn-ratio-files value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/realtwin/func_lib/_f_calibration/algo_sumo_/input_dir_dummy/chatt.turn.xml"/>
     </input>
 
     <output>
-        <output-file value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/mealpy_tes/input_dir_dummy/chatt.rou.xml"/>
+        <output-file value="C:/Users/xh8/ornl_work/github_workspace/Real-Twin-Dev/realtwin/func_lib/_f_calibration/algo_sumo_/input_dir_dummy/chatt.rou.xml"/>
     </output>
 
     <processing>
@@ -26,7 +26,7 @@
 -->
 
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
-    <vType id="car" minGap="2.36" accel="2.727759987614882" decel="4.363298085855509" emergencyDecel="8.749952294567894" sigma="1.0" tau="0.9389392912132507"/>
+    <vType id="car" minGap="1.33" accel="2.8936794387789253" decel="4.988796013739237" emergencyDecel="8.337206659175123" sigma="0.9381930678503487" tau="1.000104543261147"/>
     <vehicle id="1.0" type="car" depart="28800.00">
         <route edges="-309 -296"/>
     </vehicle>

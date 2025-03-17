@@ -8,6 +8,13 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-03-17
+
+* Re-design configuration file for better implementation and user-friendly midification
+* Update cooresponding codes based on updates from configurations
+
+![1742245531537](image/README/1742245531537.png)
+
 ### 2025-03-12
 
 * updated behavior optimization using mealpy

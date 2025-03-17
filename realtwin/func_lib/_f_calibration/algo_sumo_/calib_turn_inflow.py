@@ -37,7 +37,7 @@ import traci
 rng = np.random.default_rng(seed=812)
 
 
-def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = None) -> float:
+def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = None, **kwargs) -> float:
     """ Objective function for SUMO calibration."""
     """ Run a single calibration iteration to get the best solution """
 
@@ -105,14 +105,52 @@ class TurnInflowCalib:
 
     """
 
-    def __init__(self, problem_dict: dict = None, init_solution: list = None, term_dict: dict = None):
-        self.problem_dict = problem_dict
-        self.init_solution = init_solution
-        self.term_dict = term_dict
+    def __init__(self, scenario_config: dict = None, algo_config: dict = None, verbose: bool = True):
 
-        # check inputs
-        if problem_dict is None:
-            raise ValueError("problem_dict must be provided.")
+        self.scenario_config = scenario_config
+        self.algo_config = algo_config
+        self.verbose = verbose
+
+        # prepare termination criteria from scenario config
+        self.term_dict = {
+            "max_epoch": self.algo_config.get("max_epoch", 1000),
+            "max_fe": self.algo_config.get("max_fe", 10000),
+            "max_time": self.algo_config.get("max_time", 3600),
+            "max_early_stop": self.algo_config.get("max_early_stop", 20),
+        }
+
+        # prepare problem dict from algo config
+        init_params = self.algo_config.get("initial_params", None)
+        if isinstance(init_params, dict):
+            self.init_solution = init_params.values()
+        elif isinstance(init_params, list):
+            self.init_solution = init_params
+        elif isinstance(init_params, np.ndarray):
+            self.init_solution = init_params.tolist()
+        else:
+            if self.verbose:
+                print("  :Info: initial parameters are not provided, using None.")
+            self.init_solution = None
+
+        params_ranges = self.algo_config.get("params_ranges", None)
+        if isinstance(params_ranges, dict):
+            params_lb = [val[0] for val in params_ranges.values()]
+            params_ub = [val[1] for val in params_ranges.values()]
+        elif isinstance(params_ranges, list):  # list of tuples [(min, max), ...]
+            params_lb = [val[0] for val in params_ranges]
+            params_ub = [val[1] for val in params_ranges]
+        else:
+            raise ValueError("  :Error: params_ranges in configuration file must be a dict or list of tuples.")
+
+        self.problem_dict = {
+            "obj_func": partial(fitness_func_turn_flow, scenario_config=scenario_config),
+            "bounds": FloatVar(lb=params_lb, ub=params_ub,),
+            "minmax": "max",  # maximize or minimize
+            "log_to": "console",
+            # "log_to": "file",
+            # "log_file": "result.log",
+            "save_population": True,              # Default = False
+        }
 
     def _generate_initial_solutions(self, init_vals: list, pop_size: int) -> np.array:
         """Generate initial solutions for inputs.
@@ -156,20 +194,7 @@ class TurnInflowCalib:
         model.history.save_trajectory_chart(filename=Path(output_dir) / "trajectory")
         return True
 
-    def run_GA(self, *,
-               epoch: int = 1000,
-               pop_size: int = 50,
-               pc: float = 0.95,  # crossover probability
-               pm: float = 0.025,  # mutation probability
-
-               selection: str = "roulette",  # "roulette", "tournament", "random"
-               k_way: float = 0.2,  # k-way for tournament selection
-               crossover: str = "uniform",  # one_point, multi_point, uniform, arithmetic
-               mutation: str = "swap",  # flip, swap
-               elite_best: float | int = 0.1,  # percentage of the best in elite group, or int, the number of best elite
-               elite_worst: float | int = 0.3,  # percentage of the worst in elite group, or int, the number of worst elite
-               sel_model: str = "BaseGA",  # "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA"
-               **kwargs):
+    def run_GA(self, **kwargs):
         """Run Genetic Algorithm (GA) for behavior optimization.
 
         Note:
@@ -181,6 +206,9 @@ class TurnInflowCalib:
         See Also:
             https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
 
+        Warning:
+            You can change the input parameters only from input_config.yaml file.
+
         Args:
             epoch (int): the iterations. Defaults to 1000.
             pop_size (int): population size. Defaults to 50.
@@ -190,6 +218,25 @@ class TurnInflowCalib:
                 options: "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA".
             **kwargs: additional keyword arguments for specific GA models.
         """
+
+        epoch = self.algo_config.get("epoch", 1000)  # max iterations
+        pop_size = self.algo_config.get("pop_size", 50)  # population size
+        pc = self.algo_config.get("pc", 0.75)  # crossover probability
+        pm = self.algo_config.get("pm", 0.1)  # mutation probability
+
+        selection = self.algo_config.get("selection", "roulette")  # selection method
+        k_way = self.algo_config.get("k_way", 0.2)  # k-way for tournament selection
+        crossover = self.algo_config.get("crossover", "uniform")  # crossover method
+        mutation = self.algo_config.get("mutation", "swap")  # mutation method
+
+        # percentage of the best in elite group, or int, the number of best elite
+        elite_best = self.algo_config.get("elite_best", 0.1)
+
+        # percentage of the worst in elite group, or int, the number of worst elite
+        elite_worst = self.algo_config.get("elite_worst", 0.3)
+
+        # "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA"
+        sel_model = self.algo_config.get("model_selection", "BaseGA")
 
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
@@ -235,22 +282,18 @@ class TurnInflowCalib:
         g_best = model_ga.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        obj_func(g_best.solution, scenario_config=scenario_config)
+        fitness_func_turn_flow(g_best.solution, scenario_config=scenario_config)
 
         return (g_best, model_ga)
 
-    def run_SA(self, *,
-               epoch: int = 1000,
-               pop_size: int = 2,
-               temp_init: float = 100,
-               cooling_rate: float = 0.99,
-               scale: float = 0.1,
-               sel_model: str = "OriginalSA",  # "OriginalSA", "GaussianSA", "SwarmSA"
-               **kwargs):
+    def run_SA(self, **kwargs):
         """Run Simulated Annealing (SA) for behavior optimization.
 
         See Also:
             https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.physics_based.html#module-mealpy.physics_based.SA
+
+        Warning:
+            You can change the input parameters only from input_config.yaml file.
 
         Args:
             epoch (int): iterations. Defaults to 1000.
@@ -259,8 +302,15 @@ class TurnInflowCalib:
             cooling_rate (float): Defaults to 0.99.
             scale (float): the change scale of initialization. Defaults to 0.1.
             sel_model (str): select diff. Defaults to "OriginalSA".
-
         """
+
+        epoch = self.algo_config.get("epoch", 1000)  # max iterations
+        pop_size = self.algo_config.get("pop_size", 2)  # population size
+        temp_init = self.algo_config.get("temp_init", 100)  # initial temperature
+        cooling_rate = self.algo_config.get("cooling_rate", 0.891)  # cooling rate
+        scale = self.algo_config.get("scale", 0.1)  # scale of the change
+        sel_model = self.algo_config.get("model_selection", "OriginalSA")  # "OriginalSA", "GaussianSA", "SwarmSA"
+
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
 
@@ -299,7 +349,7 @@ class TurnInflowCalib:
         g_best = model_sa.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        obj_func(g_best.solution, scenario_config=scenario_config)
+        fitness_func_turn_flow(g_best.solution, scenario_config=scenario_config)
 
         return (g_best, model_sa)
 
@@ -324,6 +374,16 @@ class TurnInflowCalib:
 
         """
 
+        epoch = self.algo_config.get("epoch", 1000)  # max iterations
+        pop_size = self.algo_config.get("pop_size", 2)  # population size
+        tabu_size = self.algo_config.get("tabu_size", 10)  # maximum size of tabu list
+
+        # size of the neighborhood for generating candidate solutions
+        neighbour_size = self.algo_config.get("neighbour_size", 10)
+
+        # scale of perturbation for generating candidate solutions
+        perturbation_scale = self.algo_config.get("perturbation_scale", 0.05)
+
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
 
@@ -336,7 +396,7 @@ class TurnInflowCalib:
         g_best = model_ts.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        obj_func(g_best.solution, scenario_config=scenario_config)
+        fitness_func_turn_flow(g_best.solution, scenario_config=scenario_config)
 
         return (g_best, model_ts)
 
@@ -344,7 +404,7 @@ class TurnInflowCalib:
 if __name__ == "__main__":
 
     scenario_config = {
-        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\mealpy_tes\input_dir_dummy",
+        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\chattanooga",
         "network_name": "chatt",
         "sim_name": "chatt.sumocfg",
         "sim_start_time": 28800,
@@ -366,8 +426,47 @@ if __name__ == "__main__":
                          "-290", "-298", "-295"]
     }
 
+    ga_config = {"initial_parameters": {"min_gap": 2.5,        # minimum gap in meters
+                                        "acceleration": 2.6,  # max acceleration in m/s^2
+                                        "deceleration": 4.5,  # max deceleration in m/s^2
+                                        "sigma": 0.5,          # driver imperfection
+                                        "tau": 1.00,            # desired headway
+                                        "emergencyDecel": 9.0},   # emergency deceleration
+                 "params_ranges": {"min_gap": (1.0, 3.0),
+                                   "acceleration": (2.5, 3),
+                                   "deceleration": (4, 5.3),
+                                   "sigma": (0, 1),
+                                   "tau": (0.25, 1.25),
+                                   "emergencyDecel": (5.0, 9.3)},
+                 "num_generation": 50,
+
+                 "EB_tt": 240,
+                 "WB_tt": 180,
+                 "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
+                                  "-302", "-3221", "-322", "-313", "-284",
+                                  "-328", "-304"],
+                 "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
+                                  "-315", "-321", "-300", "-2851", "-285",
+                                  "-290", "-298", "-295"],
+                 "epoch": 1000,
+                 "pop_size": 30,
+                 "pc": 0.95,
+                 "pm": 0.1,
+                 "selection": "roulette",
+                 "k_way": 0.2,
+                 "crossover": "uniform",
+                 "mutation": "swap",
+                 "elite_best": 0.1,
+                 "elite_worst": 0.3,
+                 "model_selection": "BaseGA",
+                 "max_epoch": 500,
+                 "max_fe": 10000,
+                 "max_time": 3600,
+                 "max_early_stop": 20,
+                 }
+
     problem_dict = {
-        "obj_func": partial(obj_func, scenario_config=scenario_config),
+        "obj_func": partial(fitness_func_turn_flow, scenario_config=scenario_config),
         "bounds": FloatVar(lb=[0] * 12 + [50] * 4, ub=[1] * 12 + [200] * 4),
         "minmax": "min",  # maximize or minimize
         "log_to": "console",
@@ -385,10 +484,10 @@ if __name__ == "__main__":
 
     init_vals = [0.5] * 12 + [100] * 4  # initial values for the optimization
 
-    opt = TurnInflowCalib(problem_dict=problem_dict, init_solution=init_vals, term_dict=term_dict)
+    opt = TurnInflowCalib(scenario_config=scenario_config, algo_config=ga_config, verbose=True)
 
     # Run Genetic Algorithm
-    g_best = opt.run_GA(epoch=1000, pop_size=10, pc=0.95, pm=0.1, sel_model="BaseGA")
+    g_best = opt.run_GA()
 
     # Run Simulated Annealing
     # g_best = opt.run_SA(epoch=1000, pop_size=2, temp_init=100, cooling_rate=0.98, scale=0.1, sel_model="OriginalSA")

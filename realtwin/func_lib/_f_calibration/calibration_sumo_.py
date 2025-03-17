@@ -31,7 +31,7 @@ def prepare_scenario_config(input_config: dict) -> dict:
     # # add input_dir to scenario_config from generated SUMO dir(scenario generation)
     # generated_sumo_dir = pf.path2linux(Path(input_config["output_dir"]) / "sumo")
     generated_sumo_dir = pf.path2linux(Path(__file__).parents[3] / "datasets/input_dir_dummy/")
-    print(f"  :use dummy input dir: {generated_sumo_dir} for calibration in beta version")
+    print(f"  :use dummy input: {generated_sumo_dir} for calibration in beta version")
 
     if Path(generated_sumo_dir).is_dir():
         scenario_config_dict["input_dir"] = generated_sumo_dir
@@ -94,7 +94,7 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
                    for selected_algo in sel_algo.values()}
 
     # check algo_config with two levels
-    if not all(isinstance(v, dict) for v in algo_config.values()):
+    if not all(isinstance(config, dict) for config in algo_config.values()):
         raise ValueError("  :algo_config must be a dict with two levels with keys of 'ga', 'sa', and 'ts'")
     # check whether configs are provided
 
@@ -108,8 +108,7 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
         "sa": BehaviorCalib,
         "ts": BehaviorCalib}
 
-    # print(f"  : scenario_config: {scenario_config_turn_inflow}")
-    # print(f"  : algo_config: {algo_config}")
+    # prepare problem and termination criteria
 
     # run calibration based on the selected algorithm: optimize turn and inflow
     print("\n  :Optimize Turn and Inflow")
