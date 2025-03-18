@@ -8,6 +8,14 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-03-18
+
+* update code to run both original and new implementations in Calibration section
+* test two sets of algorithms
+
+* update code using universal configuration data
+* TODO: 1. refactor code 2. test scenarioes (multiple combinations between turn_inflow and behavior) 3. fix potential errors from package
+
 ### 2025-03-17
 
 * Re-design configuration file for better implementation and user-friendly midification
