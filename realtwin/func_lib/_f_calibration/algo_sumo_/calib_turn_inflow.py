@@ -15,13 +15,15 @@ import random
 from functools import partial
 
 from mealpy import FloatVar, SA, GA, TS
-from util_cali_behavior import (get_travel_time_from_EdgeData_xml,
-                                update_flow_xml_from_solution,
-                                run_jtrrouter_to_create_rou_xml,
-                                result_analysis_on_EdgeData,
-                                run_SUMO_create_EdgeData,
-                                update_turn_flow_from_solution,
-                                create_rou_turn_flow_xml)
+from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior import (
+    get_travel_time_from_EdgeData_xml,
+    update_flow_xml_from_solution,
+    run_jtrrouter_to_create_rou_xml,
+    result_analysis_on_EdgeData,
+    run_SUMO_create_EdgeData,
+    update_turn_flow_from_solution,
+    create_rou_turn_flow_xml)
+
 import numpy as np
 import pyufunc as pf
 
@@ -44,9 +46,9 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
     path_turn = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_turn"))
     path_inflow = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_inflow"))
     path_summary = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_summary"))
-    path_edge = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_edge"))
+    path_edge = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_edge", "EdgeData.xml"))
 
-    # TODO will remove in the future iteration
+    # TODO will remove in the future iteration - change current working dir at beginning of the calibration
     os.chdir(scenario_config.get("input_dir"))
 
     # update turn and flow
@@ -75,7 +77,10 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
                                                                    scenario_config["sim_start_time"],
                                                                    scenario_config["sim_end_time"])
     print(f"  :GEH: Mean Percentage: {mean_GEH}, {GEH_percent}")
-    return mean_GEH
+
+    # minimize the negative percentage of GEH and the mean GEH
+    # return [mean_GEH, -GEH_percent]
+    return [mean_GEH]
 
 
 class TurnInflowCalib:
@@ -105,24 +110,24 @@ class TurnInflowCalib:
 
     """
 
-    def __init__(self, scenario_config: dict = None, algo_config: dict = None, verbose: bool = True):
+    def __init__(self, scenario_config: dict = None, turn_inflow_config: dict = None, verbose: bool = True):
 
         self.scenario_config = scenario_config
-        self.algo_config = algo_config
+        self.turn_inflow_cfg = turn_inflow_config
         self.verbose = verbose
 
         # prepare termination criteria from scenario config
         self.term_dict = {
-            "max_epoch": self.algo_config.get("max_epoch", 1000),
-            "max_fe": self.algo_config.get("max_fe", 10000),
-            "max_time": self.algo_config.get("max_time", 3600),
-            "max_early_stop": self.algo_config.get("max_early_stop", 20),
+            "max_epoch": self.turn_inflow_cfg.get("max_epoch", 1000),
+            "max_fe": self.turn_inflow_cfg.get("max_fe", 10000),
+            "max_time": self.turn_inflow_cfg.get("max_time", 3600),
+            "max_early_stop": self.turn_inflow_cfg.get("max_early_stop", 20),
         }
 
         # prepare problem dict from algo config
-        init_params = self.algo_config.get("initial_params", None)
+        init_params = self.turn_inflow_cfg.get("initial_params", None)
         if isinstance(init_params, dict):
-            self.init_solution = init_params.values()
+            self.init_solution = list(init_params.values())
         elif isinstance(init_params, list):
             self.init_solution = init_params
         elif isinstance(init_params, np.ndarray):
@@ -132,7 +137,7 @@ class TurnInflowCalib:
                 print("  :Info: initial parameters are not provided, using None.")
             self.init_solution = None
 
-        params_ranges = self.algo_config.get("params_ranges", None)
+        params_ranges = self.turn_inflow_cfg.get("params_ranges", None)
         if isinstance(params_ranges, dict):
             params_lb = [val[0] for val in params_ranges.values()]
             params_ub = [val[1] for val in params_ranges.values()]
@@ -143,13 +148,14 @@ class TurnInflowCalib:
             raise ValueError("  :Error: params_ranges in configuration file must be a dict or list of tuples.")
 
         self.problem_dict = {
-            "obj_func": partial(fitness_func_turn_flow, scenario_config=scenario_config),
+            "obj_func": partial(fitness_func_turn_flow, scenario_config=self.scenario_config),
             "bounds": FloatVar(lb=params_lb, ub=params_ub,),
-            "minmax": "max",  # maximize or minimize
+            "minmax": "min",  # maximize or minimize
             "log_to": "console",
             # "log_to": "file",
             # "log_file": "result.log",
             "save_population": True,              # Default = False
+            # "obj_weights": [0.7, 0.3],  # weights for multi-objective optimization
         }
 
     def _generate_initial_solutions(self, init_vals: list, pop_size: int) -> np.array:
@@ -183,18 +189,25 @@ class TurnInflowCalib:
             model: the optimized model object.
         """
 
+        # check if output_dir exists
+        os.makedirs(output_dir, exist_ok=True)
+
         # save the best solution
-        model.history.save_global_objectives_chart(filename=Path(output_dir) / "global_objectives")
-        model.history.save_local_objectives_chart(filename=Path(output_dir) / "local_objectives")
-        model.history.save_global_best_fitness_chart(filename=Path(output_dir) / "global_best_fitness")
-        model.history.save_local_best_fitness_chart(filename=Path(output_dir) / "local_best_fitness")
-        model.history.save_runtime_chart(filename=Path(output_dir) / "runtime")
-        model.history.save_exploration_exploitation_chart(filename=Path(output_dir) / "exploration_exploitation")
-        model.history.save_diversity_chart(filename=Path(output_dir) / "diversity")
-        model.history.save_trajectory_chart(filename=Path(output_dir) / "trajectory")
+        try:
+            model.history.save_global_objectives_chart(filename=f"{output_dir}/global_objectives")
+            model.history.save_local_objectives_chart(filename=f"{output_dir}/local_objectives")
+            model.history.save_global_best_fitness_chart(filename=f"{output_dir}/global_best_fitness")
+            model.history.save_local_best_fitness_chart(filename=f"{output_dir}/local_best_fitness")
+            model.history.save_runtime_chart(filename=f"{output_dir}/runtime")
+            model.history.save_exploration_exploitation_chart(filename=f"{output_dir}/exploration_exploitation")
+            model.history.save_diversity_chart(filename=f"{output_dir}/diversity")
+            model.history.save_trajectory_chart(filename=f"{output_dir}/trajectory")
+        except Exception as e:
+            print(f"  :Error in saving vis: {e}")
+            return False
         return True
 
-    def run_GA(self, **kwargs):
+    def run_GA(self, **kwargs) -> tuple:
         """Run Genetic Algorithm (GA) for behavior optimization.
 
         Note:
@@ -218,25 +231,27 @@ class TurnInflowCalib:
                 options: "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA".
             **kwargs: additional keyword arguments for specific GA models.
         """
+        if (ga_config := self.turn_inflow_cfg.get("ga_config")) is None:
+            raise ValueError("  :Error: ga_config is not provided in the configuration file.")
 
-        epoch = self.algo_config.get("epoch", 1000)  # max iterations
-        pop_size = self.algo_config.get("pop_size", 50)  # population size
-        pc = self.algo_config.get("pc", 0.75)  # crossover probability
-        pm = self.algo_config.get("pm", 0.1)  # mutation probability
+        epoch = ga_config.get("epoch", 1000)  # max iterations
+        pop_size = ga_config.get("pop_size", 50)  # population size
+        pc = ga_config.get("pc", 0.75)  # crossover probability
+        pm = ga_config.get("pm", 0.1)  # mutation probability
 
-        selection = self.algo_config.get("selection", "roulette")  # selection method
-        k_way = self.algo_config.get("k_way", 0.2)  # k-way for tournament selection
-        crossover = self.algo_config.get("crossover", "uniform")  # crossover method
-        mutation = self.algo_config.get("mutation", "swap")  # mutation method
+        selection = ga_config.get("selection", "roulette")  # selection method
+        k_way = ga_config.get("k_way", 0.2)  # k-way for tournament selection
+        crossover = ga_config.get("crossover", "uniform")  # crossover method
+        mutation = ga_config.get("mutation", "swap")  # mutation method
 
         # percentage of the best in elite group, or int, the number of best elite
-        elite_best = self.algo_config.get("elite_best", 0.1)
+        elite_best = ga_config.get("elite_best", 0.1)
 
         # percentage of the worst in elite group, or int, the number of worst elite
-        elite_worst = self.algo_config.get("elite_worst", 0.3)
+        elite_worst = ga_config.get("elite_worst", 0.3)
 
         # "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA"
-        sel_model = self.algo_config.get("model_selection", "BaseGA")
+        sel_model = ga_config.get("model_selection", "BaseGA")
 
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
@@ -282,11 +297,11 @@ class TurnInflowCalib:
         g_best = model_ga.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func_turn_flow(g_best.solution, scenario_config=scenario_config)
+        fitness_func_turn_flow(g_best.solution, scenario_config=self.scenario_config)
 
         return (g_best, model_ga)
 
-    def run_SA(self, **kwargs):
+    def run_SA(self, **kwargs) -> tuple:
         """Run Simulated Annealing (SA) for behavior optimization.
 
         See Also:
@@ -303,13 +318,15 @@ class TurnInflowCalib:
             scale (float): the change scale of initialization. Defaults to 0.1.
             sel_model (str): select diff. Defaults to "OriginalSA".
         """
+        if (sa_config := self.turn_inflow_cfg.get("sa_config")) is None:
+            raise ValueError("  :Error: sa_config is not provided in the configuration file.")
 
-        epoch = self.algo_config.get("epoch", 1000)  # max iterations
-        pop_size = self.algo_config.get("pop_size", 2)  # population size
-        temp_init = self.algo_config.get("temp_init", 100)  # initial temperature
-        cooling_rate = self.algo_config.get("cooling_rate", 0.891)  # cooling rate
-        scale = self.algo_config.get("scale", 0.1)  # scale of the change
-        sel_model = self.algo_config.get("model_selection", "OriginalSA")  # "OriginalSA", "GaussianSA", "SwarmSA"
+        epoch = sa_config.get("epoch", 1000)  # max iterations
+        pop_size = sa_config.get("pop_size", 2)  # population size
+        temp_init = sa_config.get("temp_init", 100)  # initial temperature
+        cooling_rate = sa_config.get("cooling_rate", 0.891)  # cooling rate
+        scale = sa_config.get("scale", 0.1)  # scale of the change
+        sel_model = sa_config.get("model_selection", "OriginalSA")  # "OriginalSA", "GaussianSA", "SwarmSA"
 
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
@@ -349,17 +366,11 @@ class TurnInflowCalib:
         g_best = model_sa.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func_turn_flow(g_best.solution, scenario_config=scenario_config)
+        fitness_func_turn_flow(g_best.solution, scenario_config=self.scenario_config)
 
         return (g_best, model_sa)
 
-    def run_TS(self, *,
-               epoch: int = 1000,  # max iterations
-               pop_size: int = 2,  # This parameter has no effect on the TS algorithm, only for compatibility
-               tabu_size: int = 10,  # maximum size of tabu list
-               neighbour_size: int = 10,  # size of the neighborhood for generating candidate solutions
-               perturbation_scale: float = 0.05,  # scale of perturbation for generating candidate solutions
-               **kwargs):
+    def run_TS(self, **kwargs) -> tuple:
         """Run Tabu Search (TS) for behavior optimization.
 
         See Also:
@@ -373,16 +384,18 @@ class TurnInflowCalib:
             perturbation_scale (float): scale of perturbation for generating candidate solutions. Defaults to 0.05.
 
         """
+        if (ts_config := self.turn_inflow_cfg.get("ts_config")) is None:
+            raise ValueError("  :Error: ts_config is not provided in the configuration file.")
 
-        epoch = self.algo_config.get("epoch", 1000)  # max iterations
-        pop_size = self.algo_config.get("pop_size", 2)  # population size
-        tabu_size = self.algo_config.get("tabu_size", 10)  # maximum size of tabu list
+        epoch = ts_config.get("epoch", 1000)  # max iterations
+        pop_size = ts_config.get("pop_size", 2)  # population size
+        tabu_size = ts_config.get("tabu_size", 10)  # maximum size of tabu list
 
         # size of the neighborhood for generating candidate solutions
-        neighbour_size = self.algo_config.get("neighbour_size", 10)
+        neighbour_size = ts_config.get("neighbour_size", 10)
 
         # scale of perturbation for generating candidate solutions
-        perturbation_scale = self.algo_config.get("perturbation_scale", 0.05)
+        perturbation_scale = ts_config.get("perturbation_scale", 0.05)
 
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
@@ -396,7 +409,7 @@ class TurnInflowCalib:
         g_best = model_ts.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func_turn_flow(g_best.solution, scenario_config=scenario_config)
+        fitness_func_turn_flow(g_best.solution, scenario_config=self.scenario_config)
 
         return (g_best, model_ts)
 
@@ -404,7 +417,7 @@ class TurnInflowCalib:
 if __name__ == "__main__":
 
     scenario_config = {
-        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\chattanooga",
+        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\input_dir_dummy",
         "network_name": "chatt",
         "sim_name": "chatt.sumocfg",
         "sim_start_time": 28800,
@@ -426,71 +439,49 @@ if __name__ == "__main__":
                          "-290", "-298", "-295"]
     }
 
-    ga_config = {"initial_parameters": {"min_gap": 2.5,        # minimum gap in meters
-                                        "acceleration": 2.6,  # max acceleration in m/s^2
-                                        "deceleration": 4.5,  # max deceleration in m/s^2
-                                        "sigma": 0.5,          # driver imperfection
-                                        "tau": 1.00,            # desired headway
-                                        "emergencyDecel": 9.0},   # emergency deceleration
-                 "params_ranges": {"min_gap": (1.0, 3.0),
-                                   "acceleration": (2.5, 3),
-                                   "deceleration": (4, 5.3),
-                                   "sigma": (0, 1),
-                                   "tau": (0.25, 1.25),
-                                   "emergencyDecel": (5.0, 9.3)},
-                 "num_generation": 50,
+    turn_inflow_config = {"initial_params": [0.5, 0.5, 0.5, 0.5, 0.5,
+                                             0.5, 0.5, 0.5, 0.5, 0.5,
+                                             0.5, 0.5, 100, 100, 100, 100],
+                          "params_ranges": [[0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
+                                            [0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
+                                            [0, 1], [0, 1], [50, 200], [50, 200], [50, 200], [50, 200]],
+                          "max_epoch": 1000,
+                          "max_fe": 10000,
+                          "max_time": 3600,
+                          "max_early_stop": 20,
 
-                 "EB_tt": 240,
-                 "WB_tt": 180,
-                 "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
-                                  "-302", "-3221", "-322", "-313", "-284",
-                                  "-328", "-304"],
-                 "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
-                                  "-315", "-321", "-300", "-2851", "-285",
-                                  "-290", "-298", "-295"],
-                 "epoch": 1000,
-                 "pop_size": 30,
-                 "pc": 0.95,
-                 "pm": 0.1,
-                 "selection": "roulette",
-                 "k_way": 0.2,
-                 "crossover": "uniform",
-                 "mutation": "swap",
-                 "elite_best": 0.1,
-                 "elite_worst": 0.3,
-                 "model_selection": "BaseGA",
-                 "max_epoch": 500,
-                 "max_fe": 10000,
-                 "max_time": 3600,
-                 "max_early_stop": 20,
-                 }
+                          "ga_config": {"epoch": 1000,
+                                        "pop_size": 30,
+                                        "pc": 0.95,
+                                        "pm": 0.1,
+                                        "selection": "roulette",
+                                        "k_way": 0.2,
+                                        "crossover": "uniform",
+                                        "mutation": "swap",
+                                        "elite_best": 0.1,
+                                        "elite_worst": 0.3,
+                                        "model_selection": "BaseGA",
+                                        },
+                          "sa_config": {"epoch": 1000,
+                                        "temp_init": 100,
+                                        "cooling_rate": 0.891,
+                                        "scale": 0.1,
+                                        "model_selection": "OriginalSA",
+                                        },
+                          "ts_config": {"epoch": 1000,
+                                        "tabu_size": 10,
+                                        "neighbour_size": 10,
+                                        "perturbation_scale": 0.05,
+                                        },
+                          }
 
-    problem_dict = {
-        "obj_func": partial(fitness_func_turn_flow, scenario_config=scenario_config),
-        "bounds": FloatVar(lb=[0] * 12 + [50] * 4, ub=[1] * 12 + [200] * 4),
-        "minmax": "min",  # maximize or minimize
-        "log_to": "console",
-        # "log_to": "file",
-        # "log_file": "result.log",
-        "save_population": True,              # Default = False
-    }
-
-    term_dict = {
-        "max_epoch": 500,  # max iterations
-        "max_fe": 10000,  # max function evaluations
-        # "max_time": 3600,  # max time in seconds
-        "max_early_stop": 20,
-    }
-
-    init_vals = [0.5] * 12 + [100] * 4  # initial values for the optimization
-
-    opt = TurnInflowCalib(scenario_config=scenario_config, algo_config=ga_config, verbose=True)
+    opt = TurnInflowCalib(scenario_config=scenario_config, turn_inflow_config=turn_inflow_config, verbose=True)
 
     # Run Genetic Algorithm
-    g_best = opt.run_GA()
+    # g_best = opt.run_GA()
 
     # Run Simulated Annealing
-    # g_best = opt.run_SA(epoch=1000, pop_size=2, temp_init=100, cooling_rate=0.98, scale=0.1, sel_model="OriginalSA")
+    # g_best = opt.run_SA()
 
     # Run Tabu Search
-    # g_best = opt.run_TS(epoch=1000, pop_size=2, tabu_size=10, neighbour_size=10, perturbation_scale=0.1)
+    g_best = opt.run_TS()

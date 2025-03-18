@@ -76,57 +76,78 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
 
     # Test-driven Development: check selected algorithm from input
     if sel_algo is None:  # use default algorithm if not provided
-        sel_algo = {"turn_inflow": "ga",
-                    "behavior": "ga"}
+        sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
 
     if not isinstance(sel_algo, dict):
         print("  :Error:parameter sel_algo must be a dict with"
               " keys of 'turn_inflow' and 'behavior', using"
               " genetic algorithm as default values.")
-        sel_algo = {"turn_inflow": "ga",
-                    "behavior": "ga"}
+        sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
 
     # Prepare scenario_config and algo_config from input_config
     scenario_config_turn_inflow = prepare_scenario_config(input_config)
 
     # Prepare Algorithm configure: e.g. {"ga": {}, "sa": {}, "ts": {}}
-    algo_config = {selected_algo: input_config["Calibration"][f"{selected_algo}_config"]
-                   for selected_algo in sel_algo.values()}
-
-    # check algo_config with two levels
-    if not all(isinstance(config, dict) for config in algo_config.values()):
-        raise ValueError("  :algo_config must be a dict with two levels with keys of 'ga', 'sa', and 'ts'")
-    # check whether configs are provided
-
-    algo_turn_flow = {
-        "ga": TurnInflowCalib,
-        "sa": TurnInflowCalib,
-        "ts": TurnInflowCalib}
-
-    algo_behavior = {
-        "ga": BehaviorCalib,
-        "sa": BehaviorCalib,
-        "ts": BehaviorCalib}
-
-    # prepare problem and termination criteria
+    algo_config_turn_inflow = input_config["Calibration"]["turn_inflow"]
+    algo_config_behavior = input_config["Calibration"]["behavior"]
 
     # run calibration based on the selected algorithm: optimize turn and inflow
-    print("\n  :Optimize Turn and Inflow")
-    turn_inflow = algo_turn_flow.get(sel_algo["turn_inflow"])(scenario_config_turn_inflow,
-                                                              algo_config.get(sel_algo["turn_inflow"]),
-                                                              verbose=verbose)
-    turn_inflow.run_calibration()
-    turn_inflow.run_vis()
+    print("\n  :Optimize Turn and Inflow...")
+    turn_inflow = TurnInflowCalib(scenario_config_turn_inflow, algo_config_turn_inflow, verbose=verbose)
+
+    match sel_algo["turn_inflow"]:
+        case "ga":
+            g_best, model = turn_inflow.run_GA()
+            path_model_result = pf.path2linux(Path(input_config["input_dir"]) / "turn_inflow_ga_result")
+            path_model_result = "turn_inflow_ga_result"
+
+        case "sa":
+            g_best, model = turn_inflow.run_SA()
+            path_model_result = pf.path2linux(Path(input_config["input_dir"]) / "turn_inflow_sa_result")
+            path_model_result = "turn_inflow_sa_result"
+        case "ts":
+            g_best, model = turn_inflow.run_TS()
+            path_model_result = pf.path2linux(Path(input_config["input_dir"]) / "turn_inflow_ts_result")
+            path_model_result = "turn_inflow_ts_result"
+        case _:
+            print(f"  :Error: unsupported algorithm {sel_algo['turn_inflow']}, using genetic algorithm as default.")
+            g_best, model = turn_inflow.run_GA()
+            path_model_result = pf.path2linux(Path(input_config["input_dir"]) / "ga_turn_inflow_result")
+            path_model_result = "ga_turn_inflow_result"
+
+    turn_inflow.run_vis(path_model_result, model)
 
     # run calibration based on the selected algorithm: optimize behavior
     # update path_turn and path_flow to generated xml files
     scenario_config_behavior = copy.deepcopy(scenario_config_turn_inflow)
     scenario_config_behavior["path_turn"] = f"{scenario_config_behavior.get("network_name")}.turn.xml"
     scenario_config_behavior["path_inflow"] = f"{scenario_config_behavior.get("network_name")}.flow.xml"
-    print("\n  :Optimize Behavior parameters based on the optimized turn and inflow")
-    behavior = algo_behavior.get(sel_algo["behavior"])(scenario_config_behavior,
-                                                       algo_config.get(sel_algo["behavior"]),
-                                                       verbose=verbose)
-    behavior.run_calibration()
-    behavior.run_vis()
+    scenario_config_behavior["EB_tt"] = algo_config_behavior.get("EB_tt")
+    scenario_config_behavior["WB_tt"] = algo_config_behavior.get("WB_tt")
+    scenario_config_behavior["EB_edge_list"] = algo_config_behavior.get("EB_edge_list")
+    scenario_config_behavior["WB_edge_list"] = algo_config_behavior.get("WB_edge_list")
+
+    print("\n  :Optimize Behavior parameters based on the optimized turn and inflow...")
+    behavior = BehaviorCalib(scenario_config_behavior, algo_config_behavior, verbose=verbose)
+
+    match sel_algo["behavior"]:
+        case "ga":
+            g_best, model = behavior.run_GA()
+            # path_model_result = pf.path2linux(Path(input_config["input_dir"]) / "behavior_ga_result")
+            path_model_result = "behavior_ga_result"
+        case "sa":
+            g_best, model = behavior.run_SA()
+            # path_model_result = pf.path2linux(Path(input_config["input_dir"]) / "behavior_sa_result")
+            path_model_result = "behavior_sa_result"
+        case "ts":
+            g_best, model = behavior.run_TS()
+            # path_model_result = pf.path2linux(Path(input_config["input_dir"]) / "behavior_ts_result")
+            path_model_result = "behavior_ts_result"
+        case _:
+            print(f"  :Error: unsupported algorithm {sel_algo['behavior']}, using genetic algorithm as default.")
+            g_best, model = behavior.run_GA()
+            # path_model_result = pf.path2linux(Path(input_config["input_dir"]) / "ga_behavior_result")
+            path_model_result = "ga_behavior_result"
+
+    behavior.run_vis(path_model_result, model)
     return True

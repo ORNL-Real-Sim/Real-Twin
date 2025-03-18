@@ -32,13 +32,19 @@ from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (
     run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
     result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
 
+# from util_cali_turn_inflow import (
+#     update_turn_flow_from_solution,  # step 1: update turning ratios and inflow counts
+#     create_rou_turn_flow_xml,  # step 2: create rou.xml file
+#     run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
+#     result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
+
 
 class SimulatedAnnealingForTurnFlow:
     """ Simulated Annealing algorithm for running the simulator """
 
-    def __init__(self, scenario_config: dict, sa_config: dict, verbose: bool = False):
+    def __init__(self, scenario_config: dict, turn_inflow_config: dict, verbose: bool = False):
         """ Initialize the Simulated Annealing algorithm with the given scenario and SA configurations """
-        self.sa_config = sa_config
+        self.turn_inflow_cfg = turn_inflow_config
         self.scenario_config = scenario_config
         self.verbose = verbose
 
@@ -67,18 +73,18 @@ class SimulatedAnnealingForTurnFlow:
         """ Run a single calibration iteration to get the best solution """
 
         # update turn and flow
-        self.df_turn, self.df_inflow = update_turn_flow_from_solution(self.df_turn,
-                                                                      self.df_inflow,
-                                                                      initial_solution,
-                                                                      self.scenario_config["calibration_interval"],
-                                                                      self.scenario_config["demand_interval"])
+        df_turn, df_inflow = update_turn_flow_from_solution(self.df_turn,
+                                                            self.df_inflow,
+                                                            initial_solution,
+                                                            self.scenario_config["calibration_interval"],
+                                                            self.scenario_config["demand_interval"])
 
         # update rou.xml from updated turn and flow
         create_rou_turn_flow_xml(self.scenario_config.get("network_name"),
                                  self.scenario_config.get("sim_start_time"),
                                  self.scenario_config.get("sim_end_time"),
-                                 self.df_turn,
-                                 self.df_inflow,
+                                 df_turn,
+                                 df_inflow,
                                  ical,
                                  self.input_dir,
                                  self.output_dir,
@@ -118,18 +124,24 @@ class SimulatedAnnealingForTurnFlow:
         if self.verbose:
             print("\n  :Simulated Annealing algorithm is running...")
 
-        if not init_solution:
-            initial_params = np.array([0.5] * self.sa_config.get("num_variables"))  # medium starting value
-
         # get parameters from config
-        num_turning_ratio = self.sa_config.get("num_turning_ratio")
-        ubc = self.sa_config.get("ubc")
+        if (sa_cfg := self.turn_inflow_cfg.get("sa_config")) is None:
+            raise ValueError("Simulated Annealing configuration is missing.")
+
+        if not init_solution:
+            # get initial solution from config
+            initial_params = self.turn_inflow_cfg.get("initial_params")
+            if not init_solution:
+                initial_params = np.array([0.5] * sa_cfg.get("num_variables"))  # medium starting value
+
+        num_turning_ratio = sa_cfg.get("num_turning_ratio")
+        ubc = sa_cfg.get("ubc")
         # cost_difference = self.sa_config.get("cost_difference")
         # accept_prob = self.sa_config.get("accept_prob")
-        initial_temperature = self.sa_config.get("initial_temperature")
+        initial_temperature = sa_cfg.get("initial_temperature")
         # initial_temperature = -cost_difference/(math.log(accept_prob))  #2.885
-        cooling_rate = self.sa_config.get("cooling_rate")
-        stopping_temperature = self.sa_config.get("stopping_temperature")
+        cooling_rate = sa_cfg.get("cooling_rate")
+        stopping_temperature = sa_cfg.get("stopping_temperature")
         # max_iteration = self.sa_config.get("max_iteration")
         # lower_bound = self.sa_config.get("lower_bound")
         # upper_bound = self.sa_config.get("upper_bound")
@@ -244,18 +256,42 @@ class SimulatedAnnealingForTurnFlow:
 
 if __name__ == "__main__":
 
-    sa_config = {
-        "num_variables": 16,
-        "num_turning_ratio": 12,
-        "ubc": 200,
-        "cost_difference": 2,
-        "accept_prob": 0.5,
-        "initial_temperature": 100,
-        "cooling_rate": 0.99,
-        "stopping_temperature": 1e-3,
-        "max_iteration": 3,
-        "lower_bound": 0,
-        "upper_bound": 1,
+    turn_inflow_config = {
+        "initial_params": [0.5, 0.5, 0.5, 0.5, 0.5,
+                           0.5, 0.5, 0.5, 0.5, 0.5,
+                           0.5, 0.5, 100, 100, 100, 100],
+        "params_ranges": [[0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
+                          [0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
+                          [0, 1], [0, 1], [50, 200], [50, 200], [50, 200], [50, 200]],
+        "ga_config": {"num_variables": 16,
+                      "num_turning_ratio": 12,  # remaining should be inflow
+                      "ubc": 200,  # inflow upper bound constant
+                      "population_size": 2,  # must be even
+                      "num_generations": 5,
+                      "crossover_rate": 0.75,
+                      "mutation_rate": 0.1,
+                      "elitism_size": 1,  # Number of elite individuals to carry over
+                      "best_fitness_value": float('inf'),
+                      "max_no_improvement": 5,  # Stop if no improvement in 5 iterations
+                      },
+        "sa_config": {"num_variables": 16,
+                      "num_turning_ratio": 12,
+                      "ubc": 200,
+                      "cost_difference": 2,
+                      "initial_temperature": 100,
+                      "cooling_rate": 0.99,
+                      "stopping_temperature": 1e-3},
+        "ts_config": {"iterations": 3,
+                      "tabu_size": 120,
+                      "neighborhood_size": 32,
+                      "move_range": 0.5,  # Initial move range
+                      "lower_bound": 0,
+                      "upper_bound": 1,
+                      "lbc": 0,  # lower bound for inflow counts
+                      "ubc": 200,  # upper bound for inflow counts
+                      "num_turning_ratio": 12,
+                      "max_no_improvement_local": 5,
+                      "max_no_improvement_global": 30, },
     }
 
     scenario_config = {
@@ -274,6 +310,6 @@ if __name__ == "__main__":
         # Add more configurations as needed
     }
 
-    sa = SimulatedAnnealingForTurnFlow(sa_config, scenario_config, verbose=True)
+    sa = SimulatedAnnealingForTurnFlow(scenario_config, turn_inflow_config, verbose=True)
     sa.run_calibration()
     sa.run_vis()

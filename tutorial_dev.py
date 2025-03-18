@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     # perform calibration
     # Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
-    twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "SA"})
+    twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"})
 
     # post-process the simulation results
     twin.post_process()  # keywords arguments can be passed to specify the post-processing options

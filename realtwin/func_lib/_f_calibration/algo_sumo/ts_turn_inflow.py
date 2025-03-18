@@ -32,13 +32,19 @@ from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (
     run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
     result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
 
+# from util_cali_turn_inflow import (
+#     update_turn_flow_from_solution,  # step 1: update turning ratios and inflow counts
+#     create_rou_turn_flow_xml,  # step 2: create rou.xml file
+#     run_SUMO_create_EdgeData,  # step 3: run SUMO to create EdgeData.xml
+#     result_analysis_on_EdgeData)  # step 4: analyze EdgeData.xml to get best solution
+
 
 class TabuSearchForTurnFlow:
     """Tabu search algorithm for calibration"""
 
-    def __init__(self, scenario_config: dict, ts_config: dict, verbose: bool = True):
+    def __init__(self, scenario_config: dict, turn_inflow_config: dict, verbose: bool = True):
         """ Initialize the Tabu Search algorithm for calibration"""
-        self.ts_config = ts_config
+        self.turn_inflow_cfg = turn_inflow_config
         self.scenario_config = scenario_config
         self.verbose = verbose
 
@@ -89,18 +95,18 @@ class TabuSearchForTurnFlow:
         """ Run a single calibration iteration to get the best solution """
 
         # update turn and flow
-        self.df_turn, self.df_inflow = update_turn_flow_from_solution(self.df_turn,
-                                                                      self.df_inflow,
-                                                                      initial_solution,
-                                                                      self.scenario_config["calibration_interval"],
-                                                                      self.scenario_config["demand_interval"])
+        df_turn, df_inflow = update_turn_flow_from_solution(self.df_turn,
+                                                            self.df_inflow,
+                                                            initial_solution,
+                                                            self.scenario_config["calibration_interval"],
+                                                            self.scenario_config["demand_interval"])
 
         # update rou.xml from updated turn and flow
         create_rou_turn_flow_xml(self.scenario_config.get("network_name"),
                                  self.scenario_config.get("sim_start_time"),
                                  self.scenario_config.get("sim_end_time"),
-                                 self.df_turn,
-                                 self.df_inflow,
+                                 df_turn,
+                                 df_inflow,
                                  ical,
                                  self.input_dir,
                                  self.output_dir,
@@ -126,24 +132,27 @@ class TabuSearchForTurnFlow:
 
         # Fot temporary testing in beta version
         if not initial_solution:
-            initial_solution = np.array([0.5, 0.5, 0.5, 0.5, 0.5,
-                                         0.5, 0.5, 0.5, 0.5, 0.5,
-                                         0.5, 0.5, 100, 100, 100,
-                                         100])
+            initial_solution = np.array(self.turn_inflow_cfg.get("initial_params",
+                                                                 [0.5, 0.5, 0.5, 0.5, 0.5,
+                                                                  0.5, 0.5, 0.5, 0.5, 0.5,
+                                                                  0.5, 0.5, 100, 100, 100, 100]))
+
+        if (ts_config := self.turn_inflow_cfg.get("ts_config")) is None:
+            print("  :Error: ts_config is not provided in turn_inflow_cfg.")
 
         # get configurations from both ts_config and scenario_config
-        iterations = self.ts_config.get("iterations", 30)
-        tabu_size = self.ts_config.get("tabu_size", 120)
-        neighborhood_size = self.ts_config.get("neighborhood_size", 32)
-        move_range = self.ts_config.get("move_range", 0.5)
-        lower_bound = self.ts_config.get("lower_bound", 0)
-        upper_bound = self.ts_config.get("upper_bound", 1)
-        lbc = self.ts_config.get("lbc", 0)  # lower bound for inflow counts
-        ubc = self.ts_config.get("ubc", 200)  # upper bound for inflow counts
-        num_turning_ratio = self.ts_config.get("num_turning_ratio", 12)
+        iterations = ts_config.get("iterations", 30)
+        tabu_size = ts_config.get("tabu_size", 120)
+        neighborhood_size = ts_config.get("neighborhood_size", 32)
+        move_range = ts_config.get("move_range", 0.5)
+        lower_bound = ts_config.get("lower_bound", 0)
+        upper_bound = ts_config.get("upper_bound", 1)
+        lbc = ts_config.get("lbc", 0)  # lower bound for inflow counts
+        ubc = ts_config.get("ubc", 200)  # upper bound for inflow counts
+        num_turning_ratio = ts_config.get("num_turning_ratio", 12)
 
-        max_no_improvement_local = self.ts_config.get("max_no_improvement_local", 5)
-        max_no_improvement_global = self.ts_config.get("max_no_improvement_global", 30)
+        max_no_improvement_local = ts_config.get("max_no_improvement_local", 5)
+        max_no_improvement_global = ts_config.get("max_no_improvement_global", 30)
 
         network_name = self.scenario_config.get("network_name")
 
@@ -258,7 +267,7 @@ class TabuSearchForTurnFlow:
 
             # generate EdgeData.xml based on best rou.xml
             run_SUMO_create_EdgeData(self.scenario_config.get("sim_name"),
-                                    self.scenario_config.get("sim_end_time"))
+                                     self.scenario_config.get("sim_end_time"))
 
             # analyze EdgeData.xml to get best solution
             flag, _, GEH_percent = result_analysis_on_EdgeData(
@@ -312,7 +321,7 @@ class TabuSearchForTurnFlow:
         # plt.xticks(ticks=df.columns, labels=df.columns)  # Set X-axis ticks to match column numbers
         # plt.legend()
 
-        num_iterations = self.ts_config.get("iterations", 30)
+        num_iterations = self.turn_inflow_cfg.get("ts_config").get("iterations", 30)
         plt.xticks(range(0, num_iterations + 1, 5))
         plt.ylim(0, 12)
         plt.show()
@@ -320,18 +329,43 @@ class TabuSearchForTurnFlow:
 
 
 if __name__ == "__main__":
-    ts_config = {
-        "iterations": 3,
-        "tabu_size": 120,
-        "neighborhood_size": 32,
-        "move_range": 0.5,  # Initial move range
-        "lower_bound": 0,
-        "upper_bound": 1,
-        "lbc": 0,  # lower bound for inflow counts
-        "ubc": 200,  # upper bound for inflow counts
-        "num_turning_ratio": 12,
-        "max_no_improvement_local": 5,
-        "max_no_improvement_global": 30,
+
+    turn_inflow_config = {
+        "initial_params": [0.5, 0.5, 0.5, 0.5, 0.5,
+                           0.5, 0.5, 0.5, 0.5, 0.5,
+                           0.5, 0.5, 100, 100, 100, 100],
+        "params_ranges": [[0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
+                          [0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
+                          [0, 1], [0, 1], [50, 200], [50, 200], [50, 200], [50, 200]],
+        "ga_config": {"num_variables": 16,
+                      "num_turning_ratio": 12,  # remaining should be inflow
+                      "ubc": 200,  # inflow upper bound constant
+                      "population_size": 2,  # must be even
+                      "num_generations": 5,
+                      "crossover_rate": 0.75,
+                      "mutation_rate": 0.1,
+                      "elitism_size": 1,  # Number of elite individuals to carry over
+                      "best_fitness_value": float('inf'),
+                      "max_no_improvement": 5,  # Stop if no improvement in 5 iterations
+                      },
+        "sa_config": {"num_variables": 16,
+                      "num_turning_ratio": 12,
+                      "ubc": 200,
+                      "cost_difference": 2,
+                      "initial_temperature": 100,
+                      "cooling_rate": 0.99,
+                      "stopping_temperature": 1e-3},
+        "ts_config": {"iterations": 3,
+                      "tabu_size": 120,
+                      "neighborhood_size": 32,
+                      "move_range": 0.5,  # Initial move range
+                      "lower_bound": 0,
+                      "upper_bound": 1,
+                      "lbc": 0,  # lower bound for inflow counts
+                      "ubc": 200,  # upper bound for inflow counts
+                      "num_turning_ratio": 12,
+                      "max_no_improvement_local": 5,
+                      "max_no_improvement_global": 30, },
     }
     scenario_config = {
         "input_dir": r"C:\Users\xh8\ornl_work\gitlab_workspace\realtwintool\tools\SUMO\Calibration\xl_turn_and_flow\input_dir",
@@ -349,6 +383,6 @@ if __name__ == "__main__":
         # Add more configurations as needed
     }
 
-    ts = TabuSearchForTurnFlow(ts_config, scenario_config, verbose=True)
+    ts = TabuSearchForTurnFlow(scenario_config, turn_inflow_config, verbose=True)
     ts.run_calibration(remove_old_files=False)
     ts.run_vis()

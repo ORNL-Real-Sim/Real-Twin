@@ -22,7 +22,7 @@ from pathlib import Path
 from functools import partial
 
 from mealpy import FloatVar, SA, GA, TS
-from util_cali_behavior import fitness_func
+from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior import fitness_func
 import numpy as np
 
 if 'SUMO_HOME' in os.environ:
@@ -87,25 +87,23 @@ class BehaviorCalib:
         >>> print(g_best.target.fitness)
     """
 
-    def __init__(self, scenario_config: dict = None, algo_config: dict = None, verbose: bool = True):
+    def __init__(self, scenario_config: dict = None, behavior_config: dict = None, verbose: bool = True):
 
         self.scenario_config = scenario_config
-        self.algo_config = algo_config
+        self.behavior_cfg = behavior_config
         self.verbose = verbose
 
         # prepare termination criteria from scenario config
         self.term_dict = {
-            "max_epoch": self.algo_config.get("max_epoch", 1000),
-            "max_fe": self.algo_config.get("max_fe", 10000),
-            "max_time": self.algo_config.get("max_time", 3600),
-            "max_early_stop": self.algo_config.get("max_early_stop", 20),
+            "max_epoch": self.behavior_cfg.get("max_epoch", 1000),
+            "max_fe": self.behavior_cfg.get("max_fe", 10000),
+            "max_time": self.behavior_cfg.get("max_time", 3600),
+            "max_early_stop": self.behavior_cfg.get("max_early_stop", 20),
         }
 
-        # prepare problem dict from algo config
-        # prepare problem dict from algo config
-        init_params = self.algo_config.get("initial_params", None)
+        init_params = self.behavior_cfg.get("initial_params", None)
         if isinstance(init_params, dict):
-            self.init_solution = init_params.values()
+            self.init_solution = list(init_params.values())
         elif isinstance(init_params, list):
             self.init_solution = init_params
         elif isinstance(init_params, np.ndarray):
@@ -113,13 +111,13 @@ class BehaviorCalib:
         else:
             self.init_solution = None
 
-        params_ranges = self.algo_config.get("params_ranges").values()
+        params_ranges = self.behavior_cfg.get("params_ranges").values()
         params_lb = [val[0] for val in params_ranges]
         params_ub = [val[1] for val in params_ranges]
         self.problem_dict = {
-            "obj_func": partial(fitness_func, scenario_config=scenario_config, error_func="rmse"),
+            "obj_func": partial(fitness_func, scenario_config=self.scenario_config, error_func="rmse"),
             "bounds": FloatVar(lb=params_lb, ub=params_ub,),
-            "minmax": "max",  # maximize or minimize
+            "minmax": "min",  # maximize or minimize
             "log_to": "console",
             # "log_to": "file",
             # "log_file": "result.log",
@@ -138,7 +136,7 @@ class BehaviorCalib:
         """
 
         # TDD
-        if not isinstance(init_vals, (list, np.ndarray, type(None))):
+        if not isinstance(init_vals, (list, np.ndarray)):
             print("Error: init_vals must be a list, numpy array, or None.")
             return None
 
@@ -158,14 +156,18 @@ class BehaviorCalib:
         """
 
         # save the best solution
-        model.history.save_global_objectives_chart(filename=Path(output_dir) / "global_objectives")
-        model.history.save_local_objectives_chart(filename=Path(output_dir) / "local_objectives")
-        model.history.save_global_best_fitness_chart(filename=Path(output_dir) / "global_best_fitness")
-        model.history.save_local_best_fitness_chart(filename=Path(output_dir) / "local_best_fitness")
-        model.history.save_runtime_chart(filename=Path(output_dir) / "runtime")
-        model.history.save_exploration_exploitation_chart(filename=Path(output_dir) / "exploration_exploitation")
-        model.history.save_diversity_chart(filename=Path(output_dir) / "diversity")
-        model.history.save_trajectory_chart(filename=Path(output_dir) / "trajectory")
+        try:
+            model.history.save_global_objectives_chart(filename=f"{output_dir}/global_objectives")
+            model.history.save_local_objectives_chart(filename=f"{output_dir}/local_objectives")
+            model.history.save_global_best_fitness_chart(filename=f"{output_dir}/global_best_fitness")
+            model.history.save_local_best_fitness_chart(filename=f"{output_dir}/local_best_fitness")
+            model.history.save_runtime_chart(filename=f"{output_dir}/runtime")
+            model.history.save_exploration_exploitation_chart(filename=f"{output_dir}/exploration_exploitation")
+            model.history.save_diversity_chart(filename=f"{output_dir}/diversity")
+            model.history.save_trajectory_chart(filename=f"{output_dir}/trajectory")
+        except Exception as e:
+            print(f"  :Error in saving vis: {e}")
+            return False
         return True
 
     def run_GA(self, **kwargs):
@@ -191,25 +193,27 @@ class BehaviorCalib:
                 options: "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA".
             **kwargs: additional keyword arguments for specific GA models.
         """
+        if (ga_config := self.behavior_cfg.get("ga_config")) is None:
+            raise ValueError("ga_config is not provided in Calibration/turn_inflow setting in yaml file.")
 
-        epoch = self.algo_config.get("epoch", 1000)  # max iterations
-        pop_size = self.algo_config.get("pop_size", 50)  # population size
-        pc = self.algo_config.get("pc", 0.75)  # crossover probability
-        pm = self.algo_config.get("pm", 0.1)  # mutation probability
+        epoch = ga_config.get("epoch", 1000)  # max iterations
+        pop_size = ga_config.get("pop_size", 50)  # population size
+        pc = ga_config.get("pc", 0.75)  # crossover probability
+        pm = ga_config.get("pm", 0.1)  # mutation probability
 
-        selection = self.algo_config.get("selection", "roulette")  # selection method
-        k_way = self.algo_config.get("k_way", 0.2)  # k-way for tournament selection
-        crossover = self.algo_config.get("crossover", "uniform")  # crossover method
-        mutation = self.algo_config.get("mutation", "swap")  # mutation method
+        selection = ga_config.get("selection", "roulette")  # selection method
+        k_way = ga_config.get("k_way", 0.2)  # k-way for tournament selection
+        crossover = ga_config.get("crossover", "uniform")  # crossover method
+        mutation = ga_config.get("mutation", "swap")  # mutation method
 
         # percentage of the best in elite group, or int, the number of best elite
-        elite_best = self.algo_config.get("elite_best", 0.1)
+        elite_best = ga_config.get("elite_best", 0.1)
 
         # percentage of the worst in elite group, or int, the number of worst elite
-        elite_worst = self.algo_config.get("elite_worst", 0.3)
+        elite_worst = ga_config.get("elite_worst", 0.3)
 
         # "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA"
-        sel_model = self.algo_config.get("model_selection", "BaseGA")
+        sel_model = ga_config.get("model_selection", "BaseGA")
 
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
@@ -255,7 +259,7 @@ class BehaviorCalib:
         g_best = model_ga.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func(g_best.solution, scenario_config=scenario_config, error_func="rmse")
+        fitness_func(g_best.solution, scenario_config=self.scenario_config, error_func="rmse")
 
         return (g_best, model_ga)
 
@@ -276,12 +280,15 @@ class BehaviorCalib:
             scale (float): the change scale of initialization. Defaults to 0.1.
             sel_model (str): select diff. Defaults to "OriginalSA".
         """
-        epoch = self.algo_config.get("epoch", 1000)  # max iterations
-        pop_size = self.algo_config.get("pop_size", 2)  # population size
-        temp_init = self.algo_config.get("temp_init", 100)  # initial temperature
-        cooling_rate = self.algo_config.get("cooling_rate", 0.891)  # cooling rate
-        scale = self.algo_config.get("scale", 0.1)  # scale of the change
-        sel_model = self.algo_config.get("model_selection", "OriginalSA")  # "OriginalSA", "GaussianSA", "SwarmSA"
+        if (sa_config := self.behavior_cfg.get("sa_config")) is None:
+            raise ValueError("sa_config is not provided in Calibration/turn_inflow setting in yaml file.")
+
+        epoch = sa_config.get("epoch", 1000)  # max iterations
+        pop_size = sa_config.get("pop_size", 2)  # population size
+        temp_init = sa_config.get("temp_init", 100)  # initial temperature
+        cooling_rate = sa_config.get("cooling_rate", 0.891)  # cooling rate
+        scale = sa_config.get("scale", 0.1)  # scale of the change
+        sel_model = sa_config.get("model_selection", "OriginalSA")  # "OriginalSA", "GaussianSA", "SwarmSA"
 
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
@@ -297,7 +304,7 @@ class BehaviorCalib:
                                      pop_size=pop_size,
                                      temp_init=temp_init,
                                      cooling_rate=cooling_rate,
-                                     scale=scale,
+                                     step_size=scale,
                                      **kwargs)
         elif sel_model == "GaussianSA":
             model_sa = SA.GaussianSA(epoch=epoch,
@@ -321,7 +328,7 @@ class BehaviorCalib:
         g_best = model_sa.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func(g_best.solution, scenario_config=scenario_config, error_func="rmse")
+        fitness_func(g_best.solution, scenario_config=self.scenario_config, error_func="rmse")
 
         return (g_best, model_sa)
 
@@ -341,16 +348,18 @@ class BehaviorCalib:
             neighbour_size (int): size of the neighborhood for generating candidate solutions. Defaults to 10.
             perturbation_scale (float): scale of perturbation for generating candidate solutions. Defaults to 0.05.
         """
+        if (ts_config := self.behavior_cfg.get("ts_config")) is None:
+            raise ValueError("ts_config is not provided in Calibration/turn_inflow setting in yaml file.")
 
-        epoch = self.algo_config.get("epoch", 1000)  # max iterations
-        pop_size = self.algo_config.get("pop_size", 2)  # population size
-        tabu_size = self.algo_config.get("tabu_size", 10)  # maximum size of tabu list
+        epoch = ts_config.get("epoch", 1000)  # max iterations
+        pop_size = ts_config.get("pop_size", 2)  # population size
+        tabu_size = ts_config.get("tabu_size", 10)  # maximum size of tabu list
 
         # size of the neighborhood for generating candidate solutions
-        neighbour_size = self.algo_config.get("neighbour_size", 10)
+        neighbour_size = ts_config.get("neighbour_size", 10)
 
         # scale of perturbation for generating candidate solutions
-        perturbation_scale = self.algo_config.get("perturbation_scale", 0.05)
+        perturbation_scale = ts_config.get("perturbation_scale", 0.05)
 
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
@@ -364,7 +373,7 @@ class BehaviorCalib:
         g_best = model_ts.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func(g_best.solution, scenario_config=scenario_config, error_func="rmse")
+        fitness_func(g_best.solution, scenario_config=self.scenario_config, error_func="rmse")
 
         return (g_best, model_ts)
 
@@ -394,53 +403,56 @@ if __name__ == "__main__":
                          "-290", "-298", "-295"]
     }
 
-    ga_config = {"initial_parameters": {"min_gap": 2.5,        # minimum gap in meters
-                                        "acceleration": 2.6,  # max acceleration in m/s^2
-                                        "deceleration": 4.5,  # max deceleration in m/s^2
-                                        "sigma": 0.5,          # driver imperfection
-                                        "tau": 1.00,            # desired headway
-                                        "emergencyDecel": 9.0},   # emergency deceleration
-                 "params_ranges": {"min_gap": (1.0, 3.0),
-                                  "acceleration": (2.5, 3),
-                                  "deceleration": (4, 5.3),
-                                  "sigma": (0, 1),
-                                  "tau": (0.25, 1.25),
-                                  "emergencyDecel": (5.0, 9.3)},
-                 "num_generation": 50,
+    behavior_config = {"initial_params": {"min_gap": 2.5,        # minimum gap in meters
+                                          "acceleration": 2.6,  # max acceleration in m/s^2
+                                          "deceleration": 4.5,  # max deceleration in m/s^2
+                                          "sigma": 0.5,          # driver imperfection
+                                          "tau": 1.00,            # desired headway
+                                          "emergencyDecel": 9.0},   # emergency deceleration
+                       "params_ranges": {"min_gap": (1.0, 3.0),
+                                         "acceleration": (2.5, 3),
+                                         "deceleration": (4, 5.3),
+                                         "sigma": (0, 1),
+                                         "tau": (0.25, 1.25),
+                                         "emergencyDecel": (5.0, 9.3)},
+                       "max_epoch": 500,
+                       "max_fe": 10000,
+                       "max_time": 3600,
+                       "max_early_stop": 20,
 
-                 "EB_tt": 240,
-                 "WB_tt": 180,
-                 "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
-                                  "-302", "-3221", "-322", "-313", "-284",
-                                  "-328", "-304"],
-                 "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
-                                  "-315", "-321", "-300", "-2851", "-285",
-                                  "-290", "-298", "-295"],
-                 "epoch": 1000,
-                 "pop_size": 30,
-                 "pc": 0.95,
-                 "pm": 0.1,
-                 "selection": "roulette",
-                 "k_way": 0.2,
-                 "crossover": "uniform",
-                 "mutation": "swap",
-                 "elite_best": 0.1,
-                 "elite_worst": 0.3,
-                 "model_selection": "BaseGA",
-                 "max_epoch": 500,
-                 "max_fe": 10000,
-                 "max_time": 3600,
-                 "max_early_stop": 20,
+                       "ga_config": {"epoch": 1000,
+                                     "pop_size": 30,
+                                     "pc": 0.95,
+                                     "pm": 0.1,
+                                     "selection": "roulette",
+                                     "k_way": 0.2,
+                                     "crossover": "uniform",
+                                     "mutation": "swap",
+                                     "elite_best": 0.1,
+                                     "elite_worst": 0.3,
+                                     "model_selection": "BaseGA",
+                                     },
+                       "sa_config": {"epoch": 1000,
+                                     "temp_init": 100,
+                                     "cooling_rate": 0.891,
+                                     "scale": 0.1,
+                                     "model_selection": "OriginalSA",
+                                     },
+                       "ts_config": {"epoch": 1000,
+                                     "tabu_size": 10,
+                                     "neighbour_size": 10,
+                                     "perturbation_scale": 0.05,
+                                     },
+                       }
 
-                 }
-
-    opt = BehaviorCalib(scenario_config=scenario_config, algo_config=ga_config, verbose=True)
+    opt = BehaviorCalib(scenario_config=scenario_config,
+                        behavior_config=behavior_config, verbose=True)
 
     # Run Genetic Algorithm
-    g_best = opt.run_GA()
+    # g_best = opt.run_GA()
 
     # Run Simulated Annealing
-    # g_best = opt.run_SA(epoch=1000, pop_size=2, temp_init=100, cooling_rate=0.98, scale=0.1, sel_model="OriginalSA")
+    # g_best = opt.run_SA()
 
     # Run Tabu Search
-    # g_best = opt.run_TS()
+    g_best = opt.run_TS()
