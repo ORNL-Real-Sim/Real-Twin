@@ -31,6 +31,7 @@ from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
 
 # calibration
 from realtwin.func_lib._f_calibration.calibration_sumo import cali_sumo
+from realtwin.func_lib._f_calibration.calibration_sumo_ import cali_sumo as cali_sumo_
 
 
 class RealTwin:
@@ -263,24 +264,24 @@ class RealTwin:
             print("  :Error:parameter sel_algo must be a dict with"
                   " keys of 'turn_inflow' and 'behavior', using"
                   " genetic algorithm as default values.")
-            sel_algo = {"turn_inflow": "ga",
-                        "behavior": "ga"}
+            sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
 
         # check if the selected algorithm is supported within the package
         # convert the algorithm to lower case
         sel_algo = {key: value.lower() for key, value in sel_algo.items()}
-        if algo := sel_algo["turn_inflow"] not in ["ga", "sa", "ts"]:
+        if (algo := sel_algo["turn_inflow"]) not in ["ga", "sa", "ts"]:
             print(f"  :Selected algorithms are {sel_algo}")
             print(f"  :{algo} for turn and inflow calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
             return False
 
-        if algo := sel_algo["behavior"] not in ["ga", "sa", "ts"]:
+        if (algo := sel_algo["behavior"]) not in ["ga", "sa", "ts"]:
             print(f"  :Selected algorithms are {sel_algo}")
             print(f"  :{algo} for behavior calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
             return False
 
         # run calibration based on the selected algorithm
-        cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)
+        # cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)
+        cali_sumo_(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)
 
         print("  :Calibration successfully completed.")
 

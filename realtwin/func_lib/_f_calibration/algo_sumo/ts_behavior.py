@@ -53,9 +53,9 @@ def generate_neighbors(solution: list | np.ndarray, param_ranges: dict, tabu_lis
 class TabuSearchForBehavioral:
     """Tabu search algorithm for calibration"""
 
-    def __init__(self, scenario_config: dict, ts_config: dict, verbose: bool = True):
+    def __init__(self, scenario_config: dict, behavior_config: dict, verbose: bool = True):
         """ Initialize the Tabu Search algorithm."""
-        self.ts_config = ts_config
+        self.behavior_cfg = behavior_config
         self.scenario_config = scenario_config
         self.verbose = verbose
 
@@ -77,23 +77,26 @@ class TabuSearchForBehavioral:
         if self.verbose:
             print("\n  :Tabu Search is running...")
 
-        max_iteration = self.ts_config.get("max_iteration")
+        if (ts_cfg := self.behavior_cfg.get("ts_config")) is None:
+            raise ValueError("Tabu Search configuration is missing.")
+
+        max_iteration = ts_cfg.get("max_iteration")
+        decimal_places = ts_cfg.get("decimal_places")
+        tabu_list_size = ts_cfg.get("tabu_list_size")
+        num_neighbors = ts_cfg.get("num_neighbors")
 
         # convert the initial parameters and ranges to numpy arrays
-        initial_parameters = self.ts_config.get("initial_params")
-        param_ranges = self.ts_config.get("params_ranges")
+        initial_parameters = self.behavior_cfg.get("initial_params")
+        param_ranges = self.behavior_cfg.get("params_ranges")
         if isinstance(initial_parameters, dict):
             initial_parameters = np.array(list(initial_parameters.values()))
         if isinstance(param_ranges, dict):
             param_ranges = np.array(list(param_ranges.values()))
 
-        decimal_places = self.ts_config.get("decimal_places")
-        tabu_list_size = self.ts_config.get("tabu_list_size")
-
-        EB_edge_list = self.ts_config.get("EB_edge_list")
-        WB_edge_list = self.ts_config.get("WB_edge_list")
-        EB_tt = self.ts_config.get("EB_tt")
-        WB_tt = self.ts_config.get("WB_tt")
+        EB_edge_list = self.behavior_cfg.get("EB_edge_list")
+        WB_edge_list = self.behavior_cfg.get("WB_edge_list")
+        EB_tt = self.behavior_cfg.get("EB_tt")
+        WB_tt = self.behavior_cfg.get("WB_tt")
 
         calibration_target = self.scenario_config.get("calibration_target")
         sim_start_time = self.scenario_config.get("sim_start_time")
@@ -183,35 +186,38 @@ class TabuSearchForBehavioral:
 
 
 if __name__ == "__main__":
-    ts_config = {
-        "initial_parameters": {"min_gap": 2.5,        # minimum gap in meters
-                               "acceleration": 2.6,  # max acceleration in m/s^2
-                               "deceleration": 4.5,  # max deceleration in m/s^2
-                               "sigma": 0.5,          # driver imperfection
-                               "tau": 1.00,            # desired headway
-                               "emergencyDecel": 9.0},   # emergency deceleration
-        "param_ranges": {"min_gap": (1.0, 3.0),
-                         "acceleration": (2.5, 3),
-                         "deceleration": (4, 5.3),
-                         "sigma": (0, 1),
-                         "tau": (0.25, 1.25),
-                         "emergencyDecel": (5.0, 9.3)},
-        "max_iteration": 50,
-        "num_neighbors": 5,
-        "tabu_list_size": 10,
-        "decimal_places": 5,
-        "EB_tt": 240,
-        "WB_tt": 180,
-        "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
-                         "-302", "-3221", "-322", "-313", "-284",
-                         "-328", "-304"],
-        "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
-                         "-315", "-321", "-300", "-2851", "-285",
-                         "-290", "-298", "-295"]
-    }
+    behavior_config = {"initial_params": {"min_gap": 2.5,        # minimum gap in meters
+                                          "acceleration": 2.6,  # max acceleration in m/s^2
+                                          "deceleration": 4.5,  # max deceleration in m/s^2
+                                          "sigma": 0.5,          # driver imperfection
+                                          "tau": 1.00,            # desired headway
+                                          "emergencyDecel": 9.0},   # emergency deceleration
+                       "params_ranges": {"min_gap": (1.0, 3.0),
+                                         "acceleration": (2.5, 3),
+                                         "deceleration": (4, 5.3),
+                                         "sigma": (0, 1),
+                                         "tau": (0.25, 1.25),
+                                         "emergencyDecel": (5.0, 9.3)},
+                       "EB_tt": 240,
+                       "WB_tt": 180,
+                       "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
+                                        "-302", "-3221", "-322", "-313", "-284",
+                                        "-328", "-304"],
+                       "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
+                                        "-315", "-321", "-300", "-2851", "-285",
+                                        "-290", "-298", "-295"],
+                       "ga_config": {"num_generation": 50, },
+                       "sa_config": {"initial_temperature": 100,
+                                     "max_iteration": 150,
+                                     "cooling_rate": 0.9891, },
+                       "ts_config": {"max_iteration": 50,
+                                     "num_neighbors": 5,
+                                     "tabu_list_size": 10,
+                                     "decimal_places": 5, },
+                       }
 
     scenario_config = {
-        "input_dir": r"C:\Users\xh8\ornl_work\gitlab_workspace\realtwintool\tools\SUMO\Calibration\xl_behavior\input_dir",
+        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\input_dir_dummy",
         "network_name": "chatt",
         "sim_name": "chatt.sumocfg",
         "sim_start_time": 28800,
@@ -223,11 +229,8 @@ if __name__ == "__main__":
         "calibration_target": {'GEH': 5, 'GEHPercent': 0.85},
         "calibration_interval": 60,
         "demand_interval": 15,
-        "lower_bound": 0,   # For Tabu search only
-        "upper_bound": 1,
-
     }
 
-    ts = TabuSearchForBehavioral(ts_config, scenario_config)
+    ts = TabuSearchForBehavioral(scenario_config, behavior_config, verbose=True)
     ts.run_calibration()
     ts.run_vis()

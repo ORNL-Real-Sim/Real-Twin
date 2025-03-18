@@ -467,9 +467,9 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
     travel_time_WB = get_travel_time_from_EdgeData_xml(path_EdgeData, WB_edge_list)
 
     if error_func == "rmse":
-        fitness_err = -np.sqrt(0.5 * ((EB_tt - travel_time_EB)**2 + (WB_tt - travel_time_WB)**2))
+        fitness_err = np.sqrt(0.5 * ((EB_tt - travel_time_EB)**2 + (WB_tt - travel_time_WB)**2))
     elif error_func == "mae":
-        fitness_err = -((abs(EB_tt - travel_time_EB) + abs(WB_tt - travel_time_WB)) / 2)
+        fitness_err = ((abs(EB_tt - travel_time_EB) + abs(WB_tt - travel_time_WB)) / 2)
     else:
         raise ValueError("error_func must be either 'rmse' or 'mae'")
 
@@ -483,8 +483,6 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
                                                            calibration_target,
                                                            sim_start_time,
                                                            sim_end_time)
-    print(f"  :GEH: Mean Percentage: {mean_geh}, {geh_percent}")
+    print(f"  :GEH: Mean Percentage: {mean_geh:.6f}, {geh_percent:.6f}, Travel time error: {fitness_err:.6f}")
 
     return fitness_err
-
-

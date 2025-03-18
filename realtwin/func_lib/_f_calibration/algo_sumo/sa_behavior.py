@@ -34,8 +34,8 @@ else:
 class SimulatedAnnealingForBehavioral:
     """ Simulated Annealing algorithm for running the simulator """
 
-    def __init__(self, scenario_config: dict, sa_config: dict, verbose: bool = False):
-        self.sa_config = sa_config
+    def __init__(self, scenario_config: dict, behavior_config: dict, verbose: bool = False):
+        self.behavior_cfg = behavior_config
         self.scenario_config = scenario_config
         self.verbose = verbose
 
@@ -56,22 +56,25 @@ class SimulatedAnnealingForBehavioral:
         if self.verbose:
             print("\n  :Simulated Annealing algorithm is running...")
 
-        init_temperature = self.sa_config.get("init_temperature", 100)
-        max_iteration = self.sa_config.get("max_iteration")
+        if (sa_cfg := self.behavior_cfg.get("sa_config")) is None:
+            raise ValueError("Simulated Annealing configuration is not provided.")
+
+        init_temperature = sa_cfg.get("init_temperature", 100)
+        max_iteration = sa_cfg.get("max_iteration", 100)
+        cooling_rate = sa_cfg.get("cooling_rate", 0.9891)
 
         # convert the initial parameters and ranges to numpy arrays
-        initial_parameters = self.sa_config.get("initial_params")
-        param_ranges = self.sa_config.get("params_ranges")
+        initial_parameters = self.behavior_cfg.get("initial_params")
+        param_ranges = self.behavior_cfg.get("params_ranges")
         if isinstance(initial_parameters, dict):
             initial_parameters = np.array(list(initial_parameters.values()))
         if isinstance(param_ranges, dict):
             param_ranges = np.array(list(param_ranges.values()))
 
-        cooling_rate = self.sa_config.get("cooling_rate")
-        EB_edge_list = self.sa_config.get("EB_edge_list")
-        WB_edge_list = self.sa_config.get("WB_edge_list")
-        EB_tt = self.sa_config.get("EB_tt")
-        WB_tt = self.sa_config.get("WB_tt")
+        EB_edge_list = self.behavior_cfg.get("EB_edge_list")
+        WB_edge_list = self.behavior_cfg.get("WB_edge_list")
+        EB_tt = self.behavior_cfg.get("EB_tt")
+        WB_tt = self.behavior_cfg.get("WB_tt")
 
         calibration_target = self.scenario_config.get("calibration_target")
         sim_start_time = self.scenario_config.get("sim_start_time")
@@ -179,34 +182,38 @@ class SimulatedAnnealingForBehavioral:
 
 if __name__ == "__main__":
 
-    sa_config = {
-        "initial_parameters": {"min_gap": 2.5,        # minimum gap in meters
-                               "acceleration": 2.6,  # max acceleration in m/s^2
-                               "deceleration": 4.5,  # max deceleration in m/s^2
-                               "sigma": 0.5,          # driver imperfection
-                               "tau": 1.00,            # desired headway
-                               "emergencyDecel": 9.0},   # emergency deceleration
-        "param_ranges": {"min_gap": (1.0, 3.0),
-                         "acceleration": (2.5, 3),
-                         "deceleration": (4, 5.3),
-                         "sigma": (0, 1),
-                         "tau": (0.25, 1.25),
-                         "emergencyDecel": (5.0, 9.3)},
-        "initial_temperature": 100,
-        "max_iteration": 150,
-        "cooling_rate": 0.9891,
-        "EB_tt": 240,
-        "WB_tt": 180,
-        "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
-                         "-302", "-3221", "-322", "-313", "-284",
-                         "-328", "-304"],
-        "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
-                         "-315", "-321", "-300", "-2851", "-285",
-                         "-290", "-298", "-295"]
-    }
+    behavior_config = {"initial_params": {"min_gap": 2.5,        # minimum gap in meters
+                                          "acceleration": 2.6,  # max acceleration in m/s^2
+                                          "deceleration": 4.5,  # max deceleration in m/s^2
+                                          "sigma": 0.5,          # driver imperfection
+                                          "tau": 1.00,            # desired headway
+                                          "emergencyDecel": 9.0},   # emergency deceleration
+                       "params_ranges": {"min_gap": (1.0, 3.0),
+                                         "acceleration": (2.5, 3),
+                                         "deceleration": (4, 5.3),
+                                         "sigma": (0, 1),
+                                         "tau": (0.25, 1.25),
+                                         "emergencyDecel": (5.0, 9.3)},
+                       "EB_tt": 240,
+                       "WB_tt": 180,
+                       "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
+                                        "-302", "-3221", "-322", "-313", "-284",
+                                        "-328", "-304"],
+                       "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
+                                        "-315", "-321", "-300", "-2851", "-285",
+                                        "-290", "-298", "-295"],
+                       "ga_config": {"num_generation": 50, },
+                       "sa_config": {"initial_temperature": 100,
+                                     "max_iteration": 150,
+                                     "cooling_rate": 0.9891, },
+                       "ts_config": {"max_iteration": 50,
+                                     "num_neighbors": 5,
+                                     "tabu_list_size": 10,
+                                     "decimal_places": 5, },
+                       }
 
     scenario_config = {
-        "input_dir": r"C:\Users\xh8\ornl_work\gitlab_workspace\realtwintool\tools\SUMO\Calibration\xl_behavior\input_dir",
+        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\input_dir_dummy",
         "network_name": "chatt",
         "sim_name": "chatt.sumocfg",
         "sim_start_time": 28800,
@@ -220,6 +227,6 @@ if __name__ == "__main__":
         "demand_interval": 15,
     }
 
-    sa = SimulatedAnnealingForBehavioral(sa_config, scenario_config)
+    sa = SimulatedAnnealingForBehavioral(scenario_config, behavior_config, verbose=True)
     sa.run_calibration()
     sa.run_vis()

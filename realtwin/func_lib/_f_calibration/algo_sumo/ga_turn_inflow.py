@@ -31,7 +31,7 @@ from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (
 class GeneticAlgorithmForTurnFlow:
     """Genetic Algorithm for optimization for running simulators"""
 
-    def __init__(self, scenario_config: dict, ga_config: dict, verbose: bool = True):
+    def __init__(self, scenario_config: dict, turn_inflow_config: dict, verbose: bool = True):
         """Input parameters are dictionaries containing configurations for Genetic Algorithm and scenario results.
 
         Args:
@@ -62,9 +62,8 @@ class GeneticAlgorithmForTurnFlow:
                     upper_bound: 1,
                     sim_name: "chatt.sumocfg",
                     calibration_target: {'GEH': 5, 'GEHPercent': 0.85},}
-
         """
-        self.ga_config = ga_config
+        self.turn_inflow_cfg = turn_inflow_config
         self.scenario_config = scenario_config
         self.verbose = verbose
 
@@ -94,18 +93,18 @@ class GeneticAlgorithmForTurnFlow:
         """ Run a single calibration iteration to get the best solution """
 
         # update turn and flow
-        self.df_turn, self.df_inflow = update_turn_flow_from_solution(self.df_turn,
-                                                                      self.df_inflow,
-                                                                      initial_solution,
-                                                                      self.scenario_config["calibration_interval"],
-                                                                      self.scenario_config["demand_interval"])
+        df_turn, df_inflow = update_turn_flow_from_solution(self.df_turn,
+                                                            self.df_inflow,
+                                                            initial_solution,
+                                                            self.scenario_config["calibration_interval"],
+                                                            self.scenario_config["demand_interval"])
 
         # update rou.xml from updated turn and flow
         create_rou_turn_flow_xml(self.scenario_config.get("network_name"),
                                  self.scenario_config.get("sim_start_time"),
                                  self.scenario_config.get("sim_end_time"),
-                                 self.df_turn,
-                                 self.df_inflow,
+                                 df_turn,
+                                 df_inflow,
                                  ical,
                                  self.input_dir,
                                  self.output_dir,
@@ -130,17 +129,20 @@ class GeneticAlgorithmForTurnFlow:
         if self.verbose:
             print("\n  :Running Genetic Algorithm...")
 
+        if (ga_cfg := self.turn_inflow_cfg.get("ga_config")) is None:
+            raise ValueError("  :Please provide a valid ga_config in the input configuration file.")
+
         # get parameters from the config
-        population_size = self.ga_config.get("population_size")
-        num_variables = self.ga_config.get("num_variables")
-        num_generations = self.ga_config.get("num_generations")
-        num_turning_ratio = self.ga_config.get("num_turning_ratio")
-        ubc = self.ga_config.get("ubc")
-        crossover_rate = self.ga_config.get("crossover_rate", 0.75)
-        mutation_rate = self.ga_config.get("mutation_rate", 0.1)
-        elitism_size = self.ga_config.get("elitism_size", 1)  # Number of elite individuals to carry over
-        best_fitness_value = self.ga_config.get("best_fitness_value", float('inf'))
-        max_no_improvement = self.ga_config.get("max_no_improvement", 5)  # Stop if no improvement in 5 iterations
+        population_size = ga_cfg.get("population_size")
+        num_variables = ga_cfg.get("num_variables")
+        num_generations = ga_cfg.get("num_generations")
+        num_turning_ratio = ga_cfg.get("num_turning_ratio")
+        ubc = ga_cfg.get("ubc")
+        crossover_rate = ga_cfg.get("crossover_rate", 0.75)
+        mutation_rate = ga_cfg.get("mutation_rate", 0.1)
+        elitism_size = ga_cfg.get("elitism_size", 1)  # Number of elite individuals to carry over
+        best_fitness_value = ga_cfg.get("best_fitness_value", float('inf'))
+        max_no_improvement = ga_cfg.get("max_no_improvement", 5)  # Stop if no improvement in 5 iterations
 
         network_name = self.scenario_config.get("network_name")
 
@@ -284,21 +286,50 @@ class GeneticAlgorithmForTurnFlow:
 
 if __name__ == "__main__":
 
-    ga_config = {
-        "num_variables": 16,
-        "num_turning_ratio": 12,  # remaining should be inflow
-        "ubc": 200,  # inflow upper bound constant
-        "population_size": 2,  # must be even
-        "num_generations": 5,
-        "crossover_rate": 0.75,
-        "mutation_rate": 0.1,
-        "elitism_size": 1,  # Number of elite individuals to carry over
-        "best_fitness_value": float('inf'),
-        "max_no_improvement": 5,  # Stop if no improvement in 5 iterations
+    turn_inflow_config = {
+        "initial_params": [0.5, 0.5, 0.5, 0.5, 0.5,
+                           0.5, 0.5, 0.5, 0.5, 0.5,
+                           0.5, 0.5, 100, 100, 100, 100],
+        "params_ranges": [[0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
+                          [0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
+                          [0, 1], [0, 1], [50, 200], [50, 200], [50, 200], [50, 200]],
+        "ga_config": {"num_variables": 16,
+                      "num_turning_ratio": 12,  # remaining should be inflow
+                      "ubc": 200,  # inflow upper bound constant
+                      "population_size": 2,  # must be even
+                      "num_generations": 5,
+                      "crossover_rate": 0.75,
+                      "mutation_rate": 0.1,
+                      "elitism_size": 1,  # Number of elite individuals to carry over
+                      "best_fitness_value": float('inf'),
+                      "max_no_improvement": 5,  # Stop if no improvement in 5 iterations
+                      },
+        "sa_config": {"num_variables": 16,
+                      "num_turning_ratio": 12,
+                      "ubc": 200,
+                      "cost_difference": 2,
+                      "accept_prob": 0.5,
+                      "initial_temperature": 100,
+                      "cooling_rate": 0.99,
+                      "stopping_temperature": 1e-3,
+                      "max_iteration": 3,
+                      "lower_bound": 0,
+                      "upper_bound": 1, },
+        "ts_config": {"iterations": 3,
+                      "tabu_size": 120,
+                      "neighborhood_size": 32,
+                      "move_range": 0.5,  # Initial move range
+                      "lower_bound": 0,
+                      "upper_bound": 1,
+                      "lbc": 0,  # lower bound for inflow counts
+                      "ubc": 200,  # upper bound for inflow counts
+                      "num_turning_ratio": 12,
+                      "max_no_improvement_local": 5,
+                      "max_no_improvement_global": 30, },
     }
 
     scenario_config = {
-        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin\datasets\input_dir_dummy",
+        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\input_dir_dummy",
         "network_name": "chatt",
         "sim_name": "chatt.sumocfg",
         "sim_start_time": 28800,
@@ -314,6 +345,6 @@ if __name__ == "__main__":
         # "upper_bound": 1,
     }
 
-    ga = GeneticAlgorithmForTurnFlow(scenario_config, ga_config)
+    ga = GeneticAlgorithmForTurnFlow(scenario_config, turn_inflow_config)
     ga.run_calibration(remove_old_files=True)
     ga.run_vis()

@@ -35,8 +35,8 @@ def on_generation(ga_instance):
 
     current_generation = ga_instance.generations_completed
     print(f"  :Generation {current_generation}:")
-    print("  :Fitness of the best solution :", ga_instance.best_solution())
-    print(f"  :population size: {ga_instance.population}")
+    print("  :Fitness of the best solution :", ga_instance.best_solution(), ga_instance.best_fitness_)
+    # print(f"  :population size: {ga_instance.population}")
 
     # population = ga_instance.population
     # print("Population:", population)
@@ -90,13 +90,13 @@ def fitness_func_gad(ept_, solution: list | np.ndarray, solution_idx: int, scena
     return fitness_err
 
 
-class GeneticAlgorithmForBehavioral:
+class GeneticAlgorithmForBehavior:
     """ Genetic Algorithm for Behavioral Calibration."""
 
-    def __init__(self, scenario_config: dict, ga_config: dict, verbose: bool = True):
+    def __init__(self, scenario_config: dict, behavior_config: dict, verbose: bool = True):
         """Input parameters are dictionaries containing configurations for Genetic Algorithm and scenario results.
         """
-        self.ga_config = ga_config
+        self.behavior_cfg = behavior_config
         self.scenario_config = scenario_config
         self.verbose = verbose
 
@@ -119,18 +119,21 @@ class GeneticAlgorithmForBehavioral:
         if self.verbose:
             print("\n  :Running Genetic Algorithm...")
 
+        if (ga_cfg := self.behavior_cfg.get("ga_config")) is None:
+            raise ValueError("ga_config must included in configuration file.")
+
         # convert the initial parameters and ranges to numpy arrays
-        initial_parameters = self.ga_config.get("initial_params")
-        param_ranges = self.ga_config.get("params_ranges")
+        initial_parameters = self.behavior_cfg.get("initial_params")
+        param_ranges = self.behavior_cfg.get("params_ranges")
         if isinstance(initial_parameters, dict):
             initial_parameters = np.array(list(initial_parameters.values()))
         if isinstance(param_ranges, dict):
             param_ranges = np.array(list(param_ranges.values()))
 
-        EB_edge_list = self.ga_config.get("EB_edge_list")
-        WB_edge_list = self.ga_config.get("WB_edge_list")
-        EB_tt = self.ga_config.get("EB_tt")
-        WB_tt = self.ga_config.get("WB_tt")
+        EB_edge_list = self.behavior_cfg.get("EB_edge_list")
+        WB_edge_list = self.behavior_cfg.get("WB_edge_list")
+        EB_tt = self.behavior_cfg.get("EB_tt")
+        WB_tt = self.behavior_cfg.get("WB_tt")
 
         network_name = self.scenario_config.get("network_name")
         path_net = pf.path2linux(Path(self.input_dir) / f"{network_name}.net.xml")
@@ -176,7 +179,7 @@ class GeneticAlgorithmForBehavioral:
         # Perform the genetic algorithm
         # Genetic Algorithm configuration
         # Create a partial function where param1 and param2 are preset.
-        ga_instance = pygad.GA(num_generations=self.ga_config.get("num_generations", 50),
+        ga_instance = pygad.GA(num_generations=ga_cfg.get("num_generations", 50),
                                num_parents_mating=3,
                                fitness_func=lambda _, sol, idx: fitness_func_gad(_, sol, idx, self.scenario_config),
                                sol_per_pop=20,
@@ -228,32 +231,38 @@ class GeneticAlgorithmForBehavioral:
 
 if __name__ == "__main__":
 
-    ga_config = {"initial_parameters": {"min_gap": 2.5,        # minimum gap in meters
-                                        "acceleration": 2.6,  # max acceleration in m/s^2
-                                        "deceleration": 4.5,  # max deceleration in m/s^2
-                                        "sigma": 0.5,          # driver imperfection
-                                        "tau": 1.00,            # desired headway
-                                        "emergencyDecel": 9.0},   # emergency deceleration
-                 "param_ranges": {"min_gap": (1.0, 3.0),
-                                  "acceleration": (2.5, 3),
-                                  "deceleration": (4, 5.3),
-                                  "sigma": (0, 1),
-                                  "tau": (0.25, 1.25),
-                                  "emergencyDecel": (5.0, 9.3)},
-                 "num_generation": 50,
-
-                 "EB_tt": 240,
-                 "WB_tt": 180,
-                 "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
-                                  "-302", "-3221", "-322", "-313", "-284",
-                                  "-328", "-304"],
-                 "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
-                                  "-315", "-321", "-300", "-2851", "-285",
-                                  "-290", "-298", "-295"]
-                 }
+    behavior_config = {"initial_params": {"min_gap": 2.5,        # minimum gap in meters
+                                          "acceleration": 2.6,  # max acceleration in m/s^2
+                                          "deceleration": 4.5,  # max deceleration in m/s^2
+                                          "sigma": 0.5,          # driver imperfection
+                                          "tau": 1.00,            # desired headway
+                                          "emergencyDecel": 9.0},   # emergency deceleration
+                       "params_ranges": {"min_gap": (1.0, 3.0),
+                                         "acceleration": (2.5, 3),
+                                         "deceleration": (4, 5.3),
+                                         "sigma": (0, 1),
+                                         "tau": (0.25, 1.25),
+                                         "emergencyDecel": (5.0, 9.3)},
+                       "EB_tt": 240,
+                       "WB_tt": 180,
+                       "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
+                                        "-302", "-3221", "-322", "-313", "-284",
+                                        "-328", "-304"],
+                       "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
+                                        "-315", "-321", "-300", "-2851", "-285",
+                                        "-290", "-298", "-295"],
+                       "ga_config": {"num_generation": 50, },
+                       "sa_config": {"initial_temperature": 100,
+                                     "max_iteration": 150,
+                                     "cooling_rate": 0.9891, },
+                       "ts_config": {"max_iteration": 50,
+                                     "num_neighbors": 5,
+                                     "tabu_list_size": 10,
+                                     "decimal_places": 5, },
+                       }
 
     scenario_config = {
-        "input_dir": r"C:\Users\xh8\ornl_work\gitlab_workspace\realtwintool\tools\SUMO\Calibration\xl_behavior\input_dir",
+        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\input_dir_dummy",
         "network_name": "chatt",
         "sim_name": "chatt.sumocfg",
         "sim_start_time": 28800,
@@ -265,11 +274,8 @@ if __name__ == "__main__":
         "calibration_target": {'GEH': 5, 'GEHPercent': 0.85},
         "calibration_interval": 60,
         "demand_interval": 15,
-        # "lower_bound": 0,   # For Tabu search only
-        # "upper_bound": 1,
-
     }
 
-    ga = GeneticAlgorithmForBehavioral(ga_config, scenario_config)
+    ga = GeneticAlgorithmForBehavior(scenario_config, behavior_config, verbose=True)
     ga.run_calibration()
     ga.run_vis()

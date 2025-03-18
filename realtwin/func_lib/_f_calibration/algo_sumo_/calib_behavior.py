@@ -22,7 +22,7 @@ from pathlib import Path
 from functools import partial
 
 from mealpy import FloatVar, SA, GA, TS
-from util_cali_behavior import fitness_func
+from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior import fitness_func
 import numpy as np
 
 if 'SUMO_HOME' in os.environ:
@@ -87,14 +87,42 @@ class BehaviorCalib:
         >>> print(g_best.target.fitness)
     """
 
-    def __init__(self, problem_dict: dict = None, init_solution: list = None, term_dict: dict = None):
-        self.problem_dict = problem_dict
-        self.init_solution = init_solution
-        self.term_dict = term_dict
+    def __init__(self, scenario_config: dict = None, behavior_config: dict = None, verbose: bool = True):
 
-        # check inputs
-        if problem_dict is None:
-            raise ValueError("problem_dict must be provided.")
+        self.scenario_config = scenario_config
+        self.behavior_cfg = behavior_config
+        self.verbose = verbose
+
+        # prepare termination criteria from scenario config
+        self.term_dict = {
+            "max_epoch": self.behavior_cfg.get("max_epoch", 1000),
+            "max_fe": self.behavior_cfg.get("max_fe", 10000),
+            "max_time": self.behavior_cfg.get("max_time", 3600),
+            "max_early_stop": self.behavior_cfg.get("max_early_stop", 20),
+        }
+
+        init_params = self.behavior_cfg.get("initial_params", None)
+        if isinstance(init_params, dict):
+            self.init_solution = list(init_params.values())
+        elif isinstance(init_params, list):
+            self.init_solution = init_params
+        elif isinstance(init_params, np.ndarray):
+            self.init_solution = init_params.tolist()
+        else:
+            self.init_solution = None
+
+        params_ranges = self.behavior_cfg.get("params_ranges").values()
+        params_lb = [val[0] for val in params_ranges]
+        params_ub = [val[1] for val in params_ranges]
+        self.problem_dict = {
+            "obj_func": partial(fitness_func, scenario_config=self.scenario_config, error_func="rmse"),
+            "bounds": FloatVar(lb=params_lb, ub=params_ub,),
+            "minmax": "min",  # maximize or minimize
+            "log_to": "console",
+            # "log_to": "file",
+            # "log_file": "result.log",
+            "save_population": True,              # Default = False
+        }
 
     def _generate_initial_solutions(self, init_vals: list, pop_size: int) -> np.array:
         """Generate initial solutions for inputs.
@@ -108,7 +136,7 @@ class BehaviorCalib:
         """
 
         # TDD
-        if not isinstance(init_vals, (list, np.ndarray, type(None))):
+        if not isinstance(init_vals, (list, np.ndarray)):
             print("Error: init_vals must be a list, numpy array, or None.")
             return None
 
@@ -128,36 +156,30 @@ class BehaviorCalib:
         """
 
         # save the best solution
-        model.history.save_global_objectives_chart(filename=Path(output_dir) / "global_objectives")
-        model.history.save_local_objectives_chart(filename=Path(output_dir) / "local_objectives")
-        model.history.save_global_best_fitness_chart(filename=Path(output_dir) / "global_best_fitness")
-        model.history.save_local_best_fitness_chart(filename=Path(output_dir) / "local_best_fitness")
-        model.history.save_runtime_chart(filename=Path(output_dir) / "runtime")
-        model.history.save_exploration_exploitation_chart(filename=Path(output_dir) / "exploration_exploitation")
-        model.history.save_diversity_chart(filename=Path(output_dir) / "diversity")
-        model.history.save_trajectory_chart(filename=Path(output_dir) / "trajectory")
+        try:
+            model.history.save_global_objectives_chart(filename=f"{output_dir}/global_objectives")
+            model.history.save_local_objectives_chart(filename=f"{output_dir}/local_objectives")
+            model.history.save_global_best_fitness_chart(filename=f"{output_dir}/global_best_fitness")
+            model.history.save_local_best_fitness_chart(filename=f"{output_dir}/local_best_fitness")
+            model.history.save_runtime_chart(filename=f"{output_dir}/runtime")
+            model.history.save_exploration_exploitation_chart(filename=f"{output_dir}/exploration_exploitation")
+            model.history.save_diversity_chart(filename=f"{output_dir}/diversity")
+            model.history.save_trajectory_chart(filename=f"{output_dir}/trajectory")
+        except Exception as e:
+            print(f"  :Error in saving vis: {e}")
+            return False
         return True
 
-    def run_GA(self, *,
-               epoch: int = 1000,
-               pop_size: int = 50,
-               pc: float = 0.95,  # crossover probability
-               pm: float = 0.025,  # mutation probability
-
-               selection: str = "roulette",  # "roulette", "tournament", "random"
-               k_way: float = 0.2,  # k-way for tournament selection
-               crossover: str = "uniform",  # one_point, multi-point, uniform, arithmetic
-               mutation: str = "swap",  # flip, swap
-               elite_best: float | int = 0.1,  # percentage of the best in elite group, or int, the number of best elite
-               elite_worst: float | int = 0.3,  # percentage of the worst in elite group, or int, the number of worst elite
-               sel_model: str = "BaseGA",  # "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA"
-               **kwargs):
+    def run_GA(self, **kwargs):
         """Run Genetic Algorithm (GA) for behavior optimization.
 
         Note:
             1. The `ga_model` parameter allows you to choose different types of GA models. Default is "BaseGA". Options include "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", and "SingleGA".
             2. Additional keyword arguments (`**kwargs`) can be passed for specific GA models.
             3. Please check original GA model documentation for more kwargs in details: https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
+
+        Warning:
+            You can change the input parameters only from input_config.yaml file.
 
         See Also:
             https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
@@ -171,6 +193,27 @@ class BehaviorCalib:
                 options: "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA".
             **kwargs: additional keyword arguments for specific GA models.
         """
+        if (ga_config := self.behavior_cfg.get("ga_config")) is None:
+            raise ValueError("ga_config is not provided in Calibration/turn_inflow setting in yaml file.")
+
+        epoch = ga_config.get("epoch", 1000)  # max iterations
+        pop_size = ga_config.get("pop_size", 50)  # population size
+        pc = ga_config.get("pc", 0.75)  # crossover probability
+        pm = ga_config.get("pm", 0.1)  # mutation probability
+
+        selection = ga_config.get("selection", "roulette")  # selection method
+        k_way = ga_config.get("k_way", 0.2)  # k-way for tournament selection
+        crossover = ga_config.get("crossover", "uniform")  # crossover method
+        mutation = ga_config.get("mutation", "swap")  # mutation method
+
+        # percentage of the best in elite group, or int, the number of best elite
+        elite_best = ga_config.get("elite_best", 0.1)
+
+        # percentage of the worst in elite group, or int, the number of worst elite
+        elite_worst = ga_config.get("elite_worst", 0.3)
+
+        # "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA"
+        sel_model = ga_config.get("model_selection", "BaseGA")
 
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
@@ -216,22 +259,18 @@ class BehaviorCalib:
         g_best = model_ga.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func(g_best.solution, scenario_config=scenario_config, error_func="rmse")
+        fitness_func(g_best.solution, scenario_config=self.scenario_config, error_func="rmse")
 
         return (g_best, model_ga)
 
-    def run_SA(self, *,
-               epoch: int = 1000,
-               pop_size: int = 2,
-               temp_init: float = 100,
-               cooling_rate: float = 0.99,
-               scale: float = 0.1,
-               sel_model: str = "OriginalSA",  # "OriginalSA", "GaussianSA", "SwarmSA"
-               **kwargs):
+    def run_SA(self, **kwargs):
         """Run Simulated Annealing (SA) for behavior optimization.
 
         See Also:
             https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.physics_based.html#module-mealpy.physics_based.SA
+
+        Warning:
+            You can change the input parameters only from input_config.yaml file.
 
         Args:
             epoch (int): iterations. Defaults to 1000.
@@ -240,8 +279,17 @@ class BehaviorCalib:
             cooling_rate (float): Defaults to 0.99.
             scale (float): the change scale of initialization. Defaults to 0.1.
             sel_model (str): select diff. Defaults to "OriginalSA".
-
         """
+        if (sa_config := self.behavior_cfg.get("sa_config")) is None:
+            raise ValueError("sa_config is not provided in Calibration/turn_inflow setting in yaml file.")
+
+        epoch = sa_config.get("epoch", 1000)  # max iterations
+        pop_size = sa_config.get("pop_size", 2)  # population size
+        temp_init = sa_config.get("temp_init", 100)  # initial temperature
+        cooling_rate = sa_config.get("cooling_rate", 0.891)  # cooling rate
+        scale = sa_config.get("scale", 0.1)  # scale of the change
+        sel_model = sa_config.get("model_selection", "OriginalSA")  # "OriginalSA", "GaussianSA", "SwarmSA"
+
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
 
@@ -256,7 +304,7 @@ class BehaviorCalib:
                                      pop_size=pop_size,
                                      temp_init=temp_init,
                                      cooling_rate=cooling_rate,
-                                     scale=scale,
+                                     step_size=scale,
                                      **kwargs)
         elif sel_model == "GaussianSA":
             model_sa = SA.GaussianSA(epoch=epoch,
@@ -280,21 +328,18 @@ class BehaviorCalib:
         g_best = model_sa.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func(g_best.solution, scenario_config=scenario_config, error_func="rmse")
+        fitness_func(g_best.solution, scenario_config=self.scenario_config, error_func="rmse")
 
         return (g_best, model_sa)
 
-    def run_TS(self, *,
-               epoch: int = 1000,  # max iterations
-               pop_size: int = 2,  # This parameter has no effect on the TS algorithm, only for compatibility
-               tabu_size: int = 10,  # maximum size of tabu list
-               neighbour_size: int = 10,  # size of the neighborhood for generating candidate solutions
-               perturbation_scale: float = 0.05,  # scale of perturbation for generating candidate solutions
-               **kwargs):
+    def run_TS(self, **kwargs):
         """Run Tabu Search (TS) for behavior optimization.
 
         See Also:
             https://github.com/thieu1995/mealpy/blob/master/mealpy/math_based/TS.py
+
+        Warning:
+            You can change the input parameters only from input_config.yaml file.
 
         Args:
             epoch (int): max iterations. Defaults to 1000.
@@ -302,8 +347,19 @@ class BehaviorCalib:
             tabu_size (int): maximum size of tabu list. Defaults to 10.
             neighbour_size (int): size of the neighborhood for generating candidate solutions. Defaults to 10.
             perturbation_scale (float): scale of perturbation for generating candidate solutions. Defaults to 0.05.
-
         """
+        if (ts_config := self.behavior_cfg.get("ts_config")) is None:
+            raise ValueError("ts_config is not provided in Calibration/turn_inflow setting in yaml file.")
+
+        epoch = ts_config.get("epoch", 1000)  # max iterations
+        pop_size = ts_config.get("pop_size", 2)  # population size
+        tabu_size = ts_config.get("tabu_size", 10)  # maximum size of tabu list
+
+        # size of the neighborhood for generating candidate solutions
+        neighbour_size = ts_config.get("neighbour_size", 10)
+
+        # scale of perturbation for generating candidate solutions
+        perturbation_scale = ts_config.get("perturbation_scale", 0.05)
 
         # Generate initial solution for inputs
         init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
@@ -317,7 +373,7 @@ class BehaviorCalib:
         g_best = model_ts.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func(g_best.solution, scenario_config=scenario_config, error_func="rmse")
+        fitness_func(g_best.solution, scenario_config=self.scenario_config, error_func="rmse")
 
         return (g_best, model_ts)
 
@@ -325,13 +381,13 @@ class BehaviorCalib:
 if __name__ == "__main__":
 
     scenario_config = {
-        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\mealpy_tes\input_dir_dummy",
+        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\realtwin\func_lib\_f_calibration\algo_sumo_\input_dir_dummy",
         "network_name": "chatt",
         "sim_name": "chatt.sumocfg",
         "sim_start_time": 28800,
         "sim_end_time": 32400,
         "path_turn": "chatt.turn.xml",
-        "path_inflow": "chatt.inflow.xml",
+        "path_inflow": "chatt.flow.xml",
         "path_summary": "summary.xlsx",
         "path_edge": 'EdgeData.xml',
         "calibration_target": {'GEH': 5, 'GEHPercent': 0.85},
@@ -347,32 +403,56 @@ if __name__ == "__main__":
                          "-290", "-298", "-295"]
     }
 
-    problem_dict = {
-        "obj_func": partial(fitness_func, scenario_config=scenario_config, error_func="rmse"),
-        "bounds": FloatVar(lb=[1.0, 2.5, 4, 0.0, 0.25, 5.0], ub=[3.0, 3.0, 5.3, 1.0, 1.25, 9.3],),
-        "minmax": "max",  # maximize or minimize
-        "log_to": "console",
-        # "log_to": "file",
-        # "log_file": "result.log",
-        "save_population": True,              # Default = False
-    }
+    behavior_config = {"initial_params": {"min_gap": 2.5,        # minimum gap in meters
+                                          "acceleration": 2.6,  # max acceleration in m/s^2
+                                          "deceleration": 4.5,  # max deceleration in m/s^2
+                                          "sigma": 0.5,          # driver imperfection
+                                          "tau": 1.00,            # desired headway
+                                          "emergencyDecel": 9.0},   # emergency deceleration
+                       "params_ranges": {"min_gap": (1.0, 3.0),
+                                         "acceleration": (2.5, 3),
+                                         "deceleration": (4, 5.3),
+                                         "sigma": (0, 1),
+                                         "tau": (0.25, 1.25),
+                                         "emergencyDecel": (5.0, 9.3)},
+                       "max_epoch": 500,
+                       "max_fe": 10000,
+                       "max_time": 3600,
+                       "max_early_stop": 20,
 
-    term_dict = {
-        "max_epoch": 500,  # max iterations
-        "max_fe": 10000,  # max function evaluations
-        # "max_time": 3600,  # max time in seconds
-        "max_early_stop": 20,
-    }
+                       "ga_config": {"epoch": 1000,
+                                     "pop_size": 30,
+                                     "pc": 0.95,
+                                     "pm": 0.1,
+                                     "selection": "roulette",
+                                     "k_way": 0.2,
+                                     "crossover": "uniform",
+                                     "mutation": "swap",
+                                     "elite_best": 0.1,
+                                     "elite_worst": 0.3,
+                                     "model_selection": "BaseGA",
+                                     },
+                       "sa_config": {"epoch": 1000,
+                                     "temp_init": 100,
+                                     "cooling_rate": 0.891,
+                                     "scale": 0.1,
+                                     "model_selection": "OriginalSA",
+                                     },
+                       "ts_config": {"epoch": 1000,
+                                     "tabu_size": 10,
+                                     "neighbour_size": 10,
+                                     "perturbation_scale": 0.05,
+                                     },
+                       }
 
-    init_vals = [2.5, 2.6, 4.5, 0.5, 1.0, 9.0]
-
-    opt = BehaviorCalib(problem_dict=problem_dict, init_solution=init_vals, term_dict=term_dict)
+    opt = BehaviorCalib(scenario_config=scenario_config,
+                        behavior_config=behavior_config, verbose=True)
 
     # Run Genetic Algorithm
-    # g_best = opt.run_GA(epoch=1000, pop_size=30, pc=0.95, pm=0.1, sel_model="BaseGA")
+    # g_best = opt.run_GA()
 
     # Run Simulated Annealing
-    # g_best = opt.run_SA(epoch=1000, pop_size=2, temp_init=100, cooling_rate=0.98, scale=0.1, sel_model="OriginalSA")
+    # g_best = opt.run_SA()
 
     # Run Tabu Search
-    g_best = opt.run_TS(epoch=1000, pop_size=2, tabu_size=10, neighbour_size=10, perturbation_scale=0.1)
+    g_best = opt.run_TS()
