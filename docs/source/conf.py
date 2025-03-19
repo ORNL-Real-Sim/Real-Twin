@@ -45,23 +45,21 @@ master_doc = "index"
 # -- General configuration -----------------------------------------------
 extensions = [
     'sphinx.ext.napoleon',
-    # "sphinx_copybutton",
-    # "sphinx_design",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.coverage",
     "sphinx.ext.doctest",
-    "sphinx.ext.extlinks",
     "sphinx.ext.ifconfig",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.linkcode",
-    "sphinx.ext.mathjax",
-    "sphinx.ext.todo",
 ]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
 templates_path = ["./_templates/"]
+
+external_links = {
+    "GitHub": ("https: // github.com/ORNL-Real-Sim/Real-Twin")
+}
 
 # If true, section author and module author directives will be shown in the
 # output. They are ignored by default.
@@ -70,71 +68,13 @@ show_authors = True
 # -- Options for HTML output ---------------------------------------------
 html_theme = 'sphinx_rtd_theme'
 
-html_theme_options = {
-    'prev_next_buttons_location': 'both',
-    "logo_only": False,
-    # "style_external_links": True,
-    "style_nav_header_background": "#2980b9",
-    "version_selector": True,
-    "language_selector": True,
-    "navigation_depth": 4,
-}
-
 # html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_title = "realtwin"
 html_short_title = "realtwin"
 html_logo = "./_static/realsim_logo.ico"
-html_favicon = "./_static/realsim_logo_00.ico"
-html_show_sourcelink = True
+html_favicon = "./_static/realsim_logo_01.ico"
 html_static_path = ["_static"]
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = "realtwin"
-
-
-def linkcode_resolve(domain, info) -> str | None:
-    """
-    Determine the URL corresponding to Python object
-    """
-    if domain != "py":
-        return None
-
-    modname = info["module"]
-    fullname = info["fullname"]
-
-    submod = sys.modules.get(modname)
-    if submod is None:
-        return None
-
-    obj = submod
-    for part in fullname.split("."):
-        try:
-            with warnings.catch_warnings():
-                # Accessing deprecated objects will generate noisy warnings
-                warnings.simplefilter("ignore", FutureWarning)
-                obj = getattr(obj, part)
-        except AttributeError:
-            return None
-
-    try:
-        fn = inspect.getsourcefile(inspect.unwrap(obj))
-    except TypeError:
-        try:  # property
-            fn = inspect.getsourcefile(inspect.unwrap(obj.fget))
-        except (AttributeError, TypeError):
-            fn = None
-    if not fn:
-        return None
-
-    try:
-        source, lineno = inspect.getsourcelines(obj)
-    except TypeError:
-        try:  # property
-            source, lineno = inspect.getsourcelines(obj.fget)
-        except (AttributeError, TypeError):
-            lineno = None
-    except OSError:
-        lineno = None
-
-    linespec = f"#L{lineno}-L{lineno + len(source) - 1}" if lineno else ""
