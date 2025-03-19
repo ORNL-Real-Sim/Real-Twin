@@ -8,17 +8,11 @@
 
 import os
 import sys
-import xml.etree.ElementTree as ET
 from pathlib import Path
-import subprocess
-import random
 from functools import partial
 
 from mealpy import FloatVar, SA, GA, TS
 from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior import (
-    get_travel_time_from_EdgeData_xml,
-    update_flow_xml_from_solution,
-    run_jtrrouter_to_create_rou_xml,
     result_analysis_on_EdgeData,
     run_SUMO_create_EdgeData,
     update_turn_flow_from_solution,
@@ -71,11 +65,11 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
                              scenario_config.get("sim_end_time"))
 
     # analyze EdgeData.xml to get best solution
-    best_flag, mean_GEH, GEH_percent = result_analysis_on_EdgeData(path_summary,
-                                                                   path_edge,
-                                                                   scenario_config["calibration_target"],
-                                                                   scenario_config["sim_start_time"],
-                                                                   scenario_config["sim_end_time"])
+    _, mean_GEH, GEH_percent = result_analysis_on_EdgeData(path_summary,
+                                                           path_edge,
+                                                           scenario_config["calibration_target"],
+                                                           scenario_config["sim_start_time"],
+                                                           scenario_config["sim_end_time"])
     print(f"  :GEH: Mean Percentage: {mean_GEH}, {GEH_percent}")
 
     # minimize the negative percentage of GEH and the mean GEH
@@ -84,33 +78,27 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
 
 
 class TurnInflowCalib:
-    """ Behavior Optimization class for SUMO calibration.
+    """ Turn and Inflow Optimization class for SUMO calibration.
 
     See Also:
         Problem_dict: https://mealpy.readthedocs.io/en/latest/pages/general/simple_guide.html
         termination_dict: https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination
 
     Args:
-        problem_dict (dict): dictionary containing the problem definition.
-            e.g., problem_dict = {"obj_func": partial(fitness_func, scenario_config=scenario_config, error_func="rmse"),
-                                    "bounds": FloatVar(lb=[1.0, 2.5, 4, 0.0, 0.25, 5.0], ub=[3.0, 3.0, 5.3, 1.0, 1.25, 9.3],),
-                                    "minmax": "max",  # maximize or minimize
-                                    "log_to": "console",
-                                    or
-                                    "log_to": "file",
-                                    "log_file": "result.log",
-                                    "save_population": True,              # Default = False}
-        init_solution (list): initial solution for the optimization.
-            e.g. init_solution = [2.5, 2.6, 4.5, 0.5, 1.0, 9.0]
-        term_dict (dict): dictionary containing the termination criteria.
-            e.g., term_dict = {"max_epoch": 500,  # max iterations
-                               "max_fe": 10000,  # max function evaluations
-                               "max_time": 3600,  # max time in seconds
-                               "max_early_stop": 20,}
+        scenario_config (dict): the configuration for the scenario.
+        turn_inflow_config (dict): the configuration for the turn and inflow.
+        verbose (bool): whether to print the information. Defaults to True.
+
+    Note:
+        We use the mealpy library for optimization. mealpy is a Python library for optimization algorithms.
+            https://mealpy.readthedocs.io/en/latest/index.html
+        1. The `scenario_config` parameter is used and can be modified from the `input_config.yaml` file.
+        2. The `turn_inflow_config` parameter is used and can be modified from the `input_config.yaml` file.
 
     """
 
     def __init__(self, scenario_config: dict = None, turn_inflow_config: dict = None, verbose: bool = True):
+        """Initialize the TurnInflowCalib class with scenario and turn inflow configurations."""
 
         self.scenario_config = scenario_config
         self.turn_inflow_cfg = turn_inflow_config
@@ -317,6 +305,7 @@ class TurnInflowCalib:
             cooling_rate (float): Defaults to 0.99.
             scale (float): the change scale of initialization. Defaults to 0.1.
             sel_model (str): select diff. Defaults to "OriginalSA".
+            kwargs: additional keyword arguments for specific SA models. Navigate to See Also for more details.
         """
         if (sa_config := self.turn_inflow_cfg.get("sa_config")) is None:
             raise ValueError("  :Error: sa_config is not provided in the configuration file.")
@@ -376,13 +365,16 @@ class TurnInflowCalib:
         See Also:
             https://github.com/thieu1995/mealpy/blob/master/mealpy/math_based/TS.py
 
+        Warning:
+            You can change the input parameters only from input_config.yaml file.
+
         Args:
             epoch (int): max iterations. Defaults to 1000.
             pop_size (int): population size. Defaults to 2.
             tabu_size (int): maximum size of tabu list. Defaults to 10.
             neighbour_size (int): size of the neighborhood for generating candidate solutions. Defaults to 10.
             perturbation_scale (float): scale of perturbation for generating candidate solutions. Defaults to 0.05.
-
+            kwargs: additional keyword arguments for specific TS models. Navigate to See Also for more details.
         """
         if (ts_config := self.turn_inflow_cfg.get("ts_config")) is None:
             raise ValueError("  :Error: ts_config is not provided in the configuration file.")

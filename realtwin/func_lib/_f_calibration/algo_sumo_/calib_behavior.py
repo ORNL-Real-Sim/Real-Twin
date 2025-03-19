@@ -6,19 +6,8 @@
 ##############################################################
 '''
 
-
-'''
-##############################################################
-# Created Date: Thursday, March 6th 2025
-# Contact Info: luoxiangyong01@gmail.com
-# Author/Copyright: Mr. Xiangyong Luo
-##############################################################
-'''
-
 import os
 import sys
-import xml.etree.ElementTree as ET
-from pathlib import Path
 from functools import partial
 
 from mealpy import FloatVar, SA, GA, TS
@@ -41,22 +30,9 @@ class BehaviorCalib:
     """ Behavior Optimization class for SUMO calibration
 
     Args:
-        problem_dict (dict): dictionary containing the problem definition.
-            e.g., problem_dict = {"obj_func": partial(fitness_func, scenario_config=scenario_config, error_func="rmse"),
-                                    "bounds": FloatVar(lb=[1.0, 2.5, 4, 0.0, 0.25, 5.0], ub=[3.0, 3.0, 5.3, 1.0, 1.25, 9.3],),
-                                    "minmax": "max",  # maximize or minimize
-                                    "log_to": "console",
-                                    or
-                                    "log_to": "file",
-                                    "log_file": "result.log",
-                                    "save_population": True,              # Default = False}
-        init_solution (list): initial solution for the optimization.
-            e.g. init_solution = [2.5, 2.6, 4.5, 0.5, 1.0, 9.0]
-        term_dict (dict): dictionary containing the termination criteria.
-            e.g., term_dict = {"max_epoch": 500,  # max iterations
-                               "max_fe": 10000,  # max function evaluations
-                               "max_time": 3600,  # max time in seconds
-                               "max_early_stop": 20,}
+        scenario_config (dict): the configuration for the scenario.
+        behavior_config (dict): the configuration for the behavior.
+        verbose (bool): whether to print the log. Defaults to True.
 
     Notes:
         We use the mealpy library for optimization. mealpy is a Python library for optimization algorithms.
@@ -174,8 +150,9 @@ class BehaviorCalib:
         """Run Genetic Algorithm (GA) for behavior optimization.
 
         Note:
-            1. The `ga_model` parameter allows you to choose different types of GA models. Default is "BaseGA". Options include "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", and "SingleGA".
-            2. Additional keyword arguments (`**kwargs`) can be passed for specific GA models.
+            1. The `model_selection` parameter allows you to choose different types of GA models. Default is "BaseGA".
+                Options include "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", and "SingleGA".
+            2. Additional keyword arguments (`**kwargs`) can be passed for specific GA models (See Also).
             3. Please check original GA model documentation for more kwargs in details: https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
 
         Warning:
@@ -189,12 +166,12 @@ class BehaviorCalib:
             pop_size (int): population size. Defaults to 50.
             pc (float): crossover probability. Defaults to 0.95.
             pm (float): mutation probability. Defaults to 0.025.
-            ga_model (str): the type of GA model to use. Defaults to "BaseGA".
+            model_selection (str): the type of GA model to use. Defaults to "BaseGA".
                 options: "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA".
-            **kwargs: additional keyword arguments for specific GA models.
+            kwargs: additional keyword arguments for specific GA models (Navigate to See Also).
         """
         if (ga_config := self.behavior_cfg.get("ga_config")) is None:
-            raise ValueError("ga_config is not provided in Calibration/turn_inflow setting in yaml file.")
+            raise ValueError("ga_config is not provided in Calibration/turn_inflow setting in input_config.yaml file.")
 
         epoch = ga_config.get("epoch", 1000)  # max iterations
         pop_size = ga_config.get("pop_size", 50)  # population size
@@ -266,6 +243,10 @@ class BehaviorCalib:
     def run_SA(self, **kwargs):
         """Run Simulated Annealing (SA) for behavior optimization.
 
+        Note:
+            1. The `model_selection` parameter allows you to choose different types of SA models. Default is "OriginalSA".
+                Options include "OriginalSA", "GaussianSA", "SwarmSA".
+
         See Also:
             https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.physics_based.html#module-mealpy.physics_based.SA
 
@@ -278,7 +259,8 @@ class BehaviorCalib:
             temp_init (float): initial temperature. Defaults to 100.
             cooling_rate (float): Defaults to 0.99.
             scale (float): the change scale of initialization. Defaults to 0.1.
-            sel_model (str): select diff. Defaults to "OriginalSA".
+            model_selection (str): select diff. Defaults to "OriginalSA". Options: "OriginalSA", "GaussianSA", "SwarmSA".
+            kwargs: additional keyword arguments for specific SA models (Navigate to See Also).
         """
         if (sa_config := self.behavior_cfg.get("sa_config")) is None:
             raise ValueError("sa_config is not provided in Calibration/turn_inflow setting in yaml file.")
@@ -347,6 +329,7 @@ class BehaviorCalib:
             tabu_size (int): maximum size of tabu list. Defaults to 10.
             neighbour_size (int): size of the neighborhood for generating candidate solutions. Defaults to 10.
             perturbation_scale (float): scale of perturbation for generating candidate solutions. Defaults to 0.05.
+            kwargs: additional keyword arguments for specific TS models (Navigate to See Also).
         """
         if (ts_config := self.behavior_cfg.get("ts_config")) is None:
             raise ValueError("ts_config is not provided in Calibration/turn_inflow setting in yaml file.")
