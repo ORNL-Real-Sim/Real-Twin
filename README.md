@@ -8,11 +8,19 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-03-19
+
+* prepare realtwin ico for readthedocs
+* prepare readthedocs (20%)
+
+TODO: 1. continue working on readthedocs 2. format docstring for functions and classes 3. Learn documentation on real-twin project / real-sim project
+
+![1742416825779](image/README/1742416825779.png)
+
 ### 2025-03-18
 
 * update code to run both original and new implementations in Calibration section
 * test two sets of algorithms
-
 * update code using universal configuration data
 * TODO: 1. refactor code 2. test scenarioes (multiple combinations between turn_inflow and behavior) 3. fix potential errors from package
 
