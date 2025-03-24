@@ -60,16 +60,12 @@ for relative_path, module_list in collected_functions.items():
             f.write(heading_message_new + "\n")
             f.write(heading_dashes + "\n\n")
 
-            # if gmns_geo is in the module name, then it is a subpackage
-            if "gmns_geo" in file_name:
-                f.write(f".. automodule:: {relative_path}.{module}" + "\n\n")
-            else:
-                f.write(f".. automodule:: {relative_path}\n")
-                f.write("   :members:\n")
-                f.write("   :undoc-members:\n")
-                f.write("   :show-inheritance:\n\n")
-                f.write(f".. autofunction:: {module}" + "\n\n")
-                f.write(f".. autoclass:: {module}" + "\n\n")
+            f.write(f".. automodule:: {relative_path}\n")
+            f.write("   :members:\n")
+            f.write("   :undoc-members:\n")
+            f.write("   :show-inheritance:\n\n")
+            f.write(f".. autofunction:: {module}" + "\n\n")
+            f.write(f".. autoclass:: {module}" + "\n\n")
 
             f.close()
 

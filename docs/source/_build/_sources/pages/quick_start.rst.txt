@@ -16,8 +16,8 @@ Potential Issues
 
 - Shapely
 
-If you install osm2gmns in a conda environment, you may get an error message: "OSError: [WinError 126]
-The specified module could not be found" when importing osm2gmns. To resolve this issue, you need to uninstall
+If you install realtwin in a conda environment, you may get an error message: "OSError: [WinError 126]
+The specified module could not be found" when importing realtwin. To resolve this issue, you need to uninstall
 the `Shapely`_ package first, and reinstall it manually using the command below.
 
 .. code-block:: bash
@@ -33,11 +33,11 @@ Simulator Included
 
 The realtwin package is currently include the following simulators:
 
-- ** `SUMO`_ **: Simulation of Urban MObility, a traffic simulation package.
+- `SUMO`_: Simulation of Urban MObility, a traffic simulation package.
 
-- ** `AimSUN`_ **: Aimsun is a traffic simulation software that provides a comprehensive platform for modeling and simulating transportation systems.
+- `AimSUN`_: Aimsun is a traffic simulation software that provides a comprehensive platform for modeling and simulating transportation systems.
 
-- ** `VISSIM`_ **: VISSIM is a traffic simulation software that allows for the modeling and analysis of complex traffic scenarios.
+- `VISSIM`_: VISSIM is a traffic simulation software that allows for the modeling and analysis of complex traffic scenarios.
 
 
 ==============================
