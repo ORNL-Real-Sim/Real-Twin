@@ -1,0 +1,564 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin.func_lib._f_calibration.TurnInflowCalib &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../_static/realsim_logo_01.ico"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            realtwin
+              <img src="../../_static/realsim_logo.ico" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Start:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Pkg API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Classes and Functions</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Support:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../support.html">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html#model-references">Model References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html#license">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">realtwin.func_lib._f_calibration.TurnInflowCalib</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/pages/api/realtwin.func_lib._f_calibration.TurnInflowCalib.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-realtwin.func_lib._f_calibration">
+<span id="realtwin-func-lib-f-calibration-turninflowcalib"></span><h1>realtwin.func_lib._f_calibration.TurnInflowCalib<a class="headerlink" href="#module-realtwin.func_lib._f_calibration" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.BehaviorCalib">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">realtwin.func_lib._f_calibration.</span></span><span class="sig-name descname"><span class="pre">BehaviorCalib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scenario_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">behavior_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#realtwin.func_lib._f_calibration.BehaviorCalib" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Behavior Optimization class for SUMO calibration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scenario_config</strong> (<em>dict</em>) – the configuration for the scenario.</p></li>
+<li><p><strong>behavior_config</strong> (<em>dict</em>) – the configuration for the behavior.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – whether to print the log. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<dl class="simple">
+<dt>We use the mealpy library for optimization. mealpy is a Python library for optimization algorithms.</dt><dd><p><a class="reference external" href="https://mealpy.readthedocs.io/en/latest/index.html">https://mealpy.readthedocs.io/en/latest/index.html</a></p>
+</dd>
+</dl>
+<ol class="arabic simple">
+<li><p>The <cite>init_solution</cite> parameter is used to provide initial solutions for the population. None by default.</p></li>
+<li><p>Behavior includes: min_gap(meters), acceleration(m/s^2), deceleration(m/s^2), sigma, tau, and emergencyDecel.</p></li>
+</ol>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Problem_dict: <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/general/simple_guide.html">https://mealpy.readthedocs.io/en/latest/pages/general/simple_guide.html</a>
+termination_dict: <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination">https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination</a></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">realtwin</span> <span class="kn">import</span> <span class="n">BehaviorOpt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prob_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;obj_func&quot;</span><span class="p">:</span> <span class="n">partial</span><span class="p">(</span><span class="n">fitness_func</span><span class="p">,</span> <span class="n">scenario_config</span><span class="o">=</span><span class="n">scenario_config</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="s2">&quot;rmse&quot;</span><span class="p">),</span>
+<span class="go">                &quot;bounds&quot;: FloatVar(lb=[1.0, 2.5, 4, 0.0, 0.25, 5.0], ub=[3.0, 3.0, 5.3, 1.0, 1.25, 9.3],),</span>
+<span class="go">                &quot;minmax&quot;: &quot;max&quot;,  # maximize or minimize</span>
+<span class="go">                &quot;log_to&quot;: &quot;console&quot;,</span>
+<span class="go">                &quot;save_population&quot;: True}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">init_solution</span> <span class="o">=</span> <span class="p">[</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">2.6</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">9.0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">term_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;max_epoch&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">&quot;max_fe&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span> <span class="s2">&quot;max_time&quot;</span><span class="p">:</span> <span class="mi">3600</span><span class="p">,</span> <span class="s2">&quot;max_early_stop&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">BehaviorOpt</span><span class="p">(</span><span class="n">problem_dict</span><span class="o">=</span><span class="n">prob_dict</span><span class="p">,</span> <span class="n">init_solution</span><span class="o">=</span><span class="n">init_solution</span><span class="p">,</span> <span class="n">term_dict</span><span class="o">=</span><span class="n">term_dict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g_best</span><span class="p">,</span> <span class="n">model_opt</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">run_GA</span><span class="p">(</span><span class="n">epoch</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">pop_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">pc</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">pm</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">sel_model</span><span class="o">=</span><span class="s2">&quot;BaseGA&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Save result figures to output_dir
+&gt;&gt;&gt; opt.run_vis(output_dir=”output_dir”, model=model_opt)
+&gt;&gt;&gt; print(g_best.solution)
+&gt;&gt;&gt; print(g_best.target.fitness)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.BehaviorCalib.run_GA">
+<span class="sig-name descname"><span class="pre">run_GA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#realtwin.func_lib._f_calibration.BehaviorCalib.run_GA" title="Link to this definition"></a></dt>
+<dd><p>Run Genetic Algorithm (GA) for behavior optimization.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>The <cite>model_selection</cite> parameter allows you to choose different types of GA models. Default is “BaseGA”.</dt><dd><p>Options include “BaseGA”, “EliteSingleGA”, “EliteMultiGA”, “MultiGA”, and “SingleGA”.</p>
+</dd>
+</dl>
+</li>
+<li><p>Additional keyword arguments (<cite>**kwargs</cite>) can be passed for specific GA models (See Also).</p></li>
+<li><p>Please check original GA model documentation for more kwargs in details: <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA">https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA</a></p></li>
+</ol>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You can change the input parameters only from input_config.yaml file.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA">https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch</strong> (<em>int</em>) – the iterations. Defaults to 1000.</p></li>
+<li><p><strong>pop_size</strong> (<em>int</em>) – population size. Defaults to 50.</p></li>
+<li><p><strong>pc</strong> (<em>float</em>) – crossover probability. Defaults to 0.95.</p></li>
+<li><p><strong>pm</strong> (<em>float</em>) – mutation probability. Defaults to 0.025.</p></li>
+<li><p><strong>model_selection</strong> (<em>str</em>) – the type of GA model to use. Defaults to “BaseGA”.
+options: “BaseGA”, “EliteSingleGA”, “EliteMultiGA”, “MultiGA”, “SingleGA”.</p></li>
+<li><p><strong>kwargs</strong> – additional keyword arguments for specific GA models (Navigate to See Also).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.BehaviorCalib.run_SA">
+<span class="sig-name descname"><span class="pre">run_SA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#realtwin.func_lib._f_calibration.BehaviorCalib.run_SA" title="Link to this definition"></a></dt>
+<dd><p>Run Simulated Annealing (SA) for behavior optimization.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>The <cite>model_selection</cite> parameter allows you to choose different types of SA models. Default is “OriginalSA”.</dt><dd><p>Options include “OriginalSA”, “GaussianSA”, “SwarmSA”.</p>
+</dd>
+</dl>
+</li>
+</ol>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.physics_based.html#module-mealpy.physics_based.SA">https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.physics_based.html#module-mealpy.physics_based.SA</a></p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You can change the input parameters only from input_config.yaml file.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch</strong> (<em>int</em>) – iterations. Defaults to 1000.</p></li>
+<li><p><strong>pop_size</strong> (<em>int</em>) – population size. Defaults to 2.</p></li>
+<li><p><strong>temp_init</strong> (<em>float</em>) – initial temperature. Defaults to 100.</p></li>
+<li><p><strong>cooling_rate</strong> (<em>float</em>) – Defaults to 0.99.</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – the change scale of initialization. Defaults to 0.1.</p></li>
+<li><p><strong>model_selection</strong> (<em>str</em>) – select diff. Defaults to “OriginalSA”. Options: “OriginalSA”, “GaussianSA”, “SwarmSA”.</p></li>
+<li><p><strong>kwargs</strong> – additional keyword arguments for specific SA models (Navigate to See Also).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.BehaviorCalib.run_TS">
+<span class="sig-name descname"><span class="pre">run_TS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#realtwin.func_lib._f_calibration.BehaviorCalib.run_TS" title="Link to this definition"></a></dt>
+<dd><p>Run Tabu Search (TS) for behavior optimization.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://github.com/thieu1995/mealpy/blob/master/mealpy/math_based/TS.py">https://github.com/thieu1995/mealpy/blob/master/mealpy/math_based/TS.py</a></p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You can change the input parameters only from input_config.yaml file.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch</strong> (<em>int</em>) – max iterations. Defaults to 1000.</p></li>
+<li><p><strong>pop_size</strong> (<em>int</em>) – population size. Defaults to 2.</p></li>
+<li><p><strong>tabu_size</strong> (<em>int</em>) – maximum size of tabu list. Defaults to 10.</p></li>
+<li><p><strong>neighbour_size</strong> (<em>int</em>) – size of the neighborhood for generating candidate solutions. Defaults to 10.</p></li>
+<li><p><strong>perturbation_scale</strong> (<em>float</em>) – scale of perturbation for generating candidate solutions. Defaults to 0.05.</p></li>
+<li><p><strong>kwargs</strong> – additional keyword arguments for specific TS models (Navigate to See Also).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.BehaviorCalib.run_vis">
+<span class="sig-name descname"><span class="pre">run_vis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#realtwin.func_lib._f_calibration.BehaviorCalib.run_vis" title="Link to this definition"></a></dt>
+<dd><p>Save the results of the optimization.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.utils.html#module-mealpy.utils.history">https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.utils.html#module-mealpy.utils.history</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_dir</strong> (<em>str</em>) – the directory to save the results.</p></li>
+<li><p><strong>model</strong> – the optimized model object.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.TurnInflowCalib">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">realtwin.func_lib._f_calibration.</span></span><span class="sig-name descname"><span class="pre">TurnInflowCalib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scenario_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn_inflow_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#realtwin.func_lib._f_calibration.TurnInflowCalib" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Turn and Inflow Optimization class for SUMO calibration.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Problem_dict: <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/general/simple_guide.html">https://mealpy.readthedocs.io/en/latest/pages/general/simple_guide.html</a>
+termination_dict: <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination">https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scenario_config</strong> (<em>dict</em>) – the configuration for the scenario.</p></li>
+<li><p><strong>turn_inflow_config</strong> (<em>dict</em>) – the configuration for the turn and inflow.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – whether to print the information. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl class="simple">
+<dt>We use the mealpy library for optimization. mealpy is a Python library for optimization algorithms.</dt><dd><p><a class="reference external" href="https://mealpy.readthedocs.io/en/latest/index.html">https://mealpy.readthedocs.io/en/latest/index.html</a></p>
+</dd>
+</dl>
+<ol class="arabic simple">
+<li><p>The <cite>scenario_config</cite> parameter is used and can be modified from the <cite>input_config.yaml</cite> file.</p></li>
+<li><p>The <cite>turn_inflow_config</cite> parameter is used and can be modified from the <cite>input_config.yaml</cite> file.</p></li>
+</ol>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.TurnInflowCalib.run_GA">
+<span class="sig-name descname"><span class="pre">run_GA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#realtwin.func_lib._f_calibration.TurnInflowCalib.run_GA" title="Link to this definition"></a></dt>
+<dd><p>Run Genetic Algorithm (GA) for behavior optimization.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ol class="arabic simple">
+<li><p>The <cite>init_solution</cite> parameter is used to provide initial solutions for the population. None by default.</p></li>
+<li><p>The <cite>ga_model</cite> parameter allows you to choose different types of GA models. Default is “BaseGA”. Options include “BaseGA”, “EliteSingleGA”, “EliteMultiGA”, “MultiGA”, and “SingleGA”.</p></li>
+<li><p>Additional keyword arguments (<cite>**kwargs</cite>) can be passed for specific GA models.</p></li>
+<li><p>Please check original GA model documentation for more kwargs in details: <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA">https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA</a></p></li>
+</ol>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA">https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA</a></p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You can change the input parameters only from input_config.yaml file.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch</strong> (<em>int</em>) – the iterations. Defaults to 1000.</p></li>
+<li><p><strong>pop_size</strong> (<em>int</em>) – population size. Defaults to 50.</p></li>
+<li><p><strong>pc</strong> (<em>float</em>) – crossover probability. Defaults to 0.95.</p></li>
+<li><p><strong>pm</strong> (<em>float</em>) – mutation probability. Defaults to 0.025.</p></li>
+<li><p><strong>ga_model</strong> (<em>str</em>) – the type of GA model to use. Defaults to “BaseGA”.
+options: “BaseGA”, “EliteSingleGA”, “EliteMultiGA”, “MultiGA”, “SingleGA”.</p></li>
+<li><p><strong>**kwargs</strong> – additional keyword arguments for specific GA models.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.TurnInflowCalib.run_SA">
+<span class="sig-name descname"><span class="pre">run_SA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#realtwin.func_lib._f_calibration.TurnInflowCalib.run_SA" title="Link to this definition"></a></dt>
+<dd><p>Run Simulated Annealing (SA) for behavior optimization.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.physics_based.html#module-mealpy.physics_based.SA">https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.physics_based.html#module-mealpy.physics_based.SA</a></p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You can change the input parameters only from input_config.yaml file.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch</strong> (<em>int</em>) – iterations. Defaults to 1000.</p></li>
+<li><p><strong>pop_size</strong> (<em>int</em>) – population size. Defaults to 2.</p></li>
+<li><p><strong>temp_init</strong> (<em>float</em>) – initial temperature. Defaults to 100.</p></li>
+<li><p><strong>cooling_rate</strong> (<em>float</em>) – Defaults to 0.99.</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – the change scale of initialization. Defaults to 0.1.</p></li>
+<li><p><strong>sel_model</strong> (<em>str</em>) – select diff. Defaults to “OriginalSA”.</p></li>
+<li><p><strong>kwargs</strong> – additional keyword arguments for specific SA models. Navigate to See Also for more details.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.TurnInflowCalib.run_TS">
+<span class="sig-name descname"><span class="pre">run_TS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#realtwin.func_lib._f_calibration.TurnInflowCalib.run_TS" title="Link to this definition"></a></dt>
+<dd><p>Run Tabu Search (TS) for behavior optimization.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://github.com/thieu1995/mealpy/blob/master/mealpy/math_based/TS.py">https://github.com/thieu1995/mealpy/blob/master/mealpy/math_based/TS.py</a></p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You can change the input parameters only from input_config.yaml file.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch</strong> (<em>int</em>) – max iterations. Defaults to 1000.</p></li>
+<li><p><strong>pop_size</strong> (<em>int</em>) – population size. Defaults to 2.</p></li>
+<li><p><strong>tabu_size</strong> (<em>int</em>) – maximum size of tabu list. Defaults to 10.</p></li>
+<li><p><strong>neighbour_size</strong> (<em>int</em>) – size of the neighborhood for generating candidate solutions. Defaults to 10.</p></li>
+<li><p><strong>perturbation_scale</strong> (<em>float</em>) – scale of perturbation for generating candidate solutions. Defaults to 0.05.</p></li>
+<li><p><strong>kwargs</strong> – additional keyword arguments for specific TS models. Navigate to See Also for more details.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.TurnInflowCalib.run_vis">
+<span class="sig-name descname"><span class="pre">run_vis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#realtwin.func_lib._f_calibration.TurnInflowCalib.run_vis" title="Link to this definition"></a></dt>
+<dd><p>Save the results of the optimization.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.utils.html#module-mealpy.utils.history">https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.utils.html#module-mealpy.utils.history</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_dir</strong> (<em>str</em>) – the directory to save the results.</p></li>
+<li><p><strong>model</strong> – the optimized model object.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.cali_aimsun">
+<span class="sig-prename descclassname"><span class="pre">realtwin.func_lib._f_calibration.</span></span><span class="sig-name descname"><span class="pre">cali_aimsun</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel_algo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#realtwin.func_lib._f_calibration.cali_aimsun" title="Link to this definition"></a></dt>
+<dd><p>Run SUMO calibration based on the selected algorithm and input configuration.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function is currently a placeholder and does not perform any actual calibration.
+It is intended to be implemented in the future.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sel_algo</strong> (<em>dict</em>) – the dictionary of selected algorithm for turn_inflow and behavior. Defaults to None.</p></li>
+<li><p><strong>input_config</strong> (<em>dict</em>) – the dictionary contain configurations from input yaml file. Defaults to None.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – print out processing message. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if calibration is successful, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.cali_sumo">
+<span class="sig-prename descclassname"><span class="pre">realtwin.func_lib._f_calibration.</span></span><span class="sig-name descname"><span class="pre">cali_sumo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel_algo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#realtwin.func_lib._f_calibration.cali_sumo" title="Link to this definition"></a></dt>
+<dd><p>Run SUMO calibration based on the selected algorithm and input configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sel_algo</strong> (<em>dict</em>) – the dictionary of selected algorithm for turn_inflow and behavior. Defaults to None.</p></li>
+<li><p><strong>input_config</strong> (<em>dict</em>) – the dictionary contain configurations from input yaml file. Defaults to None.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – print out processing message. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – if algo_config is not a dict with two levels with keys of ‘ga’, ‘sa’, and ‘ts’</p></li>
+<li><p><strong>ValueError</strong> – if sel_algo is not a dict with keys of ‘turn_inflow’ and ‘behavior’</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if calibration is successful, False otherwise.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="realtwin.func_lib._f_calibration.cali_vissim">
+<span class="sig-prename descclassname"><span class="pre">realtwin.func_lib._f_calibration.</span></span><span class="sig-name descname"><span class="pre">cali_vissim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel_algo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#realtwin.func_lib._f_calibration.cali_vissim" title="Link to this definition"></a></dt>
+<dd><p>Run VISSIM calibration using the specified algorithm and input configuration.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function is currently a placeholder and does not perform any actual calibration.
+It is intended to be implemented in the future.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sel_algo</strong> (<em>dict</em>) – the dictionary of selected algorithm for turn_inflow and behavior. Defaults to None.</p></li>
+<li><p><strong>input_config</strong> (<em>dict</em>) – the dictionary contain configurations from input yaml file. Defaults to None.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – print out processing message. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-prename descclassname"><span class="pre">realtwin.func_lib._f_calibration.</span></span><span class="sig-name descname"><span class="pre">TurnInflowCalib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scenario_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn_inflow_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Turn and Inflow Optimization class for SUMO calibration.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Problem_dict: <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/general/simple_guide.html">https://mealpy.readthedocs.io/en/latest/pages/general/simple_guide.html</a>
+termination_dict: <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination">https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scenario_config</strong> (<em>dict</em>) – the configuration for the scenario.</p></li>
+<li><p><strong>turn_inflow_config</strong> (<em>dict</em>) – the configuration for the turn and inflow.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – whether to print the information. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl class="simple">
+<dt>We use the mealpy library for optimization. mealpy is a Python library for optimization algorithms.</dt><dd><p><a class="reference external" href="https://mealpy.readthedocs.io/en/latest/index.html">https://mealpy.readthedocs.io/en/latest/index.html</a></p>
+</dd>
+</dl>
+<ol class="arabic simple">
+<li><p>The <cite>scenario_config</cite> parameter is used and can be modified from the <cite>input_config.yaml</cite> file.</p></li>
+<li><p>The <cite>turn_inflow_config</cite> parameter is used and can be modified from the <cite>input_config.yaml</cite> file.</p></li>
+</ol>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="id1">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">realtwin.func_lib._f_calibration.</span></span><span class="sig-name descname"><span class="pre">TurnInflowCalib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scenario_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn_inflow_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>Turn and Inflow Optimization class for SUMO calibration.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Problem_dict: <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/general/simple_guide.html">https://mealpy.readthedocs.io/en/latest/pages/general/simple_guide.html</a>
+termination_dict: <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination">https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scenario_config</strong> (<em>dict</em>) – the configuration for the scenario.</p></li>
+<li><p><strong>turn_inflow_config</strong> (<em>dict</em>) – the configuration for the turn and inflow.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – whether to print the information. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl class="simple">
+<dt>We use the mealpy library for optimization. mealpy is a Python library for optimization algorithms.</dt><dd><p><a class="reference external" href="https://mealpy.readthedocs.io/en/latest/index.html">https://mealpy.readthedocs.io/en/latest/index.html</a></p>
+</dd>
+</dl>
+<ol class="arabic simple">
+<li><p>The <cite>scenario_config</cite> parameter is used and can be modified from the <cite>input_config.yaml</cite> file.</p></li>
+<li><p>The <cite>turn_inflow_config</cite> parameter is used and can be modified from the <cite>input_config.yaml</cite> file.</p></li>
+</ol>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

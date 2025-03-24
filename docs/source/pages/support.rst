@@ -19,14 +19,6 @@ Official Links
 * This project also related to our another projects which are "Flexible Interface for XIL Simulation", check it here:
    * https://github.com/ORNL-Real-Sim/FIXS
 
-
-================
-Model References
-================
-
-.. include:: general/references.rst
-
-
 =======
 License
 =======

@@ -12,15 +12,18 @@
 
 """control of module imports for the RealTwin package."""
 
-from realtwin.func_lib._a_install_simulator.check_sim_env import (is_sumo_installed,
-                                                                  is_vissim_installed,
-                                                                  is_aimsun_installed)
-from realtwin.utils_lib.create_venv import venv_create, venv_delete
+from .create_venv import venv_create, venv_delete
+from .download_elevation_tif import download_elevation_tif_by
+from .download_file_from_web import download_single_file_from_web
+from .find_exe_from_PATH import find_executable_from_PATH_on_win
+
 
 __all__ = [
-    # check_sim_env
-    'is_sumo_installed', 'is_vissim_installed', 'is_aimsun_installed',
 
     # create_venv
     'venv_create', 'venv_delete',
+
+    'download_elevation_tif_by',
+    'download_single_file_from_web',
+    'find_executable_from_PATH_on_win'
 ]

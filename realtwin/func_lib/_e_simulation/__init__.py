@@ -9,3 +9,17 @@
 # Contributors (Add you name below to acknowledge your contribution):        #
 # Xiangyong Roy Luo                                                          #
 ##############################################################################
+
+from ._generate_simulation import SimPrep
+from ._sumo import SUMOPrep
+from ._aimsun import AimsunPrep
+from ._vissim import VissimPrep
+
+__all__ = [
+    # Simulation preparation combined existing simulation environments
+    "SimPrep",
+
+    "SUMOPrep",
+    "AimsunPrep",
+    "VissimPrep"
+]

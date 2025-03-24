@@ -24,10 +24,8 @@ from realtwin.utils_lib.find_exe_from_PATH import find_executable_from_PATH_on_w
 
 
 # Check required simulation environments
-
-
 def is_sumo_installed(*, ext: str = "exe", sel_dir: list = None, verbose: bool = True) -> bool | list:
-    """Check if SUMO is installed onto the system.
+    """Check if SUMO is installed on the system.
 
     Args:
         ext (str): The extension of the executable. Defaults to "exe" for executable files.
@@ -103,19 +101,31 @@ def is_sumo_installed(*, ext: str = "exe", sel_dir: list = None, verbose: bool =
     return False
 
 
-def is_vissim_installed() -> bool:
-    """Check if VISSIM is installed onto the system.
+def is_vissim_installed(*, ext: str = "", sel_dir: list = None, verbose: bool = True) -> bool:
+    """Check if VISSIM is installed on the system.
+
+    Args:
+        ext (str): The extension of the executable. Defaults to "".
+        sel_dir (list): A list of directories to search for the VISSIM executable. Defaults to None.
+        verbose (bool): Whether to print the process info. Defaults to True.
 
     Returns:
         bool: True if VISSIM is installed, False otherwise.
     """
+    print("  Warning: Checking VISSIM installation is not supported yet.")
     return False
 
 
-def is_aimsun_installed() -> bool:
-    """Check if AIMSUN is installed onto the system.
+def is_aimsun_installed(*, ext: str = "", sel_dir: list = None, verbose: bool = True) -> bool:
+    """Check if AIMSUN is installed on the system.
+
+    Args:
+        ext (str): The extension of the executable. Defaults to "".
+        sel_dir (list): A list of directories to search for the AIMSUN executable. Defaults to None.
+        verbose (bool): Whether to print the process info. Defaults to True.
 
     Returns:
         bool: True if AIMSUN is installed, False otherwise.
     """
+    print("  Warning: Checking AIMSUN installation is not supported yet.")
     return False

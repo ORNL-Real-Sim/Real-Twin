@@ -76,6 +76,10 @@ def install_sumo(sel_dir: list = None,
 def install_sumo_windows(sumo_version: str = "1.21.0", verbose: bool = True) -> bool:
     """Install SUMO onto the windows system.
 
+    Args:
+        sumo_version (str): The version of SUMO to be installed. Default is "1.21.0".
+        verbose (bool): If True, print the installation process. Default is True.
+
     Returns:
         bool: True if the SUMO is installed successfully, False otherwise
     """
@@ -131,10 +135,39 @@ def install_sumo_windows(sumo_version: str = "1.21.0", verbose: bool = True) -> 
 def install_sumo_linux(sumo_version: str = "1.21.0", verbose: bool = True) -> bool:
     """Install SUMO onto the linux system.
 
+    Args:
+        sumo_version (str): The version of SUMO to be installed. Default is "1.21.0".
+        verbose (bool): If True, print the installation process. Default is True.
+
+    Note:
+        The installation of SUMO on Linux is not supported yet.
+        upcoming feature.
     Returns:
         bool: True if the SUMO is installed successfully on Linux, False otherwise
     """
     print(f"  :Installing SUMO {sumo_version} for Linux system...")
     print("verbose", verbose)
+    print("  :Warning: Install SUMO on Linux is not supported yet.")
+
+    return False
+
+
+def install_sumo_macos(sumo_version: str = "1.21.0", verbose: bool = True) -> bool:
+    """Install SUMO onto the mac system.
+
+    Args:
+        sumo_version (str): The version of SUMO to be installed. Default is "1.21.0".
+        verbose (bool): If True, print the installation process. Default is True.
+
+    Note:
+        The installation of SUMO on Mac is not supported yet.
+        upcoming feature.
+
+    Returns:
+        bool: True if the SUMO is installed successfully on Mac, False otherwise
+    """
+    print(f"  :Installing SUMO {sumo_version} for Mac system...")
+    print("verbose", verbose)
+    print("  :Warning: Install SUMO on Mac is not supported yet.")
 
     return False

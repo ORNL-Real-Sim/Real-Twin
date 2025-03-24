@@ -13,7 +13,7 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 * prepare realtwin ico for readthedocs
 * prepare readthedocs (20%)
 
-TODO: 1. continue working on readthedocs 2. format docstring for functions and classes 3. Learn documentation on real-twin project / real-sim project
+TODO: 1. continue working on readthedocs 2. format docstring for functions and classes 3. Learn documentation on real-twin project project
 
 ![1742416825779](image/README/1742416825779.png)
 
