@@ -72,9 +72,19 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_title = "realtwin"
 html_short_title = "realtwin"
-html_logo = "./_static/realsim_logo.ico"
-html_favicon = "./_static/realsim_logo_01.ico"
+# html_logo = "./_static/realsim_logo.ico"
+# html_favicon = "./_static/realsim_logo_01.ico"
 html_static_path = ["_static"]
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = "realtwin"
+
+#
+# html_sidebars = {
+#     '**': [
+#         'index.html',
+#         'genindex.html',   # adds a link to the generated index page
+#         'searchbox.html',
+#         'py-modindex.html',
+#     ]
+# }

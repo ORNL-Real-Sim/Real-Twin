@@ -39,14 +39,11 @@ Welcome to realtwin documentation!
 
 .. toctree::
    :maxdepth: 4
-   :caption: Navigation
+   :caption: Real-Twin Navigation
 
    pages/quick_start.rst
-
    pages/api.rst
-
    pages/support.rst
-
    pages/acknowledgements.rst
 
 Indices and Tables

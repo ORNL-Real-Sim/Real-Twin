@@ -302,4 +302,4 @@ Real-Twin Scenario Generation Python Implementation
 .. _`SUMO`: https://sumo.dlr.de/docs/index.html
 .. _`Aimsun`: https://www.aimsun.com/
 .. _`VISSIM`: https://www.ptvgroup.com/en/solutions/ptv-vissim/
-.. _YAML_: https://en.wikipedia.org/wiki/YAML
+.. _YAML: https://en.wikipedia.org/wiki/YAML

@@ -8,6 +8,12 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-03-24
+
+* update realthedocs (30%)
+
+![1742843231509](image/README/1742843231509.png)
+
 ### 2025-03-19
 
 * prepare realtwin ico for readthedocs
