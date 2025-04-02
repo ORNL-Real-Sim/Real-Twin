@@ -1,0 +1,298 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin.func_lib._a_install_simulator.inst_sumo &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            realtwin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/intro.html">About Real-Twin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">Classes and Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">realtwin.func_lib._a_install_simulator.inst_sumo</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for realtwin.func_lib._a_install_simulator.inst_sumo</h1><div class="highlight"><pre>
+<span></span><span class="c1">##############################################################################</span>
+<span class="c1"># Copyright (c) 2024, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># All rights reserved.                                                       #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># This file is part of RealTwin and is distributed under a __TBD__           #</span>
+<span class="c1"># license. For the licensing terms see the LICENSE file in the top-level     #</span>
+<span class="c1"># directory.                                                                 #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># Contributors (Add you name below to acknowledge your contribution):        #</span>
+<span class="c1"># Xiangyong Roy Luo                                                          #</span>
+<span class="c1">##############################################################################</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">##############################################################</span>
+<span class="sd"># Created Date: Monday, December 23rd 2024</span>
+<span class="sd"># Contact Info: luoxiangyong01@gmail.com</span>
+<span class="sd"># Author/Copyright: Mr. Xiangyong Luo</span>
+<span class="sd">##############################################################</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">zipfile</span>
+<span class="kn">import</span> <span class="nn">pyufunc</span> <span class="k">as</span> <span class="nn">pf</span>
+
+<span class="kn">from</span> <span class="nn">realtwin.func_lib._a_install_simulator.check_sim_env</span> <span class="kn">import</span> <span class="n">is_sumo_installed</span>
+<span class="kn">from</span> <span class="nn">realtwin.util_lib.download_file_from_web</span> <span class="kn">import</span> <span class="n">download_single_file_from_web</span>
+
+
+<div class="viewcode-block" id="install_sumo">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.install_sumo.html#realtwin.func_lib.install_sumo">[docs]</a>
+<span class="k">def</span> <span class="nf">install_sumo</span><span class="p">(</span><span class="n">sel_dir</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">strict_sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1.21.0&quot;</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Install the SUMO simulator.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sumo_version (str): The version of SUMO to be installed. Default is &quot;1.21.0&quot;.</span>
+<span class="sd">        sel_dir (list): A list of directories to search for the SUMO executable. Defaults to None.</span>
+<span class="sd">        strict_sumo_version (bool): If True, check and install the exact version of SUMO. Default is False.</span>
+<span class="sd">        verbose (bool): If True, print the installation process. Default is True.</span>
+<span class="sd">        kwargs: Additional keyword arguments.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the SUMO is installed successfully, False otherwise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># check sel_dir is a list</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sel_dir</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">))):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;sel_dir should be a list.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check if SUMO is already installed</span>
+    <span class="n">version_lst</span> <span class="o">=</span> <span class="n">is_sumo_installed</span><span class="p">(</span><span class="n">sel_dir</span><span class="o">=</span><span class="n">sel_dir</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">version_lst</span><span class="p">:</span>
+        <span class="c1"># Check if the exact version of SUMO is installed</span>
+        <span class="k">if</span> <span class="n">strict_sumo_version</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">strict_sumo_version</span> <span class="ow">in</span> <span class="n">version_lst</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :SUMO is already installed, available versions: </span><span class="si">{</span><span class="n">version_lst</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :Installing strict_sumo_version SUMO version </span><span class="si">{</span><span class="n">strict_sumo_version</span><span class="si">}</span><span class="s2"> &quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;(Available versions: </span><span class="si">{</span><span class="n">version_lst</span><span class="si">}</span><span class="s2">)...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># If SUMO not installed,</span>
+    <span class="c1"># Or strict_sumo_version is True and the version is not installed</span>
+    <span class="c1"># Install the SUMO</span>
+    <span class="k">if</span> <span class="n">pf</span><span class="o">.</span><span class="n">is_windows</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">install_sumo_windows</span><span class="p">(</span><span class="n">strict_sumo_version</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">pf</span><span class="o">.</span><span class="n">is_linux</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Error: Linux is not supported yet.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="n">pf</span><span class="o">.</span><span class="n">is_mac</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Error: MacOS is not supported yet.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Error: Unsupported operating system.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="install_sumo_windows">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.install_sumo_windows.html#realtwin.func_lib.install_sumo_windows">[docs]</a>
+<span class="k">def</span> <span class="nf">install_sumo_windows</span><span class="p">(</span><span class="n">sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1.21.0&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Install SUMO onto the windows system.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sumo_version (str): The version of SUMO to be installed. Default is &quot;1.21.0&quot;.</span>
+<span class="sd">        verbose (bool): If True, print the installation process. Default is True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the SUMO is installed successfully, False otherwise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Installing SUMO </span><span class="si">{</span><span class="n">sumo_version</span><span class="si">}</span><span class="s2"> for Windows...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Download SUMO from the official website</span>
+    <span class="n">sumo_release_url</span> <span class="o">=</span> <span class="s2">&quot;https://sumo.dlr.de/releases/&quot;</span>
+    <span class="n">sumo_version_win</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;sumo-win64-</span><span class="si">{</span><span class="n">sumo_version</span><span class="si">}</span><span class="s2">.zip&quot;</span>
+
+    <span class="n">download_path</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;sumo.zip&quot;</span><span class="p">))</span>
+    <span class="n">extract_path</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;SUMO&quot;</span><span class="p">))</span>
+
+    <span class="c1"># Download the SUMO zip file from the official website</span>
+    <span class="n">sumo_zip_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sumo_release_url</span><span class="si">}{</span><span class="n">sumo_version</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">sumo_version_win</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">id_download</span> <span class="o">=</span> <span class="n">download_single_file_from_web</span><span class="p">(</span><span class="n">sumo_zip_url</span><span class="p">,</span> <span class="n">download_path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">id_download</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># Extract the SUMO zip file</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Extracting SUMO </span><span class="si">{</span><span class="n">sumo_version</span><span class="si">}</span><span class="s2"> for Windows at: </span><span class="si">{</span><span class="n">extract_path</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">download_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_ref</span><span class="p">:</span>
+        <span class="n">zip_ref</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">extract_path</span><span class="p">)</span>
+
+    <span class="c1"># Clean up the downloaded zip file</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">download_path</span><span class="p">)</span>
+
+    <span class="c1"># check if SUMO bin folder exists</span>
+    <span class="n">sumo_bin_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">extract_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;sumo-</span><span class="si">{</span><span class="n">sumo_version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">)</span>
+    <span class="n">sumo_bin_path</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">sumo_bin_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">sumo_bin_path</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Error: bin folder not found in extracted SUMO directory: </span><span class="si">{</span><span class="n">sumo_bin_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># Add the SUMO bin folder to the system PATH</span>
+    <span class="k">if</span> <span class="n">sumo_bin_path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]:</span>
+
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PATH&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span> <span class="o">+</span> <span class="n">sumo_bin_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">sumo_bin_path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PATH&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span> <span class="o">+</span> <span class="n">sumo_bin_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="n">sumo_bin_path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="c1"># add_path = subprocess.run([&quot;setx&quot;, &quot;PATH&quot;, f&quot;%PATH%;{sumo_bin_path}&quot;], shell=True, check=True)</span>
+        <span class="c1"># if add_path.returncode == 0:</span>
+        <span class="c1">#     print(&quot;  :SUMO is installed successfully.&quot;)</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     print(&quot;  :Error: Failed to add SUMO bin folder to system PATH.&quot;)</span>
+
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="install_sumo_linux">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.install_sumo_linux.html#realtwin.func_lib.install_sumo_linux">[docs]</a>
+<span class="k">def</span> <span class="nf">install_sumo_linux</span><span class="p">(</span><span class="n">sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1.21.0&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Install SUMO onto the linux system.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sumo_version (str): The version of SUMO to be installed. Default is &quot;1.21.0&quot;.</span>
+<span class="sd">        verbose (bool): If True, print the installation process. Default is True.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The installation of SUMO on Linux is not supported yet.</span>
+<span class="sd">        upcoming feature.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the SUMO is installed successfully on Linux, False otherwise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Installing SUMO </span><span class="si">{</span><span class="n">sumo_version</span><span class="si">}</span><span class="s2"> for Linux system...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Warning: Install SUMO on Linux is not supported yet.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="install_sumo_macos">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.install_sumo_macos.html#realtwin.func_lib.install_sumo_macos">[docs]</a>
+<span class="k">def</span> <span class="nf">install_sumo_macos</span><span class="p">(</span><span class="n">sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1.21.0&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Install SUMO onto the mac system.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sumo_version (str): The version of SUMO to be installed. Default is &quot;1.21.0&quot;.</span>
+<span class="sd">        verbose (bool): If True, print the installation process. Default is True.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The installation of SUMO on Mac is not supported yet.</span>
+<span class="sd">        upcoming feature.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the SUMO is installed successfully on Mac, False otherwise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Installing SUMO </span><span class="si">{</span><span class="n">sumo_version</span><span class="si">}</span><span class="s2"> for Mac system...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Warning: Install SUMO on Mac is not supported yet.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

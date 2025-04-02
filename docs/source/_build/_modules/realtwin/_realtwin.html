@@ -1,0 +1,421 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin._realtwin &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            realtwin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/intro.html">About Real-Twin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/quick_start.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/api.html">Classes and Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/support.html">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/support.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">realtwin._realtwin</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for realtwin._realtwin</h1><div class="highlight"><pre>
+<span></span><span class="c1">##############################################################################</span>
+<span class="c1"># Copyright (c) 2024-, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># All rights reserved.                                                       #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># This file is part of RealTwin and is distributed under a MIT               #</span>
+<span class="c1"># license. For the licensing terms see the LICENSE file in the top-level     #</span>
+<span class="c1"># directory.                                                                 #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># Contact: realtwin@ornl.gov                                                 #</span>
+<span class="c1">##############################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">pyufunc</span> <span class="k">as</span> <span class="nn">pf</span>
+
+<span class="c1"># environment setup</span>
+<span class="kn">from</span> <span class="nn">realtwin.util_lib.create_venv</span> <span class="kn">import</span> <span class="n">venv_create</span><span class="p">,</span> <span class="n">venv_delete</span>
+<span class="kn">from</span> <span class="nn">realtwin.func_lib._a_install_simulator.inst_sumo</span> <span class="kn">import</span> <span class="n">install_sumo</span>
+
+<span class="c1"># input data loading</span>
+<span class="kn">from</span> <span class="nn">realtwin.func_lib._b_load_inputs.loader_config</span> <span class="kn">import</span> <span class="n">load_input_config</span>
+
+<span class="c1"># scenario generation</span>
+<span class="kn">from</span> <span class="nn">realtwin.util_lib.download_elevation_tif</span> <span class="kn">import</span> <span class="n">download_elevation_tif_by</span>
+<span class="kn">from</span> <span class="nn">realtwin.func_lib._c_abstract_scenario._abstractScenario</span> <span class="kn">import</span> <span class="n">AbstractScenario</span>
+<span class="kn">from</span> <span class="nn">realtwin.func_lib._d_concrete_scenario._concreteScenario</span> <span class="kn">import</span> <span class="n">ConcreteScenario</span>
+
+<span class="c1"># simulation</span>
+<span class="kn">from</span> <span class="nn">realtwin.func_lib._e_simulation._generate_simulation</span> <span class="kn">import</span> <span class="n">SimPrep</span>
+
+<span class="c1"># calibration</span>
+<span class="kn">from</span> <span class="nn">realtwin.func_lib._f_calibration.calibration_sumo</span> <span class="kn">import</span> <span class="n">cali_sumo</span>
+<span class="kn">from</span> <span class="nn">realtwin.func_lib._f_calibration.calibration_sumo_</span> <span class="kn">import</span> <span class="n">cali_sumo</span> <span class="k">as</span> <span class="n">cali_sumo_</span>
+
+
+<div class="viewcode-block" id="RealTwin">
+<a class="viewcode-back" href="../../pages/api/realtwin.RealTwin.html#realtwin.RealTwin">[docs]</a>
+<span class="k">class</span> <span class="nc">RealTwin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group that</span>
+<span class="sd">    enables the simulation of twin-structured cities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RealTwin.__init__">
+<a class="viewcode-back" href="../../pages/api/realtwin.RealTwin.html#realtwin.RealTwin.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the REALTWIN object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_config_file (str): The directory containing the input files.</span>
+<span class="sd">            kwargs: Additional keyword arguments. Will be used in the future.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># initialize the input directory</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">input_config_file</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :Input configuration file is not provided.&quot;</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :RealTwin will use default network for demonstration in the future.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span> <span class="o">=</span> <span class="n">load_input_config</span><span class="p">(</span><span class="n">input_config_file</span><span class="p">)</span>
+
+        <span class="c1"># add venv_create and delete as object methods</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">venv_create</span> <span class="o">=</span> <span class="n">venv_create</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">venv_delete</span> <span class="o">=</span> <span class="n">venv_delete</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_venv_name</span> <span class="o">=</span> <span class="s2">&quot;venv_rt&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_proj_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>  <span class="c1"># get current working directory</span>
+
+        <span class="c1"># extract data from kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;verbose&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;verbose&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span> <span class="nf">env_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                  <span class="o">*</span><span class="p">,</span>
+                  <span class="n">sel_sim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">sel_dir</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">strict_sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">strict_vissim_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">strict_aimsun_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">create_venv</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check and set up the environment for the simulation</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sel_sim (list): select simulator to be set up. Default is None.</span>
+<span class="sd">                Currently available options are [&quot;SUMO&quot;, &quot;VISSIM&quot;, &quot;AIMSUN&quot;].</span>
+<span class="sd">            sel_dir (list): A list of directories to search for the executables. Defaults to None.</span>
+<span class="sd">            strict_sumo_version (str): Whether to strictly check the version is installed.</span>
+<span class="sd">                if specified, will check and install the version. Default is None.</span>
+<span class="sd">            strict_vissim_version (str): Whether to strictly check the version is installed.</span>
+<span class="sd">                if specified, will check and install the version. Default is False.</span>
+<span class="sd">            strict_aimsun_version (str): Whether to strictly check the version is installed.</span>
+<span class="sd">                if specified, will check and install the version. Default is False.</span>
+<span class="sd">            create_venv (bool): Whether to create a virtual environment. Default is False.</span>
+<span class="sd">            kwargs: Additional keyword arguments.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; import realtwin as rt</span>
+<span class="sd">            &gt;&gt;&gt; twin = rt.REALTWIN(input_config_file=&quot;config.yaml&quot;, verbose=True)</span>
+
+<span class="sd">            check simulator is installed or not, default to SUMO, optional: VISSIM, AIMSUN</span>
+<span class="sd">            &gt;&gt;&gt; twin.env_setup(sel_sim=[&quot;SUMO&quot;])</span>
+
+<span class="sd">            add additional directories to search for the executables</span>
+<span class="sd">            &gt;&gt;&gt; additional_dir = [r&quot;path-to-your-local-installed-sumo-bin&quot;]</span>
+<span class="sd">            &gt;&gt;&gt; twin.env_setup(sel_sim=[&quot;SUMO&quot;], sel_dir=additional_dir)</span>
+
+<span class="sd">            strict version check: will install the required version if not found</span>
+<span class="sd">            &gt;&gt;&gt; twin.env_setup(sel_sim=[&quot;SUMO&quot;], sumo_version=&quot;1.21.0&quot;, strict_sumo_version=True)</span>
+
+<span class="sd">            or with additional directories</span>
+<span class="sd">            &gt;&gt;&gt; twin.env_setup(sel_sim=[&quot;SUMO&quot;], sel_dir=additional_dir,</span>
+<span class="sd">            &gt;&gt;&gt;                sumo_version=&quot;1.21.0&quot;, strict_sumo_version=True)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the environment is set up successfully, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># 0 create a virtual environment</span>
+        <span class="k">if</span> <span class="n">create_venv</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating a virtual environment: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_venv_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">venv_create</span><span class="p">(</span><span class="n">venv_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_venv_name</span><span class="p">,</span>
+                             <span class="n">venv_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;output_dir&quot;</span><span class="p">],</span>
+                             <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># 0. Check if the sim_env is selected,</span>
+        <span class="c1">#    default to SUMO, case insensitive and add self.sel_sim as a class attribute</span>
+        <span class="n">sel_sim</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sumo&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">sel_sim</span> <span class="k">else</span> <span class="p">[</span><span class="n">sim</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">sim</span> <span class="ow">in</span> <span class="n">sel_sim</span><span class="p">]</span>
+
+        <span class="c1"># 1. Check simulator installation - mapping function</span>
+        <span class="n">simulator_installation</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;sumo&quot;</span><span class="p">:</span> <span class="n">install_sumo</span><span class="p">,</span>
+            <span class="s2">&quot;vissim&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;aimsun&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># 2. check if the simulator is installed, if not, install it</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Check / install the selected simulators:&quot;</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;sel_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sel_dir</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;strict_sumo_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strict_sumo_version</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;strict_vissim_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strict_vissim_version</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;strict_aimsun_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strict_aimsun_version</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;verbose&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
+
+        <span class="n">invalid_sim</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">simulator</span> <span class="ow">in</span> <span class="n">sel_sim</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sim_status</span> <span class="o">=</span> <span class="n">simulator_installation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">simulator</span><span class="p">)(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">sim_status</span><span class="p">:</span>
+                    <span class="n">invalid_sim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">simulator</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">invalid_sim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">simulator</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :Could not install </span><span class="si">{</span><span class="n">simulator</span><span class="si">}</span><span class="s2"> (strict version) on your operation system&quot;</span><span class="p">)</span>
+
+        <span class="n">sel_sim_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">sel_sim</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">invalid_sim</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sel_sim_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;  :Error: No simulator is available (strict version). Please select available version(s).&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sel_sim</span> <span class="o">=</span> <span class="n">sel_sim_</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">generate_abstract_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">incl_elevation_tif</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the abstract scenario: create OpenDrive files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check whether the elevation tif data is provided</span>
+        <span class="n">path_elev</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ElevationMap&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_elev</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Elevation map is not provided. we will download from network BBOX.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">incl_elevation_tif</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Downloading elevation map from network BBOX.&quot;</span><span class="p">)</span>
+                <span class="c1"># download elevation map from network bbox</span>
+                <span class="n">bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Net_BBox&quot;</span><span class="p">)</span>
+                <span class="n">output_file</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;elevation_map.tif&quot;</span><span class="p">)</span>
+                <span class="n">download_elevation_tif_by</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+
+                <span class="c1"># update tif file in the input configuration</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)[</span><span class="s2">&quot;ElevationMap&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;elevation_map.tif&quot;</span>
+
+        <span class="c1"># 1. Generate the abstract scenario based on the input data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span> <span class="o">=</span> <span class="n">AbstractScenario</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="o">.</span><span class="n">update_AbstractScenario_from_input</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Abstract Scenario successfully generated.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">generate_concrete_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the concrete scenario: generate unified scenario from abstract scenario</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># 1. Generate the concrete scenario based on abstract scenario</span>
+        <span class="c1"># 2. Save the concrete scenario to the output directory</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;abstract_scenario&#39;</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Warning: Abstract Scenario is not generated yet. Please (generate_abstract_scenario).&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">concrete_scenario</span> <span class="o">=</span> <span class="n">ConcreteScenario</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concrete_scenario</span><span class="o">.</span><span class="n">get_unified_scenario</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Concrete Scenario successfully generated.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">prepare_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                           <span class="n">start_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span>
+                           <span class="n">end_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">10</span><span class="p">,</span>
+                           <span class="n">seed</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">812</span><span class="p">,</span>
+                           <span class="n">step_length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Simulate the concrete scenario: generate simulation files for the selected simulator</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            start_time (float): The start time of the simulation. Default is 3600 * 8.</span>
+<span class="sd">            end_time (float): The end time of the simulation. Default is 3600 * 10.</span>
+<span class="sd">            seed (list or int): The seed for the simulation. Default is [101].</span>
+<span class="sd">            step_length (float): The simulation step size. Default is 0.1.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            import realtwin package</span>
+<span class="sd">            &gt;&gt;&gt; import realtwin as rt</span>
+
+<span class="sd">            load the input configuration file</span>
+<span class="sd">            &gt;&gt;&gt; twin = rt.REALTWIN(input_config_file=&quot;config.yaml&quot;, verbose=True)</span>
+
+<span class="sd">            check simulator is installed or not, default to SUMO</span>
+<span class="sd">            &gt;&gt;&gt; twin.env_setup(sel_sim=[&quot;SUMO&quot;])</span>
+
+<span class="sd">            generate abstract scenario and concrete scenario</span>
+<span class="sd">            &gt;&gt;&gt; twin.generate_abstract_scenario()</span>
+<span class="sd">            &gt;&gt;&gt; twin.generate_concrete_scenario()</span>
+
+<span class="sd">            prepare simulation with start time, end time, seed, and step size</span>
+<span class="sd">            &gt;&gt;&gt; twin.prepare_simulation(start_time=3600 * 8, end_time=3600 * 10, seed=[101], step_length=0.1)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the simulation is prepared successfully, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># 1. prepare Simulate docs from the concrete scenario</span>
+        <span class="c1"># 2. Save results to the output directory</span>
+
+        <span class="n">sim_prep</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;sumo&quot;</span><span class="p">:</span> <span class="n">SimPrep</span><span class="p">()</span><span class="o">.</span><span class="n">create_sumo_sim</span><span class="p">,</span>
+            <span class="s2">&quot;vissim&quot;</span><span class="p">:</span> <span class="n">SimPrep</span><span class="p">()</span><span class="o">.</span><span class="n">create_vissim_sim</span><span class="p">,</span>
+            <span class="s2">&quot;aimsun&quot;</span><span class="p">:</span> <span class="n">SimPrep</span><span class="p">()</span><span class="o">.</span><span class="n">create_aimsun_sim</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># TODO according sel_sim to run different simulators</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">=</span> <span class="n">SimPrep</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">simulator</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sel_sim</span><span class="p">:</span>
+            <span class="n">sim_prep</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">simulator</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">concrete_scenario</span><span class="p">,</span>
+                                    <span class="n">start_time</span><span class="o">=</span><span class="n">start_time</span><span class="p">,</span>
+                                    <span class="n">end_time</span><span class="o">=</span><span class="n">end_time</span><span class="p">,</span>
+                                    <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                    <span class="n">step_length</span><span class="o">=</span><span class="n">step_length</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">simulator</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> simulation successfully Prepared.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">calibrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sel_algo</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sel_algo (dict): The dictionary of algorithms to be used for calibration.</span>
+<span class="sd">                Default is None, will use genetic algorithm. e.g. {&quot;turn_inflow&quot;: &quot;ga&quot;, &quot;behavior&quot;: &quot;ga&quot;}.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TDD</span>
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">sel_algo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># default to genetic algorithm</span>
+            <span class="n">sel_algo</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sel_algo</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Error:parameter sel_algo must be a dict with&quot;</span>
+                  <span class="s2">&quot; keys of &#39;turn_inflow&#39; and &#39;behavior&#39;, using&quot;</span>
+                  <span class="s2">&quot; genetic algorithm as default values.&quot;</span><span class="p">)</span>
+            <span class="n">sel_algo</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">,</span> <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">}</span>
+
+        <span class="c1"># check if the selected algorithm is supported within the package</span>
+        <span class="c1"># convert the algorithm to lower case</span>
+        <span class="n">sel_algo</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sel_algo</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">algo</span> <span class="o">:=</span> <span class="n">sel_algo</span><span class="p">[</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">])</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ga&quot;</span><span class="p">,</span> <span class="s2">&quot;sa&quot;</span><span class="p">,</span> <span class="s2">&quot;ts&quot;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Selected algorithms are </span><span class="si">{</span><span class="n">sel_algo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :</span><span class="si">{</span><span class="n">algo</span><span class="si">}</span><span class="s2"> for turn and inflow calibration is not supported. Must be one of [&#39;ga&#39;, &#39;sa&#39;, &#39;ts&#39;]&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">algo</span> <span class="o">:=</span> <span class="n">sel_algo</span><span class="p">[</span><span class="s2">&quot;behavior&quot;</span><span class="p">])</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ga&quot;</span><span class="p">,</span> <span class="s2">&quot;sa&quot;</span><span class="p">,</span> <span class="s2">&quot;ts&quot;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Selected algorithms are </span><span class="si">{</span><span class="n">sel_algo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :</span><span class="si">{</span><span class="n">algo</span><span class="si">}</span><span class="s2"> for behavior calibration is not supported. Must be one of [&#39;ga&#39;, &#39;sa&#39;, &#39;ts&#39;]&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># run calibration based on the selected algorithm</span>
+        <span class="c1"># cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)</span>
+        <span class="n">cali_sumo_</span><span class="p">(</span><span class="n">sel_algo</span><span class="o">=</span><span class="n">sel_algo</span><span class="p">,</span> <span class="n">input_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Calibration successfully completed.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Post-process the simulation results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># 1. Post-process the simulation results</span>
+        <span class="c1"># 2. Save the post-processed results to the output directory</span>
+
+    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualize the simulation results.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+
+        <span class="c1"># 1. Visualize the simulation results</span>
+        <span class="c1"># 2. Save the visualization results to the output directory</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

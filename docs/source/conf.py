@@ -51,6 +51,12 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.ifconfig",
     "sphinx.ext.intersphinx",
+    'sphinx.ext.autosectionlabel',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.extlinks',
+    'sphinx.ext.todo',
+    'sphinx_copybutton',
 ]
 
 # The name of the Pygments (syntax highlighting) style to use.

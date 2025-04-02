@@ -1,0 +1,690 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin.func_lib._e_simulation._sumo &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            realtwin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/intro.html">About Real-Twin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">Classes and Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">realtwin.func_lib._e_simulation._sumo</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for realtwin.func_lib._e_simulation._sumo</h1><div class="highlight"><pre>
+<span></span><span class="c1">##############################################################################</span>
+<span class="c1"># Copyright (c) 2024, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># All rights reserved.                                                       #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># This file is part of RealTwin and is distributed under a __TBD__           #</span>
+<span class="c1"># license. For the licensing terms see the LICENSE file in the top-level     #</span>
+<span class="c1"># directory.                                                                 #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># Contributors (Add you name below to acknowledge your contribution):        #</span>
+<span class="c1"># Xiangyong Roy Luo                                                          #</span>
+<span class="c1">##############################################################################</span>
+<span class="sd">&quot;&quot;&quot;The module to handle the SUMO simulation for the real-twin developed by ORNL ARMS group.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
+<span class="kn">from</span> <span class="nn">xml.dom.minidom</span> <span class="kn">import</span> <span class="n">parseString</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">from</span> <span class="nn">lxml</span> <span class="kn">import</span> <span class="n">etree</span>
+<span class="kn">import</span> <span class="nn">pyufunc</span> <span class="k">as</span> <span class="nn">pf</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">chained_assignment</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">FutureWarning</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SUMOPrep">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.SUMOPrep">[docs]</a>
+<span class="k">class</span> <span class="nc">SUMOPrep</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The class to handle the SUMO simulation for the real-twin developed by ORNL ARMS group.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SUMOPrep.__init__">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.SUMOPrep.html#realtwin.func_lib.SUMOPrep.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Network</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># self.NetworkWithElevation = {}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Demand</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="SUMOPrep.importNetwork">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.SUMOPrep.importNetwork">[docs]</a>
+    <span class="k">def</span> <span class="nf">importNetwork</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The function to import the network from the OpenDrive file and convert it to SUMO network file.&quot;&quot;&quot;</span>
+
+        <span class="c1"># self.Network = ConcreteScn.Supply.Network</span>
+        <span class="c1"># self.NetworkWithElevation = ConcreteScn.Supply.NetworkWithElevation</span>
+        <span class="n">NetworkName</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Supply</span><span class="o">.</span><span class="n">NetworkName</span>
+
+        <span class="c1"># get output path from the configuration dict</span>
+        <span class="n">path_output</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_output</span><span class="p">,</span> <span class="s1">&#39;SUMO&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span><span class="p">)</span>
+
+        <span class="c1"># Sumo combine the OpenDrive file to sumo network file</span>
+        <span class="n">path_open_drive</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_output</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;OpenDrive/</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.xodr&#39;</span><span class="p">))</span>
+        <span class="n">path_sumo_net</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_output</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;SUMO/</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.net.xml&#39;</span><span class="p">))</span>
+
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cmd/c &quot;netconvert --opendrive </span><span class="si">{</span><span class="n">path_open_drive</span><span class="si">}</span><span class="s1">&#39;</span>
+                  <span class="sa">f</span><span class="s1">&#39; -o </span><span class="si">{</span><span class="n">path_sumo_net</span><span class="si">}</span><span class="s1"> --no-internal-links&quot;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Network</span> <span class="o">=</span> <span class="n">path_sumo_net</span>
+
+        <span class="c1"># Load the XML file</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+        <span class="c1"># Find all junctions</span>
+        <span class="n">junctions</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;junction&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Function to extract road ids from incLanes attribute</span>
+        <span class="k">def</span> <span class="nf">get_road_ids_from_incLanes</span><span class="p">(</span><span class="n">incLanes</span><span class="p">):</span>
+            <span class="n">lane_ids</span> <span class="o">=</span> <span class="n">incLanes</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">road_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">lane_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">lane_id</span> <span class="ow">in</span> <span class="n">lane_ids</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">road_ids</span><span class="p">)</span>
+
+        <span class="c1"># Find all junctions with only one road connecting</span>
+        <span class="n">junctions_single_road</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">junction</span> <span class="k">for</span> <span class="n">junction</span> <span class="ow">in</span> <span class="n">junctions</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">get_road_ids_from_incLanes</span><span class="p">(</span><span class="n">junction</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;incLanes&#39;</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Iterate over junctions with only one road connecting</span>
+        <span class="k">for</span> <span class="n">junction</span> <span class="ow">in</span> <span class="n">junctions_single_road</span><span class="p">:</span>
+            <span class="c1"># Get the id of the only road connected to the junction</span>
+            <span class="n">road_id</span> <span class="o">=</span> <span class="n">get_road_ids_from_incLanes</span><span class="p">(</span><span class="n">junction</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;incLanes&#39;</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># Find all connections where from=road_id and dir=&#39;t&#39;</span>
+            <span class="n">connections_to_delete</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;.//connection[@from=&#39;</span><span class="si">{</span><span class="n">road_id</span><span class="si">}</span><span class="s2">&#39;][@dir=&#39;t&#39;]&quot;</span><span class="p">)</span>
+            <span class="c1"># Delete these connections</span>
+            <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="n">connections_to_delete</span><span class="p">:</span>
+                <span class="n">root</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+
+        <span class="c1"># Write the modified tree back to the file</span>
+        <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SUMOPrep.importDemand">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.SUMOPrep.importDemand">[docs]</a>
+    <span class="k">def</span> <span class="nf">importDemand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">,</span> <span class="n">SimulationStartTime</span><span class="p">,</span> <span class="n">SimulationEndTime</span><span class="p">,</span> <span class="n">SeedSet</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The function to import the demand from the demand file and convert it to SUMO demand file.&quot;&quot;&quot;</span>
+
+        <span class="n">NetworkName</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Supply</span><span class="o">.</span><span class="n">NetworkName</span>
+        <span class="c1"># Create the .flow.xml</span>
+        <span class="n">InflowDf</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Demand</span><span class="o">.</span><span class="n">Inflow</span>
+        <span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">InflowDf</span> <span class="o">=</span> <span class="n">InflowDf</span><span class="p">[(</span><span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">SimulationStartTime</span><span class="p">)</span>
+                            <span class="o">&amp;</span> <span class="p">(</span><span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">SimulationEndTime</span><span class="p">)]</span>
+
+        <span class="n">routes</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;routes&#39;</span><span class="p">)</span>
+        <span class="n">v_type</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">routes</span><span class="p">,</span> <span class="s1">&#39;vType&#39;</span><span class="p">)</span>
+        <span class="n">v_type</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;car&#39;</span><span class="p">)</span>
+        <span class="n">v_type</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;passenger&#39;</span><span class="p">)</span>
+        <span class="n">InflowDict</span> <span class="o">=</span> <span class="n">InflowDf</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;records&#39;</span><span class="p">)</span>
+        <span class="n">FlowID</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">InflowData</span> <span class="ow">in</span> <span class="n">InflowDict</span><span class="p">:</span>
+            <span class="n">FlowID</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">flow</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">routes</span><span class="p">,</span> <span class="s1">&#39;flow&#39;</span><span class="p">)</span>
+            <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">FlowID</span><span class="p">))</span>
+            <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;begin&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">InflowData</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]))</span>
+            <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">InflowData</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]))</span>
+            <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;from&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">InflowData</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">])))</span>
+
+            <span class="c1"># may need to change</span>
+            <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;number&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">InflowData</span><span class="p">[</span><span class="s1">&#39;Count&#39;</span><span class="p">]))</span>
+            <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;car&#39;</span><span class="p">)</span>
+
+        <span class="c1"># &lt;flow begin=&quot;0.0&quot; end=&quot;3600.0&quot; from=&quot;&quot; id=&quot;&quot; number=&quot;&quot; type=&quot;car&quot;/&gt;</span>
+        <span class="n">TreeInflow</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">routes</span><span class="p">)</span>
+        <span class="n">path_sumo_flow</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.flow.xml&#39;</span><span class="p">))</span>
+        <span class="n">TreeInflow</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">path_sumo_flow</span><span class="p">,</span>
+                         <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Create the .turn.xml</span>
+        <span class="n">TurnDf</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Route</span><span class="o">.</span><span class="n">TurningRatio</span>
+        <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">TurnDf</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="p">[(</span><span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">SimulationStartTime</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
+            <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">SimulationEndTime</span><span class="p">)]</span>
+        <span class="n">turns</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;turns&#39;</span><span class="p">)</span>
+        <span class="c1"># Create the &#39;interval&#39; element</span>
+        <span class="n">IntervalSet</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="p">[[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span>
+                             <span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">IntervalData</span> <span class="ow">in</span> <span class="n">IntervalSet</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">Interval</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">turns</span><span class="p">,</span> <span class="s1">&#39;interval&#39;</span><span class="p">)</span>
+            <span class="n">Interval</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;begin&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">IntervalData</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]))</span>
+            <span class="n">Interval</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">IntervalData</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]))</span>
+
+            <span class="n">TurnDfSubset</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="p">[(</span><span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">IntervalData</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">])</span>
+                                  <span class="o">&amp;</span> <span class="p">(</span><span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">IntervalData</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">])]</span>
+            <span class="n">TurnDictSubset</span> <span class="o">=</span> <span class="n">TurnDfSubset</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;records&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">TurnData</span> <span class="ow">in</span> <span class="n">TurnDictSubset</span><span class="p">:</span>
+                <span class="n">edge_relation</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">Interval</span><span class="p">,</span> <span class="s1">&#39;edgeRelation&#39;</span><span class="p">)</span>
+                <span class="n">edge_relation</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+                    <span class="s1">&#39;from&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">TurnData</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">])))</span>
+
+                <span class="c1"># may need to change</span>
+                <span class="n">edge_relation</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;to&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">TurnData</span><span class="p">[</span><span class="s1">&#39;OpenDriveToID&#39;</span><span class="p">])))</span>
+
+                <span class="c1"># may need to change</span>
+                <span class="n">edge_relation</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;probability&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">TurnData</span><span class="p">[</span><span class="s1">&#39;TurnRatio&#39;</span><span class="p">]))</span>
+        <span class="c1"># &lt;edgeRelation from=&quot;&quot; probability=&quot;&quot; to=&quot;&quot;/&gt;</span>
+        <span class="n">TreeTurn</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">turns</span><span class="p">)</span>
+        <span class="c1"># Write the XML to the file</span>
+        <span class="n">path_sumo_turn</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.turn.xml&#39;</span><span class="p">))</span>
+        <span class="n">TreeTurn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">path_sumo_turn</span><span class="p">,</span>
+                       <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">Seed</span> <span class="ow">in</span> <span class="n">SeedSet</span><span class="p">:</span>
+            <span class="c1"># Create the .rou.xml for each random seed</span>
+            <span class="n">path_sumo_demand</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.rou.xml&#39;</span><span class="p">))</span>
+
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cmd/c &quot;jtrrouter -r </span><span class="si">{</span><span class="n">path_sumo_flow</span><span class="si">}</span><span class="s1">&#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39; -t </span><span class="si">{</span><span class="n">path_sumo_turn</span><span class="si">}</span><span class="s1">&#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39; -n </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="si">}</span><span class="s1"> --accept-all-destinations&#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39; --remove-loops True --randomize-flows --seed </span><span class="si">{</span><span class="n">Seed</span><span class="si">}</span><span class="s1">&#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39; -o </span><span class="si">{</span><span class="n">path_sumo_demand</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+
+            <span class="c1"># add element to the set object</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Demand</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">path_sumo_demand</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SUMOPrep.generateConfig">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.SUMOPrep.generateConfig">[docs]</a>
+    <span class="k">def</span> <span class="nf">generateConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">,</span> <span class="n">SimulationStartTime</span><span class="p">,</span> <span class="n">SimulationEndTime</span><span class="p">,</span> <span class="n">SeedSet</span><span class="p">,</span> <span class="n">StepLength</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The function to generate the SUMO configuration file for the simulation.&quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">prettify</span><span class="p">(</span><span class="n">elem</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Return a pretty-printed XML string for the Element.&quot;&quot;&quot;</span>
+            <span class="n">rough_string</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="n">re_parsed</span> <span class="o">=</span> <span class="n">parseString</span><span class="p">(</span><span class="n">rough_string</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">re_parsed</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="s2">&quot;    &quot;</span><span class="p">)</span>
+        <span class="c1"># Python code to generate 10 XML files with different seeds using xml.etree.ElementTree as ET</span>
+
+        <span class="c1"># Create the root element</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;configuration&#39;</span><span class="p">)</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;xmlns:xsi&#39;</span><span class="p">,</span> <span class="s1">&#39;http://www.w3.org/2001/XMLSchema-instance&#39;</span><span class="p">)</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;xsi:noNamespaceSchemaLocation&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;http://sumo.dlr.de/xsd/duarouterConfiguration.xsd&#39;</span><span class="p">)</span>
+
+        <span class="n">NetworkName</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Supply</span><span class="o">.</span><span class="n">NetworkName</span>
+        <span class="c1"># Add other elements to the root</span>
+        <span class="k">for</span> <span class="n">Seed</span> <span class="ow">in</span> <span class="n">SeedSet</span><span class="p">:</span>
+            <span class="n">random</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;random&#39;</span><span class="p">)</span>
+            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">random</span><span class="p">,</span> <span class="s1">&#39;seed&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">Seed</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">})</span>
+
+            <span class="n">input_val</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;input&#39;</span><span class="p">)</span>
+            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">input_val</span><span class="p">,</span> <span class="s1">&#39;net-file&#39;</span><span class="p">,</span>
+                          <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.net.xml&#39;</span><span class="p">})</span>
+            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">input_val</span><span class="p">,</span> <span class="s1">&#39;route-files&#39;</span><span class="p">,</span>
+                          <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.rou.xml&#39;</span><span class="p">})</span>
+
+            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;output&#39;</span><span class="p">)</span>
+
+            <span class="n">time</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">)</span>
+            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s1">&#39;begin&#39;</span><span class="p">,</span> <span class="p">{</span>
+                          <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">SimulationStartTime</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">})</span>
+            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                <span class="n">time</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">SimulationEndTime</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">})</span>
+            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s1">&#39;step-length&#39;</span><span class="p">,</span>
+                          <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">StepLength</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">})</span>
+
+            <span class="n">gui_only</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;gui_only&#39;</span><span class="p">)</span>
+            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">gui_only</span><span class="p">,</span> <span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;t&#39;</span><span class="p">})</span>
+
+            <span class="n">report</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;report&#39;</span><span class="p">)</span>
+            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">report</span><span class="p">,</span> <span class="s1">&#39;no-warnings&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span><span class="p">})</span>
+            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">report</span><span class="p">,</span> <span class="s1">&#39;no-step-log&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span><span class="p">})</span>
+
+            <span class="c1"># Update the seed value</span>
+
+            <span class="n">xml_string</span> <span class="o">=</span> <span class="n">prettify</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+            <span class="c1"># Write the XML string to a file</span>
+
+            <span class="n">path_sumo_cfg</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.sumocfg&#39;</span><span class="p">))</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_sumo_cfg</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span></div>
+
+
+        <span class="c1"># 10 XML files &#39;config_1.smocfg&#39; to &#39;config_10.smocfg&#39; are created with different seed values</span>
+
+<div class="viewcode-block" id="SUMOPrep.importSignal">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.SUMOPrep.importSignal">[docs]</a>
+    <span class="k">def</span> <span class="nf">importSignal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The function to import the signal from the signal file and convert it to SUMO signal file.&quot;&quot;&quot;</span>
+
+        <span class="n">path_signal</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">config_dict</span><span class="p">[</span><span class="s2">&quot;Control&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Signal&quot;</span><span class="p">)</span>
+        <span class="n">path_signal_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ConcreteScn</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;input_dir&#39;</span><span class="p">),</span> <span class="n">path_signal</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_signal_abs</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+        <span class="n">SignalDict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">current_table</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">current_table_data</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Iterate over the lines</span>
+        <span class="n">remove_flag</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+            <span class="c1"># Check if it&#39;s a line to be deleted</span>
+            <span class="k">if</span> <span class="n">remove_flag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">remove_flag</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Check if it&#39;s a table name</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">):</span>
+                <span class="n">remove_flag</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">current_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">current_table</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Remove the square brackets</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Store the previous table data in the dictionary</span>
+                    <span class="n">SignalDict</span><span class="p">[</span><span class="n">current_table</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+                        <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_table_data</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+
+                    <span class="c1"># Start a new table</span>
+                    <span class="n">current_table</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Remove the square brackets</span>
+                    <span class="n">current_table_data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">current_table_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="c1"># Store the last table in the dictionary</span>
+        <span class="n">SignalDict</span><span class="p">[</span><span class="n">current_table</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+            <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_table_data</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+
+        <span class="n">path_signal_lookup</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">config_dict</span><span class="p">[</span><span class="s2">&quot;Control&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Synchro_lookup&quot;</span><span class="p">)</span>
+        <span class="n">path_signal_lookup_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ConcreteScn</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;input_dir&#39;</span><span class="p">),</span> <span class="n">path_signal_lookup</span><span class="p">))</span>
+        <span class="n">IDRef</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path_signal_lookup_abs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+
+        <span class="c1"># Create a dictionary mapping INTID to OpenDriveJunctionID</span>
+        <span class="n">IDMap</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">IDRef</span><span class="p">[</span><span class="s1">&#39;INTID&#39;</span><span class="p">],</span> <span class="n">IDRef</span><span class="p">[</span><span class="s1">&#39;OpenDriveJunctionID&#39;</span><span class="p">]))</span>
+
+        <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Links&#39;</span><span class="p">][</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Links&#39;</span><span class="p">][</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">IDMap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Lanes&#39;</span><span class="p">][</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Lanes&#39;</span><span class="p">][</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">IDMap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Timeplans&#39;</span><span class="p">][</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Timeplans&#39;</span><span class="p">][</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">IDMap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Phases&#39;</span><span class="p">][</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Phases&#39;</span><span class="p">][</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">IDMap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+        <span class="n">Phases</span> <span class="o">=</span> <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Phases&#39;</span><span class="p">]</span>
+        <span class="n">Lanes</span> <span class="o">=</span> <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Lanes&#39;</span><span class="p">]</span>
+        <span class="n">IDs</span> <span class="o">=</span> <span class="n">Phases</span><span class="p">[</span><span class="s1">&#39;INTID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="n">Synchro</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">ID</span> <span class="ow">in</span> <span class="n">IDs</span><span class="p">:</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">plan_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;SBR&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;SBT&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;SBL&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;WBR&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;WBT&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;WBL&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;NBR&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;NBT&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;NBL&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;EBR&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;EBT&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                         <span class="s2">&quot;EBL&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">plan_data</span><span class="p">)</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">({</span><span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                                                              <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                                                              <span class="s2">&quot;SBR&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                              <span class="s2">&quot;SBT&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                              <span class="s2">&quot;SBL&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                              <span class="s2">&quot;WBR&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                              <span class="s2">&quot;WBT&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                              <span class="s2">&quot;WBL&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                              <span class="s2">&quot;NBR&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                              <span class="s2">&quot;NBT&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                              <span class="s2">&quot;NBL&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                              <span class="s2">&quot;EBR&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                              <span class="s2">&quot;EBT&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                              <span class="s2">&quot;EBL&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">})</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;bound&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">17</span><span class="p">):</span>
+                <span class="n">phase</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;D</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="c1"># Create the key before trying to access it</span>
+                <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">if</span> <span class="n">phase</span> <span class="ow">in</span> <span class="n">Phases</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">Phases</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;RECORDNAME&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;MaxGreen&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
+                        <span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ID</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;D</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">filtered_row</span> <span class="o">=</span> <span class="n">Lanes</span><span class="p">[(</span><span class="n">Lanes</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Phase1&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
+                    <span class="n">Lanes</span><span class="p">[</span><span class="s1">&#39;INTID&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ID</span><span class="p">)]</span>
+                <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;protected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filtered_row</span><span class="o">.</span><span class="n">columns</span><span class="p">[(</span>
+                    <span class="n">filtered_row</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="n">filtered_row</span> <span class="o">=</span> <span class="n">Lanes</span><span class="p">[(</span><span class="n">Lanes</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PermPhase1&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
+                    <span class="n">Lanes</span><span class="p">[</span><span class="s1">&#39;INTID&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ID</span><span class="p">)]</span>
+                <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;permitted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filtered_row</span><span class="o">.</span><span class="n">columns</span><span class="p">[(</span>
+                    <span class="n">filtered_row</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">17</span><span class="p">):</span>
+                <span class="n">new_row_1</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">new_row_2</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">new_row_3</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">phase</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;D</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span>
+
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;protected&#39;</span><span class="p">])):</span>
+                    <span class="n">new_row_1</span><span class="p">[</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;protected&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;G&#39;</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;permitted&#39;</span><span class="p">])):</span>
+                    <span class="n">new_row_1</span><span class="p">[</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;permitted&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;g&#39;</span>
+                <span class="k">if</span> <span class="sa">f</span><span class="s1">&#39;D</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">Phases</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">new_row_1</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">Phases</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;RECORDNAME&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;MaxGreen&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
+                        <span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ID</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;D</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">Phases</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;RECORDNAME&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Yellow&quot;</span><span class="p">)</span>
+                                        <span class="o">&amp;</span> <span class="p">(</span><span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ID</span><span class="p">),</span>
+                                        <span class="sa">f</span><span class="s1">&#39;D</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;protected&#39;</span><span class="p">])):</span>
+                            <span class="n">new_row_2</span><span class="p">[</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;protected&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;y&#39;</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;permitted&#39;</span><span class="p">])):</span>
+                            <span class="n">new_row_2</span><span class="p">[</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;permitted&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;y&#39;</span>
+                        <span class="n">new_row_2</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">Phases</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;RECORDNAME&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Yellow&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
+                            <span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ID</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;D</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">Phases</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;RECORDNAME&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;AllRed&quot;</span><span class="p">)</span>
+                                        <span class="o">&amp;</span> <span class="p">(</span><span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ID</span><span class="p">),</span>
+                                        <span class="sa">f</span><span class="s1">&#39;D</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;protected&#39;</span><span class="p">])):</span>
+                            <span class="n">new_row_3</span><span class="p">[</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;protected&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;permitted&#39;</span><span class="p">])):</span>
+                            <span class="n">new_row_3</span><span class="p">[</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="n">phase</span><span class="p">][</span><span class="s1">&#39;permitted&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
+                        <span class="n">new_row_3</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">Phases</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;RECORDNAME&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;AllRed&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
+                            <span class="n">Phases</span><span class="p">[</span><span class="s2">&quot;INTID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ID</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;D</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">new_df1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                        <span class="n">new_row_1</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+                    <span class="n">new_df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                        <span class="n">new_row_2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+                    <span class="n">new_df3</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                        <span class="n">new_row_3</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+                    <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">],</span> <span class="n">new_df1</span><span class="p">])</span>
+                    <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">],</span> <span class="n">new_df2</span><span class="p">])</span>
+                    <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">],</span> <span class="n">new_df3</span><span class="p">])</span>
+
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;SBR&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                <span class="o">&amp;</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;SBT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                    <span class="o">&amp;</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;SBL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
+                <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;bound&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;WB&#39;</span><span class="p">,</span> <span class="s1">&#39;NB&#39;</span><span class="p">,</span> <span class="s1">&#39;EB&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;WBR&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                  <span class="o">&amp;</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;WBT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                  <span class="o">&amp;</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;WBL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
+                <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;bound&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SB&#39;</span><span class="p">,</span> <span class="s1">&#39;NB&#39;</span><span class="p">,</span> <span class="s1">&#39;EB&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;NBR&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                  <span class="o">&amp;</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;NBT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                  <span class="o">&amp;</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;NBL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
+                <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;bound&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SB&#39;</span><span class="p">,</span> <span class="s1">&#39;WB&#39;</span><span class="p">,</span> <span class="s1">&#39;EB&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;EBR&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                  <span class="o">&amp;</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;EBT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                  <span class="o">&amp;</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;EBL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
+                <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;bound&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SB&#39;</span><span class="p">,</span> <span class="s1">&#39;WB&#39;</span><span class="p">,</span> <span class="s1">&#39;NB&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;bound&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SB&#39;</span><span class="p">,</span> <span class="s1">&#39;WB&#39;</span><span class="p">,</span> <span class="s1">&#39;NB&#39;</span><span class="p">,</span> <span class="s1">&#39;EB&#39;</span><span class="p">]</span>
+
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+                <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;SBT&#39;</span><span class="p">:</span> <span class="s1">&#39;SBS&#39;</span><span class="p">,</span> <span class="s1">&#39;WBT&#39;</span><span class="p">:</span> <span class="s1">&#39;WBS&#39;</span><span class="p">,</span> <span class="s1">&#39;NBT&#39;</span><span class="p">:</span> <span class="s1">&#39;NBS&#39;</span><span class="p">,</span> <span class="s1">&#39;EBT&#39;</span><span class="p">:</span> <span class="s1">&#39;EBS&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;SBT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;SBL&#39;</span><span class="p">]</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;WBT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;WBL&#39;</span><span class="p">]</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;NBT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;NBL&#39;</span><span class="p">]</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;EBT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;EBL&#39;</span><span class="p">]</span>
+            <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">ID</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][[</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;SBR&#39;</span><span class="p">,</span> <span class="s1">&#39;SBS&#39;</span><span class="p">,</span> <span class="s1">&#39;SBL&#39;</span><span class="p">,</span> <span class="s1">&#39;SBT&#39;</span><span class="p">,</span>
+                                                       <span class="s1">&#39;WBR&#39;</span><span class="p">,</span> <span class="s1">&#39;WBS&#39;</span><span class="p">,</span> <span class="s1">&#39;WBL&#39;</span><span class="p">,</span> <span class="s1">&#39;WBT&#39;</span><span class="p">,</span> <span class="s1">&#39;NBR&#39;</span><span class="p">,</span> <span class="s1">&#39;NBS&#39;</span><span class="p">,</span>
+                                                       <span class="s1">&#39;NBL&#39;</span><span class="p">,</span> <span class="s1">&#39;NBT&#39;</span><span class="p">,</span> <span class="s1">&#39;EBR&#39;</span><span class="p">,</span> <span class="s1">&#39;EBS&#39;</span><span class="p">,</span> <span class="s1">&#39;EBL&#39;</span><span class="p">,</span> <span class="s1">&#39;EBT&#39;</span><span class="p">]]</span>
+
+        <span class="c1"># Read the XML file</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="c1"># Parse the XML file</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+        <span class="c1"># Initialize the dictionary</span>
+        <span class="n">TLLogic</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Iterate over all &lt;tlLogic&gt; elements</span>
+        <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s1">&#39;tlLogic&#39;</span><span class="p">):</span>
+            <span class="c1"># Use the &#39;id&#39; attribute as the key and create an empty dictionary as its value</span>
+            <span class="n">TLLogic</span><span class="p">[</span><span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Iterate over all &lt;connection&gt; elements</span>
+        <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s1">&#39;connection&#39;</span><span class="p">):</span>
+            <span class="c1"># Check if the element has a &#39;tl&#39; attribute</span>
+            <span class="k">if</span> <span class="s1">&#39;tl&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
+                <span class="c1"># Get the &#39;tl&#39; attribute</span>
+                <span class="n">tl</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;tl&#39;</span><span class="p">]</span>
+                <span class="c1"># Get the &#39;linkIndex&#39; attribute</span>
+                <span class="n">linkIndex</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;linkIndex&#39;</span><span class="p">]</span>
+                <span class="c1"># Check if the tl exists in TLLogic</span>
+                <span class="k">if</span> <span class="n">tl</span> <span class="ow">in</span> <span class="n">TLLogic</span><span class="p">:</span>
+                    <span class="c1"># Create a dictionary for this linkIndex</span>
+                    <span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="n">linkIndex</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;app&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">:</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;dir&#39;</span><span class="p">],</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+                        <span class="s1">&#39;param&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;param&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">tl</span> <span class="ow">in</span> <span class="n">TLLogic</span><span class="p">:</span>
+            <span class="n">dd</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">prev_linkIndex_data</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="c1"># Get the sorted link indices for this tl (as integers)</span>
+            <span class="n">sorted_linkIndices</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="c1"># Iterate over each linkIndex in this tl</span>
+            <span class="k">for</span> <span class="n">linkIndex</span> <span class="ow">in</span> <span class="n">sorted_linkIndices</span><span class="p">:</span>
+                <span class="c1"># If this is not the first linkIndex and the data for this linkIndex is different from the previous one</span>
+                <span class="k">if</span> <span class="n">prev_linkIndex_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="n">linkIndex</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">prev_linkIndex_data</span><span class="p">:</span>
+                    <span class="n">dd</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="c1"># Update the &#39;app&#39; value for this linkIndex</span>
+                <span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="n">linkIndex</span><span class="p">][</span><span class="s1">&#39;app&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dd</span>
+                <span class="c1"># Store the current data for the next iteration</span>
+                <span class="n">prev_linkIndex_data</span> <span class="o">=</span> <span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="n">linkIndex</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+
+        <span class="c1"># TLLogic[&#39;10&#39;][&#39;5&#39;]</span>
+
+        <span class="n">tl_from_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">tl</span> <span class="ow">in</span> <span class="n">TLLogic</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tl</span> <span class="ow">in</span> <span class="n">IDs</span><span class="p">:</span>
+                <span class="n">max_app</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="n">linkIndex</span><span class="p">][</span><span class="s1">&#39;app&#39;</span><span class="p">]</span>
+                              <span class="k">for</span> <span class="n">linkIndex</span> <span class="ow">in</span> <span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">max_app</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">Synchro</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="s1">&#39;bound&#39;</span><span class="p">]):</span>
+                    <span class="n">tl_from_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tl</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">linkIndex</span> <span class="ow">in</span> <span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">]:</span>
+                        <span class="n">string_index</span> <span class="o">=</span> <span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="n">linkIndex</span><span class="p">][</span><span class="s1">&#39;app&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="n">string</span> <span class="o">=</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="s1">&#39;bound&#39;</span><span class="p">][</span><span class="n">string_index</span><span class="p">]</span>
+                        <span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="n">linkIndex</span><span class="p">][</span><span class="s1">&#39;dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">string</span> <span class="o">+</span> \
+                            <span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="n">linkIndex</span><span class="p">][</span><span class="s1">&#39;dir&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+        <span class="n">tlLogicState</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">tl_from_data</span><span class="p">:</span>
+            <span class="n">tlLogicState</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="p">{</span><span class="s1">&#39;phase&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="p">[]})</span>
+
+        <span class="c1"># let&#39;s print the created dictionary</span>
+
+        <span class="n">Order</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SBR&#39;</span><span class="p">,</span> <span class="s1">&#39;SBS&#39;</span><span class="p">,</span> <span class="s1">&#39;SBL&#39;</span><span class="p">,</span> <span class="s1">&#39;SBT&#39;</span><span class="p">,</span> <span class="s1">&#39;WBR&#39;</span><span class="p">,</span> <span class="s1">&#39;WBS&#39;</span><span class="p">,</span> <span class="s1">&#39;WBL&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;WBT&#39;</span><span class="p">,</span> <span class="s1">&#39;NBR&#39;</span><span class="p">,</span> <span class="s1">&#39;NBS&#39;</span><span class="p">,</span> <span class="s1">&#39;NBL&#39;</span><span class="p">,</span> <span class="s1">&#39;NBT&#39;</span><span class="p">,</span> <span class="s1">&#39;EBR&#39;</span><span class="p">,</span> <span class="s1">&#39;EBS&#39;</span><span class="p">,</span> <span class="s1">&#39;EBL&#39;</span><span class="p">,</span> <span class="s1">&#39;EBT&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Iterate over each linkIndex in TLLogic[tl]</span>
+        <span class="n">StateDirDict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">tl</span> <span class="ow">in</span> <span class="n">tl_from_data</span><span class="p">:</span>
+            <span class="n">StateDir</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">linkIndex</span> <span class="ow">in</span> <span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">]:</span>
+                <span class="c1"># Append the &#39;dir&#39; value to the list</span>
+                <span class="n">StateDir</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TLLogic</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="n">linkIndex</span><span class="p">][</span><span class="s1">&#39;dir&#39;</span><span class="p">])</span>
+            <span class="n">StateDir</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">StateDir</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">Order</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">StateDirDict</span><span class="p">[</span><span class="n">tl</span><span class="p">]</span> <span class="o">=</span> <span class="n">StateDir</span>
+
+        <span class="k">for</span> <span class="n">tl</span> <span class="ow">in</span> <span class="n">tl_from_data</span><span class="p">:</span>
+            <span class="n">phase_plan</span> <span class="o">=</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="n">Synchro</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="s1">&#39;plan&#39;</span><span class="p">][</span><span class="s1">&#39;phase&#39;</span><span class="p">]:</span>
+                <span class="n">StateList</span> <span class="o">=</span> <span class="n">phase_plan</span><span class="p">[</span><span class="n">phase_plan</span><span class="p">[</span><span class="s1">&#39;phase&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">phase</span><span class="p">][</span><span class="n">StateDirDict</span><span class="p">[</span><span class="n">tl</span><span class="p">]]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;NBR&#39;</span> <span class="ow">in</span> <span class="n">StateList</span><span class="p">:</span>
+                    <span class="c1"># all right turn on red</span>
+                    <span class="n">StateList</span><span class="p">[</span><span class="s1">&#39;NBR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;g&#39;</span>
+                <span class="k">if</span> <span class="s1">&#39;SBR&#39;</span> <span class="ow">in</span> <span class="n">StateList</span><span class="p">:</span>
+                    <span class="c1"># all right turn on red</span>
+                    <span class="n">StateList</span><span class="p">[</span><span class="s1">&#39;SBR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;g&#39;</span>
+                <span class="k">if</span> <span class="s1">&#39;EBR&#39;</span> <span class="ow">in</span> <span class="n">StateList</span><span class="p">:</span>
+                    <span class="c1"># all right turn on red</span>
+                    <span class="n">StateList</span><span class="p">[</span><span class="s1">&#39;EBR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;g&#39;</span>
+                <span class="k">if</span> <span class="s1">&#39;WBR&#39;</span> <span class="ow">in</span> <span class="n">StateList</span><span class="p">:</span>
+                    <span class="c1"># all right turn on red</span>
+                    <span class="n">StateList</span><span class="p">[</span><span class="s1">&#39;WBR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;g&#39;</span>
+                <span class="n">State</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">StateList</span><span class="p">)</span>
+                <span class="n">PhaseTime</span> <span class="o">=</span> <span class="n">phase_plan</span><span class="p">[</span><span class="n">phase_plan</span><span class="p">[</span><span class="s1">&#39;phase&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">phase</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">new_row</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;phase&#39;</span><span class="p">:</span> <span class="n">phase</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">PhaseTime</span><span class="p">,</span> <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="n">State</span><span class="p">}</span>
+                <span class="n">new_row_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                    <span class="n">new_row</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">tlLogicState</span><span class="p">[</span><span class="n">tl</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+                <span class="n">tlLogicState</span><span class="p">[</span><span class="n">tl</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">tlLogicState</span><span class="p">[</span><span class="n">tl</span><span class="p">],</span> <span class="n">new_row_df</span><span class="p">])</span>
+                <span class="n">tlLogicState</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="s1">&#39;phase&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tlLogicState</span><span class="p">[</span><span class="n">tl</span><span class="p">][</span><span class="s1">&#39;phase&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+                    <span class="nb">int</span><span class="p">)</span>
+            <span class="n">tlLogicState</span><span class="p">[</span><span class="n">tl</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># tlLogicState[&#39;12&#39;]</span>
+
+        <span class="c1"># Parse the XML file</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">XMLParser</span><span class="p">(</span><span class="n">remove_blank_text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">resolve_entities</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="p">,</span> <span class="n">parser</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+
+        <span class="c1"># List of tlLogic ids</span>
+
+        <span class="c1"># Define the namespace</span>
+        <span class="c1"># ns = {&#39;default&#39;: &#39;http://sumo.dlr.de/xsd/net_file.xsd&#39;}</span>
+
+        <span class="c1"># Iterate over each tlLogic element in the root</span>
+        <span class="k">for</span> <span class="n">tlLogic</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="s1">&#39;.//tlLogic&#39;</span><span class="p">):</span>
+            <span class="c1"># If the id attribute of the tlLogic element is in tlLogic_ids</span>
+            <span class="k">if</span> <span class="n">tlLogic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">tl_from_data</span><span class="p">:</span>
+                <span class="n">id_val</span> <span class="o">=</span> <span class="n">tlLogic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+                <span class="n">phase_set</span> <span class="o">=</span> <span class="n">tlLogicState</span><span class="p">[</span><span class="n">id_val</span><span class="p">]</span>
+                <span class="c1"># Remove all phase elements</span>
+                <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="n">tlLogic</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;phase&#39;</span><span class="p">):</span>
+                    <span class="n">tlLogic</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
+                <span class="c1"># Add a new phase element</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">phase_set</span><span class="p">)):</span>
+                    <span class="n">new_phase</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">tlLogic</span><span class="p">,</span> <span class="s1">&#39;phase&#39;</span><span class="p">)</span>
+                    <span class="n">new_phase</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span>
+                        <span class="n">tlLogicState</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">id_val</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                    <span class="n">new_phase</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+                        <span class="s1">&#39;state&#39;</span><span class="p">,</span> <span class="n">tlLogicState</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">id_val</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">][</span><span class="s1">&#39;state&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">tlLogic</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;param&#39;</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="n">tlLogic</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;phase&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">phase</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;state&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span> <span class="ow">or</span> <span class="n">phase</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;state&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span><span class="p">:</span>
+                        <span class="n">tlLogic</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
+
+        <span class="c1"># Save the modified XML</span>
+        <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="p">,</span>
+                   <span class="n">pretty_print</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :SUMO signal updated at: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

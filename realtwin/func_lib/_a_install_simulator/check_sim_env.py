@@ -20,7 +20,7 @@ import pyufunc as pf
 import subprocess
 import re
 
-from realtwin.utils_lib.find_exe_from_PATH import find_executable_from_PATH_on_win
+from realtwin.util_lib.find_exe_from_PATH import find_executable_from_PATH_on_win
 
 
 # Check required simulation environments

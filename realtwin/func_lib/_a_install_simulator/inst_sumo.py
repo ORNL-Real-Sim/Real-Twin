@@ -21,7 +21,7 @@ import zipfile
 import pyufunc as pf
 
 from realtwin.func_lib._a_install_simulator.check_sim_env import is_sumo_installed
-from realtwin.utils_lib.download_file_from_web import download_single_file_from_web
+from realtwin.util_lib.download_file_from_web import download_single_file_from_web
 
 
 def install_sumo(sel_dir: list = None,

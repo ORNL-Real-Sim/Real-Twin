@@ -16,24 +16,24 @@ The framework is designed to be user-friendly, allowing users to easily generate
 
 Here is a simple example of how to use Real-Twin to generate a traffic scenario
 
-Original Location Selection
-===========================
+Sample Location Selection
+=========================
 
 .. image:: ../_static/chatt_net_osm.png
     :width: 100%
     :alt: Original Location Selection
 
 
-Scenario Generation
-===================
+Sample Scenario Generation
+==========================
 
 .. image:: ../_static/chatt_net.png
     :width: 100%
     :alt: Extracted Network
 
 
-Calibration
-===========
+Sample Calibration
+==================
 
 .. image:: ../_static/chatt_net.gif
     :width: 100%

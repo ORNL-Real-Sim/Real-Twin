@@ -92,7 +92,9 @@ class TurnInflowCalib:
     Note:
         We use the mealpy library for optimization. mealpy is a Python library for optimization algorithms.
             https://mealpy.readthedocs.io/en/latest/index.html
+
         1. The `scenario_config` parameter is used and can be modified from the `input_config.yaml` file.
+
         2. The `turn_inflow_config` parameter is used and can be modified from the `input_config.yaml` file.
 
     """

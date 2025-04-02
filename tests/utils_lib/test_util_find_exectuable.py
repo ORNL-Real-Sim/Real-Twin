@@ -10,7 +10,7 @@ import pytest
 from tests.proj_add_sys_path import add_pkg_to_sys_path
 add_pkg_to_sys_path("realtwin")
 
-from realtwin.utils_lib.find_exe_from_PATH import find_executable_from_PATH_on_win
+from realtwin.util_lib.find_exe_from_PATH import find_executable_from_PATH_on_win
 
 
 class TestFindExeOnWin:

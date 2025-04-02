@@ -9,7 +9,7 @@ import os
 from tests.proj_add_sys_path import add_pkg_to_sys_path
 add_pkg_to_sys_path("realtwin")
 
-from realtwin.utils_lib.download_file_from_web import download_single_file_from_web
+from realtwin.util_lib.download_file_from_web import download_single_file_from_web
 
 
 def test_download_failure():

@@ -15,14 +15,14 @@ from pathlib import Path
 import pyufunc as pf
 
 # environment setup
-from realtwin.utils_lib.create_venv import venv_create, venv_delete
+from realtwin.util_lib.create_venv import venv_create, venv_delete
 from realtwin.func_lib._a_install_simulator.inst_sumo import install_sumo
 
 # input data loading
 from realtwin.func_lib._b_load_inputs.loader_config import load_input_config
 
 # scenario generation
-from realtwin.utils_lib.download_elevation_tif import download_elevation_tif_by
+from realtwin.util_lib.download_elevation_tif import download_elevation_tif_by
 from realtwin.func_lib._c_abstract_scenario._abstractScenario import AbstractScenario
 from realtwin.func_lib._d_concrete_scenario._concreteScenario import ConcreteScenario
 

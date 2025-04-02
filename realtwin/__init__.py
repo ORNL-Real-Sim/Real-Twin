@@ -13,7 +13,7 @@
 """Control of module imports for the RealTwin package."""
 
 from realtwin._realtwin import RealTwin
-from realtwin.utils_lib.create_venv import venv_create, venv_delete
+from realtwin.util_lib.create_venv import venv_create, venv_delete
 from realtwin.func_lib._a_install_simulator.check_sim_env import (is_sumo_installed,
                                                                   is_vissim_installed,
                                                                   is_aimsun_installed)
@@ -25,10 +25,10 @@ __version__ = '0.1.0'
 __all__ = [
     'RealTwin',
 
-    # utils_lib.check_env
+    # util_lib.check_env
     'is_sumo_installed', 'is_vissim_installed', 'is_aimsun_installed',
 
-    # utils_lib.create_venv
+    # util_lib.create_venv
     'venv_create', 'venv_delete',
 
     # func_lib

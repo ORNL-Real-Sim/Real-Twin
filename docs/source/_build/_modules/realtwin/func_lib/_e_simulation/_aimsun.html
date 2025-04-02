@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin.func_lib._e_simulation._aimsun &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            realtwin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/intro.html">About Real-Twin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">Classes and Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">realtwin.func_lib._e_simulation._aimsun</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for realtwin.func_lib._e_simulation._aimsun</h1><div class="highlight"><pre>
+<span></span><span class="c1">##############################################################################</span>
+<span class="c1"># Copyright (c) 2024, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># All rights reserved.                                                       #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># This file is part of RealTwin and is distributed under a __TBD__           #</span>
+<span class="c1"># license. For the licensing terms see the LICENSE file in the top-level     #</span>
+<span class="c1"># directory.                                                                 #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># Contributors (Add you name below to acknowledge your contribution):        #</span>
+<span class="c1"># Xiangyong Roy Luo                                                          #</span>
+<span class="c1">##############################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;The module to prepare the Aimsun network and demand data for simulation.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">ElementTree</span> <span class="k">as</span> <span class="n">ET</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<div class="viewcode-block" id="AimsunPrep">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.AimsunPrep">[docs]</a>
+<span class="k">class</span> <span class="nc">AimsunPrep</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    constructor</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+<div class="viewcode-block" id="AimsunPrep.__init__">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.AimsunPrep.html#realtwin.func_lib.AimsunPrep.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Network</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># self.NetworkWithElevation = {}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Demand</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="AimsunPrep.is_empty">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.AimsunPrep.is_empty">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the AimsunPrep object is empty.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="AimsunPrep.importDemand">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.AimsunPrep.importDemand">[docs]</a>
+    <span class="k">def</span> <span class="nf">importDemand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">,</span> <span class="n">SimulationStartTime</span><span class="p">,</span> <span class="n">SimulationEndTime</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Import demand data from the concrete scenario.&quot;&quot;&quot;</span>
+
+        <span class="n">NetworkName</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Supply</span><span class="o">.</span><span class="n">NetworkName</span>
+        <span class="n">AimsunPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;MyNetwork&#39;</span><span class="p">,</span> <span class="s1">&#39;AIMSUN&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">AimsunPath</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">AimsunPath</span><span class="p">)</span>  <span class="c1"># Delete the file</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">AimsunPath</span><span class="p">)</span>
+        <span class="c1"># Create the .flow.xml</span>
+        <span class="n">InflowDf</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Demand</span><span class="o">.</span><span class="n">Inflow</span>
+        <span class="n">InflowDf</span> <span class="o">=</span> <span class="n">InflowDf</span><span class="p">[(</span><span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">SimulationStartTime</span><span class="p">)</span>
+                            <span class="o">&amp;</span> <span class="p">(</span><span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">SimulationEndTime</span><span class="p">)]</span>
+
+        <span class="c1"># Read the OpenDRIVE (.xodr) file</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;MyNetwork/OpenDrive/</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.xodr&#39;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">xodr_content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="c1"># Parse the XML content</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">xodr_content</span><span class="p">))</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+
+        <span class="c1"># Initialize an empty list to store the results</span>
+        <span class="n">data_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Iterate through all the &#39;road&#39; elements in the XML file</span>
+        <span class="k">for</span> <span class="n">road</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;road&#39;</span><span class="p">):</span>
+            <span class="n">road_id</span> <span class="o">=</span> <span class="n">road</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="n">link</span> <span class="o">=</span> <span class="n">road</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;link&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Initialize AimsunID as None</span>
+            <span class="n">aimsun_id</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># Extract predecessor and successor information</span>
+            <span class="k">if</span> <span class="n">link</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">predecessor</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;predecessor&#39;</span><span class="p">)</span>
+                <span class="n">successor</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;successor&#39;</span><span class="p">)</span>
+
+                <span class="c1"># Both predecessor and successor are present</span>
+                <span class="k">if</span> <span class="n">predecessor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">successor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">predecessor</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;elementType&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;road&quot;</span> <span class="ow">and</span> <span class="n">successor</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;elementType&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;road&quot;</span><span class="p">:</span>
+                        <span class="n">aimsun_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">predecessor</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;elementId&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">successor</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;elementId&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+                <span class="c1"># Only predecessor is present</span>
+                <span class="k">elif</span> <span class="n">predecessor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">predecessor</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;elementType&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;road&quot;</span><span class="p">:</span>
+                        <span class="n">aimsun_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">predecessor</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;elementId&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">-out&quot;</span>
+
+                <span class="c1"># Only successor is present</span>
+                <span class="k">elif</span> <span class="n">successor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">successor</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;elementType&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;road&quot;</span><span class="p">:</span>
+                        <span class="n">aimsun_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;in-</span><span class="si">{</span><span class="n">successor</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;elementId&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+                <span class="c1"># Neither predecessor nor successor is present</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">aimsun_id</span> <span class="o">=</span> <span class="s2">&quot;in-out&quot;</span>
+
+            <span class="c1"># Append to list</span>
+            <span class="n">data_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">:</span> <span class="n">road_id</span><span class="p">,</span> <span class="s1">&#39;AimsunID&#39;</span><span class="p">:</span> <span class="n">aimsun_id</span><span class="p">})</span>
+
+        <span class="c1"># Create DataFrame from the list</span>
+        <span class="n">RoadLookup</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span>
+        <span class="n">RoadLookup</span> <span class="o">=</span> <span class="n">RoadLookup</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AimsunID&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Step 1: Group the DataFrame by &#39;AimsunID&#39; and identify groups with the same &#39;AimsunID&#39;</span>
+        <span class="n">grouped</span> <span class="o">=</span> <span class="n">RoadLookup</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;AimsunID&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Initialize an empty dictionary to store the new AimsunID mappings</span>
+        <span class="n">new_aimsun_ids</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Step 2: For each group, locate the corresponding roads in the OpenDRIVE file</span>
+        <span class="k">for</span> <span class="n">aimsun_id</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">grouped</span><span class="p">:</span>
+            <span class="c1"># Skip groups with only one member</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">road_x_values</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="c1"># Step 3: Extract the x of the first &lt;geometry&gt; in &lt;planView&gt; for each road</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">road_id</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">]</span>
+                <span class="n">road_element</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;./road[@id=&#39;</span><span class="si">{</span><span class="n">road_id</span><span class="si">}</span><span class="s2">&#39;]&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">road_element</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">plan_view</span> <span class="o">=</span> <span class="n">road_element</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;planView&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">plan_view</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">first_geometry</span> <span class="o">=</span> <span class="n">plan_view</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;geometry&#39;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">first_geometry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">first_geometry</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+                            <span class="n">road_x_values</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">road_id</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
+
+            <span class="c1"># Step 4: Sort the roads based on the x value</span>
+            <span class="n">road_x_values</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+            <span class="c1"># Step 5: Rename the AimsunID based on the sequence and conditions</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">road_id</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">road_x_values</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">aimsun_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;in-&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">aimsun_id</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;-out&quot;</span><span class="p">):</span>
+                    <span class="n">new_aimsun_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;in</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">aimsun_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">elif</span> <span class="n">aimsun_id</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;-out&quot;</span><span class="p">):</span>
+                    <span class="n">new_aimsun_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">aimsun_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-out</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_aimsun_id</span> <span class="o">=</span> <span class="n">aimsun_id</span>  <span class="c1"># Keep as is</span>
+
+                <span class="n">new_aimsun_ids</span><span class="p">[</span><span class="n">road_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_aimsun_id</span>
+
+        <span class="c1"># Update the DataFrame with the new AimsunID values</span>
+        <span class="n">RoadLookup</span><span class="p">[</span><span class="s1">&#39;NewAimsunID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">RoadLookup</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">new_aimsun_ids</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">RoadLookup</span><span class="p">[</span><span class="s1">&#39;AimsunID&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Add &quot;1-&quot; after the &quot;-&quot; in each NewAimsunID</span>
+        <span class="n">RoadLookup</span><span class="p">[</span><span class="s1">&#39;NewAimsunID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">RoadLookup</span><span class="p">[</span><span class="s1">&#39;NewAimsunID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;-1-&#39;</span><span class="p">))</span>
+
+        <span class="n">RoadLookup</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;AimsunID&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Rename the &#39;NewAimsunID&#39; column to &#39;AimsunID&#39;</span>
+        <span class="n">RoadLookup</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;NewAimsunID&#39;</span><span class="p">:</span> <span class="s1">&#39;AimsunID&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Convert the &#39;OpenDriveFromID&#39; columns to the same data type (string) in both DataFrames</span>
+        <span class="n">InflowDf</span> <span class="o">=</span> <span class="n">InflowDf</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="c1"># RoadLookup = RoadLookup.copy</span>
+        <span class="n">RoadLookup</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">RoadLookup</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+        <span class="c1"># Perform the merge operation again</span>
+        <span class="n">merged_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">InflowDf</span><span class="p">,</span> <span class="n">RoadLookup</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># Keep only the specified columns in the merged DataFrame and rearrange the column order</span>
+        <span class="n">Inflow</span> <span class="o">=</span> <span class="n">merged_df</span><span class="p">[[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalEnd&#39;</span><span class="p">,</span> <span class="s1">&#39;AimsunID&#39;</span><span class="p">,</span> <span class="s1">&#39;Count&#39;</span><span class="p">]]</span>
+        <span class="n">Inflow</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Inflow</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">Inflow</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Inflow</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">Inflow</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;MyNetwork/Aimsun/inflow.txt&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="c1"># Display the merged DataFrame</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Demand</span> <span class="o">=</span> <span class="s1">&#39;MyNetwork/Aimsun/inflow.txt&#39;</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

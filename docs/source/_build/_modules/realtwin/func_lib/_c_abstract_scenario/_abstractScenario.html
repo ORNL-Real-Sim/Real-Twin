@@ -1,0 +1,388 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin.func_lib._c_abstract_scenario._abstractScenario &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            realtwin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/intro.html">About Real-Twin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">Classes and Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">realtwin.func_lib._c_abstract_scenario._abstractScenario</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for realtwin.func_lib._c_abstract_scenario._abstractScenario</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">class to host a unique AbstractScenario definition</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="c1"># import four elements of AbstractScenario</span>
+<span class="kn">from</span> <span class="nn">._traffic</span> <span class="kn">import</span> <span class="n">Traffic</span>
+<span class="kn">from</span> <span class="nn">._network</span> <span class="kn">import</span> <span class="n">Network</span>
+<span class="kn">from</span> <span class="nn">._control</span> <span class="kn">import</span> <span class="n">Control</span>
+<span class="kn">from</span> <span class="nn">._application</span> <span class="kn">import</span> <span class="n">Application</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">pyufunc</span> <span class="k">as</span> <span class="nn">pf</span>
+
+
+<span class="k">def</span> <span class="nf">time_to_seconds</span><span class="p">(</span><span class="n">time_str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;convert time string to seconds</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        time_str (str): the time string in format &#39;HH:MM&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># hour, minute = map(int, time_str.split(&#39;:&#39;))</span>
+    <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">time_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">hour</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">minute</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="load_traffic_volume">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.load_traffic_volume.html#realtwin.func_lib.load_traffic_volume">[docs]</a>
+<span class="k">def</span> <span class="nf">load_traffic_volume</span><span class="p">(</span><span class="n">path_demand</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;load traffic volume data from file</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path_demand (str): the demand file path</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: the converted demand data in DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TDD check whether the file exists</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path_demand</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :File path is not a string: </span><span class="si">{</span><span class="n">path_demand</span><span class="si">}</span><span class="s2">&quot;</span>
+                      <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :No traffic volume data loaded from input file&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path_demand</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :File not found: </span><span class="si">{</span><span class="n">path_demand</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># read the csv file and fill the nan values with 0</span>
+    <span class="n">traffic_volume</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path_demand</span><span class="p">)</span>
+    <span class="n">traffic_volume</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Create a copy of the DataFrame</span>
+    <span class="n">df_volume</span> <span class="o">=</span> <span class="n">traffic_volume</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Apply the conversion function to the &#39;Time&#39; column and create a new &#39;Seconds&#39; column</span>
+    <span class="n">df_volume</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_volume</span><span class="p">[</span><span class="s1">&#39;Time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">time_to_seconds</span><span class="p">)</span>
+    <span class="n">df_volume</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_volume</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">*</span> <span class="mi">60</span>
+    <span class="n">df_volume</span> <span class="o">=</span> <span class="n">df_volume</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Reshape the DataFrame to the long format</span>
+    <span class="n">df_volume</span> <span class="o">=</span> <span class="n">df_volume</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;IntersectionName&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalStart&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalEnd&#39;</span><span class="p">],</span>
+                               <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;Turn&#39;</span><span class="p">,</span>
+                               <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;Count&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Sort the DataFrame by IntersectionName and Turn columns</span>
+    <span class="n">df_volume</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;IntersectionName&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalStart&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalEnd&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Reset the index</span>
+    <span class="n">df_volume</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df_volume</span></div>
+
+
+
+<div class="viewcode-block" id="load_traffic_turning_ratio">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.load_traffic_turning_ratio.html#realtwin.func_lib.load_traffic_turning_ratio">[docs]</a>
+<span class="k">def</span> <span class="nf">load_traffic_turning_ratio</span><span class="p">(</span><span class="n">path_turning_ratio</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;load traffic turning ratio data from file</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path_turning_ratio (str): the turning ratio file path</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: the converted turning ratio data in DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># TDD check whether the file exists</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path_turning_ratio</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :File path is not a string: </span><span class="si">{</span><span class="n">path_turning_ratio</span><span class="si">}</span><span class="s2">&quot;</span>
+                      <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :No traffic turning ratio data loaded from input file&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path_turning_ratio</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :File not found: </span><span class="si">{</span><span class="n">path_turning_ratio</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># read the csv file and fill the nan values with 0</span>
+    <span class="n">turning_ratio</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path_turning_ratio</span><span class="p">)</span>
+    <span class="n">turning_ratio</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Create a copy of the DataFrame</span>
+    <span class="n">TurnDf</span> <span class="o">=</span> <span class="n">turning_ratio</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Apply the conversion function to the &#39;Time&#39; column and create a new &#39;Seconds&#39; column</span>
+    <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;Time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">time_to_seconds</span><span class="p">)</span>
+    <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">*</span> <span class="mi">60</span>
+    <span class="n">TurnDf</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Reshape the DataFrame to the long format</span>
+    <span class="n">TurnDfTemp</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;IntersectionName&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalStart&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalEnd&#39;</span><span class="p">],</span>
+                             <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;Turn&#39;</span><span class="p">,</span>
+                             <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;Count&#39;</span><span class="p">)</span>
+    <span class="c1"># Sort the DataFrame by IntersectionName and Turn columns</span>
+    <span class="n">TurnDfTemp</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;IntersectionName&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalStart&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalEnd&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Reset the index</span>
+    <span class="n">TurnDfTemp</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># NBT to N and T</span>
+    <span class="n">TurnDfTemp</span><span class="p">[</span><span class="s1">&#39;Bound&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TurnDfTemp</span><span class="p">[</span><span class="s1">&#39;Turn&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">TurnDfTemp</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TurnDfTemp</span><span class="p">[</span><span class="s1">&#39;Turn&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">FlowTemp</span> <span class="o">=</span> <span class="n">TurnDfTemp</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalEnd&#39;</span><span class="p">,</span> <span class="s1">&#39;IntersectionName&#39;</span><span class="p">,</span> <span class="s1">&#39;Bound&#39;</span><span class="p">],</span>
+                                  <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="s1">&#39;Count&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">df_turning_ratio</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">TurnDfTemp</span><span class="p">,</span> <span class="n">FlowTemp</span><span class="p">,</span>
+                                <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">,</span> <span class="s1">&#39;IntervalEnd&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;IntersectionName&#39;</span><span class="p">,</span> <span class="s1">&#39;Bound&#39;</span><span class="p">],</span>
+                                <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+    <span class="n">df_turning_ratio</span><span class="p">[</span><span class="s1">&#39;TurnRatio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_turning_ratio</span><span class="p">[</span><span class="s1">&#39;Count_x&#39;</span><span class="p">]</span> <span class="o">/</span> \
+        <span class="n">df_turning_ratio</span><span class="p">[</span><span class="s1">&#39;Count_y&#39;</span><span class="p">]</span>
+    <span class="n">df_turning_ratio</span> <span class="o">=</span> <span class="n">df_turning_ratio</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;Count_x&#39;</span><span class="p">,</span> <span class="s1">&#39;Count_y&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">df_turning_ratio</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df_turning_ratio</span></div>
+
+
+
+<div class="viewcode-block" id="load_control_signal">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.load_control_signal.html#realtwin.func_lib.load_control_signal">[docs]</a>
+<span class="k">def</span> <span class="nf">load_control_signal</span><span class="p">(</span><span class="n">path_signal</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;load control signal data from file</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path_signal (str): the signal file path</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: the converted signal data in dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># TDD check whether the file exists</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path_signal</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :File path is not a string: </span><span class="si">{</span><span class="n">path_signal</span><span class="si">}</span><span class="s2">&quot;</span>
+                      <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :No signal data loaded from input file&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path_signal</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :File not found: </span><span class="si">{</span><span class="n">path_signal</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># read the signal file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_signal</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="n">SignalDict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">current_table</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">current_table_data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># Iterate over the lines</span>
+    <span class="n">remove_flag</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">signal</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="c1"># Check if it&#39;s a line to be deleted</span>
+        <span class="k">if</span> <span class="n">remove_flag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">remove_flag</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Check if it&#39;s a table name</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">):</span>
+            <span class="n">remove_flag</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">current_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">current_table</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Remove the square brackets</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Store the previous table data in the dictionary</span>
+                <span class="n">SignalDict</span><span class="p">[</span><span class="n">current_table</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_table_data</span><span class="p">)))</span>
+
+                <span class="c1"># Start a new table</span>
+                <span class="n">current_table</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Remove the square brackets</span>
+                <span class="n">current_table_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">current_table_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+    <span class="c1"># Store the last table in the dictionary</span>
+    <span class="n">SignalDict</span><span class="p">[</span><span class="n">current_table</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_table_data</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">SignalDict</span></div>
+
+
+
+<div class="viewcode-block" id="AbstractScenario">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.AbstractScenario">[docs]</a>
+<span class="k">class</span> <span class="nc">AbstractScenario</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize an Abstract Scenario&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AbstractScenario.__init__">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.AbstractScenario.html#realtwin.func_lib.AbstractScenario.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span> <span class="o">=</span> <span class="n">config_dict</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Traffic</span> <span class="o">=</span> <span class="n">Traffic</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Network</span> <span class="o">=</span> <span class="n">Network</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Control</span> <span class="o">=</span> <span class="n">Control</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Application</span> <span class="o">=</span> <span class="n">Application</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="AbstractScenario.update_AbstractScenario_from_input">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.AbstractScenario.update_AbstractScenario_from_input">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_AbstractScenario_from_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;update values from config dict to specific data object&quot;&quot;&quot;</span>
+
+        <span class="c1"># TDD check whether the config_dict is not None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;  :config_dict is None, no data to update&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># update Traffic</span>
+        <span class="c1"># traffic_dict = self.config_dict.get(&#39;Traffic&#39;, None)</span>
+        <span class="k">if</span> <span class="n">traffic_dict</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Traffic&#39;</span><span class="p">):</span>
+            <span class="n">path_volume</span> <span class="o">=</span> <span class="n">traffic_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Volume&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">path_volume_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">),</span> <span class="n">path_volume</span><span class="p">))</span>
+            <span class="n">path_turning_ratio</span> <span class="o">=</span> <span class="n">traffic_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TurningRatio&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">path_turning_ratio_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">),</span> <span class="n">path_turning_ratio</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">Traffic</span><span class="o">.</span><span class="n">Volume</span> <span class="o">=</span> <span class="n">load_traffic_volume</span><span class="p">(</span><span class="n">path_volume_abs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Traffic</span><span class="o">.</span><span class="n">TurningRatio</span> <span class="o">=</span> <span class="n">load_traffic_turning_ratio</span><span class="p">(</span><span class="n">path_turning_ratio_abs</span><span class="p">)</span>
+
+        <span class="c1"># update Network</span>
+        <span class="c1"># network_dict = self.config_dict.get(&#39;Network&#39;, None)</span>
+        <span class="k">if</span> <span class="n">network_dict</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Network&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkName</span> <span class="o">=</span> <span class="n">network_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NetworkName&#39;</span><span class="p">,</span> <span class="s2">&quot;network&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkVertices</span> <span class="o">=</span> <span class="n">network_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NetworkVertices&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">ElevationMap</span> <span class="o">=</span> <span class="n">network_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ElevationMap&#39;</span><span class="p">,</span> <span class="s2">&quot;No elevation map provided!&quot;</span><span class="p">)</span>
+
+            <span class="c1"># update the OpenDriveNetwork output directory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">_output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">,</span> <span class="s2">&quot;RT_Network&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">_output_dir</span>
+
+            <span class="c1"># update and crate OpenDriveNetwork</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_net_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkName</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_net_vertices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkVertices</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_ele_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">ElevationMap</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">setValue</span><span class="p">()</span>
+
+        <span class="c1"># update Control</span>
+        <span class="c1"># control_dict = self.config_dict.get(&#39;Control&#39;, None)</span>
+        <span class="k">if</span> <span class="n">control_dict</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Control&#39;</span><span class="p">):</span>
+            <span class="n">path_signal</span> <span class="o">=</span> <span class="n">control_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Signal&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">path_signal_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">),</span> <span class="n">path_signal</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Control</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="n">load_control_signal</span><span class="p">(</span><span class="n">path_signal_abs</span><span class="p">)</span></div>
+
+
+        <span class="c1"># update Application</span>
+
+        <span class="c1"># self.dataObjDict[&#39;Network&#39;][&#39;OpenDriveNetwork&#39;].OpenDriveNetwork = [</span>
+        <span class="c1">#     f&#39;MyNetwork/OpenDrive/{Name}.xodr&#39;,</span>
+        <span class="c1">#     f&#39;MyNetwork/OpenDrive/{Name}_WithElevation.xodr&#39;]</span>
+
+<div class="viewcode-block" id="AbstractScenario.fillAbstractScenario">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.AbstractScenario.fillAbstractScenario">[docs]</a>
+    <span class="k">def</span> <span class="nf">fillAbstractScenario</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fill the AbstractScenario with the data from the config_dict&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
