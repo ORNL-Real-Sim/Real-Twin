@@ -2,24 +2,20 @@
 Welcome to realtwin documentation!
 ==================================
 
+.. image:: https://badge.fury.io/py/realtwin.svg
+   :target: https://badge.fury.io/py/realtwin
 
-.. image:: https://img.shields.io/badge/release-0.1.0-yellow.svg
-   :target: https://github.com/ORNL-Real-Sim/Real-Twin/releases
+.. image:: https://static.pepy.tech/badge/realtwin
+   :target: https://pepy.tech/project/realtwin
 
 .. image:: https://img.shields.io/pypi/wheel/gensim.svg
    :target: https://pypi.python.org/pypi/realtwin
-
-.. image:: https://badge.fury.io/py/realtwin.svg
-   :target: https://badge.fury.io/py/realtwin
 
 .. image:: https://img.shields.io/pypi/pyversions/realtwin.svg
    :target: https://www.python.org/
 
 .. image:: https://img.shields.io/pypi/status/realtwin.svg
    :target: https://img.shields.io/pypi/status/realtwin.svg
-
-.. image:: https://static.pepy.tech/badge/realtwin
-   :target: https://pepy.tech/project/realtwin
 
 .. image:: https://img.shields.io/github/release-date/ORNL-Real-Sim/realtwin.svg
    :target: https://img.shields.io/github/release-date/ORNL-Real-Sim/realtwin.svg
@@ -31,16 +27,18 @@ Welcome to realtwin documentation!
    :target: https://github.com/ORNL-Real-Sim/Real-Twin/graphs/contributors
 
 
-.. .. image:: https://zenodo.org/badge/DOI/
-..    :target:
-
 .. image:: https://img.shields.io/badge/License-MIT-blue.svg
    :target: https://www.gnu.org/licenses
+
+
+
+
 
 .. toctree::
    :maxdepth: 4
    :caption: Real-Twin Navigation
 
+   pages/intro.rst
    pages/quick_start.rst
    pages/api.rst
    pages/support.rst

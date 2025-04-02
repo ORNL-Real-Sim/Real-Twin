@@ -84,4 +84,4 @@ Calibration
     func_lib._f_calibration.cali_aimsun
     func_lib._f_calibration.cali_vissim
     func_lib._f_calibration.BehaviorCalib
-    func_lib._f_calibration.TrunInflowCalib
+    func_lib._f_calibration.TurnInflowCalib

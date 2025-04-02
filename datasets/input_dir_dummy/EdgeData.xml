@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2025-03-18 17:03:31 by Eclipse SUMO sumo Version 1.21.0
+<!-- generated on 2025-04-02 09:28:53 by Eclipse SUMO GUI Version 1.21.0
 <sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
-        <net-file value="chatt.net.xml"/>
-        <route-files value="chatt.rou.xml"/>
-        <additional-files value="updated_signal.xml,Edge.add.xml"/>
+        <net-file value="C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\input_dir_dummy\chatt.net.xml"/>
+        <route-files value="C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\input_dir_dummy\chatt.rou.xml"/>
+        <additional-files value="C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\input_dir_dummy\updated_signal.xml,C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\input_dir_dummy\Edge.add.xml"/>
     </input>
 
     <output>
-        <edgedata-output value="EdgeData.xml"/>
+        <edgedata-output value="C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\input_dir_dummy\EdgeData.xml"/>
     </output>
 
     <time>
