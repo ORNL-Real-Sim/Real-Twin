@@ -13,6 +13,8 @@
 
 import realtwin as rt
 
+# Please refer to the official documentation for more details on RealTwin preparation before running the simulation
+#
 
 if __name__ == '__main__':
 
@@ -27,7 +29,6 @@ if __name__ == '__main__':
     # twin.venv_delete(venv_name=twin._venv_name, venv_dir=twin.input_config["output_dir"])
 
     # check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
-    # twin.env_setup(sel_sim=["SUMO", "VISSIM"])
     twin.env_setup(sel_sim=["SUMO", "VISSIM"])
 
     # NOTE optional: check simulator including additional selection of directories
@@ -38,8 +39,11 @@ if __name__ == '__main__':
     # NOTE optional: strict simulator check, if the version is not matched, install the required version
     # twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir, strict_sumo_version="1.21.0")
 
+    # Create Matchup Table and Require User To Update the Table
+    twin.generate_inputs()
+
     # generate abstract scenario
-    twin.generate_abstract_scenario(incl_elevation_tif=True)
+    twin.generate_abstract_scenario()
 
     # generate scenarios
     twin.generate_concrete_scenario()

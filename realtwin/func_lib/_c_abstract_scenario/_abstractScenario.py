@@ -1,6 +1,10 @@
 '''
 class to host a unique AbstractScenario definition
 '''
+import os
+import warnings
+import io
+import copy
 
 # import four elements of AbstractScenario
 from ._traffic import Traffic
@@ -9,9 +13,6 @@ from ._control import Control
 from ._application import Application
 
 import pandas as pd
-import os
-import warnings
-import io
 import pyufunc as pf
 
 
@@ -26,7 +27,7 @@ def time_to_seconds(time_str) -> int:
     return (hour * 3600) + (minute * 60)
 
 
-def load_traffic_volume(path_demand: str) -> pd.DataFrame:
+def load_traffic_volume(demand_data: str | pd.DataFrame) -> pd.DataFrame:
     """load traffic volume data from file
 
     Args:
@@ -36,21 +37,27 @@ def load_traffic_volume(path_demand: str) -> pd.DataFrame:
         pd.DataFrame: the converted demand data in DataFrame
     """
     # TDD check whether the file exists
-    if not isinstance(path_demand, str):
-        warnings.warn(f"\n  :File path is not a string: {path_demand}"
+    if not isinstance(demand_data, (str, pd.DataFrame)):
+        warnings.warn(f"\n  :demand_data is not a string or dataframe: {demand_data}"
                       "\n  :No traffic volume data loaded from input file")
         return None
 
-    if not os.path.isfile(path_demand):
-        warnings.warn(f"\n  :File not found: {path_demand}")
-        return None
+    if isinstance(demand_data, str):
+        if not os.path.isfile(demand_data):
+            warnings.warn(f"  :File not found: {demand_data}"
+                          "\n  :No traffic volume data loaded from input file")
+            return None
 
-    # read the csv file and fill the nan values with 0
-    traffic_volume = pd.read_csv(path_demand)
-    traffic_volume.fillna(0, inplace=True)
+        # read the csv file and fill the nan values with 0
+        traffic_volume = pd.read_csv(demand_data)
+        traffic_volume.fillna(0, inplace=True)
 
-    # Create a copy of the DataFrame
-    df_volume = traffic_volume.copy()
+        # Create a copy of the DataFrame
+        df_volume = traffic_volume.copy()
+
+    elif isinstance(demand_data, pd.DataFrame):
+        # If demand_data is already a DataFrame, use it directly
+        df_volume = demand_data.copy()
 
     # Apply the conversion function to the 'Time' column and create a new 'Seconds' column
     df_volume['IntervalStart'] = df_volume['Time'].apply(time_to_seconds)
@@ -62,6 +69,9 @@ def load_traffic_volume(path_demand: str) -> pd.DataFrame:
                                var_name='Turn',
                                value_name='Count')
 
+    # clean Count column: change "" to 0 and convert to int
+    df_volume['Count'] = df_volume['Count'].replace("", 0).astype(int)
+
     # Sort the DataFrame by IntersectionName and Turn columns
     df_volume.sort_values(['IntersectionName', 'IntervalStart', 'IntervalEnd'], inplace=True)
 
@@ -71,51 +81,23 @@ def load_traffic_volume(path_demand: str) -> pd.DataFrame:
     return df_volume
 
 
-def load_traffic_turning_ratio(path_turning_ratio: str) -> pd.DataFrame:
+def load_traffic_turning_ratio(df_volume: pd.DataFrame) -> pd.DataFrame:
     """load traffic turning ratio data from file
 
     Args:
-        path_turning_ratio (str): the turning ratio file path
+        df_volume (pd.DataFrame): the volume data in DataFrame
 
     Returns:
         pd.DataFrame: the converted turning ratio data in DataFrame
     """
 
-    # TDD check whether the file exists
-    if not isinstance(path_turning_ratio, str):
-        warnings.warn(f"\n  :File path is not a string: {path_turning_ratio}"
-                      "\n  :No traffic turning ratio data loaded from input file")
-        return None
-
-    if not os.path.isfile(path_turning_ratio):
-        warnings.warn(f"  :File not found: {path_turning_ratio}")
-        return None
-
-    # read the csv file and fill the nan values with 0
-    turning_ratio = pd.read_csv(path_turning_ratio)
-    turning_ratio.fillna(0, inplace=True)
-
-    # Create a copy of the DataFrame
-    TurnDf = turning_ratio.copy()
-
-    # Apply the conversion function to the 'Time' column and create a new 'Seconds' column
-    TurnDf['IntervalStart'] = TurnDf['Time'].apply(time_to_seconds)
-    TurnDf['IntervalEnd'] = TurnDf['IntervalStart'] + 15 * 60
-    TurnDf = TurnDf.drop('Time', axis=1)
-
-    # Reshape the DataFrame to the long format
-    TurnDfTemp = TurnDf.melt(id_vars=['IntersectionName', 'IntervalStart', 'IntervalEnd'],
-                             var_name='Turn',
-                             value_name='Count')
-    # Sort the DataFrame by IntersectionName and Turn columns
-    TurnDfTemp.sort_values(['IntersectionName', 'IntervalStart', 'IntervalEnd'], inplace=True)
-
-    # Reset the index
-    TurnDfTemp.reset_index(drop=True, inplace=True)
+    TurnDfTemp = copy.deepcopy(df_volume)
 
     # NBT to N and T
     TurnDfTemp['Bound'] = TurnDfTemp['Turn'].str[0]
     TurnDfTemp['Direction'] = TurnDfTemp['Turn'].str[-1]
+    TurnDfTemp["IntervalStart"] = TurnDfTemp["IntervalStart"].astype(str)
+    TurnDfTemp["IntervalEnd"] = TurnDfTemp["IntervalEnd"].astype(str)
     FlowTemp = TurnDfTemp.groupby(['IntervalStart', 'IntervalEnd', 'IntersectionName', 'Bound'],
                                   as_index=False)['Count'].sum()
     df_turning_ratio = pd.merge(TurnDfTemp, FlowTemp,
@@ -200,24 +182,12 @@ class AbstractScenario:
         self.Control = Control()
         self.Application = Application()
 
-    def update_AbstractScenario_from_input(self):
-        """update values from config dict to specific data object"""
-
+    def create_open_drive_network(self):
+        """create OpenDriveNetwork object"""
         # TDD check whether the config_dict is not None
         if not self.config_dict:
             warnings.warn("  :config_dict is None, no data to update")
             return
-
-        # update Traffic
-        # traffic_dict = self.config_dict.get('Traffic', None)
-        if traffic_dict := self.config_dict.get('Traffic'):
-            path_volume = traffic_dict.get('Volume', None)
-            path_volume_abs = pf.path2linux(os.path.join(self.config_dict.get("input_dir"), path_volume))
-            path_turning_ratio = traffic_dict.get('TurningRatio', None)
-            path_turning_ratio_abs = pf.path2linux(os.path.join(self.config_dict.get("input_dir"), path_turning_ratio))
-
-            self.Traffic.Volume = load_traffic_volume(path_volume_abs)
-            self.Traffic.TurningRatio = load_traffic_turning_ratio(path_turning_ratio_abs)
 
         # update Network
         # network_dict = self.config_dict.get('Network', None)
@@ -236,18 +206,48 @@ class AbstractScenario:
             self.Network.OpenDriveNetwork._ele_map = self.Network.ElevationMap
             self.Network.OpenDriveNetwork.setValue()
 
+    def update_AbstractScenario_from_input(self, df_volume: pd.DataFrame = None, signal_dict: dict = None):
+        """ update values from config dict to specific data object"""
+
+        # TDD check whether the config_dict is not None
+        if not self.config_dict:
+            warnings.warn("  :config_dict is None, no data to update")
+            return
+
+        # # update Network
+        # # network_dict = self.config_dict.get('Network', None)
+        # if network_dict := self.config_dict.get('Network'):
+        #     self.Network.NetworkName = network_dict.get('NetworkName', "network")
+        #     self.Network.NetworkVertices = network_dict.get('NetworkVertices', "")
+        #     self.Network.ElevationMap = network_dict.get('ElevationMap', "No elevation map provided!")
+        #     # update the OpenDriveNetwork output directory
+        #     self.Network._output_dir = self.config_dict.get('output_dir', "RT_Network")
+        #     self.Network.OpenDriveNetwork._output_dir = self.Network._output_dir
+        #     # update and crate OpenDriveNetwork
+        #     self.Network.OpenDriveNetwork._net_name = self.Network.NetworkName
+        #     self.Network.OpenDriveNetwork._net_vertices = self.Network.NetworkVertices
+        #     self.Network.OpenDriveNetwork._ele_map = self.Network.ElevationMap
+        #     self.Network.OpenDriveNetwork.setValue()
+
+        # update Traffic
+        if df_volume is not None:
+            self.Traffic.Volume = load_traffic_volume(df_volume)
+            self.Traffic.TurningRatio = load_traffic_turning_ratio(self.Traffic.Volume)
+        else:
+            if traffic_dict := self.config_dict.get('Traffic'):
+                path_volume = traffic_dict.get('Volume', None)
+                path_volume_abs = pf.path2linux(os.path.join(self.config_dict.get("input_dir"), path_volume))
+                self.Traffic.Volume = load_traffic_volume(path_volume_abs)
+                self.Traffic.TurningRatio = load_traffic_turning_ratio(self.Traffic.Volume)
+
         # update Control
-        # control_dict = self.config_dict.get('Control', None)
-        if control_dict := self.config_dict.get('Control'):
-            path_signal = control_dict.get('Signal', None)
-            path_signal_abs = pf.path2linux(os.path.join(self.config_dict.get("input_dir"), path_signal))
-            self.Control.Signal = load_control_signal(path_signal_abs)
-
-        # update Application
-
-        # self.dataObjDict['Network']['OpenDriveNetwork'].OpenDriveNetwork = [
-        #     f'MyNetwork/OpenDrive/{Name}.xodr',
-        #     f'MyNetwork/OpenDrive/{Name}_WithElevation.xodr']
+        if signal_dict is not None:
+            self.Control.Signal = signal_dict
+        else:
+            if control_dict := self.config_dict.get('Control'):
+                path_signal = control_dict.get('Signal', None)
+                path_signal_abs = pf.path2linux(os.path.join(self.config_dict.get("input_dir"), path_signal))
+                self.Control.Signal = load_control_signal(path_signal_abs)
 
     def fillAbstractScenario(self):
         """Fill the AbstractScenario with the data from the config_dict"""

@@ -17,6 +17,7 @@ from realtwin.util_lib.create_venv import venv_create, venv_delete
 from realtwin.func_lib._a_install_simulator.check_sim_env import (is_sumo_installed,
                                                                   is_vissim_installed,
                                                                   is_aimsun_installed)
+from realtwin.util_lib.create_config import create_configuration_file
 
 __version__ = '0.1.0'
 
@@ -30,6 +31,7 @@ __all__ = [
 
     # util_lib.create_venv
     'venv_create', 'venv_delete',
+    'create_configuration_file',
 
     # func_lib
 ]

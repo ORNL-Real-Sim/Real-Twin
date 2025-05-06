@@ -126,6 +126,8 @@ class OpenDriveNetwork:
             os.system(command3)
             os.system(command4)
             self.OpenDrive_network.append(path_open_drive_ele)
+        else:
+            self.OpenDrive_network.append(None)
 
 
 class OSMRoad:

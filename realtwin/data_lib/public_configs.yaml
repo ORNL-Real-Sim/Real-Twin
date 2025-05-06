@@ -15,7 +15,7 @@
 demo_data: false
 
 
-input_dir: C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss
+input_dir: C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\chattanooga
 output_dir:  # optional
 
 # Absolute and Concrete Scenario Generation

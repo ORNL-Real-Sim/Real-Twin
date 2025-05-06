@@ -16,6 +16,7 @@ from .create_venv import venv_create, venv_delete
 from .download_elevation_tif import download_elevation_tif_by
 from .download_file_from_web import download_single_file_from_web
 from .find_exe_from_PATH import find_executable_from_PATH_on_win
+from .create_config import create_configuration_file
 
 
 __all__ = [
@@ -26,5 +27,7 @@ __all__ = [
 
     'download_elevation_tif_by',
     'download_single_file_from_web',
-    'find_executable_from_PATH_on_win'
+    'find_executable_from_PATH_on_win',
+
+    'create_configuration_file',
 ]

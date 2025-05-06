@@ -4,3 +4,5 @@ pylint
 pytest
 sphinx  # https://sphinx-themes.org/
 sphinx-rtd-theme
+xlrd
+openpyxl

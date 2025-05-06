@@ -23,7 +23,11 @@ from realtwin.func_lib._b_load_inputs.loader_config import load_input_config
 
 # scenario generation
 from realtwin.util_lib.download_elevation_tif import download_elevation_tif_by
+from realtwin.util_lib.check_abstract_scenario_inputs import check_abstract_inputs
 from realtwin.func_lib._c_abstract_scenario._abstractScenario import AbstractScenario
+from realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation import generate_matchup_table
+from realtwin.func_lib._c_abstract_scenario.rt_demand_generation import generate_turn_demand
+
 from realtwin.func_lib._d_concrete_scenario._concreteScenario import ConcreteScenario
 
 # simulation
@@ -51,7 +55,7 @@ class RealTwin:
         if not input_config_file:
             raise Exception(
                 "\n  :Input configuration file is not provided."
-                "\n  :RealTwin will use default network for demonstration in the future.")
+                "\n  :RealTwin requires a configuration file to be provided.")
 
         self.input_config = load_input_config(input_config_file)
 
@@ -154,14 +158,49 @@ class RealTwin:
 
         return True
 
-    def generate_abstract_scenario(self, *, incl_elevation_tif: bool = True):
-        """Generate the abstract scenario: create OpenDrive files
+    def generate_inputs(self, incl_elevation_tif: bool = False):
+        """ Generate user inputs, such as MatchUp table, Control and Traffic data
+
+        Args:
+            incl_elevation_tif (bool): Whether to include elevation tif data. Default is False.
+                If True, will download the elevation map from network BBOX.
+
+        See Also:
+            - How to create configuration file
+            - How to create/update MatchUp table
+            - How to create/prepare Control and Traffic data
+            - How to download elevation tif data from network BBOX
         """
+        print("\nCheck / Create input file and folder for user:")
+        path_input = pf.path2linux(Path(self.input_config.get("input_dir")))
+
+        # check if Control folder exists in the input directory
+        path_control = pf.path2linux(Path(path_input) / "Control")
+        if not os.path.exists(path_control):
+            os.makedirs(path_control)
+        else:
+            print(f"  :Control folder already exists: {path_control}."
+                  "\n  :NOTICE: Please include Synchro UTDF file (signal) inside Control folder"
+                  " and add the control file name to the input configuration file.\n"
+                  )
+
+        # check if Traffic folder exists in the input directory
+        path_traffic = pf.path2linux(Path(path_input) / "Traffic")
+        if not os.path.exists(path_traffic):
+            os.makedirs(path_traffic)
+        else:
+            print(f"  :Traffic folder already exists: {path_traffic}."
+                  "\n  :NOTICE: Please include turn movement file for each intersection inside Traffic folder"
+                  " and add the file names to the MatchupTable.xlsx "
+                  "(You will notice the generated MatchupTable.xlsx inside your input folder)."
+                  " For how to fill the MatchupTable.xlsx, please refer to the documentation: \n"
+                  )
+
         # check whether the elevation tif data is provided
         path_elev = pf.path2linux(
             Path(self.input_config.get("input_dir")) / self.input_config.get("Network").get("ElevationMap"))
         if not os.path.exists(path_elev):
-            print("  :Elevation map is not provided. we will download from network BBOX.")
+            # print("  :Elevation map is not provided. we will download from network BBOX.")
             if incl_elevation_tif:
                 print("  :Downloading elevation map from network BBOX.")
                 # download elevation map from network bbox
@@ -172,9 +211,61 @@ class RealTwin:
                 # update tif file in the input configuration
                 self.input_config.get("Network")["ElevationMap"] = "elevation_map.tif"
 
-        # 1. Generate the abstract scenario based on the input data
+        # generate abstract scenario
         self.abstract_scenario = AbstractScenario(self.input_config)
-        self.abstract_scenario.update_AbstractScenario_from_input()
+        self.abstract_scenario.create_open_drive_network()
+        print("  :INFO: OpenDrive network is generated.")
+
+        # create matchup table for user
+        path_sumo_net = pf.path2linux(Path(self.input_config.get(
+            "input_dir")) / "output/OpenDrive" / f"{self.input_config["Network"]["NetworkName"]}.net.xml")
+
+        path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
+
+        # check if sumo net file exists
+        if not os.path.exists(path_sumo_net):
+            raise Exception(f"  :Error: SUMO net file does not exist: {path_sumo_net},"
+                            "please check input configuration file and re-run the script."
+                            "For details please refer to the documentation: ")
+
+        # check if matchup table exists
+        if not os.path.exists(path_matchup):
+            generate_matchup_table(path_sumo_net, path_matchup)
+            print(f"  :NOTE: Matchup table is generated and saved to {path_matchup}."
+                  "\n  :NOTICE: Please update the Matchup table from input folder"
+                  " and then run generate_abstract_scenario()."
+                  " For details please refer to the documentation: \n"
+                  )
+        else:
+            print(f"  :NOTE: Matchup table already exists: {path_matchup}."
+                  "\n  :NOTICE: Please make sure you have updated the Matchup table"
+                  " and then run generate_abstract_scenario()."
+                  " For details please refer to the documentation: \n"
+                  )
+
+    def generate_abstract_scenario(self):
+        """Generate the abstract scenario: create OpenDrive files
+        """
+
+        # check abstract scenario inputs
+        check_abstract_inputs(self.input_config.get("input_dir"))
+
+        # 1. Generate the abstract scenario based on the input data
+        # self.abstract_scenario = AbstractScenario(self.input_config)
+        if not hasattr(self, 'abstract_scenario'):
+            raise Exception("  :Error: Abstract Scenario is not generated yet. "
+                            "Please run generate_inputs() first.")
+
+        # update traffic and signal
+        path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
+        control_dir = pf.path2linux(Path(self.input_config.get("input_dir")) / "Control")
+        traffic_dir = pf.path2linux(Path(self.input_config.get("input_dir")) / "Traffic")
+        df_volume, df_vol_lookup = generate_turn_demand(path_matchup_table=path_matchup,
+                                                        signal_dir=control_dir,
+                                                        traffic_dir=traffic_dir,)
+        self.abstract_scenario.Traffic.VolumeLookupTable = df_vol_lookup
+
+        self.abstract_scenario.update_AbstractScenario_from_input(df_volume=df_volume)
         print("\nAbstract Scenario successfully generated.")
 
     def generate_concrete_scenario(self):

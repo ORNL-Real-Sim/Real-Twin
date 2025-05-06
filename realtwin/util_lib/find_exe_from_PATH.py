@@ -6,6 +6,8 @@
 ##############################################################
 '''
 import os
+import subprocess
+from typing import List, Optional
 import pyufunc as pf
 
 
@@ -75,3 +77,42 @@ def find_executable_from_PATH_on_win(exe_name: str,
         for path in res:
             print(f"    :{path}")
     return res
+
+
+def find_executable_from_PATH_on_linux(exe_name: str,
+                                       verbose: bool = True) -> Optional[List[str]]:
+    """
+    Use the system `which -a` to list all matches for exe_name on Linux.
+
+    Args:
+        exe_name (str): The name of the executable to search for.
+        verbose (bool): Whether to print the process info. Defaults to True.
+
+    Example:
+        >>> find_executable_from_PATH_on_linux("python3", verbose=True)
+        >>> ['/usr/bin/python3', '/usr/local/bin/python3']
+
+    Returns:
+        Optional[List[str]]: A list of paths where the executable is found, or None if not found.
+    """
+
+    try:
+        # -a: list all matches, not just the first
+        proc = subprocess.run(
+            ["which", "-a", exe_name],
+            capture_output=True,
+            text=True,
+            check=False)
+        paths = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+        if verbose:
+            if paths:
+                for p in paths:
+                    print(f"[which] Found: {p}")
+            else:
+                print(f"[which] No matches for {exe_name}")
+        return paths or None
+
+    except FileNotFoundError:
+        if verbose:
+            print("[which] `which` command not found on this system.")
+        return None

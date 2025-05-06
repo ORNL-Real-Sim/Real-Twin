@@ -10,6 +10,7 @@ class Traffic:
         self.Volume = None
         self.TurningRatio = None
         self.Trajectory = {}
+        self.VolumeLookupTable = None
 
     def isEmpty(self):
         """Check if the Traffic element is empty"""
