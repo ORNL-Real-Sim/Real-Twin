@@ -8,6 +8,13 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-05-07
+
+* Update readthedocs (65% Done)
+
+  ![1746650408494](image/README/1746650408494.png)
+* Fix concrete generateion bugs
+
 ### 2025-05-06
 
 * Add **demo_data: bool | string** in configuration file to enable sample data. If demo_data is true, use default data from illusstration, if the data name specified, use data from database server or data library.
