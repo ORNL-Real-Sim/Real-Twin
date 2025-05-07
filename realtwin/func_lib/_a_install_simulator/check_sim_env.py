@@ -32,6 +32,11 @@ def is_sumo_installed(*, ext: str = "exe", sel_dir: list = None, verbose: bool =
         sel_dir (list): A list of directories to search for the SUMO executable. Defaults to None.
         verbose (bool): Whether to print the process info. Defaults to True.
 
+    Example:
+        >>> import realtwin as rt
+        >>> rt.is_sumo_installed(ext="exe", sel_dir=["C:/Program Files/SUMO/bin"])
+        >>> True
+
     Raises:
         Exception: Unsupported OS, could not find SUMO executable
 

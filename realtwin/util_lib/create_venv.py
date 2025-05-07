@@ -34,6 +34,10 @@ def venv_create(*, venv_name: str = "", venv_dir: str = "", pkg_name: str = "rea
         pkg_name (str): the name of the package to be installed in the virtual environment
         verbose (bool): whether to print the progress
 
+    Example:
+        >>> import realtwin as rt
+        >>> rt.venv_create(venv_name="my_venv", venv_dir="/path/to/dir")
+
     Raises:
         Exception: if env_name is not a string, or folder_path is not a string
 
@@ -105,6 +109,10 @@ def venv_delete(*, venv_name: str = "", venv_dir: str = "", verbose: bool = True
         venv_name (str): the name of the virtual environment
         venv_dir (str): the path to the folder where the virtual environment will be deleted
         verbose (bool): whether to print the progress
+
+    Example:
+        >>> import realtwin as rt
+        >>> rt.venv_delete(venv_name="my_venv", venv_dir="/path/to/dir")
 
     Returns:
         bool: True if the virtual environment is deleted successfully, False otherwise
