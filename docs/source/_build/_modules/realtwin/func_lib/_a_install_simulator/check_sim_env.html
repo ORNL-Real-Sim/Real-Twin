@@ -9,6 +9,7 @@
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/realtwin_css.css?v=71250c9a" />
 
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
@@ -129,6 +130,11 @@
 <span class="sd">        ext (str): The extension of the executable. Defaults to &quot;exe&quot; for executable files.</span>
 <span class="sd">        sel_dir (list): A list of directories to search for the SUMO executable. Defaults to None.</span>
 <span class="sd">        verbose (bool): Whether to print the process info. Defaults to True.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import realtwin as rt</span>
+<span class="sd">        &gt;&gt;&gt; rt.is_sumo_installed(ext=&quot;exe&quot;, sel_dir=[&quot;C:/Program Files/SUMO/bin&quot;])</span>
+<span class="sd">        &gt;&gt;&gt; True</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        Exception: Unsupported OS, could not find SUMO executable</span>

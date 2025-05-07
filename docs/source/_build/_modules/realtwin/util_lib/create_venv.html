@@ -9,6 +9,7 @@
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/realtwin_css.css?v=71250c9a" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
@@ -132,6 +133,10 @@
 <span class="sd">        pkg_name (str): the name of the package to be installed in the virtual environment</span>
 <span class="sd">        verbose (bool): whether to print the progress</span>
 
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import realtwin as rt</span>
+<span class="sd">        &gt;&gt;&gt; rt.venv_create(venv_name=&quot;my_venv&quot;, venv_dir=&quot;/path/to/dir&quot;)</span>
+
 <span class="sd">    Raises:</span>
 <span class="sd">        Exception: if env_name is not a string, or folder_path is not a string</span>
 
@@ -206,6 +211,10 @@
 <span class="sd">        venv_name (str): the name of the virtual environment</span>
 <span class="sd">        venv_dir (str): the path to the folder where the virtual environment will be deleted</span>
 <span class="sd">        verbose (bool): whether to print the progress</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import realtwin as rt</span>
+<span class="sd">        &gt;&gt;&gt; rt.venv_delete(venv_name=&quot;my_venv&quot;, venv_dir=&quot;/path/to/dir&quot;)</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        bool: True if the virtual environment is deleted successfully, False otherwise</span>

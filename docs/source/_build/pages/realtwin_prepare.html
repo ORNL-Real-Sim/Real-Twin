@@ -261,7 +261,7 @@
 <h3>Update Configuration File<a class="headerlink" href="#update-configuration-file" title="Link to this heading"></a></h3>
 <p>There are several parameters in the configuration file that need to be updated according to your needs. The following is a list of parameters that need to be updated.</p>
 <ul>
-<li><p><strong>demo_data</strong>:</p>
+<li><p><span class="orange">demo_data</span>:</p>
 <p>whether to use demo data or not. Default is false. It could be boolean or string type.</p>
 <ul class="simple">
 <li><p><span class="incremental">false</span>: use data from the configuration file</p></li>
@@ -269,13 +269,13 @@
 <li><p><span class="incremental">chattanooga</span>: use chattanooga data from the package, which is the default value, optional data: chattanooga, nashville, knoxville</p></li>
 </ul>
 </li>
-<li><p><strong>input_dir</strong>:</p>
+<li><p><span class="orange">input_dir</span>:</p>
 <p>the directory where the input files are located. This is a <strong>required parameter</strong>.</p>
 </li>
-<li><p><strong>output_dir</strong>:</p>
+<li><p><span class="orange">output_dir</span>:</p>
 <p>the directory where the output files are located. This is an optional parameter. If not specified, the output files will be saved in the input directory.</p>
 </li>
-<li><p><strong>Network</strong>:</p>
+<li><p><span class="orange">Network</span>:</p>
 <ul>
 <li><p><span class="incremental">NetworkName</span>:</p>
 <p>the name of the network. This is a <strong>required parameter</strong>. The name should not have space between words.</p>
@@ -291,7 +291,7 @@
 </li>
 </ul>
 </li>
-<li><p><strong>Traffic</strong>:</p>
+<li><p><span class="orange">Traffic</span>:</p>
 <ul>
 <li><p><span class="incremental">Volume</span>:</p>
 <p>the traffic volume data file. This is a <strong>required parameter</strong>. The file should be in CSV format.</p>
@@ -304,7 +304,7 @@
 </li>
 </ul>
 </li>
-<li><p><strong>Control</strong>:</p>
+<li><p><span class="orange">Control</span>:</p>
 <ul>
 <li><p><span class="incremental">Signal</span>:</p>
 <p>the signal data file. This is a <strong>required parameter</strong>. The file should be in CSV format.</p>
@@ -314,9 +314,9 @@
 </li>
 </ul>
 </li>
-<li><p><strong>Calibration</strong>:</p>
+<li><p><span class="orange">Calibration</span>:</p>
 <ul>
-<li><p><span class="incremental">scenario_config</span>:</p>
+<li><p><strong>scenario_config</strong>:</p>
 <p>the overall configuration for the calibration.</p>
 <ul>
 <li><p><span class="incremental">sim_start_time</span>:</p>
@@ -364,136 +364,136 @@
 </li>
 <li><p><strong>turn_inflow</strong>:</p>
 <ul>
-<li><p>initial_params:</p>
+<li><p><span class="incremental">initial_params</span>:</p>
 <p>the initial parameters for the turning inflow calibration. This is a <strong>required parameter</strong>.</p>
 </li>
-<li><p>params_ranges:</p>
+<li><p><span class="incremental">params_ranges</span>:</p>
 <p>the parameter ranges for the turning inflow calibration. This is a <strong>required parameter</strong>.</p>
 </li>
-<li><p>max_epoch:</p>
+<li><p><span class="incremental">max_epoch</span>:</p>
 <p>the maximum number of iterations. This is a <strong>required parameter</strong>. Default is 1000.</p>
 </li>
-<li><p>max_fe:</p>
+<li><p><span class="incremental">max_fe</span>:</p>
 <p>the maximum number of function evaluations. This is a <strong>required parameter</strong>. Default is 10000.</p>
 </li>
-<li><p>max_time:</p>
+<li><p><span class="incremental">max_time</span>:</p>
 <p>the maximum time in seconds. This is a <strong>required parameter</strong>. Default is 3600.</p>
 </li>
-<li><p>max_early_stop:</p>
+<li><p><span class="incremental">max_early_stop</span>:</p>
 <p>the maximum number of early stop iterations. This is a <strong>required parameter</strong>. Default is 20.</p>
 </li>
 </ul>
 </li>
 <li><p><strong>behavior</strong>:</p>
 <ul class="simple">
-<li><p>EB_tt:</p></li>
+<li><p><span class="incremental">EB_tt</span>:</p></li>
 </ul>
 <blockquote>
 <div><p>the EB travel time in minutes. This is a <strong>required parameter</strong>. Default is 240.</p>
 </div></blockquote>
 <ul>
-<li><p>WB_tt:</p>
+<li><p><span class="incremental">WB_tt</span>:</p>
 <p>the WB travel time in minutes. This is a <strong>required parameter</strong>. Default is 180.</p>
 </li>
-<li><p>EB_edge_list:</p>
+<li><p><span class="incremental">EB_edge_list</span>:</p>
 <p>the EB edge list. This is a <strong>required parameter</strong>.</p>
 </li>
-<li><p>WB_edge_list:</p>
+<li><p><span class="incremental">WB_edge_list</span>:</p>
 <p>the WB edge list. This is a <strong>required parameter</strong>.</p>
 </li>
-<li><p>initial_params:</p>
+<li><p><span class="incremental">initial_params</span>:</p>
 <p>the initial parameters for the behavior calibration. This is a <strong>required parameter</strong>.</p>
 <ul class="simple">
-<li><p>min_gap: the minimum gap between vehicles in meters. This is a <strong>required parameter</strong>. Default is 2.5.</p></li>
-<li><p>acceleration: the maximum acceleration in m/s^2. This is a <strong>required parameter</strong>. Default is 2.6.</p></li>
-<li><p>deceleration: the maximum deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is 4.5.</p></li>
-<li><p>sigma: the driver imperfection. This is a <strong>required parameter</strong>. Default is 0.5.</p></li>
-<li><p>tau: the desired headway. This is a <strong>required parameter</strong>. Default is 1.00.</p></li>
-<li><p>emergencyDecel: the emergency deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is 9.0</p></li>
+<li><p><span class="incremental">min_gap</span>: the minimum gap between vehicles in meters. This is a <strong>required parameter</strong>. Default is 2.5.</p></li>
+<li><p><span class="incremental">acceleration</span>: the maximum acceleration in m/s^2. This is a <strong>required parameter</strong>. Default is 2.6.</p></li>
+<li><p><span class="incremental">deceleration</span>: the maximum deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is 4.5.</p></li>
+<li><p><span class="incremental">sigma</span>: the driver imperfection. This is a <strong>required parameter</strong>. Default is 0.5.</p></li>
+<li><p><span class="incremental">tau</span>: the desired headway. This is a <strong>required parameter</strong>. Default is 1.00.</p></li>
+<li><p><span class="incremental">emergencyDecel</span>: the emergency deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is 9.0</p></li>
 </ul>
 </li>
-<li><p>params_ranges: the parameter ranges for the behavior calibration. This is a <strong>required parameter</strong>.</p>
+<li><p><span class="incremental">params_ranges</span>: the parameter ranges for the behavior calibration. This is a <strong>required parameter</strong>.</p>
 <ul class="simple">
-<li><p>min_gap: the minimum gap between vehicles in meters. This is a <strong>required parameter</strong>. Default is [1.0, 3.0].</p></li>
-<li><p>acceleration: the maximum acceleration in m/s^2. This is a <strong>required parameter</strong>. Default is [2.5, 3.0].</p></li>
-<li><p>deceleration: the maximum deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is [4.0, 5.3].</p></li>
-<li><p>sigma: the driver imperfection. This is a <strong>required parameter</strong>. Default is [0.0, 1.0].</p></li>
-<li><p>tau: the desired headway. This is a <strong>required parameter</strong>. Default is [0.25, 1.25].</p></li>
-<li><p>emergencyDecel: the emergency deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is [5.0, 9.3].</p></li>
+<li><p><span class="incremental">min_gap</span>: the minimum gap between vehicles in meters. This is a <strong>required parameter</strong>. Default is [1.0, 3.0].</p></li>
+<li><p><span class="incremental">acceleration</span>: the maximum acceleration in m/s^2. This is a <strong>required parameter</strong>. Default is [2.5, 3.0].</p></li>
+<li><p><span class="incremental">deceleration</span>: the maximum deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is [4.0, 5.3].</p></li>
+<li><p><span class="incremental">sigma</span>: the driver imperfection. This is a <strong>required parameter</strong>. Default is [0.0, 1.0].</p></li>
+<li><p><span class="incremental">tau</span>: the desired headway. This is a <strong>required parameter</strong>. Default is [0.25, 1.25].</p></li>
+<li><p><span class="incremental">emergencyDecel</span>: the emergency deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is [5.0, 9.3].</p></li>
 </ul>
 </li>
-<li><p>max_epoch:</p>
+<li><p><span class="incremental">max_epoch</span>:</p>
 <p>the maximum number of iterations. This is a <strong>required parameter</strong>. Default is 1000.</p>
 </li>
-<li><p>max_fe:</p>
+<li><p><span class="incremental">max_fe</span>:</p>
 <p>the maximum number of function evaluations. This is a <strong>required parameter</strong>. Default is 10000.</p>
 </li>
-<li><p>max_time:</p>
+<li><p><span class="incremental">max_time</span>:</p>
 <p>the maximum time in seconds. This is a <strong>required parameter</strong>. Default is 3600.</p>
 </li>
-<li><p>max_early_stop:</p>
+<li><p><span class="incremental">max_early_stop</span>:</p>
 <p>the maximum number of early stop iterations. This is a <strong>required parameter</strong>. Default is 20.</p>
 </li>
 </ul>
 </li>
 <li><p><strong>ga_config</strong>: the configuration for the genetic algorithm.</p>
 <ul class="simple">
-<li><p>num_generations: the number of generations. This is a <strong>required parameter</strong>. Default is 10.</p></li>
-<li><p>num_variables: the number of variables. This is a <strong>required parameter</strong>. Default is 16.</p></li>
-<li><p>num_turning_ratio: the number of turning ratios. This is a <strong>required parameter</strong>. Default is 12.</p></li>
-<li><p>ubc: the upper bound of inflow. This is a <strong>required parameter</strong>. Default is 200.</p></li>
-<li><p>population_size: the population size. This is a <strong>required parameter</strong>. Default is 2.</p></li>
-<li><p>crossover_rate: the crossover rate. This is a <strong>required parameter</strong>. Default is 0.75.</p></li>
-<li><p>mutation_rate: the mutation rate. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
-<li><p>elitism_size: the number of elite individuals to carry over. This is a <strong>required parameter</strong>. Default is 1.</p></li>
-<li><p>best_fitness_value: the best fitness value. This is a <strong>required parameter</strong>. Default is 999999.</p></li>
-<li><p>max_no_improvement: the maximum number of early stop iterations. This is a <strong>required parameter</strong>. Default is 5.</p></li>
-<li><p>epoch: the number of generations. This is a <strong>required parameter</strong>. Default is 1000.</p></li>
-<li><p>pop_size: the population size. This is a <strong>required parameter</strong>. Default is 30.</p></li>
-<li><p>pc: the crossover probability. This is a <strong>required parameter</strong>. Default is 0.75.</p></li>
-<li><p>pm: the mutation probability. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
-<li><p>selection: the selection method. This is a <strong>required parameter</strong>. Default is roulette.</p></li>
-<li><p>key_way: the key way for tournament selection. This is a <strong>required parameter</strong>. Default is 0.2.</p></li>
-<li><p>crossover: the crossover method. This is a <strong>required parameter</strong>. Default is uniform.</p></li>
-<li><p>mutation: the mutation method. This is a <strong>required parameter</strong>. Default is swap.</p></li>
-<li><p>elite_best: the percentage of the best in elite group. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
-<li><p>elite_worst: the percentage of the worst in elite group. This is a <strong>required parameter</strong>. Default is 0.3.</p></li>
-<li><p>model_selection: the model selection method. This is a <strong>required parameter</strong>. Default is BaseGA. Optional values: BaseGA, EliteSingleGA, EliteMultiGA, MultiGA, SingleGA.</p></li>
+<li><p><span class="incremental">num_generations</span>: the number of generations. This is a <strong>required parameter</strong>. Default is 10.</p></li>
+<li><p><span class="incremental">num_variables</span>: the number of variables. This is a <strong>required parameter</strong>. Default is 16.</p></li>
+<li><p><span class="incremental">num_turning_ratio</span>: the number of turning ratios. This is a <strong>required parameter</strong>. Default is 12.</p></li>
+<li><p><span class="incremental">ubc</span>: the upper bound of inflow. This is a <strong>required parameter</strong>. Default is 200.</p></li>
+<li><p><span class="incremental">population_size</span>: the population size. This is a <strong>required parameter</strong>. Default is 2.</p></li>
+<li><p><span class="incremental">crossover_rate</span>: the crossover rate. This is a <strong>required parameter</strong>. Default is 0.75.</p></li>
+<li><p><span class="incremental">mutation_rate</span>: the mutation rate. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
+<li><p><span class="incremental">elitism_size</span>: the number of elite individuals to carry over. This is a <strong>required parameter</strong>. Default is 1.</p></li>
+<li><p><span class="incremental">best_fitness_value</span>: the best fitness value. This is a <strong>required parameter</strong>. Default is 999999.</p></li>
+<li><p><span class="incremental">max_no_improvement</span>: the maximum number of early stop iterations. This is a <strong>required parameter</strong>. Default is 5.</p></li>
+<li><p><span class="incremental">epoch</span>: the number of generations. This is a <strong>required parameter</strong>. Default is 1000.</p></li>
+<li><p><span class="incremental">pop_size</span>: the population size. This is a <strong>required parameter</strong>. Default is 30.</p></li>
+<li><p><span class="incremental">pc</span>: the crossover probability. This is a <strong>required parameter</strong>. Default is 0.75.</p></li>
+<li><p><span class="incremental">pm</span>: the mutation probability. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
+<li><p><span class="incremental">selection</span>: the selection method. This is a <strong>required parameter</strong>. Default is roulette.</p></li>
+<li><p><span class="incremental">key_way</span>: the key way for tournament selection. This is a <strong>required parameter</strong>. Default is 0.2.</p></li>
+<li><p><span class="incremental">crossover</span>: the crossover method. This is a <strong>required parameter</strong>. Default is uniform.</p></li>
+<li><p><span class="incremental">mutation</span>: the mutation method. This is a <strong>required parameter</strong>. Default is swap.</p></li>
+<li><p><span class="incremental">elite_best</span>: the percentage of the best in elite group. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
+<li><p><span class="incremental">elite_worst</span>: the percentage of the worst in elite group. This is a <strong>required parameter</strong>. Default is 0.3.</p></li>
+<li><p><span class="incremental">model_selection</span>: the model selection method. This is a <strong>required parameter</strong>. Default is BaseGA. Optional values: BaseGA, EliteSingleGA, EliteMultiGA, MultiGA, SingleGA.</p></li>
 </ul>
 </li>
 <li><p><strong>sa_config</strong>: the configuration for the simulated annealing.</p>
 <ul class="simple">
-<li><p>num_variables: the number of variables. This is a <strong>required parameter</strong>. Default is 16.</p></li>
-<li><p>num_turning_ratio: the number of turning ratios. This is a <strong>required parameter</strong>. Default is 12.</p></li>
-<li><p>initial_temperature: the initial temperature. This is a <strong>required parameter</strong>. Default is 100.</p></li>
-<li><p>ubc: the upper bound of inflow. This is a <strong>required parameter</strong>. Default is 200.</p></li>
-<li><p>cost_difference: the cost difference. This is a <strong>required parameter</strong>. Default is 2.</p></li>
-<li><p>accept_prob: the acceptance probability. This is a <strong>required parameter</strong>. Default is 0.5.</p></li>
-<li><p>stopping_temperature: the stopping temperature. This is a <strong>required parameter</strong>. Default is 0.001.</p></li>
-<li><p>epoch: the number of generations. This is a <strong>required parameter</strong>. Default is 1000.</p></li>
-<li><p>temp_init: the initial temperature. This is a <strong>required parameter</strong>. Default is 100.</p></li>
-<li><p>cooling_rate: the cooling rate. This is a <strong>required parameter</strong>. Default is 0.891.</p></li>
-<li><p>scale: the scale for the temperature. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
-<li><p>model_selection: the model selection method. This is a <strong>required parameter</strong>. Default is OriginalSA. Optional values: OriginalSA, GaussianSA, SwarmSA.</p></li>
+<li><p><span class="incremental">num_variables</span>: the number of variables. This is a <strong>required parameter</strong>. Default is 16.</p></li>
+<li><p><span class="incremental">num_turning_ratio</span>: the number of turning ratios. This is a <strong>required parameter</strong>. Default is 12.</p></li>
+<li><p><span class="incremental">initial_temperature</span>: the initial temperature. This is a <strong>required parameter</strong>. Default is 100.</p></li>
+<li><p><span class="incremental">ubc</span>: the upper bound of inflow. This is a <strong>required parameter</strong>. Default is 200.</p></li>
+<li><p><span class="incremental">cost_difference</span>: the cost difference. This is a <strong>required parameter</strong>. Default is 2.</p></li>
+<li><p><span class="incremental">accept_prob</span>: the acceptance probability. This is a <strong>required parameter</strong>. Default is 0.5.</p></li>
+<li><p><span class="incremental">stopping_temperature</span>: the stopping temperature. This is a <strong>required parameter</strong>. Default is 0.001.</p></li>
+<li><p><span class="incremental">epoch</span>: the number of generations. This is a <strong>required parameter</strong>. Default is 1000.</p></li>
+<li><p><span class="incremental">temp_init</span>: the initial temperature. This is a <strong>required parameter</strong>. Default is 100.</p></li>
+<li><p><span class="incremental">cooling_rate</span>: the cooling rate. This is a <strong>required parameter</strong>. Default is 0.891.</p></li>
+<li><p><span class="incremental">scale</span>: the scale for the temperature. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
+<li><p><span class="incremental">model_selection</span>: the model selection method. This is a <strong>required parameter</strong>. Default is OriginalSA. Optional values: OriginalSA, GaussianSA, SwarmSA.</p></li>
 </ul>
 </li>
 <li><p><strong>ts_config</strong>: the configuration for the tabu search.</p>
 <ul class="simple">
-<li><p>iterations: the number of iterations. This is a <strong>required parameter</strong>. Default is 3.</p></li>
-<li><p>tabu_size: the size of the tabu list. This is a <strong>required parameter</strong>. Default is 120.</p></li>
-<li><p>neighborhood_size: the size of the neighbourhood for generating candidate solutions. This is a <strong>required parameter</strong>. Default is 32.</p></li>
-<li><p>move_range: the initial move range. This is a <strong>required parameter</strong>. Default is 0.5.</p></li>
-<li><p>num_turning_ratio: the number of turning ratios. This is a <strong>required parameter</strong>. Default is 12.</p></li>
-<li><p>max_no_improvement_local: the maximum number of early stop iterations for local search. This is a <strong>required parameter</strong>. Default is 5.</p></li>
-<li><p>max_no_improvement_global: the maximum number of early stop iterations for global search. This is a <strong>required parameter</strong>. Default is 30.</p></li>
-<li><p>lower_bound: the lower bound for inflow counts. This is a <strong>required parameter</strong>. Default is 0.</p></li>
-<li><p>upper_bound: the upper bound for inflow counts. This is a <strong>required parameter</strong>. Default is 1.</p></li>
-<li><p>lbc: the lower bound for inflow counts. This is a <strong>required parameter</strong>. Default is 0.</p></li>
-<li><p>ubc: the upper bound for inflow counts. This is a <strong>required parameter</strong>. Default is 200.</p></li>
-<li><p>epoch: the number of generations. This is a <strong>required parameter</strong>. Default is 1000.</p></li>
-<li><p>tabu_size: the size of the tabu list. This is a <strong>required parameter</strong>. Default is 10.</p></li>
-<li><p>neighbour_size: the size of the neighbourhood for generating candidate solutions. This is a <strong>required parameter</strong>. Default is 10.</p></li>
-<li><p>perturbation_scale: the scale of perturbation for the solution. This is a <strong>required parameter</strong>. Default is 0.05.</p></li>
+<li><p><span class="incremental">iterations</span>: the number of iterations. This is a <strong>required parameter</strong>. Default is 3.</p></li>
+<li><p><span class="incremental">tabu_size</span>: the size of the tabu list. This is a <strong>required parameter</strong>. Default is 120.</p></li>
+<li><p><span class="incremental">neighborhood_size</span>: the size of the neighbourhood for generating candidate solutions. This is a <strong>required parameter</strong>. Default is 32.</p></li>
+<li><p><span class="incremental">move_range</span>: the initial move range. This is a <strong>required parameter</strong>. Default is 0.5.</p></li>
+<li><p><span class="incremental">num_turning_ratio</span>: the number of turning ratios. This is a <strong>required parameter</strong>. Default is 12.</p></li>
+<li><p><span class="incremental">max_no_improvement_local</span>: the maximum number of early stop iterations for local search. This is a <strong>required parameter</strong>. Default is 5.</p></li>
+<li><p><span class="incremental">max_no_improvement_global</span>: the maximum number of early stop iterations for global search. This is a <strong>required parameter</strong>. Default is 30.</p></li>
+<li><p><span class="incremental">lower_bound</span>: the lower bound for inflow counts. This is a <strong>required parameter</strong>. Default is 0.</p></li>
+<li><p><span class="incremental">upper_bound</span>: the upper bound for inflow counts. This is a <strong>required parameter</strong>. Default is 1.</p></li>
+<li><p><span class="incremental">lbc</span>: the lower bound for inflow counts. This is a <strong>required parameter</strong>. Default is 0.</p></li>
+<li><p><span class="incremental">ubc</span>: the upper bound for inflow counts. This is a <strong>required parameter</strong>. Default is 200.</p></li>
+<li><p><span class="incremental">epoch</span>: the number of generations. This is a <strong>required parameter</strong>. Default is 1000.</p></li>
+<li><p><span class="incremental">tabu_size</span>: the size of the tabu list. This is a <strong>required parameter</strong>. Default is 10.</p></li>
+<li><p><span class="incremental">neighbour_size</span>: the size of the neighbourhood for generating candidate solutions. This is a <strong>required parameter</strong>. Default is 10.</p></li>
+<li><p><span class="incremental">perturbation_scale</span>: the scale of perturbation for the solution. This is a <strong>required parameter</strong>. Default is 0.05.</p></li>
 </ul>
 </li>
 </ul>

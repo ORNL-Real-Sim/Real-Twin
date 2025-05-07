@@ -133,7 +133,7 @@ Update Configuration File
 
 There are several parameters in the configuration file that need to be updated according to your needs. The following is a list of parameters that need to be updated.
 
-- **demo_data**:
+- :orange:`demo_data`:
 
   whether to use demo data or not. Default is false. It could be boolean or string type.
 
@@ -141,15 +141,15 @@ There are several parameters in the configuration file that need to be updated a
   - `true`: use default demo data from the package (chattanooga)
   - `chattanooga`: use chattanooga data from the package, which is the default value, optional data: chattanooga, nashville, knoxville
 
-- **input_dir**:
+- :orange:`input_dir`:
 
   the directory where the input files are located. This is a **required parameter**.
 
-- **output_dir**:
+- :orange:`output_dir`:
 
   the directory where the output files are located. This is an optional parameter. If not specified, the output files will be saved in the input directory.
 
-- **Network**:
+- :orange:`Network`:
 
   - `NetworkName`:
 
@@ -167,7 +167,7 @@ There are several parameters in the configuration file that need to be updated a
 
     the elevation map in TIFF format. This is an optional parameter. User can prepare the elevation map using :ref:`How To Prepare Elevation Map In TIFF Format` to generate the elevation map, and save the elevation map in the input_dir directory. If not specified, the simulation will consider the network as flat.
 
-- **Traffic**:
+- :orange:`Traffic`:
 
   - `Volume`:
 
@@ -181,7 +181,7 @@ There are several parameters in the configuration file that need to be updated a
 
     the GridSmart lookup table. This is a **required parameter**. The file should be in CSV format.
 
-- **Control**:
+- :orange:`Control`:
 
   - `Signal`:
 
@@ -191,9 +191,9 @@ There are several parameters in the configuration file that need to be updated a
 
     the Synchro lookup table. This is a **required parameter**. The file should be in CSV format.
 
-- **Calibration**:
+- :orange:`Calibration`:
 
-  - `scenario_config`:
+  - **scenario_config**:
 
     the overall configuration for the calibration.
 
@@ -250,153 +250,153 @@ There are several parameters in the configuration file that need to be updated a
 
   - **turn_inflow**:
 
-    - initial_params:
+    - `initial_params`:
 
       the initial parameters for the turning inflow calibration. This is a **required parameter**.
 
-    - params_ranges:
+    - `params_ranges`:
 
       the parameter ranges for the turning inflow calibration. This is a **required parameter**.
 
-    - max_epoch:
+    - `max_epoch`:
 
       the maximum number of iterations. This is a **required parameter**. Default is 1000.
 
-    - max_fe:
+    - `max_fe`:
 
       the maximum number of function evaluations. This is a **required parameter**. Default is 10000.
 
-    - max_time:
+    - `max_time`:
 
       the maximum time in seconds. This is a **required parameter**. Default is 3600.
 
-    - max_early_stop:
+    - `max_early_stop`:
 
       the maximum number of early stop iterations. This is a **required parameter**. Default is 20.
 
   - **behavior**:
 
-    - EB_tt:
+    - `EB_tt`:
 
      the EB travel time in minutes. This is a **required parameter**. Default is 240.
 
-    - WB_tt:
+    - `WB_tt`:
 
       the WB travel time in minutes. This is a **required parameter**. Default is 180.
 
-    - EB_edge_list:
+    - `EB_edge_list`:
 
       the EB edge list. This is a **required parameter**.
 
-    - WB_edge_list:
+    - `WB_edge_list`:
 
       the WB edge list. This is a **required parameter**.
 
-    - initial_params:
+    - `initial_params`:
 
       the initial parameters for the behavior calibration. This is a **required parameter**.
 
-      - min_gap: the minimum gap between vehicles in meters. This is a **required parameter**. Default is 2.5.
+      - `min_gap`: the minimum gap between vehicles in meters. This is a **required parameter**. Default is 2.5.
 
-      - acceleration: the maximum acceleration in m/s^2. This is a **required parameter**. Default is 2.6.
+      - `acceleration`: the maximum acceleration in m/s^2. This is a **required parameter**. Default is 2.6.
 
-      - deceleration: the maximum deceleration in m/s^2. This is a **required parameter**. Default is 4.5.
+      - `deceleration`: the maximum deceleration in m/s^2. This is a **required parameter**. Default is 4.5.
 
-      - sigma: the driver imperfection. This is a **required parameter**. Default is 0.5.
+      - `sigma`: the driver imperfection. This is a **required parameter**. Default is 0.5.
 
-      - tau: the desired headway. This is a **required parameter**. Default is 1.00.
+      - `tau`: the desired headway. This is a **required parameter**. Default is 1.00.
 
-      - emergencyDecel: the emergency deceleration in m/s^2. This is a **required parameter**. Default is 9.0
+      - `emergencyDecel`: the emergency deceleration in m/s^2. This is a **required parameter**. Default is 9.0
 
-    - params_ranges: the parameter ranges for the behavior calibration. This is a **required parameter**.
+    - `params_ranges`: the parameter ranges for the behavior calibration. This is a **required parameter**.
 
-      - min_gap: the minimum gap between vehicles in meters. This is a **required parameter**. Default is [1.0, 3.0].
+      - `min_gap`: the minimum gap between vehicles in meters. This is a **required parameter**. Default is [1.0, 3.0].
 
-      - acceleration: the maximum acceleration in m/s^2. This is a **required parameter**. Default is [2.5, 3.0].
+      - `acceleration`: the maximum acceleration in m/s^2. This is a **required parameter**. Default is [2.5, 3.0].
 
-      - deceleration: the maximum deceleration in m/s^2. This is a **required parameter**. Default is [4.0, 5.3].
+      - `deceleration`: the maximum deceleration in m/s^2. This is a **required parameter**. Default is [4.0, 5.3].
 
-      - sigma: the driver imperfection. This is a **required parameter**. Default is [0.0, 1.0].
+      - `sigma`: the driver imperfection. This is a **required parameter**. Default is [0.0, 1.0].
 
-      - tau: the desired headway. This is a **required parameter**. Default is [0.25, 1.25].
+      - `tau`: the desired headway. This is a **required parameter**. Default is [0.25, 1.25].
 
-      - emergencyDecel: the emergency deceleration in m/s^2. This is a **required parameter**. Default is [5.0, 9.3].
+      - `emergencyDecel`: the emergency deceleration in m/s^2. This is a **required parameter**. Default is [5.0, 9.3].
 
-    - max_epoch:
+    - `max_epoch`:
 
       the maximum number of iterations. This is a **required parameter**. Default is 1000.
 
-    - max_fe:
+    - `max_fe`:
 
       the maximum number of function evaluations. This is a **required parameter**. Default is 10000.
 
-    - max_time:
+    - `max_time`:
 
       the maximum time in seconds. This is a **required parameter**. Default is 3600.
 
-    - max_early_stop:
+    - `max_early_stop`:
 
       the maximum number of early stop iterations. This is a **required parameter**. Default is 20.
 
   - **ga_config**: the configuration for the genetic algorithm.
 
-    - num_generations: the number of generations. This is a **required parameter**. Default is 10.
-    - num_variables: the number of variables. This is a **required parameter**. Default is 16.
-    - num_turning_ratio: the number of turning ratios. This is a **required parameter**. Default is 12.
-    - ubc: the upper bound of inflow. This is a **required parameter**. Default is 200.
-    - population_size: the population size. This is a **required parameter**. Default is 2.
-    - crossover_rate: the crossover rate. This is a **required parameter**. Default is 0.75.
-    - mutation_rate: the mutation rate. This is a **required parameter**. Default is 0.1.
-    - elitism_size: the number of elite individuals to carry over. This is a **required parameter**. Default is 1.
-    - best_fitness_value: the best fitness value. This is a **required parameter**. Default is 999999.
-    - max_no_improvement: the maximum number of early stop iterations. This is a **required parameter**. Default is 5.
+    - `num_generations`: the number of generations. This is a **required parameter**. Default is 10.
+    - `num_variables`: the number of variables. This is a **required parameter**. Default is 16.
+    - `num_turning_ratio`: the number of turning ratios. This is a **required parameter**. Default is 12.
+    - `ubc`: the upper bound of inflow. This is a **required parameter**. Default is 200.
+    - `population_size`: the population size. This is a **required parameter**. Default is 2.
+    - `crossover_rate`: the crossover rate. This is a **required parameter**. Default is 0.75.
+    - `mutation_rate`: the mutation rate. This is a **required parameter**. Default is 0.1.
+    - `elitism_size`: the number of elite individuals to carry over. This is a **required parameter**. Default is 1.
+    - `best_fitness_value`: the best fitness value. This is a **required parameter**. Default is 999999.
+    - `max_no_improvement`: the maximum number of early stop iterations. This is a **required parameter**. Default is 5.
 
-    - epoch: the number of generations. This is a **required parameter**. Default is 1000.
-    - pop_size: the population size. This is a **required parameter**. Default is 30.
-    - pc: the crossover probability. This is a **required parameter**. Default is 0.75.
-    - pm: the mutation probability. This is a **required parameter**. Default is 0.1.
-    - selection: the selection method. This is a **required parameter**. Default is roulette.
-    - key_way: the key way for tournament selection. This is a **required parameter**. Default is 0.2.
-    - crossover: the crossover method. This is a **required parameter**. Default is uniform.
-    - mutation: the mutation method. This is a **required parameter**. Default is swap.
-    - elite_best: the percentage of the best in elite group. This is a **required parameter**. Default is 0.1.
-    - elite_worst: the percentage of the worst in elite group. This is a **required parameter**. Default is 0.3.
-    - model_selection: the model selection method. This is a **required parameter**. Default is BaseGA. Optional values: BaseGA, EliteSingleGA, EliteMultiGA, MultiGA, SingleGA.
+    - `epoch`: the number of generations. This is a **required parameter**. Default is 1000.
+    - `pop_size`: the population size. This is a **required parameter**. Default is 30.
+    - `pc`: the crossover probability. This is a **required parameter**. Default is 0.75.
+    - `pm`: the mutation probability. This is a **required parameter**. Default is 0.1.
+    - `selection`: the selection method. This is a **required parameter**. Default is roulette.
+    - `key_way`: the key way for tournament selection. This is a **required parameter**. Default is 0.2.
+    - `crossover`: the crossover method. This is a **required parameter**. Default is uniform.
+    - `mutation`: the mutation method. This is a **required parameter**. Default is swap.
+    - `elite_best`: the percentage of the best in elite group. This is a **required parameter**. Default is 0.1.
+    - `elite_worst`: the percentage of the worst in elite group. This is a **required parameter**. Default is 0.3.
+    - `model_selection`: the model selection method. This is a **required parameter**. Default is BaseGA. Optional values: BaseGA, EliteSingleGA, EliteMultiGA, MultiGA, SingleGA.
 
   - **sa_config**: the configuration for the simulated annealing.
 
-    - num_variables: the number of variables. This is a **required parameter**. Default is 16.
-    - num_turning_ratio: the number of turning ratios. This is a **required parameter**. Default is 12.
-    - initial_temperature: the initial temperature. This is a **required parameter**. Default is 100.
-    - ubc: the upper bound of inflow. This is a **required parameter**. Default is 200.
-    - cost_difference: the cost difference. This is a **required parameter**. Default is 2.
-    - accept_prob: the acceptance probability. This is a **required parameter**. Default is 0.5.
-    - stopping_temperature: the stopping temperature. This is a **required parameter**. Default is 0.001.
+    - `num_variables`: the number of variables. This is a **required parameter**. Default is 16.
+    - `num_turning_ratio`: the number of turning ratios. This is a **required parameter**. Default is 12.
+    - `initial_temperature`: the initial temperature. This is a **required parameter**. Default is 100.
+    - `ubc`: the upper bound of inflow. This is a **required parameter**. Default is 200.
+    - `cost_difference`: the cost difference. This is a **required parameter**. Default is 2.
+    - `accept_prob`: the acceptance probability. This is a **required parameter**. Default is 0.5.
+    - `stopping_temperature`: the stopping temperature. This is a **required parameter**. Default is 0.001.
 
-    - epoch: the number of generations. This is a **required parameter**. Default is 1000.
-    - temp_init: the initial temperature. This is a **required parameter**. Default is 100.
-    - cooling_rate: the cooling rate. This is a **required parameter**. Default is 0.891.
-    - scale: the scale for the temperature. This is a **required parameter**. Default is 0.1.
-    - model_selection: the model selection method. This is a **required parameter**. Default is OriginalSA. Optional values: OriginalSA, GaussianSA, SwarmSA.
+    - `epoch`: the number of generations. This is a **required parameter**. Default is 1000.
+    - `temp_init`: the initial temperature. This is a **required parameter**. Default is 100.
+    - `cooling_rate`: the cooling rate. This is a **required parameter**. Default is 0.891.
+    - `scale`: the scale for the temperature. This is a **required parameter**. Default is 0.1.
+    - `model_selection`: the model selection method. This is a **required parameter**. Default is OriginalSA. Optional values: OriginalSA, GaussianSA, SwarmSA.
 
   - **ts_config**: the configuration for the tabu search.
 
-    - iterations: the number of iterations. This is a **required parameter**. Default is 3.
-    - tabu_size: the size of the tabu list. This is a **required parameter**. Default is 120.
-    - neighborhood_size: the size of the neighbourhood for generating candidate solutions. This is a **required parameter**. Default is 32.
-    - move_range: the initial move range. This is a **required parameter**. Default is 0.5.
-    - num_turning_ratio: the number of turning ratios. This is a **required parameter**. Default is 12.
-    - max_no_improvement_local: the maximum number of early stop iterations for local search. This is a **required parameter**. Default is 5.
-    - max_no_improvement_global: the maximum number of early stop iterations for global search. This is a **required parameter**. Default is 30.
-    - lower_bound: the lower bound for inflow counts. This is a **required parameter**. Default is 0.
-    - upper_bound: the upper bound for inflow counts. This is a **required parameter**. Default is 1.
-    - lbc: the lower bound for inflow counts. This is a **required parameter**. Default is 0.
-    - ubc: the upper bound for inflow counts. This is a **required parameter**. Default is 200.
+    - `iterations`: the number of iterations. This is a **required parameter**. Default is 3.
+    - `tabu_size`: the size of the tabu list. This is a **required parameter**. Default is 120.
+    - `neighborhood_size`: the size of the neighbourhood for generating candidate solutions. This is a **required parameter**. Default is 32.
+    - `move_range`: the initial move range. This is a **required parameter**. Default is 0.5.
+    - `num_turning_ratio`: the number of turning ratios. This is a **required parameter**. Default is 12.
+    - `max_no_improvement_local`: the maximum number of early stop iterations for local search. This is a **required parameter**. Default is 5.
+    - `max_no_improvement_global`: the maximum number of early stop iterations for global search. This is a **required parameter**. Default is 30.
+    - `lower_bound`: the lower bound for inflow counts. This is a **required parameter**. Default is 0.
+    - `upper_bound`: the upper bound for inflow counts. This is a **required parameter**. Default is 1.
+    - `lbc`: the lower bound for inflow counts. This is a **required parameter**. Default is 0.
+    - `ubc`: the upper bound for inflow counts. This is a **required parameter**. Default is 200.
 
-    - epoch: the number of generations. This is a **required parameter**. Default is 1000.
-    - tabu_size: the size of the tabu list. This is a **required parameter**. Default is 10.
-    - neighbour_size: the size of the neighbourhood for generating candidate solutions. This is a **required parameter**. Default is 10.
-    - perturbation_scale: the scale of perturbation for the solution. This is a **required parameter**. Default is 0.05.
+    - `epoch`: the number of generations. This is a **required parameter**. Default is 1000.
+    - `tabu_size`: the size of the tabu list. This is a **required parameter**. Default is 10.
+    - `neighbour_size`: the size of the neighbourhood for generating candidate solutions. This is a **required parameter**. Default is 10.
+    - `perturbation_scale`: the scale of perturbation for the solution. This is a **required parameter**. Default is 0.05.
 
 
 How To Create / Update MatchupTable (:blue:`Required`)
