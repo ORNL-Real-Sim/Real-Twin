@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>realtwin.util_lib.download_elevation_tif &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
 
@@ -45,12 +45,25 @@
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../pages/intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/api.html">Classes and Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pages/acknowledgements.html">Acknowledgements</a></li>
@@ -89,19 +102,33 @@
 <span class="sd">##############################################################</span>
 <span class="sd">&#39;&#39;&#39;</span>
 
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 
 
-<div class="viewcode-block" id="download_elevation_tif_by">
-<a class="viewcode-back" href="../../../pages/api/realtwin.util_lib.download_elevation_tif_by.html#realtwin.util_lib.download_elevation_tif_by">[docs]</a>
-<span class="k">def</span> <span class="nf">download_elevation_tif_by</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Download elevation data (TIFF) from USGS National Map based on a bounding box.</span>
+<div class="viewcode-block" id="download_elevation_tif_by_bbox">
+<a class="viewcode-back" href="../../../pages/api/realtwin.util_lib.download_elevation_tif_by_bbox.html#realtwin.util_lib.download_elevation_tif_by_bbox">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_elevation_tif_by_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Download elevation data (TIFF) from USGS National Map based on a bounding box.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">        bbox (tuple): Bounding box (min_lon, min_lat, max_lon, max_lat).</span>
-<span class="sd">        output_file (str): Path to save the downloaded TIFF file.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        bbox (tuple | list): A tuple or list containing the bounding box coordinates in the format (min_lon, min_lat, max_lon, max_lat).</span>
+<span class="sd">        output_file (str): The path to save the downloaded TIFF file.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from realtwin import download_elevation_tif_by_bbox</span>
+<span class="sd">        &gt;&gt;&gt; bbox = (-112.185, 36.056, -111.705, 36.368)  # Grand Canyon region</span>
+<span class="sd">        &gt;&gt;&gt; output_file = &quot;elevation_data.tif&quot;</span>
+<span class="sd">        &gt;&gt;&gt; download_elevation_tif_by_bbox(bbox, output_file)</span>
+<span class="sd">        &gt;&gt;&gt; # The function will download the elevation data and save it as &quot;elevation_data.tif&quot;.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the bounding box is not a tuple or list, or if it does not contain 4 coordinates.</span>
+<span class="sd">        Exception: If the API request fails or if no data is available for the specified bounding box.</span>
+<span class="sd">        Exception: If the download fails or if the file cannot be saved.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the download was successful, False otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># check input parameters</span>
@@ -150,7 +177,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Downloaded URLs: &quot;</span><span class="p">,</span> <span class="n">tiff_url_list</span><span class="p">)</span>
 
     <span class="c1"># Extract date from each URL</span>
-    <span class="k">def</span> <span class="nf">extract_date</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_date</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">date_str</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date_str</span><span class="p">,</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -194,7 +221,7 @@
     <span class="n">output_path</span> <span class="o">=</span> <span class="s2">&quot;elevation_data.tif&quot;</span>
 
     <span class="c1"># Download the elevation data</span>
-    <span class="n">download_elevation_tif_by</span><span class="p">(</span><span class="n">bounding_box</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+    <span class="n">download_elevation_tif_by_bbox</span><span class="p">(</span><span class="n">bounding_box</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
 </pre></div>
 
            </div>

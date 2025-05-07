@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>realtwin.func_lib._e_simulation._aimsun &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
 
@@ -45,12 +45,25 @@
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">Classes and Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/acknowledgements.html">Acknowledgements</a></li>
@@ -95,36 +108,31 @@
 
 <span class="sd">&quot;&quot;&quot;The module to prepare the Aimsun network and demand data for simulation.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">ElementTree</span> <span class="k">as</span> <span class="n">ET</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xml.etree</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElementTree</span> <span class="k">as</span> <span class="n">ET</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 
 <div class="viewcode-block" id="AimsunPrep">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.AimsunPrep">[docs]</a>
-<span class="k">class</span> <span class="nc">AimsunPrep</span><span class="p">:</span>
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.AimsunPrep.html#realtwin.func_lib.AimsunPrep">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AimsunPrep</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    constructor</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 <div class="viewcode-block" id="AimsunPrep.__init__">
 <a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.AimsunPrep.html#realtwin.func_lib.AimsunPrep.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Network</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># self.NetworkWithElevation = {}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Demand</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="p">{}</span></div>
 
 
-<div class="viewcode-block" id="AimsunPrep.is_empty">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.AimsunPrep.is_empty">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the AimsunPrep object is empty.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
+        <span class="k">pass</span>
 
-
-<div class="viewcode-block" id="AimsunPrep.importDemand">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.AimsunPrep.importDemand">[docs]</a>
-    <span class="k">def</span> <span class="nf">importDemand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">,</span> <span class="n">SimulationStartTime</span><span class="p">,</span> <span class="n">SimulationEndTime</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">importDemand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">,</span> <span class="n">SimulationStartTime</span><span class="p">,</span> <span class="n">SimulationEndTime</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Import demand data from the concrete scenario.&quot;&quot;&quot;</span>
 
         <span class="n">NetworkName</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Supply</span><span class="o">.</span><span class="n">NetworkName</span>
@@ -254,7 +262,6 @@
         <span class="n">Inflow</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;MyNetwork/Aimsun/inflow.txt&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
         <span class="c1"># Display the merged DataFrame</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Demand</span> <span class="o">=</span> <span class="s1">&#39;MyNetwork/Aimsun/inflow.txt&#39;</span></div>
-</div>
 
 </pre></div>
 

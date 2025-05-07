@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>realtwin.util_lib.download_file_from_web &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
 
@@ -45,12 +45,25 @@
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../pages/intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/api.html">Classes and Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../pages/acknowledgements.html">Acknowledgements</a></li>
@@ -89,14 +102,13 @@
 <span class="sd">##############################################################</span>
 <span class="sd">&#39;&#39;&#39;</span>
 
-<span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
 
 
 <div class="viewcode-block" id="download_single_file_from_web">
 <a class="viewcode-back" href="../../../pages/api/realtwin.util_lib.download_single_file_from_web.html#realtwin.util_lib.download_single_file_from_web">[docs]</a>
-<span class="k">def</span> <span class="nf">download_single_file_from_web</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dest_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Downloads a large file from a URL in chunks and saves it to the specified destination.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_single_file_from_web</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dest_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Downloads a large file from a URL in chunks and saves it to the specified destination.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        url (str): The URL of the file to download.</span>

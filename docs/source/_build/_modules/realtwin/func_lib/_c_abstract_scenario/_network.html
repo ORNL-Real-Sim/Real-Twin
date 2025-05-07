@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>realtwin.func_lib._c_abstract_scenario._network &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
 
@@ -45,12 +45,25 @@
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">Classes and Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/acknowledgements.html">Acknowledgements</a></li>
@@ -84,45 +97,39 @@
 <span></span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">class to host Network element of Abstract scenario</span>
 <span class="sd">&#39;&#39;&#39;</span>
-<span class="kn">import</span> <span class="nn">osmnx</span> <span class="k">as</span> <span class="nn">ox</span>
-<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">Polygon</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">pyufunc</span> <span class="k">as</span> <span class="nn">pf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">osmnx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ox</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyufunc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pf</span>
 
 
-<div class="viewcode-block" id="Network">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.Network">[docs]</a>
-<span class="k">class</span> <span class="nc">Network</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Network</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The Network class to host the Network element of Abstract scenario</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;RT_Network&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;RT_Network&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_output_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">NetworkName</span> <span class="o">=</span> <span class="s2">&quot;network&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">NetworkVertices</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ElevationMap</span> <span class="o">=</span> <span class="s2">&quot;No elevation map provided!&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">OpenDriveNetwork</span> <span class="o">=</span> <span class="n">OpenDriveNetwork</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_dir</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Network.isEmpty">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.Network.isEmpty">[docs]</a>
-    <span class="k">def</span> <span class="nf">isEmpty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">isEmpty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the Network element is empty&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-</div>
-
+        <span class="k">pass</span>
 
 
 <div class="viewcode-block" id="OpenDriveNetwork">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OpenDriveNetwork">[docs]</a>
-<span class="k">class</span> <span class="nc">OpenDriveNetwork</span><span class="p">:</span>
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.OpenDriveNetwork.html#realtwin.func_lib.OpenDriveNetwork">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OpenDriveNetwork</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The OpenDriveNetwork class to generate OpenDrive network&quot;&quot;&quot;</span>
 <div class="viewcode-block" id="OpenDriveNetwork.__init__">
 <a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.OpenDriveNetwork.html#realtwin.func_lib.OpenDriveNetwork.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">net_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;network&quot;</span><span class="p">,</span>
                  <span class="n">net_vertices</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
                  <span class="n">ele_map</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;No elevation map provided!&quot;</span><span class="p">,</span>
@@ -136,16 +143,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">OpenDrive_network</span> <span class="o">=</span> <span class="p">[]</span></div>
 
 
-<div class="viewcode-block" id="OpenDriveNetwork.isEmpty">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OpenDriveNetwork.isEmpty">[docs]</a>
-    <span class="k">def</span> <span class="nf">isEmpty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">isEmpty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the OpenDriveNetwork element is empty&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
+        <span class="k">pass</span>
 
-
-<div class="viewcode-block" id="OpenDriveNetwork.setValue">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OpenDriveNetwork.setValue">[docs]</a>
-    <span class="k">def</span> <span class="nf">setValue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setValue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create OpenDrive network and save it to the output directory&quot;&quot;&quot;</span>
 
         <span class="n">path_openDrive</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_dir</span><span class="p">,</span> <span class="s1">&#39;OpenDrive&#39;</span><span class="p">))</span>
@@ -160,8 +162,7 @@
         <span class="c1"># Create new directory</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path_openDrive</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">GetRoad</span><span class="p">()</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetRoad</span><span class="p">()</span>
         <span class="c1"># self.OpenDrive_network = pf.path2linux(f&#39;{path_openDrive}/{self._net_name}.xodr&#39;)</span>
 
         <span class="c1"># delete intermediate files         ################################################################################# add back</span>
@@ -178,9 +179,7 @@
         <span class="c1"># if os.path.exists(PathDelete4):</span>
         <span class="c1">#     os.remove(PathDelete4)  # Delete the file</span>
 
-<div class="viewcode-block" id="OpenDriveNetwork.GetRoad">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OpenDriveNetwork.GetRoad">[docs]</a>
-    <span class="k">def</span> <span class="nf">GetRoad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">GetRoad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate OpenDrive network from OpenStreetMap&quot;&quot;&quot;</span>
 
         <span class="c1"># create networkx graph network</span>
@@ -227,27 +226,26 @@
 
             <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command3</span><span class="p">)</span>
             <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command4</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">OpenDrive_network</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path_open_drive_ele</span><span class="p">)</span></div>
-</div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">OpenDrive_network</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path_open_drive_ele</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">OpenDrive_network</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="OSMRoad">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OSMRoad">[docs]</a>
-<span class="k">class</span> <span class="nc">OSMRoad</span><span class="p">:</span>
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.OSMRoad.html#realtwin.func_lib.OSMRoad">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OSMRoad</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The OSMRoad class to generate network from OpenStreetMap&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="OSMRoad.__init__">
 <a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.OSMRoad.html#realtwin.func_lib.OSMRoad.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;RT_Network&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;RT_Network&quot;</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_output_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">empty_graph</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="OSMRoad.get_graph">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OSMRoad.get_graph">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">NetworkVertices</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">NetworkVertices</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the graph from OpenStreetMap using osmnx&quot;&quot;&quot;</span>
 
         <span class="c1"># NetworkVertices = &quot; (-85.14985634615098, 35.0401442512819), ( -85.15827848213861, 35.04329333848216),</span>
@@ -269,13 +267,10 @@
 
         <span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">ox</span><span class="o">.</span><span class="n">graph_to_gdfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">fill_edge_geometry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">ox</span><span class="o">.</span><span class="n">graph_from_gdfs</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">graph_attrs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">ox</span><span class="o">.</span><span class="n">graph_from_gdfs</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">graph_attrs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
         <span class="c1"># ox.plot_graph(self.G)</span>
 
-<div class="viewcode-block" id="OSMRoad.line_str">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OSMRoad.line_str">[docs]</a>
-    <span class="k">def</span> <span class="nf">line_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">line_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert line to string&quot;&quot;&quot;</span>
 
         <span class="k">for</span> <span class="n">jx</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">coords</span><span class="p">)):</span>
@@ -286,20 +281,14 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># s = s + &#39; %s,%s&#39; % (j[0], j[1])</span>
                 <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">j</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">j</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">return</span> <span class="n">s</span></div>
+        <span class="k">return</span> <span class="n">s</span>
 
-
-<div class="viewcode-block" id="OSMRoad.split_lane_no">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OSMRoad.split_lane_no">[docs]</a>
-    <span class="k">def</span> <span class="nf">split_lane_no</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">str_digit</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">split_lane_no</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">str_digit</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Split the lane number&quot;&quot;&quot;</span>
         <span class="n">float_digit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">str_digit</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">float_digit</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">float_digit</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)]</span></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">float_digit</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">float_digit</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)]</span>
 
-
-<div class="viewcode-block" id="OSMRoad.add_spread">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OSMRoad.add_spread">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_spread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_spread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add spread to the edges&quot;&quot;&quot;</span>
 
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -321,12 +310,9 @@
 
                     <span class="k">elif</span> <span class="nb">float</span><span class="p">(</span><span class="n">no_lanes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">no_lanes</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">d</span><span class="p">[</span><span class="s1">&#39;spread&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;roadCenter&#39;</span>
-                        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;n_lane&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_lane_no</span><span class="p">(</span><span class="n">no_lanes</span><span class="p">)</span></div>
+                        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;n_lane&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_lane_no</span><span class="p">(</span><span class="n">no_lanes</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="OSMRoad.add_num_lane">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OSMRoad.add_num_lane">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_num_lane</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_num_lane</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add number of lanes to the edges&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
             <span class="k">if</span> <span class="s1">&#39;n_lane&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
@@ -335,12 +321,9 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">[</span><span class="n">e2</span><span class="p">][</span><span class="n">e1</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;n_lane&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;n_lane&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="si">:</span><span class="s1">.0f</span><span class="si">}</span><span class="s1">&#39;</span>
 
                     <span class="c1"># d[&#39;n_lane&#39;] = &#39;%.0f&#39; % (float(d[&#39;n_lane&#39;][0]))</span>
-                    <span class="n">d</span><span class="p">[</span><span class="s2">&quot;n_lane&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;n_lane&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">&quot;</span></div>
+                    <span class="n">d</span><span class="p">[</span><span class="s2">&quot;n_lane&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;n_lane&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">&quot;</span>
 
-
-<div class="viewcode-block" id="OSMRoad.add_missing_value">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OSMRoad.add_missing_value">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_missing_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_missing_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add missing values to the edges&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
             <span class="c1"># d[&#39;u_id&#39;] = &#39;%s%s&#39; % (e1, e2)</span>
@@ -353,12 +336,9 @@
                 <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;oneway&#39;</span><span class="p">]:</span>
                     <span class="n">d</span><span class="p">[</span><span class="s1">&#39;spread&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;center&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;spread&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;right&#39;</span></div>
+                    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;spread&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;right&#39;</span>
 
-
-<div class="viewcode-block" id="OSMRoad.generate_edges">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OSMRoad.generate_edges">[docs]</a>
-    <span class="k">def</span> <span class="nf">generate_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate edges from the graph&quot;&quot;&quot;</span>
         <span class="n">edges</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -383,12 +363,9 @@
                                   <span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="s1">&#39;speed&#39;</span><span class="p">,</span> <span class="s1">&#39;spreadType&#39;</span><span class="p">],</span>
                        <span class="n">root_name</span><span class="o">=</span><span class="s1">&#39;edges&#39;</span><span class="p">,</span>
                        <span class="n">row_name</span><span class="o">=</span><span class="s1">&#39;edge&#39;</span><span class="p">,</span>
-                       <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+                       <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="OSMRoad.generate_nodes">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.OSMRoad.generate_nodes">[docs]</a>
-    <span class="k">def</span> <span class="nf">generate_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate nodes from the graph&quot;&quot;&quot;</span>
 
         <span class="n">nodes</span> <span class="o">=</span> <span class="p">[]</span>
@@ -409,7 +386,6 @@
                        <span class="n">root_name</span><span class="o">=</span><span class="s1">&#39;nodes&#39;</span><span class="p">,</span>
                        <span class="n">row_name</span><span class="o">=</span><span class="s1">&#39;node&#39;</span><span class="p">,</span>
                        <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
-</div>
 
 </pre></div>
 

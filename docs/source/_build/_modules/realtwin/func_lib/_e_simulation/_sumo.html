@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>realtwin.func_lib._e_simulation._sumo &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
 
@@ -45,12 +45,25 @@
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">Classes and Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/acknowledgements.html">Acknowledgements</a></li>
@@ -94,36 +107,34 @@
 <span class="c1">##############################################################################</span>
 <span class="sd">&quot;&quot;&quot;The module to handle the SUMO simulation for the real-twin developed by ORNL ARMS group.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
-<span class="kn">from</span> <span class="nn">xml.dom.minidom</span> <span class="kn">import</span> <span class="n">parseString</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">from</span> <span class="nn">lxml</span> <span class="kn">import</span> <span class="n">etree</span>
-<span class="kn">import</span> <span class="nn">pyufunc</span> <span class="k">as</span> <span class="nn">pf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xml.dom.minidom</span><span class="w"> </span><span class="kn">import</span> <span class="n">parseString</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lxml</span><span class="w"> </span><span class="kn">import</span> <span class="n">etree</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyufunc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pf</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">chained_assignment</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">FutureWarning</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="SUMOPrep">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.SUMOPrep">[docs]</a>
-<span class="k">class</span> <span class="nc">SUMOPrep</span><span class="p">:</span>
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.SUMOPrep.html#realtwin.func_lib.SUMOPrep">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SUMOPrep</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The class to handle the SUMO simulation for the real-twin developed by ORNL ARMS group.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="SUMOPrep.__init__">
 <a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.SUMOPrep.html#realtwin.func_lib.SUMOPrep.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Network</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># self.NetworkWithElevation = {}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Demand</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="p">{}</span></div>
 
 
-<div class="viewcode-block" id="SUMOPrep.importNetwork">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.SUMOPrep.importNetwork">[docs]</a>
-    <span class="k">def</span> <span class="nf">importNetwork</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">importNetwork</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The function to import the network from the OpenDrive file and convert it to SUMO network file.&quot;&quot;&quot;</span>
 
         <span class="c1"># self.Network = ConcreteScn.Supply.Network</span>
@@ -153,7 +164,7 @@
         <span class="n">junctions</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;junction&#39;</span><span class="p">)</span>
 
         <span class="c1"># Function to extract road ids from incLanes attribute</span>
-        <span class="k">def</span> <span class="nf">get_road_ids_from_incLanes</span><span class="p">(</span><span class="n">incLanes</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">get_road_ids_from_incLanes</span><span class="p">(</span><span class="n">incLanes</span><span class="p">):</span>
             <span class="n">lane_ids</span> <span class="o">=</span> <span class="n">incLanes</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="n">road_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">lane_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">lane_id</span> <span class="ow">in</span> <span class="n">lane_ids</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">road_ids</span><span class="p">)</span>
@@ -176,12 +187,9 @@
                 <span class="n">root</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
 
         <span class="c1"># Write the modified tree back to the file</span>
-        <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="p">)</span></div>
+        <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="SUMOPrep.importDemand">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.SUMOPrep.importDemand">[docs]</a>
-    <span class="k">def</span> <span class="nf">importDemand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">,</span> <span class="n">SimulationStartTime</span><span class="p">,</span> <span class="n">SimulationEndTime</span><span class="p">,</span> <span class="n">SeedSet</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">importDemand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">,</span> <span class="n">SimulationStartTime</span><span class="p">,</span> <span class="n">SimulationEndTime</span><span class="p">,</span> <span class="n">SeedSet</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The function to import the demand from the demand file and convert it to SUMO demand file.&quot;&quot;&quot;</span>
 
         <span class="n">NetworkName</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Supply</span><span class="o">.</span><span class="n">NetworkName</span>
@@ -263,15 +271,12 @@
                       <span class="sa">f</span><span class="s1">&#39; -o </span><span class="si">{</span><span class="n">path_sumo_demand</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
 
             <span class="c1"># add element to the set object</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Demand</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">path_sumo_demand</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Demand</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">path_sumo_demand</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="SUMOPrep.generateConfig">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.SUMOPrep.generateConfig">[docs]</a>
-    <span class="k">def</span> <span class="nf">generateConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">,</span> <span class="n">SimulationStartTime</span><span class="p">,</span> <span class="n">SimulationEndTime</span><span class="p">,</span> <span class="n">SeedSet</span><span class="p">,</span> <span class="n">StepLength</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generateConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">,</span> <span class="n">SimulationStartTime</span><span class="p">,</span> <span class="n">SimulationEndTime</span><span class="p">,</span> <span class="n">SeedSet</span><span class="p">,</span> <span class="n">StepLength</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The function to generate the SUMO configuration file for the simulation.&quot;&quot;&quot;</span>
 
-        <span class="k">def</span> <span class="nf">prettify</span><span class="p">(</span><span class="n">elem</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">prettify</span><span class="p">(</span><span class="n">elem</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Return a pretty-printed XML string for the Element.&quot;&quot;&quot;</span>
             <span class="n">rough_string</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
             <span class="n">re_parsed</span> <span class="o">=</span> <span class="n">parseString</span><span class="p">(</span><span class="n">rough_string</span><span class="p">)</span>
@@ -320,14 +325,11 @@
 
             <span class="n">path_sumo_cfg</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.sumocfg&#39;</span><span class="p">))</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_sumo_cfg</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span></div>
-
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
 
         <span class="c1"># 10 XML files &#39;config_1.smocfg&#39; to &#39;config_10.smocfg&#39; are created with different seed values</span>
 
-<div class="viewcode-block" id="SUMOPrep.importSignal">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.SUMOPrep.importSignal">[docs]</a>
-    <span class="k">def</span> <span class="nf">importSignal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">importSignal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The function to import the signal from the signal file and convert it to SUMO signal file.&quot;&quot;&quot;</span>
 
         <span class="n">path_signal</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">config_dict</span><span class="p">[</span><span class="s2">&quot;Control&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Signal&quot;</span><span class="p">)</span>
@@ -656,7 +658,6 @@
         <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="p">,</span>
                    <span class="n">pretty_print</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :SUMO signal updated at: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
-</div>
 
 </pre></div>
 

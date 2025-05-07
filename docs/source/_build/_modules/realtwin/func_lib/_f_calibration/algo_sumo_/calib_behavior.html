@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>realtwin.func_lib._f_calibration.algo_sumo_.calib_behavior &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=76b2166b" />
 
@@ -45,12 +45,25 @@
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../pages/intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/api.html">Classes and Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../pages/acknowledgements.html">Acknowledgements</a></li>
@@ -89,13 +102,13 @@
 <span class="sd">##############################################################</span>
 <span class="sd">&#39;&#39;&#39;</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 
-<span class="kn">from</span> <span class="nn">mealpy</span> <span class="kn">import</span> <span class="n">FloatVar</span><span class="p">,</span> <span class="n">SA</span><span class="p">,</span> <span class="n">GA</span><span class="p">,</span> <span class="n">TS</span>
-<span class="kn">from</span> <span class="nn">realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior</span> <span class="kn">import</span> <span class="n">fitness_func</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mealpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">FloatVar</span><span class="p">,</span> <span class="n">SA</span><span class="p">,</span> <span class="n">GA</span><span class="p">,</span> <span class="n">TS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior</span><span class="w"> </span><span class="kn">import</span> <span class="n">fitness_func</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="k">if</span> <span class="s1">&#39;SUMO_HOME&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
     <span class="n">tools</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;SUMO_HOME&#39;</span><span class="p">],</span> <span class="s1">&#39;tools&#39;</span><span class="p">)</span>
@@ -104,14 +117,14 @@
 
 <span class="k">else</span><span class="p">:</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;please declare environment variable &#39;SUMO_HOME&#39;&quot;</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">traci</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traci</span>
 
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">812</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="BehaviorCalib">
-<a class="viewcode-back" href="../../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.BehaviorCalib">[docs]</a>
-<span class="k">class</span> <span class="nc">BehaviorCalib</span><span class="p">:</span>
+<a class="viewcode-back" href="../../../../../pages/api/realtwin.func_lib.BehaviorCalib.html#realtwin.func_lib.BehaviorCalib">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BehaviorCalib</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Behavior Optimization class for SUMO calibration</span>
 
 <span class="sd">    Args:</span>
@@ -150,7 +163,7 @@
 
 <div class="viewcode-block" id="BehaviorCalib.__init__">
 <a class="viewcode-back" href="../../../../../pages/api/realtwin.func_lib.BehaviorCalib.html#realtwin.func_lib.BehaviorCalib.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scenario_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">behavior_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scenario_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">behavior_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">scenario_config</span> <span class="o">=</span> <span class="n">scenario_config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">behavior_cfg</span> <span class="o">=</span> <span class="n">behavior_config</span>
@@ -188,7 +201,7 @@
         <span class="p">}</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_generate_initial_solutions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_vals</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">pop_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_initial_solutions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_vals</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">pop_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate initial solutions for inputs.</span>
 
 <span class="sd">        Args:</span>
@@ -208,9 +221,7 @@
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">init_vals</span><span class="p">)</span> <span class="o">*</span> <span class="n">pop_size</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">pop_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">init_vals</span><span class="p">))</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="BehaviorCalib.run_vis">
-<a class="viewcode-back" href="../../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.BehaviorCalib.run_vis">[docs]</a>
-    <span class="k">def</span> <span class="nf">run_vis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_vis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the results of the optimization.</span>
 
 <span class="sd">        See Also:</span>
@@ -234,12 +245,9 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Error in saving vis: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="kc">True</span></div>
+        <span class="k">return</span> <span class="kc">True</span>
 
-
-<div class="viewcode-block" id="BehaviorCalib.run_GA">
-<a class="viewcode-back" href="../../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.BehaviorCalib.run_GA">[docs]</a>
-    <span class="k">def</span> <span class="nf">run_GA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_GA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run Genetic Algorithm (GA) for behavior optimization.</span>
 
 <span class="sd">        Note:</span>
@@ -331,12 +339,9 @@
         <span class="c1"># update files with the best solution</span>
         <span class="n">fitness_func</span><span class="p">(</span><span class="n">g_best</span><span class="o">.</span><span class="n">solution</span><span class="p">,</span> <span class="n">scenario_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario_config</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="s2">&quot;rmse&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">g_best</span><span class="p">,</span> <span class="n">model_ga</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">g_best</span><span class="p">,</span> <span class="n">model_ga</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="BehaviorCalib.run_SA">
-<a class="viewcode-back" href="../../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.BehaviorCalib.run_SA">[docs]</a>
-    <span class="k">def</span> <span class="nf">run_SA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_SA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run Simulated Annealing (SA) for behavior optimization.</span>
 
 <span class="sd">        Note:</span>
@@ -408,12 +413,9 @@
         <span class="c1"># update files with the best solution</span>
         <span class="n">fitness_func</span><span class="p">(</span><span class="n">g_best</span><span class="o">.</span><span class="n">solution</span><span class="p">,</span> <span class="n">scenario_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario_config</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="s2">&quot;rmse&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">g_best</span><span class="p">,</span> <span class="n">model_sa</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">g_best</span><span class="p">,</span> <span class="n">model_sa</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="BehaviorCalib.run_TS">
-<a class="viewcode-back" href="../../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.BehaviorCalib.run_TS">[docs]</a>
-    <span class="k">def</span> <span class="nf">run_TS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_TS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run Tabu Search (TS) for behavior optimization.</span>
 
 <span class="sd">        See Also:</span>
@@ -458,7 +460,6 @@
         <span class="n">fitness_func</span><span class="p">(</span><span class="n">g_best</span><span class="o">.</span><span class="n">solution</span><span class="p">,</span> <span class="n">scenario_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario_config</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="s2">&quot;rmse&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">g_best</span><span class="p">,</span> <span class="n">model_ts</span><span class="p">)</span></div>
-</div>
 
 
 

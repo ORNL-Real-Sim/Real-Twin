@@ -19,7 +19,7 @@ class TestRealTwin:
 
     def setup_class(self):
         """Set up the class"""
-        self.INPUT_CONFIG = "public_configs.yaml"
+        self.INPUT_CONFIG = "realtwin_config.yaml"
         self.INPUT_DIR_NOT_FOUND = "datasets/fake_dir/"
 
     def test_input_dir_not_found(self):

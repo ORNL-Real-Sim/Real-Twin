@@ -10,13 +10,27 @@ import requests
 from datetime import datetime
 
 
-def download_elevation_tif_by(bbox: tuple | list, output_file: str) -> None:
-    """
-    Download elevation data (TIFF) from USGS National Map based on a bounding box.
+def download_elevation_tif_by_bbox(bbox: tuple | list, output_file: str) -> bool:
+    """Download elevation data (TIFF) from USGS National Map based on a bounding box.
 
-    Parameters:
-        bbox (tuple): Bounding box (min_lon, min_lat, max_lon, max_lat).
-        output_file (str): Path to save the downloaded TIFF file.
+    Args:
+        bbox (tuple | list): A tuple or list containing the bounding box coordinates in the format (min_lon, min_lat, max_lon, max_lat).
+        output_file (str): The path to save the downloaded TIFF file.
+
+    Example:
+        >>> from realtwin import download_elevation_tif_by_bbox
+        >>> bbox = (-112.185, 36.056, -111.705, 36.368)  # Grand Canyon region
+        >>> output_file = "elevation_data.tif"
+        >>> download_elevation_tif_by_bbox(bbox, output_file)
+        >>> # The function will download the elevation data and save it as "elevation_data.tif".
+
+    Raises:
+        ValueError: If the bounding box is not a tuple or list, or if it does not contain 4 coordinates.
+        Exception: If the API request fails or if no data is available for the specified bounding box.
+        Exception: If the download fails or if the file cannot be saved.
+
+    Returns:
+        bool: True if the download was successful, False otherwise.
     """
 
     # check input parameters
@@ -108,4 +122,4 @@ if __name__ == "__main__":
     output_path = "elevation_data.tif"
 
     # Download the elevation data
-    download_elevation_tif_by(bounding_box, output_path)
+    download_elevation_tif_by_bbox(bounding_box, output_path)

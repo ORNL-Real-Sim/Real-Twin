@@ -10,7 +10,7 @@ from pathlib import Path
 import shutil
 
 
-def create_configuration_file(dest_dir: str = "") -> bool:
+def prepare_config_file(dest_dir: str = "") -> bool:
     """ Create a default/demo configuration file for the RealTwin package.
 
     Args:

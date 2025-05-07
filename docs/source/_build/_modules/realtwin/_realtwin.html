@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>realtwin._realtwin &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
 
@@ -45,12 +45,25 @@
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../pages/intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../pages/quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../pages/api.html">Classes and Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../pages/support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pages/acknowledgements.html">Acknowledgements</a></li>
@@ -93,40 +106,44 @@
 <span class="c1">##############################################################################</span>
 
 <span class="sd">&quot;&quot;&quot;The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">pyufunc</span> <span class="k">as</span> <span class="nn">pf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyufunc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pf</span>
 
 <span class="c1"># environment setup</span>
-<span class="kn">from</span> <span class="nn">realtwin.util_lib.create_venv</span> <span class="kn">import</span> <span class="n">venv_create</span><span class="p">,</span> <span class="n">venv_delete</span>
-<span class="kn">from</span> <span class="nn">realtwin.func_lib._a_install_simulator.inst_sumo</span> <span class="kn">import</span> <span class="n">install_sumo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.util_lib.create_venv</span><span class="w"> </span><span class="kn">import</span> <span class="n">venv_create</span><span class="p">,</span> <span class="n">venv_delete</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._a_install_simulator.inst_sumo</span><span class="w"> </span><span class="kn">import</span> <span class="n">install_sumo</span>
 
 <span class="c1"># input data loading</span>
-<span class="kn">from</span> <span class="nn">realtwin.func_lib._b_load_inputs.loader_config</span> <span class="kn">import</span> <span class="n">load_input_config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._b_load_inputs.loader_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_input_config</span>
 
 <span class="c1"># scenario generation</span>
-<span class="kn">from</span> <span class="nn">realtwin.util_lib.download_elevation_tif</span> <span class="kn">import</span> <span class="n">download_elevation_tif_by</span>
-<span class="kn">from</span> <span class="nn">realtwin.func_lib._c_abstract_scenario._abstractScenario</span> <span class="kn">import</span> <span class="n">AbstractScenario</span>
-<span class="kn">from</span> <span class="nn">realtwin.func_lib._d_concrete_scenario._concreteScenario</span> <span class="kn">import</span> <span class="n">ConcreteScenario</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.util_lib.download_elevation_tif</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_elevation_tif_by_bbox</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.util_lib.check_abstract_scenario_inputs</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_abstract_inputs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._c_abstract_scenario._abstractScenario</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractScenario</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_matchup_table</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._c_abstract_scenario.rt_demand_generation</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_turn_demand</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._d_concrete_scenario._concreteScenario</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConcreteScenario</span>
 
 <span class="c1"># simulation</span>
-<span class="kn">from</span> <span class="nn">realtwin.func_lib._e_simulation._generate_simulation</span> <span class="kn">import</span> <span class="n">SimPrep</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._e_simulation._generate_simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimPrep</span>
 
 <span class="c1"># calibration</span>
-<span class="kn">from</span> <span class="nn">realtwin.func_lib._f_calibration.calibration_sumo</span> <span class="kn">import</span> <span class="n">cali_sumo</span>
-<span class="kn">from</span> <span class="nn">realtwin.func_lib._f_calibration.calibration_sumo_</span> <span class="kn">import</span> <span class="n">cali_sumo</span> <span class="k">as</span> <span class="n">cali_sumo_</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.calibration_sumo</span><span class="w"> </span><span class="kn">import</span> <span class="n">cali_sumo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.calibration_sumo_</span><span class="w"> </span><span class="kn">import</span> <span class="n">cali_sumo</span> <span class="k">as</span> <span class="n">cali_sumo_</span>
 
 
 <div class="viewcode-block" id="RealTwin">
 <a class="viewcode-back" href="../../pages/api/realtwin.RealTwin.html#realtwin.RealTwin">[docs]</a>
-<span class="k">class</span> <span class="nc">RealTwin</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RealTwin</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group that</span>
 <span class="sd">    enables the simulation of twin-structured cities.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="RealTwin.__init__">
 <a class="viewcode-back" href="../../pages/api/realtwin.RealTwin.html#realtwin.RealTwin.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the REALTWIN object.</span>
 
 <span class="sd">        Args:</span>
@@ -138,7 +155,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">input_config_file</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
                 <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :Input configuration file is not provided.&quot;</span>
-                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :RealTwin will use default network for demonstration in the future.&quot;</span><span class="p">)</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :RealTwin requires a configuration file to be provided.&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span> <span class="o">=</span> <span class="n">load_input_config</span><span class="p">(</span><span class="n">input_config_file</span><span class="p">)</span>
 
@@ -152,7 +169,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;verbose&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;verbose&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="kc">False</span></div>
 
 
-    <span class="k">def</span> <span class="nf">env_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">env_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                   <span class="o">*</span><span class="p">,</span>
                   <span class="n">sel_sim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                   <span class="n">sel_dir</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -242,30 +259,117 @@
 
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">generate_abstract_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">incl_elevation_tif</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the abstract scenario: create OpenDrive files</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incl_elevation_tif</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Generate user inputs, such as MatchUp table, Control and Traffic data</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            incl_elevation_tif (bool): Whether to include elevation tif data. Default is False.</span>
+<span class="sd">                If True, will download the elevation map from network BBOX.</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">            - How to create configuration file</span>
+<span class="sd">            - How to create/update MatchUp table</span>
+<span class="sd">            - How to create/prepare Control and Traffic data</span>
+<span class="sd">            - How to download elevation tif data from network BBOX</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Check / Create input file and folder for user:&quot;</span><span class="p">)</span>
+        <span class="n">path_input</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">)))</span>
+
+        <span class="c1"># check if Control folder exists in the input directory</span>
+        <span class="n">path_control</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path_input</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Control&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_control</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path_control</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Control folder already exists: </span><span class="si">{</span><span class="n">path_control</span><span class="si">}</span><span class="s2">.&quot;</span>
+                  <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :NOTICE: Please include Synchro UTDF file (signal) inside Control folder&quot;</span>
+                  <span class="s2">&quot; and add the control file name to the input configuration file.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                  <span class="p">)</span>
+
+        <span class="c1"># check if Traffic folder exists in the input directory</span>
+        <span class="n">path_traffic</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path_input</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Traffic&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_traffic</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path_traffic</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Traffic folder already exists: </span><span class="si">{</span><span class="n">path_traffic</span><span class="si">}</span><span class="s2">.&quot;</span>
+                  <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :NOTICE: Please include turn movement file for each intersection inside Traffic folder&quot;</span>
+                  <span class="s2">&quot; and add the file names to the MatchupTable.xlsx &quot;</span>
+                  <span class="s2">&quot;(You will notice the generated MatchupTable.xlsx inside your input folder).&quot;</span>
+                  <span class="s2">&quot; For how to fill the MatchupTable.xlsx, please refer to the documentation: </span><span class="se">\n</span><span class="s2">&quot;</span>
+                  <span class="p">)</span>
+
         <span class="c1"># check whether the elevation tif data is provided</span>
         <span class="n">path_elev</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span>
             <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ElevationMap&quot;</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_elev</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Elevation map is not provided. we will download from network BBOX.&quot;</span><span class="p">)</span>
+            <span class="c1"># print(&quot;  :Elevation map is not provided. we will download from network BBOX.&quot;)</span>
             <span class="k">if</span> <span class="n">incl_elevation_tif</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Downloading elevation map from network BBOX.&quot;</span><span class="p">)</span>
                 <span class="c1"># download elevation map from network bbox</span>
                 <span class="n">bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Net_BBox&quot;</span><span class="p">)</span>
                 <span class="n">output_file</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;elevation_map.tif&quot;</span><span class="p">)</span>
-                <span class="n">download_elevation_tif_by</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+                <span class="n">download_elevation_tif_by_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
 
                 <span class="c1"># update tif file in the input configuration</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)[</span><span class="s2">&quot;ElevationMap&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;elevation_map.tif&quot;</span>
 
-        <span class="c1"># 1. Generate the abstract scenario based on the input data</span>
+        <span class="c1"># generate abstract scenario</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span> <span class="o">=</span> <span class="n">AbstractScenario</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="o">.</span><span class="n">update_AbstractScenario_from_input</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="o">.</span><span class="n">create_open_drive_network</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :INFO: OpenDrive network is generated.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># create matchup table for user</span>
+        <span class="n">path_sumo_net</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;output/OpenDrive&quot;</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;Network&quot;</span><span class="p">][</span><span class="s2">&quot;NetworkName&quot;</span><span class="p">]</span><span class="si">}</span><span class="s2">.net.xml&quot;</span><span class="p">)</span>
+
+        <span class="n">path_matchup</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;MatchupTable.xlsx&quot;</span><span class="p">)</span>
+
+        <span class="c1"># check if sumo net file exists</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_sumo_net</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Error: SUMO net file does not exist: </span><span class="si">{</span><span class="n">path_sumo_net</span><span class="si">}</span><span class="s2">,&quot;</span>
+                            <span class="s2">&quot;please check input configuration file and re-run the script.&quot;</span>
+                            <span class="s2">&quot;For details please refer to the documentation: &quot;</span><span class="p">)</span>
+
+        <span class="c1"># check if matchup table exists</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_matchup</span><span class="p">):</span>
+            <span class="n">generate_matchup_table</span><span class="p">(</span><span class="n">path_sumo_net</span><span class="p">,</span> <span class="n">path_matchup</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :NOTE: Matchup table is generated and saved to </span><span class="si">{</span><span class="n">path_matchup</span><span class="si">}</span><span class="s2">.&quot;</span>
+                  <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :NOTICE: Please update the Matchup table from input folder&quot;</span>
+                  <span class="s2">&quot; and then run generate_abstract_scenario().&quot;</span>
+                  <span class="s2">&quot; For details please refer to the documentation: </span><span class="se">\n</span><span class="s2">&quot;</span>
+                  <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :NOTE: Matchup table already exists: </span><span class="si">{</span><span class="n">path_matchup</span><span class="si">}</span><span class="s2">.&quot;</span>
+                  <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :NOTICE: Please make sure you have updated the Matchup table&quot;</span>
+                  <span class="s2">&quot; and then run generate_abstract_scenario().&quot;</span>
+                  <span class="s2">&quot; For details please refer to the documentation: </span><span class="se">\n</span><span class="s2">&quot;</span>
+                  <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_abstract_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the abstract scenario: create OpenDrive files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># check abstract scenario inputs</span>
+        <span class="n">check_abstract_inputs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span>
+
+        <span class="c1"># 1. Generate the abstract scenario based on the input data</span>
+        <span class="c1"># self.abstract_scenario = AbstractScenario(self.input_config)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;abstract_scenario&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;  :Error: Abstract Scenario is not generated yet. &quot;</span>
+                            <span class="s2">&quot;Please run generate_inputs() first.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># update traffic and signal</span>
+        <span class="n">path_matchup</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;MatchupTable.xlsx&quot;</span><span class="p">)</span>
+        <span class="n">control_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;Control&quot;</span><span class="p">)</span>
+        <span class="n">traffic_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;Traffic&quot;</span><span class="p">)</span>
+        <span class="n">df_volume</span><span class="p">,</span> <span class="n">df_vol_lookup</span> <span class="o">=</span> <span class="n">generate_turn_demand</span><span class="p">(</span><span class="n">path_matchup_table</span><span class="o">=</span><span class="n">path_matchup</span><span class="p">,</span>
+                                                        <span class="n">signal_dir</span><span class="o">=</span><span class="n">control_dir</span><span class="p">,</span>
+                                                        <span class="n">traffic_dir</span><span class="o">=</span><span class="n">traffic_dir</span><span class="p">,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="o">.</span><span class="n">Traffic</span><span class="o">.</span><span class="n">VolumeLookupTable</span> <span class="o">=</span> <span class="n">df_vol_lookup</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="o">.</span><span class="n">update_AbstractScenario_from_input</span><span class="p">(</span><span class="n">df_volume</span><span class="o">=</span><span class="n">df_volume</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Abstract Scenario successfully generated.&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">generate_concrete_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_concrete_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the concrete scenario: generate unified scenario from abstract scenario</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -280,7 +384,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">concrete_scenario</span><span class="o">.</span><span class="n">get_unified_scenario</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Concrete Scenario successfully generated.&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">prepare_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                            <span class="n">start_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span>
                            <span class="n">end_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">10</span><span class="p">,</span>
                            <span class="n">seed</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">812</span><span class="p">,</span>
@@ -334,7 +438,7 @@
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">simulator</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> simulation successfully Prepared.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">calibrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sel_algo</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calibrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sel_algo</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.</span>
 
 <span class="sd">        Args:</span>
@@ -375,14 +479,14 @@
 
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Post-process the simulation results.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># 1. Post-process the simulation results</span>
         <span class="c1"># 2. Save the post-processed results to the output directory</span>
 
-    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualize the simulation results.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 

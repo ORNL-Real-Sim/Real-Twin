@@ -10,8 +10,7 @@ import urllib.request
 
 
 def download_single_file_from_web(url: str, dest_filename: str, chunk_size=1024) -> bool:
-    """
-    Downloads a large file from a URL in chunks and saves it to the specified destination.
+    """Downloads a large file from a URL in chunks and saves it to the specified destination.
 
     Args:
         url (str): The URL of the file to download.

@@ -22,7 +22,7 @@ from realtwin.func_lib._a_install_simulator.inst_sumo import install_sumo
 from realtwin.func_lib._b_load_inputs.loader_config import load_input_config
 
 # scenario generation
-from realtwin.util_lib.download_elevation_tif import download_elevation_tif_by
+from realtwin.util_lib.download_elevation_tif import download_elevation_tif_by_bbox
 from realtwin.util_lib.check_abstract_scenario_inputs import check_abstract_inputs
 from realtwin.func_lib._c_abstract_scenario._abstractScenario import AbstractScenario
 from realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation import generate_matchup_table
@@ -206,7 +206,7 @@ class RealTwin:
                 # download elevation map from network bbox
                 bbox = self.input_config.get("Network").get("Net_BBox")
                 output_file = pf.path2linux(Path(self.input_config.get("input_dir")) / "elevation_map.tif")
-                download_elevation_tif_by(bbox, output_file)
+                download_elevation_tif_by_bbox(bbox, output_file)
 
                 # update tif file in the input configuration
                 self.input_config.get("Network")["ElevationMap"] = "elevation_map.tif"

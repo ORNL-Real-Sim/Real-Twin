@@ -13,10 +13,10 @@
 """control of module imports for the RealTwin package."""
 
 from .create_venv import venv_create, venv_delete
-from .download_elevation_tif import download_elevation_tif_by
+from .download_elevation_tif import download_elevation_tif_by_bbox
 from .download_file_from_web import download_single_file_from_web
 from .find_exe_from_PATH import find_executable_from_PATH_on_win
-from .create_config import create_configuration_file
+from .create_config import prepare_config_file
 
 
 __all__ = [
@@ -25,9 +25,9 @@ __all__ = [
     'venv_create',
     'venv_delete',
 
-    'download_elevation_tif_by',
+    'download_elevation_tif_by_bbox',
     'download_single_file_from_web',
     'find_executable_from_PATH_on_win',
 
-    'create_configuration_file',
+    'prepare_config_file',
 ]

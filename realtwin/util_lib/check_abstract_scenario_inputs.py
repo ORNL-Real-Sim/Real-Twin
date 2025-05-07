@@ -12,6 +12,8 @@ import pyufunc as pf
 
 
 def check_abstract_inputs(input_dir: str) -> bool:
+    """ Check the input directory for the abstract scenario."""
+
     # check If Control folder is empty
     path_control = pf.path2linux(Path(input_dir) / "Control")
     if not os.path.exists(path_control):

@@ -1,0 +1,579 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin Preparation &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/realtwin_css.css?v=836a7079" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="realtwin Scenario Generation" href="realtwin_generation.html" />
+    <link rel="prev" title="realtwin Supported Simulator" href="realtwin_simulator.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            realtwin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">About Real-Twin</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">realtwin Preparation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-prepare-python-environment-optional">How To Prepare Python Environment (<span class="blue">Optional</span>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-virtual-environment">Create Virtual Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#activate-virtual-environment">Activate Virtual Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#delete-virtual-environment">Delete Virtual Environment</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-prepare-elevation-map-in-tiff-format-optional">How To Prepare Elevation Map In TIFF Format (<span class="blue">Optional</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-prepare-update-configuration-file-required">How To Prepare / Update Configuration File (<span class="blue">Required</span>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#prepare-from-realtwin-package">Prepare From <span class="incremental">realtwin</span> Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prepare-from-github">Prepare From GitHub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#update-configuration-file">Update Configuration File</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-create-update-matchuptable-required">How To Create / Update MatchupTable (<span class="blue">Required</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-prepare-control-signal-file-required">How To Prepare Control (Signal) File (<span class="blue">Required</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-prepare-traffic-demand-file-required">How To Prepare Traffic Demand File (<span class="blue">Required</span>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#from-gradsmart-demands">From GradSmart Demands</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#from-synchro-utdf-demands">From Synchro UTDF Demands</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html#citation-request">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">realtwin Preparation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/pages/realtwin_prepare.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <blockquote>
+<div></div></blockquote>
+<section id="realtwin-preparation">
+<h1>realtwin Preparation<a class="headerlink" href="#realtwin-preparation" title="Link to this heading"></a></h1>
+<nav class="contents local" id="there-are-several-steps-to-prepare-before-the-use-of-real-twin-package-this-includes">
+<p class="topic-title">There are several steps to prepare before the use of Real-Twin package. This includes:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#how-to-prepare-python-environment-optional" id="id1">How To Prepare Python Environment (<span class="blue">Optional</span>)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#create-virtual-environment" id="id2">Create Virtual Environment</a></p></li>
+<li><p><a class="reference internal" href="#activate-virtual-environment" id="id3">Activate Virtual Environment</a></p></li>
+<li><p><a class="reference internal" href="#delete-virtual-environment" id="id4">Delete Virtual Environment</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#how-to-prepare-elevation-map-in-tiff-format-optional" id="id5">How To Prepare Elevation Map In TIFF Format (<span class="blue">Optional</span>)</a></p></li>
+<li><p><a class="reference internal" href="#how-to-prepare-update-configuration-file-required" id="id6">How To Prepare / Update Configuration File (<span class="blue">Required</span>)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#prepare-from-realtwin-package" id="id7">Prepare From <span class="incremental">realtwin</span> Package</a></p></li>
+<li><p><a class="reference internal" href="#prepare-from-github" id="id8">Prepare From GitHub</a></p></li>
+<li><p><a class="reference internal" href="#update-configuration-file" id="id9">Update Configuration File</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#how-to-create-update-matchuptable-required" id="id10">How To Create / Update MatchupTable (<span class="blue">Required</span>)</a></p></li>
+<li><p><a class="reference internal" href="#how-to-prepare-control-signal-file-required" id="id11">How To Prepare Control (Signal) File (<span class="blue">Required</span>)</a></p></li>
+<li><p><a class="reference internal" href="#how-to-prepare-traffic-demand-file-required" id="id12">How To Prepare Traffic Demand File (<span class="blue">Required</span>)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#from-gradsmart-demands" id="id13">From GradSmart Demands</a></p></li>
+<li><p><a class="reference internal" href="#from-synchro-utdf-demands" id="id14">From Synchro UTDF Demands</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="how-to-prepare-python-environment-optional">
+<h2>How To Prepare Python Environment (<span class="blue">Optional</span>)<a class="headerlink" href="#how-to-prepare-python-environment-optional" title="Link to this heading"></a></h2>
+<p>If you want to run the realtwin in an isolated virtual environment that not affecting your existing working environment, please follow the following steps.</p>
+<section id="create-virtual-environment">
+<h3>Create Virtual Environment<a class="headerlink" href="#create-virtual-environment" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>There are several ways to manager a Python virtual environment.</dt><dd><ul class="simple">
+<li><p>Using <a class="reference external" href="https://docs.python.org/3/library/venv.html">venv</a> module in Python</p></li>
+<li><p>Using <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html">conda manage environments</a> package manager (<a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">conda install</a>)</p></li>
+<li><p>Using <a class="reference external" href="https://virtualenv.pypa.io/en/latest/user_guide.html">virtualenv</a> package</p></li>
+</ul>
+</dd>
+</dl>
+<p>realtwin package provides a simple way to create a virtual environment using the <span class="incremental">venv</span> module in Python.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="c1"># venv_name: the name of the virtual environment. Default to be &quot;venv_rt&quot;</span>
+<span class="linenos">4</span><span class="c1"># venv_dir: the directory to install virtual env. Default to be current folder</span>
+<span class="hll"><span class="linenos">5</span><span class="n">rt</span><span class="o">.</span><span class="n">venv_create</span><span class="p">(</span><span class="n">venv_name</span><span class="o">=</span><span class="s2">&quot;venv_rt&quot;</span><span class="p">,</span> <span class="n">venv_dir</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="activate-virtual-environment">
+<h3>Activate Virtual Environment<a class="headerlink" href="#activate-virtual-environment" title="Link to this heading"></a></h3>
+<p>In order to activate your venv, please be aware the different IDE (<strong>integrated development environment</strong>) may need different actions.</p>
+<dl class="simple">
+<dt>For cmd:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://python.land/virtual-environments/virtualenv">https://python.land/virtual-environments/virtualenv</a></p></li>
+</ul>
+</dd>
+<dt>For VS Code:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://code.visualstudio.com/docs/python/environments">https://code.visualstudio.com/docs/python/environments</a></p></li>
+</ul>
+</dd>
+<dt>For PyCharm:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://www.jetbrains.com/help/pycharm/configuring-python-interpreter.html">https://www.jetbrains.com/help/pycharm/configuring-python-interpreter.html</a></p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="delete-virtual-environment">
+<h3>Delete Virtual Environment<a class="headerlink" href="#delete-virtual-environment" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>There are several ways to manager a Python virtual environment.</dt><dd><ul class="simple">
+<li><p>Using <a class="reference external" href="https://docs.python.org/3/library/venv.html">venv</a> module in Python</p></li>
+<li><p>Using <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html">conda manage environments</a> package manager (<a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">conda install</a>)</p></li>
+<li><p>Using <a class="reference external" href="https://virtualenv.pypa.io/en/latest/user_guide.html">virtualenv</a> package</p></li>
+</ul>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="c1"># venv_name: the name of the virtual environment. Default to be &quot;venv_rt&quot;</span>
+<span class="linenos">4</span><span class="c1"># venv_dir: the directory to install virtual env. Default to be current folder</span>
+<span class="hll"><span class="linenos">5</span><span class="n">rt</span><span class="o">.</span><span class="n">venv_delete</span><span class="p">(</span><span class="n">venv_name</span><span class="o">=</span><span class="s2">&quot;venv_rt&quot;</span><span class="p">,</span> <span class="n">venv_dir</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+<section id="how-to-prepare-elevation-map-in-tiff-format-optional">
+<span id="how-to-prepare-elevation-map-in-tiff-format"></span><h2>How To Prepare Elevation Map In TIFF Format (<span class="blue">Optional</span>)<a class="headerlink" href="#how-to-prepare-elevation-map-in-tiff-format-optional" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>The elevation map is used to generate the elevation data for the simulation, which can perform real-world scenario generation. If no elevation map is provided, the simulation will consider the network as flat.</p></li>
+<li><p>You need to add the elevation map to the configuration file. For details on how to add the elevation map to the configuration file, please refer to the section: <a class="reference internal" href="#update-configuration-file"><span class="std std-ref">Update Configuration File</span></a>.</p></li>
+</ul>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="c1"># prepare the elevation map</span>
+<span class="linenos">4</span><span class="c1"># This will create a sample elevation map in the current working directory: `elevation_map.tif`</span>
+<span class="linenos">5</span>
+<span class="hll"><span class="linenos">6</span><span class="n">bbox</span> <span class="o">=</span> <span class="s2">&quot;the bounding box of the area you want to download the elevation data for, in the format: (lon_min, lat_min, lon_max, lat_max)&quot;</span>
+</span><span class="hll"><span class="linenos">7</span><span class="n">output_file</span> <span class="o">=</span> <span class="s2">&quot;elevation_map.tif&quot;</span>  <span class="c1"># the name/path of the output file</span>
+</span><span class="hll"><span class="linenos">8</span><span class="n">rt</span><span class="o">.</span><span class="n">download_elevation_tif_by_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="how-to-prepare-update-configuration-file-required">
+<h2>How To Prepare / Update Configuration File (<span class="blue">Required</span>)<a class="headerlink" href="#how-to-prepare-update-configuration-file-required" title="Link to this heading"></a></h2>
+<p>The configuration file is a <a class="reference external" href="https://en.wikipedia.org/wiki/YAML">YAML</a> file that contains all the necessary parameters for the realtwin package to run.</p>
+<section id="prepare-from-realtwin-package">
+<h3>Prepare From <span class="incremental">realtwin</span> Package<a class="headerlink" href="#prepare-from-realtwin-package" title="Link to this heading"></a></h3>
+<p>User can use the sample configuration file provided in the <span class="incremental">realtwin</span> package.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="c1"># prepare the configuration file</span>
+<span class="linenos">4</span><span class="c1"># This will create a sample configuration file in the current working directory: `realtwin_config.yaml`</span>
+<span class="hll"><span class="linenos">5</span><span class="n">rt</span><span class="o">.</span><span class="n">prepare_config_file</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<p>User can also specify the output directory for the configuration file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="c1"># This will create a sample configuration file in the specified directory: `realtwin_config.yaml`</span>
+<span class="hll"><span class="linenos">4</span><span class="n">output_dir</span> <span class="o">=</span> <span class="s2">&quot;Directory/where/you/want/to/save/the/config/file&quot;</span>
+</span><span class="hll"><span class="linenos">5</span><span class="n">rt</span><span class="o">.</span><span class="n">prepare_config_file</span><span class="p">(</span><span class="n">dest_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>If the configuration file generated, user can modify the file according to their needs. For details on how to modify the configuration file, please refer to the section: <a class="reference internal" href="#update-configuration-file"><span class="std std-ref">Update Configuration File</span></a>.</p>
+</section>
+<section id="prepare-from-github">
+<h3>Prepare From GitHub<a class="headerlink" href="#prepare-from-github" title="Link to this heading"></a></h3>
+<p>Download the sample configuration file from the <a class="reference external" href="https://github.com/ORNL-Real-Sim/Real-Twin-Dev/blob/main/public_configs.yaml">Real-Twin GitHub Config</a> and modify it according to your needs. For details on how to modify the configuration file, please refer to the section: <a class="reference internal" href="#update-configuration-file"><span class="std std-ref">Update Configuration File</span></a>.</p>
+</section>
+<section id="update-configuration-file">
+<h3>Update Configuration File<a class="headerlink" href="#update-configuration-file" title="Link to this heading"></a></h3>
+<p>There are several parameters in the configuration file that need to be updated according to your needs. The following is a list of parameters that need to be updated.</p>
+<ul>
+<li><p><strong>demo_data</strong>:</p>
+<p>whether to use demo data or not. Default is false. It could be boolean or string type.</p>
+<ul class="simple">
+<li><p><span class="incremental">false</span>: use data from the configuration file</p></li>
+<li><p><span class="incremental">true</span>: use default demo data from the package (chattanooga)</p></li>
+<li><p><span class="incremental">chattanooga</span>: use chattanooga data from the package, which is the default value, optional data: chattanooga, nashville, knoxville</p></li>
+</ul>
+</li>
+<li><p><strong>input_dir</strong>:</p>
+<p>the directory where the input files are located. This is a <strong>required parameter</strong>.</p>
+</li>
+<li><p><strong>output_dir</strong>:</p>
+<p>the directory where the output files are located. This is an optional parameter. If not specified, the output files will be saved in the input directory.</p>
+</li>
+<li><p><strong>Network</strong>:</p>
+<ul>
+<li><p><span class="incremental">NetworkName</span>:</p>
+<p>the name of the network. This is a <strong>required parameter</strong>. The name should not have space between words.</p>
+</li>
+<li><p><span class="incremental">NetworkVertices</span>:</p>
+<p>the vertices of the network in the format: (lon_min, lat_min), (lon_max, lat_max). This is a <strong>required parameter</strong>.</p>
+</li>
+<li><p><span class="incremental">Net_BBox</span>:</p>
+<p>the bounding box of the network. This is an optional parameter. If not specified, the bounding box will be generated automatically based on the network vertices.</p>
+</li>
+<li><p><span class="incremental">ElevationMap</span>:</p>
+<p>the elevation map in TIFF format. This is an optional parameter. User can prepare the elevation map using <a class="reference internal" href="#how-to-prepare-elevation-map-in-tiff-format"><span class="std std-ref">How To Prepare Elevation Map In TIFF Format (Optional)</span></a> to generate the elevation map, and save the elevation map in the input_dir directory. If not specified, the simulation will consider the network as flat.</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Traffic</strong>:</p>
+<ul>
+<li><p><span class="incremental">Volume</span>:</p>
+<p>the traffic volume data file. This is a <strong>required parameter</strong>. The file should be in CSV format.</p>
+</li>
+<li><p><span class="incremental">TurningRatio</span>:</p>
+<p>the turning ratio data file. This is a <strong>required parameter</strong>. The file should be in CSV format.</p>
+</li>
+<li><p><span class="incremental">GridSmart_lookup</span>:</p>
+<p>the GridSmart lookup table. This is a <strong>required parameter</strong>. The file should be in CSV format.</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Control</strong>:</p>
+<ul>
+<li><p><span class="incremental">Signal</span>:</p>
+<p>the signal data file. This is a <strong>required parameter</strong>. The file should be in CSV format.</p>
+</li>
+<li><p><span class="incremental">Synchro_lookup</span>:</p>
+<p>the Synchro lookup table. This is a <strong>required parameter</strong>. The file should be in CSV format.</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Calibration</strong>:</p>
+<ul>
+<li><p><span class="incremental">scenario_config</span>:</p>
+<p>the overall configuration for the calibration.</p>
+<ul>
+<li><p><span class="incremental">sim_start_time</span>:</p>
+<p>the start time of the simulation in seconds. This is a <strong>required parameter</strong>. Default is 28800 (8:00 AM).</p>
+</li>
+<li><p><span class="incremental">sim_end_time</span>:</p>
+<p>the end time of the simulation in seconds. This is a <strong>required parameter</strong>. Default is 32400 (9:00 AM).</p>
+</li>
+<li><p><span class="incremental">calibration_target</span>:</p>
+<p>the target for the calibration. This is a <strong>required parameter</strong>. The target can be GEH or GEHPercent.</p>
+<ul>
+<li><p><span class="incremental">GEH</span>:</p>
+<p>the GEH statistic. This is a <strong>required parameter</strong>. Default is 5.</p>
+</li>
+<li><p><span class="incremental">GEHPercent</span>:</p>
+<p>the accepted match. This is a <strong>required parameter</strong>. Default is 0.85.</p>
+</li>
+</ul>
+</li>
+<li><p><span class="incremental">calibration_interval</span>:</p>
+<p>the calibration interval in minutes. This is a <strong>required parameter</strong>. Default is 60.</p>
+</li>
+<li><p><span class="incremental">demand_interval</span>:</p>
+<p>the demand interval in minutes. This is a <strong>required parameter</strong>. Default is 15.</p>
+</li>
+<li><p><span class="incremental">path_turn</span>:</p>
+<p>the path to the turning data file. This is a <strong>required parameter</strong>.</p>
+</li>
+<li><p><span class="incremental">path_inflow</span>:</p>
+<p>the path to the inflow data file. This is a <strong>required parameter</strong>.</p>
+</li>
+<li><p><span class="incremental">path_summary</span>:</p>
+<p>the path to the summary data file. This is a <strong>required parameter</strong>.</p>
+</li>
+<li><p><span class="incremental">path_updated_signal</span>:</p>
+<p>the path to the updated signal data file. This is a <strong>required parameter</strong>.</p>
+</li>
+<li><p><span class="incremental">path_Edge_add</span>:</p>
+<p>the path to the Edge add data file. This is a <strong>required parameter</strong>.</p>
+</li>
+<li><p><span class="incremental">path_EdgeData</span>:</p>
+<p>the path to the Edge data file. This is a <strong>required parameter</strong>.</p>
+</li>
+</ul>
+</li>
+<li><p><strong>turn_inflow</strong>:</p>
+<ul>
+<li><p>initial_params:</p>
+<p>the initial parameters for the turning inflow calibration. This is a <strong>required parameter</strong>.</p>
+</li>
+<li><p>params_ranges:</p>
+<p>the parameter ranges for the turning inflow calibration. This is a <strong>required parameter</strong>.</p>
+</li>
+<li><p>max_epoch:</p>
+<p>the maximum number of iterations. This is a <strong>required parameter</strong>. Default is 1000.</p>
+</li>
+<li><p>max_fe:</p>
+<p>the maximum number of function evaluations. This is a <strong>required parameter</strong>. Default is 10000.</p>
+</li>
+<li><p>max_time:</p>
+<p>the maximum time in seconds. This is a <strong>required parameter</strong>. Default is 3600.</p>
+</li>
+<li><p>max_early_stop:</p>
+<p>the maximum number of early stop iterations. This is a <strong>required parameter</strong>. Default is 20.</p>
+</li>
+</ul>
+</li>
+<li><p><strong>behavior</strong>:</p>
+<ul class="simple">
+<li><p>EB_tt:</p></li>
+</ul>
+<blockquote>
+<div><p>the EB travel time in minutes. This is a <strong>required parameter</strong>. Default is 240.</p>
+</div></blockquote>
+<ul>
+<li><p>WB_tt:</p>
+<p>the WB travel time in minutes. This is a <strong>required parameter</strong>. Default is 180.</p>
+</li>
+<li><p>EB_edge_list:</p>
+<p>the EB edge list. This is a <strong>required parameter</strong>.</p>
+</li>
+<li><p>WB_edge_list:</p>
+<p>the WB edge list. This is a <strong>required parameter</strong>.</p>
+</li>
+<li><p>initial_params:</p>
+<p>the initial parameters for the behavior calibration. This is a <strong>required parameter</strong>.</p>
+<ul class="simple">
+<li><p>min_gap: the minimum gap between vehicles in meters. This is a <strong>required parameter</strong>. Default is 2.5.</p></li>
+<li><p>acceleration: the maximum acceleration in m/s^2. This is a <strong>required parameter</strong>. Default is 2.6.</p></li>
+<li><p>deceleration: the maximum deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is 4.5.</p></li>
+<li><p>sigma: the driver imperfection. This is a <strong>required parameter</strong>. Default is 0.5.</p></li>
+<li><p>tau: the desired headway. This is a <strong>required parameter</strong>. Default is 1.00.</p></li>
+<li><p>emergencyDecel: the emergency deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is 9.0</p></li>
+</ul>
+</li>
+<li><p>params_ranges: the parameter ranges for the behavior calibration. This is a <strong>required parameter</strong>.</p>
+<ul class="simple">
+<li><p>min_gap: the minimum gap between vehicles in meters. This is a <strong>required parameter</strong>. Default is [1.0, 3.0].</p></li>
+<li><p>acceleration: the maximum acceleration in m/s^2. This is a <strong>required parameter</strong>. Default is [2.5, 3.0].</p></li>
+<li><p>deceleration: the maximum deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is [4.0, 5.3].</p></li>
+<li><p>sigma: the driver imperfection. This is a <strong>required parameter</strong>. Default is [0.0, 1.0].</p></li>
+<li><p>tau: the desired headway. This is a <strong>required parameter</strong>. Default is [0.25, 1.25].</p></li>
+<li><p>emergencyDecel: the emergency deceleration in m/s^2. This is a <strong>required parameter</strong>. Default is [5.0, 9.3].</p></li>
+</ul>
+</li>
+<li><p>max_epoch:</p>
+<p>the maximum number of iterations. This is a <strong>required parameter</strong>. Default is 1000.</p>
+</li>
+<li><p>max_fe:</p>
+<p>the maximum number of function evaluations. This is a <strong>required parameter</strong>. Default is 10000.</p>
+</li>
+<li><p>max_time:</p>
+<p>the maximum time in seconds. This is a <strong>required parameter</strong>. Default is 3600.</p>
+</li>
+<li><p>max_early_stop:</p>
+<p>the maximum number of early stop iterations. This is a <strong>required parameter</strong>. Default is 20.</p>
+</li>
+</ul>
+</li>
+<li><p><strong>ga_config</strong>: the configuration for the genetic algorithm.</p>
+<ul class="simple">
+<li><p>num_generations: the number of generations. This is a <strong>required parameter</strong>. Default is 10.</p></li>
+<li><p>num_variables: the number of variables. This is a <strong>required parameter</strong>. Default is 16.</p></li>
+<li><p>num_turning_ratio: the number of turning ratios. This is a <strong>required parameter</strong>. Default is 12.</p></li>
+<li><p>ubc: the upper bound of inflow. This is a <strong>required parameter</strong>. Default is 200.</p></li>
+<li><p>population_size: the population size. This is a <strong>required parameter</strong>. Default is 2.</p></li>
+<li><p>crossover_rate: the crossover rate. This is a <strong>required parameter</strong>. Default is 0.75.</p></li>
+<li><p>mutation_rate: the mutation rate. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
+<li><p>elitism_size: the number of elite individuals to carry over. This is a <strong>required parameter</strong>. Default is 1.</p></li>
+<li><p>best_fitness_value: the best fitness value. This is a <strong>required parameter</strong>. Default is 999999.</p></li>
+<li><p>max_no_improvement: the maximum number of early stop iterations. This is a <strong>required parameter</strong>. Default is 5.</p></li>
+<li><p>epoch: the number of generations. This is a <strong>required parameter</strong>. Default is 1000.</p></li>
+<li><p>pop_size: the population size. This is a <strong>required parameter</strong>. Default is 30.</p></li>
+<li><p>pc: the crossover probability. This is a <strong>required parameter</strong>. Default is 0.75.</p></li>
+<li><p>pm: the mutation probability. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
+<li><p>selection: the selection method. This is a <strong>required parameter</strong>. Default is roulette.</p></li>
+<li><p>key_way: the key way for tournament selection. This is a <strong>required parameter</strong>. Default is 0.2.</p></li>
+<li><p>crossover: the crossover method. This is a <strong>required parameter</strong>. Default is uniform.</p></li>
+<li><p>mutation: the mutation method. This is a <strong>required parameter</strong>. Default is swap.</p></li>
+<li><p>elite_best: the percentage of the best in elite group. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
+<li><p>elite_worst: the percentage of the worst in elite group. This is a <strong>required parameter</strong>. Default is 0.3.</p></li>
+<li><p>model_selection: the model selection method. This is a <strong>required parameter</strong>. Default is BaseGA. Optional values: BaseGA, EliteSingleGA, EliteMultiGA, MultiGA, SingleGA.</p></li>
+</ul>
+</li>
+<li><p><strong>sa_config</strong>: the configuration for the simulated annealing.</p>
+<ul class="simple">
+<li><p>num_variables: the number of variables. This is a <strong>required parameter</strong>. Default is 16.</p></li>
+<li><p>num_turning_ratio: the number of turning ratios. This is a <strong>required parameter</strong>. Default is 12.</p></li>
+<li><p>initial_temperature: the initial temperature. This is a <strong>required parameter</strong>. Default is 100.</p></li>
+<li><p>ubc: the upper bound of inflow. This is a <strong>required parameter</strong>. Default is 200.</p></li>
+<li><p>cost_difference: the cost difference. This is a <strong>required parameter</strong>. Default is 2.</p></li>
+<li><p>accept_prob: the acceptance probability. This is a <strong>required parameter</strong>. Default is 0.5.</p></li>
+<li><p>stopping_temperature: the stopping temperature. This is a <strong>required parameter</strong>. Default is 0.001.</p></li>
+<li><p>epoch: the number of generations. This is a <strong>required parameter</strong>. Default is 1000.</p></li>
+<li><p>temp_init: the initial temperature. This is a <strong>required parameter</strong>. Default is 100.</p></li>
+<li><p>cooling_rate: the cooling rate. This is a <strong>required parameter</strong>. Default is 0.891.</p></li>
+<li><p>scale: the scale for the temperature. This is a <strong>required parameter</strong>. Default is 0.1.</p></li>
+<li><p>model_selection: the model selection method. This is a <strong>required parameter</strong>. Default is OriginalSA. Optional values: OriginalSA, GaussianSA, SwarmSA.</p></li>
+</ul>
+</li>
+<li><p><strong>ts_config</strong>: the configuration for the tabu search.</p>
+<ul class="simple">
+<li><p>iterations: the number of iterations. This is a <strong>required parameter</strong>. Default is 3.</p></li>
+<li><p>tabu_size: the size of the tabu list. This is a <strong>required parameter</strong>. Default is 120.</p></li>
+<li><p>neighborhood_size: the size of the neighbourhood for generating candidate solutions. This is a <strong>required parameter</strong>. Default is 32.</p></li>
+<li><p>move_range: the initial move range. This is a <strong>required parameter</strong>. Default is 0.5.</p></li>
+<li><p>num_turning_ratio: the number of turning ratios. This is a <strong>required parameter</strong>. Default is 12.</p></li>
+<li><p>max_no_improvement_local: the maximum number of early stop iterations for local search. This is a <strong>required parameter</strong>. Default is 5.</p></li>
+<li><p>max_no_improvement_global: the maximum number of early stop iterations for global search. This is a <strong>required parameter</strong>. Default is 30.</p></li>
+<li><p>lower_bound: the lower bound for inflow counts. This is a <strong>required parameter</strong>. Default is 0.</p></li>
+<li><p>upper_bound: the upper bound for inflow counts. This is a <strong>required parameter</strong>. Default is 1.</p></li>
+<li><p>lbc: the lower bound for inflow counts. This is a <strong>required parameter</strong>. Default is 0.</p></li>
+<li><p>ubc: the upper bound for inflow counts. This is a <strong>required parameter</strong>. Default is 200.</p></li>
+<li><p>epoch: the number of generations. This is a <strong>required parameter</strong>. Default is 1000.</p></li>
+<li><p>tabu_size: the size of the tabu list. This is a <strong>required parameter</strong>. Default is 10.</p></li>
+<li><p>neighbour_size: the size of the neighbourhood for generating candidate solutions. This is a <strong>required parameter</strong>. Default is 10.</p></li>
+<li><p>perturbation_scale: the scale of perturbation for the solution. This is a <strong>required parameter</strong>. Default is 0.05.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="how-to-create-update-matchuptable-required">
+<h2>How To Create / Update MatchupTable (<span class="blue">Required</span>)<a class="headerlink" href="#how-to-create-update-matchuptable-required" title="Link to this heading"></a></h2>
+</section>
+<section id="how-to-prepare-control-signal-file-required">
+<h2>How To Prepare Control (Signal) File (<span class="blue">Required</span>)<a class="headerlink" href="#how-to-prepare-control-signal-file-required" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>The control file is used to define the signal control data for the simulation. The control file <strong>must</strong> be in CSV format using <a class="reference external" href="https://online.trafficware.com/downloads/">Synchro</a> <a class="reference external" href="https://docs.aimsun.com/next/22.0.1/UsersManual/SynchroImporter.html#:~:text=Synchro%20is%20software%20from%20Trafficware,Combined%20format%20defined%20by%20Trafficware">UTDF</a> format.</p></li>
+<li><p>In your input_dir directory, you need to create a folder named “Control” and put the control file in the folder. The control file should be named “Synchro_signal.csv”.</p></li>
+</ul>
+</div>
+<dl class="simple">
+<dt>The UTDF control file includes the following information:</dt><dd><ul class="simple">
+<li><p>Network</p></li>
+<li><p>Nodes</p></li>
+<li><p>Links</p></li>
+<li><p>Lanes</p></li>
+<li><p>Timeplans</p></li>
+<li><p>Phases</p></li>
+</ul>
+</dd>
+</dl>
+<p>Sample Control File: <a class="reference external" href="https://github.com/ORNL-Real-Sim/Real-Twin-Dev/blob/main/datasets/tss/Control/Synchro_signal.csv">https://github.com/ORNL-Real-Sim/Real-Twin-Dev/blob/main/datasets/tss/Control/Synchro_signal.csv</a></p>
+</section>
+<section id="how-to-prepare-traffic-demand-file-required">
+<h2>How To Prepare Traffic Demand File (<span class="blue">Required</span>)<a class="headerlink" href="#how-to-prepare-traffic-demand-file-required" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>Traffic demand data is used to define the traffic demand (turning counts / ratios) for the simulation. Demand data may come from various sources, the realtwin package accept the following formats:</dt><dd><ul class="simple">
+<li><p>GridSmart format:</p></li>
+<li><p>Synchro format:</p></li>
+<li><p>more…</p></li>
+</ul>
+</dd>
+</dl>
+<section id="from-gradsmart-demands">
+<h3>From GradSmart Demands<a class="headerlink" href="#from-gradsmart-demands" title="Link to this heading"></a></h3>
+</section>
+<section id="from-synchro-utdf-demands">
+<h3>From Synchro UTDF Demands<a class="headerlink" href="#from-synchro-utdf-demands" title="Link to this heading"></a></h3>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="realtwin_simulator.html" class="btn btn-neutral float-left" title="realtwin Supported Simulator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="realtwin_generation.html" class="btn btn-neutral float-right" title="realtwin Scenario Generation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

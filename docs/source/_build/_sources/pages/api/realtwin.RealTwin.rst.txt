@@ -18,6 +18,7 @@ realtwin.RealTwin
       ~RealTwin.env_setup
       ~RealTwin.generate_abstract_scenario
       ~RealTwin.generate_concrete_scenario
+      ~RealTwin.generate_inputs
       ~RealTwin.post_process
       ~RealTwin.prepare_simulation
       ~RealTwin.visualize

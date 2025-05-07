@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>realtwin.func_lib._a_install_simulator.inst_sumo &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
 
@@ -45,12 +45,25 @@
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">Classes and Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/acknowledgements.html">Acknowledgements</a></li>
@@ -99,17 +112,17 @@
 <span class="sd"># Author/Copyright: Mr. Xiangyong Luo</span>
 <span class="sd">##############################################################</span>
 <span class="sd">&#39;&#39;&#39;</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">zipfile</span>
-<span class="kn">import</span> <span class="nn">pyufunc</span> <span class="k">as</span> <span class="nn">pf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyufunc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pf</span>
 
-<span class="kn">from</span> <span class="nn">realtwin.func_lib._a_install_simulator.check_sim_env</span> <span class="kn">import</span> <span class="n">is_sumo_installed</span>
-<span class="kn">from</span> <span class="nn">realtwin.util_lib.download_file_from_web</span> <span class="kn">import</span> <span class="n">download_single_file_from_web</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._a_install_simulator.check_sim_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_sumo_installed</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.util_lib.download_file_from_web</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_single_file_from_web</span>
 
 
 <div class="viewcode-block" id="install_sumo">
 <a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.install_sumo.html#realtwin.func_lib.install_sumo">[docs]</a>
-<span class="k">def</span> <span class="nf">install_sumo</span><span class="p">(</span><span class="n">sel_dir</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">install_sumo</span><span class="p">(</span><span class="n">sel_dir</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">strict_sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1.21.0&quot;</span><span class="p">,</span>
                  <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Install the SUMO simulator.</span>
@@ -161,7 +174,7 @@
 
 <div class="viewcode-block" id="install_sumo_windows">
 <a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.install_sumo_windows.html#realtwin.func_lib.install_sumo_windows">[docs]</a>
-<span class="k">def</span> <span class="nf">install_sumo_windows</span><span class="p">(</span><span class="n">sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1.21.0&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">install_sumo_windows</span><span class="p">(</span><span class="n">sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1.21.0&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Install SUMO onto the windows system.</span>
 
 <span class="sd">    Args:</span>
@@ -223,7 +236,7 @@
 
 <div class="viewcode-block" id="install_sumo_linux">
 <a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.install_sumo_linux.html#realtwin.func_lib.install_sumo_linux">[docs]</a>
-<span class="k">def</span> <span class="nf">install_sumo_linux</span><span class="p">(</span><span class="n">sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1.21.0&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">install_sumo_linux</span><span class="p">(</span><span class="n">sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1.21.0&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Install SUMO onto the linux system.</span>
 
 <span class="sd">    Args:</span>
@@ -246,7 +259,7 @@
 
 <div class="viewcode-block" id="install_sumo_macos">
 <a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.install_sumo_macos.html#realtwin.func_lib.install_sumo_macos">[docs]</a>
-<span class="k">def</span> <span class="nf">install_sumo_macos</span><span class="p">(</span><span class="n">sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1.21.0&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">install_sumo_macos</span><span class="p">(</span><span class="n">sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1.21.0&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Install SUMO onto the mac system.</span>
 
 <span class="sd">    Args:</span>

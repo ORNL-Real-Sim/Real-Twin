@@ -73,6 +73,9 @@ show_authors = True
 
 # -- Options for HTML output ---------------------------------------------
 html_theme = 'sphinx_rtd_theme'
+html_css_files = [
+    "css/realtwin_css.css",
+]
 
 # html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -94,3 +97,7 @@ htmlhelp_basename = "realtwin"
 #         'py-modindex.html',
 #     ]
 # }
+rst_prolog = """
+ .. include:: <s5defs.txt>
+
+ """

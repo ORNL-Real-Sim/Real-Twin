@@ -1,12 +1,13 @@
-=====================
-Classes and Functions
-=====================
+======================
+realtwin API Reference
+======================
 
 .. currentmodule:: realtwin
 
 
 RealTwin API
 ==============
+
 .. autosummary::
     :toctree: api/
 
@@ -15,17 +16,21 @@ RealTwin API
 
 Utility Functions
 =================
+
 .. autosummary::
     :toctree: api/
 
     util_lib.venv_create
     util_lib.venv_delete
-    util_lib.download_elevation_tif_by
+    util_lib.download_elevation_tif_by_bbox
     util_lib.download_single_file_from_web
     util_lib.find_executable_from_PATH_on_win
+    util_lib.prepare_config_file
+
 
 Installation and Environment
 ============================
+
 .. autosummary::
     :toctree: api/
 
@@ -40,6 +45,7 @@ Installation and Environment
 
 Load Inputs
 ===========
+
 .. autosummary::
     :toctree: api/
 
@@ -48,6 +54,7 @@ Load Inputs
 
 Abstract Scenario Generation
 ============================
+
 .. autosummary::
     :toctree: api/
 
@@ -60,6 +67,7 @@ Abstract Scenario Generation
 
 Concrete Scenario Generation
 ============================
+
 .. autosummary::
     :toctree: api/
 
@@ -67,6 +75,7 @@ Concrete Scenario Generation
 
 Prepare Simulation Documents
 ============================
+
 .. autosummary::
     :toctree: api/
 
@@ -77,6 +86,7 @@ Prepare Simulation Documents
 
 Calibration
 ===========
+
 .. autosummary::
     :toctree: api/
 

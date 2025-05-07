@@ -6,10 +6,11 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Classes and Functions &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+  <title>realtwin API Reference &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/realtwin_css.css?v=836a7079" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
@@ -23,7 +24,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="realtwin.RealTwin" href="api/realtwin.RealTwin.html" />
-    <link rel="prev" title="Installation" href="quick_start.html" /> 
+    <link rel="prev" title="realtwin Scenario Generation" href="realtwin_generation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,13 +47,23 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Classes and Functions</a><ul>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">realtwin API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#realtwin-api">RealTwin API</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.RealTwin.html">realtwin.RealTwin</a></li>
 </ul>
@@ -60,9 +71,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#utility-functions">Utility Functions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.venv_create.html">realtwin.util_lib.venv_create</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.venv_delete.html">realtwin.util_lib.venv_delete</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.download_elevation_tif_by.html">realtwin.util_lib.download_elevation_tif_by</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.download_elevation_tif_by_bbox.html">realtwin.util_lib.download_elevation_tif_by_bbox</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.download_single_file_from_web.html">realtwin.util_lib.download_single_file_from_web</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.find_executable_from_PATH_on_win.html">realtwin.util_lib.find_executable_from_PATH_on_win</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.prepare_config_file.html">realtwin.util_lib.prepare_config_file</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#installation-and-environment">Installation and Environment</a><ul>
@@ -110,7 +122,10 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
@@ -130,7 +145,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Classes and Functions</li>
+      <li class="breadcrumb-item active">realtwin API Reference</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/pages/api.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -140,8 +155,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="classes-and-functions">
-<h1>Classes and Functions<a class="headerlink" href="#classes-and-functions" title="Link to this heading"></a></h1>
+  <blockquote>
+<div></div></blockquote>
+<section id="realtwin-api-reference">
+<h1>realtwin API Reference<a class="headerlink" href="#realtwin-api-reference" title="Link to this heading"></a></h1>
 <section id="realtwin-api">
 <h2>RealTwin API<a class="headerlink" href="#realtwin-api" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
@@ -162,7 +179,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.util_lib.venv_delete.html#realtwin.util_lib.venv_delete" title="realtwin.util_lib.venv_delete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">util_lib.venv_delete</span></code></a>(*[, venv_name, ...])</p></td>
 <td><p>Delete the virtual environment in the specified folder with the specified name.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.util_lib.download_elevation_tif_by.html#realtwin.util_lib.download_elevation_tif_by" title="realtwin.util_lib.download_elevation_tif_by"><code class="xref py py-obj docutils literal notranslate"><span class="pre">util_lib.download_elevation_tif_by</span></code></a>(bbox, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.util_lib.download_elevation_tif_by_bbox.html#realtwin.util_lib.download_elevation_tif_by_bbox" title="realtwin.util_lib.download_elevation_tif_by_bbox"><code class="xref py py-obj docutils literal notranslate"><span class="pre">util_lib.download_elevation_tif_by_bbox</span></code></a>(...)</p></td>
 <td><p>Download elevation data (TIFF) from USGS National Map based on a bounding box.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.util_lib.download_single_file_from_web.html#realtwin.util_lib.download_single_file_from_web" title="realtwin.util_lib.download_single_file_from_web"><code class="xref py py-obj docutils literal notranslate"><span class="pre">util_lib.download_single_file_from_web</span></code></a>(url, ...)</p></td>
@@ -170,6 +187,9 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.util_lib.find_executable_from_PATH_on_win.html#realtwin.util_lib.find_executable_from_PATH_on_win" title="realtwin.util_lib.find_executable_from_PATH_on_win"><code class="xref py py-obj docutils literal notranslate"><span class="pre">util_lib.find_executable_from_PATH_on_win</span></code></a>(...)</p></td>
 <td><p>Find the executable from the system PATH.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.util_lib.prepare_config_file.html#realtwin.util_lib.prepare_config_file" title="realtwin.util_lib.prepare_config_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">util_lib.prepare_config_file</span></code></a>([dest_dir])</p></td>
+<td><p>Create a default/demo configuration file for the RealTwin package.</p></td>
 </tr>
 </tbody>
 </table>
@@ -222,13 +242,13 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.func_lib.AbstractScenario.html#realtwin.func_lib.AbstractScenario" title="realtwin.func_lib.AbstractScenario"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.AbstractScenario</span></code></a>([config_dict])</p></td>
 <td><p>Initialize an Abstract Scenario</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.func_lib.load_traffic_volume.html#realtwin.func_lib.load_traffic_volume" title="realtwin.func_lib.load_traffic_volume"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.load_traffic_volume</span></code></a>(path_demand)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.func_lib.load_traffic_volume.html#realtwin.func_lib.load_traffic_volume" title="realtwin.func_lib.load_traffic_volume"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.load_traffic_volume</span></code></a>(demand_data)</p></td>
 <td><p>load traffic volume data from file</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.func_lib.load_control_signal.html#realtwin.func_lib.load_control_signal" title="realtwin.func_lib.load_control_signal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.load_control_signal</span></code></a>(path_signal)</p></td>
 <td><p>load control signal data from file</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.func_lib.load_traffic_turning_ratio.html#realtwin.func_lib.load_traffic_turning_ratio" title="realtwin.func_lib.load_traffic_turning_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.load_traffic_turning_ratio</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.func_lib.load_traffic_turning_ratio.html#realtwin.func_lib.load_traffic_turning_ratio" title="realtwin.func_lib.load_traffic_turning_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.load_traffic_turning_ratio</span></code></a>(df_volume)</p></td>
 <td><p>load traffic turning ratio data from file</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.func_lib.OpenDriveNetwork.html#realtwin.func_lib.OpenDriveNetwork" title="realtwin.func_lib.OpenDriveNetwork"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.OpenDriveNetwork</span></code></a>([net_name, ...])</p></td>
@@ -297,7 +317,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="quick_start.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="realtwin_generation.html" class="btn btn-neutral float-left" title="realtwin Scenario Generation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="api/realtwin.RealTwin.html" class="btn btn-neutral float-right" title="realtwin.RealTwin" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

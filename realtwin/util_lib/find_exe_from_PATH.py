@@ -81,8 +81,7 @@ def find_executable_from_PATH_on_win(exe_name: str,
 
 def find_executable_from_PATH_on_linux(exe_name: str,
                                        verbose: bool = True) -> Optional[List[str]]:
-    """
-    Use the system `which -a` to list all matches for exe_name on Linux.
+    """Use the system `which -a` to list all matches for exe_name on Linux.
 
     Args:
         exe_name (str): The name of the executable to search for.

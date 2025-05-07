@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>realtwin.func_lib._f_calibration.algo_sumo_.calib_turn_inflow &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=76b2166b" />
 
@@ -45,12 +45,25 @@
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../pages/intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/api.html">Classes and Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../pages/acknowledgements.html">Acknowledgements</a></li>
@@ -89,20 +102,20 @@
 <span class="sd">##############################################################</span>
 <span class="sd">&#39;&#39;&#39;</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 
-<span class="kn">from</span> <span class="nn">mealpy</span> <span class="kn">import</span> <span class="n">FloatVar</span><span class="p">,</span> <span class="n">SA</span><span class="p">,</span> <span class="n">GA</span><span class="p">,</span> <span class="n">TS</span>
-<span class="kn">from</span> <span class="nn">realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mealpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">FloatVar</span><span class="p">,</span> <span class="n">SA</span><span class="p">,</span> <span class="n">GA</span><span class="p">,</span> <span class="n">TS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">result_analysis_on_EdgeData</span><span class="p">,</span>
     <span class="n">run_SUMO_create_EdgeData</span><span class="p">,</span>
     <span class="n">update_turn_flow_from_solution</span><span class="p">,</span>
     <span class="n">create_rou_turn_flow_xml</span><span class="p">)</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pyufunc</span> <span class="k">as</span> <span class="nn">pf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyufunc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pf</span>
 
 <span class="k">if</span> <span class="s1">&#39;SUMO_HOME&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
     <span class="n">tools</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;SUMO_HOME&#39;</span><span class="p">],</span> <span class="s1">&#39;tools&#39;</span><span class="p">)</span>
@@ -111,12 +124,12 @@
 
 <span class="k">else</span><span class="p">:</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;please declare environment variable &#39;SUMO_HOME&#39;&quot;</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">traci</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traci</span>
 
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">812</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">fitness_func_turn_flow</span><span class="p">(</span><span class="n">solution</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">scenario_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fitness_func_turn_flow</span><span class="p">(</span><span class="n">solution</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">scenario_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Objective function for SUMO calibration.&quot;&quot;&quot;</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Run a single calibration iteration to get the best solution &quot;&quot;&quot;</span>
 
@@ -162,7 +175,7 @@
 
 <div class="viewcode-block" id="TurnInflowCalib">
 <a class="viewcode-back" href="../../../../../pages/api/realtwin.func_lib.TurnInflowCalib.html#realtwin.func_lib.TurnInflowCalib">[docs]</a>
-<span class="k">class</span> <span class="nc">TurnInflowCalib</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TurnInflowCalib</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Turn and Inflow Optimization class for SUMO calibration.</span>
 
 <span class="sd">    See Also:</span>
@@ -186,7 +199,7 @@
 
 <div class="viewcode-block" id="TurnInflowCalib.__init__">
 <a class="viewcode-back" href="../../../../../pages/api/realtwin.func_lib.TurnInflowCalib.html#realtwin.func_lib.TurnInflowCalib.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scenario_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">turn_inflow_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scenario_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">turn_inflow_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the TurnInflowCalib class with scenario and turn inflow configurations.&quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">scenario_config</span> <span class="o">=</span> <span class="n">scenario_config</span>
@@ -236,7 +249,7 @@
         <span class="p">}</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_generate_initial_solutions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_vals</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">pop_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_initial_solutions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_vals</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">pop_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate initial solutions for inputs.</span>
 
 <span class="sd">        Args:</span>
@@ -256,7 +269,7 @@
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">init_vals</span><span class="p">)</span> <span class="o">*</span> <span class="n">pop_size</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">pop_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">init_vals</span><span class="p">))</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">run_vis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_vis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the results of the optimization.</span>
 
 <span class="sd">        See Also:</span>
@@ -285,7 +298,7 @@
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">run_GA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_GA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run Genetic Algorithm (GA) for behavior optimization.</span>
 
 <span class="sd">        Note:</span>
@@ -379,7 +392,7 @@
 
         <span class="k">return</span> <span class="p">(</span><span class="n">g_best</span><span class="p">,</span> <span class="n">model_ga</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">run_SA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_SA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run Simulated Annealing (SA) for behavior optimization.</span>
 
 <span class="sd">        See Also:</span>
@@ -449,7 +462,7 @@
 
         <span class="k">return</span> <span class="p">(</span><span class="n">g_best</span><span class="p">,</span> <span class="n">model_sa</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">run_TS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_TS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run Tabu Search (TS) for behavior optimization.</span>
 
 <span class="sd">        See Also:</span>

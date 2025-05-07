@@ -26,12 +26,8 @@ Welcome to realtwin documentation!
 .. image:: https://img.shields.io/github/contributors/ORNL-Real-Sim/realtwin.svg
    :target: https://github.com/ORNL-Real-Sim/Real-Twin/graphs/contributors
 
-
 .. image:: https://img.shields.io/badge/License-MIT-blue.svg
    :target: https://www.gnu.org/licenses
-
-
-
 
 
 .. toctree::
@@ -43,10 +39,26 @@ Welcome to realtwin documentation!
 .. toctree::
    :maxdepth: 3
 
-   pages/quick_start.rst
+   pages/install.rst
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
+
+   pages/realtwin_simulator.rst
+
+.. toctree::
+   :maxdepth: 3
+
+   pages/realtwin_prepare.rst
+
+.. toctree::
+   :maxdepth: 3
+
+   pages/realtwin_generation.rst
+
+
+.. toctree::
+   :maxdepth: 3
 
    pages/api.rst
 

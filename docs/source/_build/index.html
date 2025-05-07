@@ -7,9 +7,10 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Welcome to realtwin documentation! &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/css/realtwin_css.css?v=836a7079" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
@@ -49,16 +50,23 @@
 <li class="toctree-l1"><a class="reference internal" href="pages/intro.html">About Real-Twin</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="pages/quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="pages/api.html">Classes and Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="pages/support.html">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pages/api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pages/acknowledgements.html">Acknowledgements</a></li>
@@ -88,7 +96,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="welcome-to-realtwin-documentation">
+  <blockquote>
+<div></div></blockquote>
+<section id="welcome-to-realtwin-documentation">
 <h1>Welcome to realtwin documentation!<a class="headerlink" href="#welcome-to-realtwin-documentation" title="Link to this heading"></a></h1>
 <a class="reference external image-reference" href="https://badge.fury.io/py/realtwin"><img alt="https://badge.fury.io/py/realtwin.svg" src="https://badge.fury.io/py/realtwin.svg" />
 </a>
@@ -122,36 +132,116 @@
 </div>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="pages/quick_start.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pages/quick_start.html#potential-issues">Potential Issues</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pages/quick_start.html#sample-configuration-file">Sample Configuration File</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-</ul>
-</div>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="pages/api.html">Classes and Functions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pages/api.html#realtwin-api">RealTwin API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pages/api.html#utility-functions">Utility Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pages/api.html#installation-and-environment">Installation and Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pages/api.html#load-inputs">Load Inputs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pages/api.html#abstract-scenario-generation">Abstract Scenario Generation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pages/api.html#concrete-scenario-generation">Concrete Scenario Generation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pages/api.html#prepare-simulation-documents">Prepare Simulation Documents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pages/api.html#calibration">Calibration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pages/install.html#potential-issues">Potential Issues</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="pages/support.html">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_prepare.html">realtwin Preparation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-prepare-python-environment-optional">How To Prepare Python Environment (<span class="blue">Optional</span>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#create-virtual-environment">Create Virtual Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#activate-virtual-environment">Activate Virtual Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#delete-virtual-environment">Delete Virtual Environment</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-prepare-elevation-map-in-tiff-format-optional">How To Prepare Elevation Map In TIFF Format (<span class="blue">Optional</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-prepare-update-configuration-file-required">How To Prepare / Update Configuration File (<span class="blue">Required</span>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#prepare-from-realtwin-package">Prepare From <span class="incremental">realtwin</span> Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#prepare-from-github">Prepare From GitHub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#update-configuration-file">Update Configuration File</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-create-update-matchuptable-required">How To Create / Update MatchupTable (<span class="blue">Required</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-prepare-control-signal-file-required">How To Prepare Control (Signal) File (<span class="blue">Required</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-prepare-traffic-demand-file-required">How To Prepare Traffic Demand File (<span class="blue">Required</span>)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#from-gradsmart-demands">From GradSmart Demands</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#from-synchro-utdf-demands">From Synchro UTDF Demands</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pages/api.html">realtwin API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pages/api.html#realtwin-api">RealTwin API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.RealTwin.html">realtwin.RealTwin</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pages/api.html#utility-functions">Utility Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.util_lib.venv_create.html">realtwin.util_lib.venv_create</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.util_lib.venv_delete.html">realtwin.util_lib.venv_delete</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.util_lib.download_elevation_tif_by_bbox.html">realtwin.util_lib.download_elevation_tif_by_bbox</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.util_lib.download_single_file_from_web.html">realtwin.util_lib.download_single_file_from_web</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.util_lib.find_executable_from_PATH_on_win.html">realtwin.util_lib.find_executable_from_PATH_on_win</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.util_lib.prepare_config_file.html">realtwin.util_lib.prepare_config_file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pages/api.html#installation-and-environment">Installation and Environment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.install_sumo.html">realtwin.func_lib.install_sumo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.install_sumo_windows.html">realtwin.func_lib.install_sumo_windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.install_sumo_linux.html">realtwin.func_lib.install_sumo_linux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.install_sumo_macos.html">realtwin.func_lib.install_sumo_macos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.is_sumo_installed.html">realtwin.func_lib.is_sumo_installed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.is_aimsun_installed.html">realtwin.func_lib.is_aimsun_installed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.is_vissim_installed.html">realtwin.func_lib.is_vissim_installed</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pages/api.html#load-inputs">Load Inputs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.load_input_config.html">realtwin.func_lib.load_input_config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.get_bounding_box_from.html">realtwin.func_lib.get_bounding_box_from</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pages/api.html#abstract-scenario-generation">Abstract Scenario Generation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.AbstractScenario.html">realtwin.func_lib.AbstractScenario</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.load_traffic_volume.html">realtwin.func_lib.load_traffic_volume</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.load_control_signal.html">realtwin.func_lib.load_control_signal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.load_traffic_turning_ratio.html">realtwin.func_lib.load_traffic_turning_ratio</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.OpenDriveNetwork.html">realtwin.func_lib.OpenDriveNetwork</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.OSMRoad.html">realtwin.func_lib.OSMRoad</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pages/api.html#concrete-scenario-generation">Concrete Scenario Generation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.ConcreteScenario.html">realtwin.func_lib.ConcreteScenario</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pages/api.html#prepare-simulation-documents">Prepare Simulation Documents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.SimPrep.html">realtwin.func_lib.SimPrep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.SUMOPrep.html">realtwin.func_lib.SUMOPrep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.AimsunPrep.html">realtwin.func_lib.AimsunPrep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.VissimPrep.html">realtwin.func_lib.VissimPrep</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pages/api.html#calibration">Calibration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.cali_sumo.html">realtwin.func_lib.cali_sumo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.cali_aimsun.html">realtwin.func_lib.cali_aimsun</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.cali_vissim.html">realtwin.func_lib.cali_vissim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.BehaviorCalib.html">realtwin.func_lib.BehaviorCalib</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/api/realtwin.func_lib.TurnInflowCalib.html">realtwin.func_lib.TurnInflowCalib</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pages/acknowledgements.html">Acknowledgements</a></li>

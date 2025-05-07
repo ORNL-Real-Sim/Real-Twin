@@ -7,9 +7,10 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>realtwin.util_lib.download_single_file_from_web &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/realtwin_css.css?v=836a7079" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
@@ -23,7 +24,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="realtwin.util_lib.find_executable_from_PATH_on_win" href="realtwin.util_lib.find_executable_from_PATH_on_win.html" />
-    <link rel="prev" title="realtwin.util_lib.download_elevation_tif_by" href="realtwin.util_lib.download_elevation_tif_by.html" /> 
+    <link rel="prev" title="realtwin.util_lib.download_elevation_tif_by_bbox" href="realtwin.util_lib.download_elevation_tif_by_bbox.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,23 +47,34 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../api.html">Classes and Functions</a><ul class="current">
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">realtwin API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../api.html#realtwin-api">RealTwin API</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../api.html#utility-functions">Utility Functions</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.venv_create.html">realtwin.util_lib.venv_create</a></li>
 <li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.venv_delete.html">realtwin.util_lib.venv_delete</a></li>
-<li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.download_elevation_tif_by.html">realtwin.util_lib.download_elevation_tif_by</a></li>
+<li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.download_elevation_tif_by_bbox.html">realtwin.util_lib.download_elevation_tif_by_bbox</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">realtwin.util_lib.download_single_file_from_web</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#realtwin.util_lib.download_single_file_from_web"><code class="docutils literal notranslate"><span class="pre">download_single_file_from_web()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.find_executable_from_PATH_on_win.html">realtwin.util_lib.find_executable_from_PATH_on_win</a></li>
+<li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.prepare_config_file.html">realtwin.util_lib.prepare_config_file</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#installation-and-environment">Installation and Environment</a></li>
@@ -73,7 +85,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../api.html#calibration">Calibration</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">Acknowledgements</a></li>
@@ -93,7 +108,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../api.html">Classes and Functions</a></li>
+          <li class="breadcrumb-item"><a href="../api.html">realtwin API Reference</a></li>
       <li class="breadcrumb-item active">realtwin.util_lib.download_single_file_from_web</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/pages/api/realtwin.util_lib.download_single_file_from_web.rst.txt" rel="nofollow"> View page source</a>
@@ -104,7 +119,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="realtwin-util-lib-download-single-file-from-web">
+  <blockquote>
+<div></div></blockquote>
+<section id="realtwin-util-lib-download-single-file-from-web">
 <h1>realtwin.util_lib.download_single_file_from_web<a class="headerlink" href="#realtwin-util-lib-download-single-file-from-web" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="realtwin.util_lib.download_single_file_from_web">
@@ -133,7 +150,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="realtwin.util_lib.download_elevation_tif_by.html" class="btn btn-neutral float-left" title="realtwin.util_lib.download_elevation_tif_by" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="realtwin.util_lib.download_elevation_tif_by_bbox.html" class="btn btn-neutral float-left" title="realtwin.util_lib.download_elevation_tif_by_bbox" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="realtwin.util_lib.find_executable_from_PATH_on_win.html" class="btn btn-neutral float-right" title="realtwin.util_lib.find_executable_from_PATH_on_win" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

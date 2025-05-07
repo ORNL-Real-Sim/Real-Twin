@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>realtwin.func_lib._d_concrete_scenario._concreteScenario &mdash; realtwin</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
 
@@ -45,12 +45,25 @@
               <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/intro.html">About Real-Twin</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#simulator-included">Simulator Included</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#configuration-file-preparation">Configuration File Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quick_start.html#real-twin-scenario-generation-python-implementation">Real-Twin Scenario Generation Python Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">Classes and Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Citation Request</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">realtwin API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#citation-request">Citation Request</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#official-links">Official Links</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/acknowledgements.html">Acknowledgements</a></li>
@@ -86,20 +99,20 @@
 <span class="sd">&#39;&#39;&#39;</span>
 
 <span class="c1"># import four elements of AbstractScenario</span>
-<span class="kn">from</span> <span class="nn">._supply</span> <span class="kn">import</span> <span class="n">Supply</span>
-<span class="kn">from</span> <span class="nn">._demand</span> <span class="kn">import</span> <span class="n">Demand</span>
-<span class="kn">from</span> <span class="nn">._behavior</span> <span class="kn">import</span> <span class="n">Behavior</span>
-<span class="kn">from</span> <span class="nn">._route</span> <span class="kn">import</span> <span class="n">Route</span>
-<span class="kn">from</span> <span class="nn">._trafficControl</span> <span class="kn">import</span> <span class="n">TrafficControl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._supply</span><span class="w"> </span><span class="kn">import</span> <span class="n">Supply</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._demand</span><span class="w"> </span><span class="kn">import</span> <span class="n">Demand</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._behavior</span><span class="w"> </span><span class="kn">import</span> <span class="n">Behavior</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._route</span><span class="w"> </span><span class="kn">import</span> <span class="n">Route</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._trafficControl</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrafficControl</span>
 
 
 <div class="viewcode-block" id="ConcreteScenario">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.ConcreteScenario">[docs]</a>
-<span class="k">class</span> <span class="nc">ConcreteScenario</span><span class="p">:</span>
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.ConcreteScenario.html#realtwin.func_lib.ConcreteScenario">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConcreteScenario</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize and Generate Concrete Scenario from Abstract Scenario&quot;&quot;&quot;</span>
 <div class="viewcode-block" id="ConcreteScenario.__init__">
 <a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.ConcreteScenario.html#realtwin.func_lib.ConcreteScenario.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Supply</span> <span class="o">=</span> <span class="n">Supply</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Demand</span> <span class="o">=</span> <span class="n">Demand</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Behavior</span> <span class="o">=</span> <span class="n">Behavior</span><span class="p">()</span>
@@ -107,16 +120,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">TrafficControl</span> <span class="o">=</span> <span class="n">TrafficControl</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="ConcreteScenario.is_empty">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.ConcreteScenario.is_empty">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the ConcreteScenario object is empty.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
+        <span class="k">pass</span>
 
-
-<div class="viewcode-block" id="ConcreteScenario.get_unified_scenario">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.TrafficControl.html#realtwin.func_lib.ConcreteScenario.get_unified_scenario">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_unified_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">AbsScn</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_unified_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">AbsScn</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate Concrete Scenario from Abstract Scenario&quot;&quot;&quot;</span>
         <span class="c1"># copy the config_dict from AbstractScenario incase it is needed</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span> <span class="o">=</span> <span class="n">AbsScn</span><span class="o">.</span><span class="n">config_dict</span>
@@ -127,7 +135,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">Behavior</span><span class="o">.</span><span class="n">ApplicationInterpreter</span><span class="p">(</span><span class="n">AbsScn</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Route</span><span class="o">.</span><span class="n">generate_route</span><span class="p">(</span><span class="n">AbsScn</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">TrafficControl</span><span class="o">.</span><span class="n">generate_control</span><span class="p">(</span><span class="n">AbsScn</span><span class="p">)</span></div>
-</div>
 
 </pre></div>
 
