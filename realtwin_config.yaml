@@ -6,7 +6,7 @@
 # license. For the licensing terms see the LICENSE file in the top-level     #
 # directory.                                                                 #
 #                                                                            #
-# Contact realtwin developer @ realtwin@ornl.gov                             #
+# Contact realtwin developer team: realtwin@ornl.gov                         #
 ##############################################################################
 
 # if true, the demo data will be used for the simulation, use default data: "chattanooga"
@@ -20,17 +20,21 @@ output_dir:  # optional
 
 # Absolute and Concrete Scenario Generation
 Network:
-    NetworkName: chatt  # the name of the network should not have space between words
+    # the name of the network should not have space between words
+    NetworkName: chatt
+
+    # polygon points for the network in the format of (lon, lat)
     NetworkVertices: (-85.14977588011192, 35.040346288414916), (-85.15823020212477, 35.04345144844759), (-85.15829457513502, 35.043293338482925), (-85.14986171079225, 35.04018378032611)
-    Net_BBox:  # optional
-    ElevationMap: chatt_elev.tif  # optional
-Traffic:
-    Volume: GridSmart_demand.csv
-    TurningRatio: GridSmart_demand.csv
-    GridSmart_lookup: GridSmart_lookuptable.csv
-Control:
-    Signal: Synchro_signal.csv
-    Synchro_lookup: Synchro_lookuptable.csv
+
+    # Net_BBox:  # optional
+    # ElevationMap: chatt_elev.tif  # optional
+Traffic: GridSmart
+    # Volume: GridSmart_demand.csv
+    # TurningRatio: GridSmart_demand.csv
+    # GridSmart_lookup: GridSmart_lookuptable.csv
+Control: Synchro_signal.csv
+    # Signal: Synchro_signal.csv
+    # Synchro_lookup: Synchro_lookuptable.csv
 
 # Turn, inFlow and Behavior Calibration
 Calibration:

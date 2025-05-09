@@ -244,10 +244,21 @@ class AbstractScenario:
         if signal_dict is not None:
             self.Control.Signal = signal_dict
         else:
-            if control_dict := self.config_dict.get('Control'):
-                path_signal = control_dict.get('Signal', None)
-                path_signal_abs = pf.path2linux(os.path.join(self.config_dict.get("input_dir"), path_signal))
-                self.Control.Signal = load_control_signal(path_signal_abs)
+            if control_data := self.config_dict.get('Control'):
+                if isinstance(control_data, dict):
+                    path_signal = control_data.get('Signal', None)
+                    path_signal_abs = pf.path2linux(os.path.join(self.config_dict.get("input_dir"), path_signal))
+                    self.Control.Signal = load_control_signal(path_signal_abs)
+                elif isinstance(control_data, str):
+                    path_signal = control_data
+                    path_signal_abs = pf.path2linux(os.path.join(self.config_dict.get("input_dir"), path_signal))
+                    if os.path.isfile(path_signal_abs):
+                        self.Control.Signal = load_control_signal(path_signal_abs)
+                    else:
+                        raise FileNotFoundError(
+                            f"  :File not found: {path_signal_abs}. No signal data loaded from input file")
+                else:
+                    raise ValueError("  :Invalid control data in configuration file. ")
 
     def fillAbstractScenario(self):
         """Fill the AbstractScenario with the data from the config_dict"""

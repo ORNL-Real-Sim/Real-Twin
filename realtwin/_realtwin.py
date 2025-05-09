@@ -158,7 +158,7 @@ class RealTwin:
 
         return True
 
-    def generate_inputs(self, incl_elevation_tif: bool = False):
+    def generate_inputs(self, *, incl_elevation_tif: bool = False):
         """ Generate user inputs, such as MatchUp table, Control and Traffic data
 
         Args:
@@ -197,19 +197,18 @@ class RealTwin:
                   )
 
         # check whether the elevation tif data is provided
-        path_elev = pf.path2linux(
-            Path(self.input_config.get("input_dir")) / self.input_config.get("Network").get("ElevationMap"))
-        if not os.path.exists(path_elev):
-            # print("  :Elevation map is not provided. we will download from network BBOX.")
-            if incl_elevation_tif:
-                print("  :Downloading elevation map from network BBOX.")
-                # download elevation map from network bbox
-                bbox = self.input_config.get("Network").get("Net_BBox")
-                output_file = pf.path2linux(Path(self.input_config.get("input_dir")) / "elevation_map.tif")
-                download_elevation_tif_by_bbox(bbox, output_file)
-
-                # update tif file in the input configuration
-                self.input_config.get("Network")["ElevationMap"] = "elevation_map.tif"
+        # path_elev = pf.path2linux(
+        #     Path(self.input_config.get("input_dir")) / self.input_config.get("Network").get("ElevationMap"))
+        # if not os.path.exists(path_elev):
+        #     # print("  :Elevation map is not provided. we will download from network BBOX.")
+        #     if incl_elevation_tif:
+        #         print("  :Downloading elevation map from network BBOX.")
+        #         # download elevation map from network bbox
+        #         bbox = self.input_config.get("Network").get("Net_BBox")
+        #         output_file = pf.path2linux(Path(self.input_config.get("input_dir")) / "elevation_map.tif")
+        #         download_elevation_tif_by_bbox(bbox, output_file)
+        #         # update tif file in the input configuration
+        #         self.input_config.get("Network")["ElevationMap"] = "elevation_map.tif"
 
         # generate abstract scenario
         self.abstract_scenario = AbstractScenario(self.input_config)
@@ -352,7 +351,7 @@ class RealTwin:
                         "behavior": "ga"}
 
         if not isinstance(sel_algo, dict):
-            print("  :Error:parameter sel_algo must be a dict with"
+            print("  :Error: parameter sel_algo must be a dict with"
                   " keys of 'turn_inflow' and 'behavior', using"
                   " genetic algorithm as default values.")
             sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
@@ -374,7 +373,7 @@ class RealTwin:
         # cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)
         cali_sumo_(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)
 
-        print("  :Calibration successfully completed.")
+        print("Calibration successfully completed.")
 
         return True
 

@@ -307,7 +307,7 @@ def update_matchup_table(path_matchup_table: str, signal_dir: str = "", traffic_
                 if i < len(rows_to_fill):
                     MatchupTable_UserInput.at[rows_to_fill[i], "Turn_Synchro"] = movement
                 else:
-                    print(f'There are more turning movements in {file_synchro_name} than OpenDrive junction {junction_id}.')
+                    print(f'  :There are more turning movements in {file_synchro_name} than OpenDrive junction {junction_id}.')
     return MatchupTable_UserInput
 
 
@@ -436,6 +436,7 @@ def generate_turn_demand(*, path_matchup_table: str ,
                                         "EBR", "EBT", "EBL", "EBU", "SBR", "SBT", "SBL", "SBU",
                                         "WBR", "WBT", "WBL", "WBU"]
                     df_data = df_data.reindex(columns=expected_columns, fill_value="")
+                    # df_data = df_data.reindex(columns=expected_columns, fill_value=None)
 
                     # Fill IntersectionName using IntersectionName_GridSmart from MatchupTable_UserInput
                     if not subset["IntersectionName_GridSmart"].isna().all():

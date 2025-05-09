@@ -20,9 +20,9 @@ from ._aimsun import AimsunPrep
 class SimPrep:
     '''Prepare simulation from concrete scenario'''
 
-    def __init__(self):
-        self.SUMOSim = SUMOPrep()
-        self.AimsunSim = AimsunPrep()
+    def __init__(self, **kwargs):
+        self.SUMOSim = SUMOPrep(**kwargs)
+        self.AimsunSim = AimsunPrep(**kwargs)
 
     def create_sumo_sim(self,
                         ConcreteScn,

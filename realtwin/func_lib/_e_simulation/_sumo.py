@@ -14,11 +14,12 @@
 import os
 import shutil
 import warnings
+from pathlib import Path
 import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString
+import xml.dom.minidom as minidom
 import pandas as pd
 import io
-from lxml import etree
 import pyufunc as pf
 pd.options.mode.chained_assignment = None
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -27,11 +28,14 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 class SUMOPrep:
     """The class to handle the SUMO simulation for the real-twin developed by ORNL ARMS group.
     """
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.Network = {}
         # self.NetworkWithElevation = {}
         self.Demand = set()
         self.Signal = {}
+
+        # add kwargs to the class
+        self.kwargs = kwargs
 
     def importNetwork(self, ConcreteScn):
         """The function to import the network from the OpenDrive file and convert it to SUMO network file."""
@@ -231,329 +235,595 @@ class SUMOPrep:
     def importSignal(self, ConcreteScn):
         """The function to import the signal from the signal file and convert it to SUMO signal file."""
 
-        path_signal = ConcreteScn.config_dict["Control"].get("Signal")
-        path_signal_abs = pf.path2linux(os.path.join(ConcreteScn.config_dict.get('input_dir'), path_signal))
-        with open(path_signal_abs, 'r', encoding="utf-8") as file:
-            lines = file.readlines()
+        input_dir = ConcreteScn.config_dict.get('input_dir')
+        control_dir = os.path.join(input_dir, 'Control')
+        path_MatchupTable = pf.path2linux(os.path.join(input_dir, 'MatchupTable.xlsx'))
+        path_net = self.Network
 
-        SignalDict = {}
-        current_table = None
-        current_table_data = []
+        # check if the file exists
+        if not os.path.exists(path_net):
+            raise FileNotFoundError(f"File not found: {path_net}")
+        if not os.path.exists(path_MatchupTable):
+            raise FileNotFoundError(f"File not found: {path_MatchupTable}")
+        if not path_MatchupTable.endswith(".xlsx"):
+            raise ValueError(f"Invalid file format: {path_MatchupTable}. Expected .xlsx file.")
+        if not os.path.exists(control_dir):
+            raise FileNotFoundError(f"File not found: {control_dir}")
 
-        # Iterate over the lines
-        remove_flag = 0
-        for line in lines:
-            line = line.strip()
+        FixedTime = self.kwargs.get('FixedTime', False)
 
-            # Check if it's a line to be deleted
-            if remove_flag == 1:
-                remove_flag = 0
+        try:
+            signal_flag = sumo_signal_import(path_net, path_MatchupTable, FixedTime=FixedTime, control_dir=control_dir)
+            if signal_flag:
+                print(f"  :SUMO signal updated at: {path_net}")
+        except Exception as e:
+            raise Exception(f"Error in importing SUMO signal: {e}")
+
+
+def process_signal_data(path_signal: str) -> dict:
+
+    with open(path_signal, 'r') as file:
+        SignalData = file.readlines()
+
+    SignalDict = {}
+    current_table = None
+    current_table_data = []
+
+    removeflag = 0
+    for line in SignalData:
+        line = line.strip()
+
+        if removeflag == 1:
+            removeflag = 0
+            continue
+        if line.startswith("["):
+            removeflag = 1
+            if current_table is None:
+                current_table = line[1:-1].split(',')[0].rstrip(']')
+            else:
+                if current_table_data:
+                    df = pd.read_csv(io.StringIO('\n'.join(current_table_data)), dtype=str)
+                    SignalDict[current_table] = df
+
+                current_table = line[1:-1].split(',')[0].rstrip(']')
+                current_table_data = []
+        else:
+            current_table_data.append(line)
+
+    if current_table_data:
+        SignalDict[current_table] = pd.read_csv(io.StringIO('\n'.join(current_table_data)), dtype=str)
+
+    return SignalDict
+
+
+def generate_complete_state_string(protected_mov, permitted_mov, rtor_mov, nm):
+    state = ['r'] * nm
+    if rtor_mov:
+        for idx in map(int, rtor_mov.split(',')):
+            if idx < nm and state[idx] == 'r':
+                state[idx] = 's'
+    if protected_mov:
+        for idx in map(int, protected_mov.split(',')):
+            if idx < nm:
+                state[idx] = 'G'
+    if permitted_mov:
+        for idx in map(int, permitted_mov.split(',')):
+            if idx < nm and (state[idx] == 'r' or state[idx] == 's'):
+                state[idx] = 'g'
+    return ''.join(state)
+
+
+# format the XML file to make it more readable
+def prettify_xml(file_path):
+    with open(file_path, 'r') as file:
+        xml_content = file.read()
+    parsed_xml = minidom.parseString(xml_content)
+    pretty_xml_as_string = parsed_xml.toprettyxml(indent="    ")
+
+    with open(file_path, 'w') as file:
+        file.write("\n".join([line for line in pretty_xml_as_string.splitlines() if line.strip()]))
+
+
+def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = False, control_dir: str = "Control") -> bool:
+    """Import SUMO signal data from a MatchupTable to a SUMO network file.
+    This function reads the signal data from the MatchupTable and updates the signal to the SUMO network file.
+
+    Args:
+        path_net (str): SUMO network file path.
+        path_MatchupTable (str): Path to the MatchupTable file.
+        FixedTime (bool): If True, the signal is fixed time, otherwise it is actuated. Default is False.
+
+    Returns:
+        bool: True if the import was successful, False otherwise.
+    """
+
+    # check if the file exists
+    if not os.path.exists(path_net):
+        raise FileNotFoundError(f"File not found: {path_net}")
+    if not os.path.exists(path_MatchupTable):
+        raise FileNotFoundError(f"File not found: {path_MatchupTable}")
+    if not path_MatchupTable.endswith(".xlsx"):
+        raise ValueError(f"Invalid file format: {path_MatchupTable}. Expected .xlsx file.")
+
+    MatchupTable_UserInput = pd.read_excel(path_MatchupTable, skiprows=1, dtype=str)
+    merged_columns = ["JunctionID_OpenDrive", "File_GridSmart", "Date_GridSmart",
+                      "IntersectionName_GridSmart", "File_Synchro", "IntersectionID_Synchro", "Need calibration?"]
+    MatchupTable_UserInput[merged_columns] = MatchupTable_UserInput[merged_columns].ffill()
+
+    # Create synchro lookup table
+    lookup_df = pd.DataFrame()
+    lookup_df['INTID'] = MatchupTable_UserInput['IntersectionID_Synchro'].dropna().unique()
+    lookup_df['SumoJunctionID'] = lookup_df['INTID'].apply(
+        lambda intid: MatchupTable_UserInput.loc[
+            MatchupTable_UserInput['IntersectionID_Synchro'] == intid, 'JunctionID_OpenDrive'
+        ].dropna().iloc[0]
+    )
+    lookup_df['StartingBound'] = lookup_df['INTID'].apply(
+        lambda intid: MatchupTable_UserInput.loc[
+            (MatchupTable_UserInput['IntersectionID_Synchro'] == intid) &
+            (MatchupTable_UserInput['Bearing'].astype(float) >= 180),
+            'Turn_Synchro'
+        ].dropna().iloc[0]
+    )
+    lookup_df = lookup_df.astype(str)
+
+    synchro_file = MatchupTable_UserInput['File_Synchro'].dropna().iloc[0].strip()
+    signal_path = pf.path2linux(Path(control_dir) / synchro_file)
+    SignalDict = process_signal_data(signal_path)
+
+    SignalInfo = {}
+    unique_INTIDs = SignalDict['Lanes']['INTID'].dropna().unique()
+    # Iterating through each unique 'INTID' and gathering corresponding data from each table
+    for intid in unique_INTIDs:
+        SignalInfo[intid] = {
+            'Lanes': SignalDict['Lanes'][SignalDict['Lanes']['INTID'] == intid],
+            'Timeplans': SignalDict['Timeplans'][SignalDict['Timeplans']['INTID'] == intid],
+            'Phases': SignalDict['Phases'][SignalDict['Phases']['INTID'] == intid]
+        }
+
+    Synchro = {}
+    for intid in unique_INTIDs:
+        phases_df = SignalInfo[intid]['Phases']
+        transposed_df = phases_df.set_index('RECORDNAME').transpose().reset_index()
+        transposed_df.rename(columns={'index': 'Phase'}, inplace=True)
+        Synchro[intid] = transposed_df
+    # Filter Synchro to only keep entries where intid is in lookup_df['INTID']
+    Synchro = {intid: df for intid, df in Synchro.items() if intid in lookup_df['INTID'].values}
+
+    # Updating the Synchro dictionary
+    for intid in Synchro:
+        if 'RECORDNAME' in Synchro[intid].columns:
+            Synchro[intid].drop(columns=['RECORDNAME'], inplace=True)
+
+        Synchro[intid] = Synchro[intid][Synchro[intid]['Phase'] != 'INTID']
+
+        if 'BRP' in Synchro[intid].columns:
+            df_temp = Synchro[intid]
+
+            df_temp = df_temp.dropna(subset=['BRP'])
+
+            cols_to_check = [col for col in df_temp.columns if col not in ['Phase', 'BRP']]
+            df_temp = df_temp[~(df_temp['BRP'].notna() & df_temp[cols_to_check].isna().all(axis=1))]
+
+            if 'MinGreen' in df_temp.columns and 'MaxGreen' in df_temp.columns:
+                df_temp = df_temp.dropna(subset=['MinGreen', 'MaxGreen'], how='all')
+            Synchro[intid] = df_temp
+
+        Synchro[intid]['Phase'] = Synchro[intid]['Phase'].str.replace('D', '', regex=False)
+
+        brp_values = Synchro[intid]['BRP'].astype(str)
+
+        Synchro[intid]['Barrier'] = brp_values.str[0].astype(int)
+        Synchro[intid]['Ring'] = brp_values.str[1].astype(int)
+        Synchro[intid]['Position'] = brp_values.str[2].astype(int)
+
+    # Adjusting the Synchro dictionary to place each table under Synchro[intid]["Phases"]
+    for intid in list(Synchro.keys()):
+        current_df = Synchro[intid]
+        Synchro[intid] = {"Phases": current_df}
+
+    for intid in Synchro.keys():
+        lanes_df = SignalDict['Lanes'][SignalDict['Lanes']['INTID'] == intid]
+        timeplans_df = SignalDict['Timeplans'][SignalDict['Timeplans']['INTID'] == intid]
+        Synchro[intid]["Lanes"] = lanes_df
+        Synchro[intid]["Timeplans"] = timeplans_df
+
+    # Extracting the new order based on the 'StartingBound' value
+    for intid in Synchro.keys():
+        cyclic_order = ['SBR', 'SBT', 'SBL', 'SWR', 'SWT', 'SWL', 'WBR', 'WBT', 'WBL',
+                        'NWR', 'NWT', 'NWL', 'NBR', 'NBT', 'NBL', 'NER', 'NET', 'NEL',
+                        'EBR', 'EBT', 'EBL', 'SER', 'SET', 'SEL']
+
+        if str(intid) in lookup_df['INTID'].values:
+            starting_bound = lookup_df.loc[lookup_df['INTID'] == str(intid), 'StartingBound'].values[0]
+            if starting_bound.endswith('U'):
+                print(f"  :There is mismatch between SUMO turn and Synchro turn for Synchro junction {intid}")
+                starting_bound = starting_bound[:-1] + 'L'
+            start_index = cyclic_order.index(starting_bound)
+            ordered_columns = cyclic_order[start_index:] + cyclic_order[:start_index]
+        else:
+            ordered_columns = cyclic_order.copy()
+
+        final_column_order = ['RECORDNAME', 'INTID'] + ordered_columns
+        existing_columns = [col for col in final_column_order if col in Synchro[intid]["Lanes"].columns]
+        Synchro[intid]["Lanes"] = Synchro[intid]["Lanes"][existing_columns].copy()
+        Synchro[intid]["Lanes"].dropna(axis=1, how='all', inplace=True)
+
+    # Associating Synchro[intid]["Phases"] with Synchro[intid]["Lanes"] by creating "Protected" and "Permitted" columns
+    for intid in Synchro.keys():
+        phases_df = Synchro[intid]["Phases"]
+        lanes_df = Synchro[intid]["Lanes"]
+        phases_df['Protected'] = ''
+        phases_df['Permitted'] = ''
+        phases_df['RTOR'] = ''
+
+        protected_rows = ['Phase1', 'Phase2', 'Phase3', 'Phase4']
+        permitted_rows = ['PermPhase1', 'PermPhase2', 'PermPhase3', 'PermPhase4']
+        existing_protected_rows = lanes_df[lanes_df['RECORDNAME'].isin(protected_rows)]
+        existing_permitted_rows = lanes_df[lanes_df['RECORDNAME'].isin(permitted_rows)]
+        allow_rtor_row = lanes_df[lanes_df['RECORDNAME'] == 'Allow RTOR']
+
+        for phase_idx, phase_row in phases_df.iterrows():
+            P = phase_row['Phase']
+            protected_columns = []
+            for _, protected_row in existing_protected_rows.iterrows():
+                columns_with_P = protected_row[protected_row == P].index.tolist()
+                if 'INTID' in columns_with_P:
+                    columns_with_P.remove('INTID')
+                protected_columns.extend(columns_with_P)
+
+            if protected_columns:
+                phases_df.at[phase_idx, 'Protected'] = ','.join(protected_columns)
+
+            permitted_columns = []
+            for _, permitted_row in existing_permitted_rows.iterrows():
+                columns_with_P = permitted_row[permitted_row == P].index.tolist()
+                if 'INTID' in columns_with_P:
+                    columns_with_P.remove('INTID')
+                permitted_columns.extend(columns_with_P)
+
+            if permitted_columns:
+                phases_df.at[phase_idx, 'Permitted'] = ','.join(permitted_columns)
+
+            RTOR_columns = []
+            if not allow_rtor_row.empty:
+                for _, rtor_row in allow_rtor_row.iterrows():
+                    rtor_columns = rtor_row[rtor_row == "1"].index.tolist()
+                    if 'INTID' in rtor_columns:
+                        rtor_columns.remove('INTID')
+                    RTOR_columns.extend(rtor_columns)
+            RTOR_columns = [col for col in RTOR_columns if col.endswith('R')]
+            if RTOR_columns:
+                phases_df.at[phase_idx, 'RTOR'] = ','.join(RTOR_columns)
+
+        Synchro[intid]["Phases"] = phases_df
+
+        for idx, thru in Synchro[intid]["Phases"]["Protected"].items():
+            movements = thru.split(",")
+            for movement in movements:
+                if movement.endswith("T"):
+                    if movement in Synchro[intid]["Lanes"].columns:
+                        lane_value = Synchro[intid]["Lanes"].loc[Synchro[intid]["Lanes"]["RECORDNAME"] == "Shared", movement].values
+
+                        if len(lane_value) > 0:
+                            lane_value = lane_value[0]
+                        else:
+                            continue
+
+                        if pd.isna(lane_value) or lane_value == "0":
+                            continue
+                        left_turn = movement[:-1] + "L"
+                        right_turn = movement[:-1] + "R"
+
+                        turns_to_add = []
+                        if lane_value == "1" and left_turn not in movements:
+                            turns_to_add.append(left_turn)
+                        elif lane_value == "2" and right_turn not in movements:
+                            if right_turn in Synchro[intid]["Phases"]["RTOR"].at[idx]:
+                                Synchro[intid]["Phases"]["RTOR"].at[idx] = Synchro[intid]["Phases"]["RTOR"].at[idx].replace(right_turn, "").strip(",")
+                            turns_to_add.append(right_turn)
+
+                        elif lane_value == "3":
+                            if movement not in movements:
+                                turns_to_add.append(movement)
+                            if right_turn not in movements:
+                                if right_turn in Synchro[intid]["Phases"]["RTOR"].at[idx]:
+                                    Synchro[intid]["Phases"]["RTOR"].at[idx] = Synchro[intid]["Phases"]["RTOR"].at[idx].replace(right_turn, "").strip(",")
+                                turns_to_add.append(right_turn)
+                        if turns_to_add:
+                            Synchro[intid]["Phases"]["Protected"].at[idx] = ",".join(movements + turns_to_add)
+                    Synchro[intid]["Phases"]["RTOR"].at[idx] = Synchro[intid]["Phases"]["RTOR"].at[idx].replace(",,", ",").strip(",")
+
+    with open(path_net, 'r') as file:
+        NetworkData = file.read()
+
+    tree = ET.ElementTree(ET.fromstring(NetworkData))
+    TLLogic = {}
+    for elem in tree.iter('tlLogic'):
+        TLLogic[elem.attrib['id']] = {}
+
+    for elem in tree.iter('connection'):
+        if 'tl' in elem.attrib:
+            tl = elem.attrib['tl']
+            linkIndex = int(elem.attrib['linkIndex'])
+            if tl in TLLogic:
+                TLLogic[tl][linkIndex] = {'from': elem.attrib['from'], 'to': elem.attrib['to'], 'dir': elem.attrib['dir']}
+
+    for tl in TLLogic:
+        TLLogic[tl] = dict(sorted(TLLogic[tl].items()))
+
+    # ## Please note: here we assume there is no phase only for U turn,
+    # i.e. U turn is associated with a left turn or through movement
+    lookup_mapping = lookup_df[['INTID', 'SumoJunctionID']]
+
+    # Adding the "SumoJunctionID" attribute to each Synchro[intid]
+    for _, row in lookup_mapping.iterrows():
+        intid = row['INTID']
+        tl = row['SumoJunctionID']
+        Synchro[intid]["SumoJunctionID"] = tl
+
+    # Matching Synchro[intid]["Lanes"] with TLLogic[tl] with additional checks
+    for _, row in lookup_mapping.iterrows():
+        intid = row['INTID']
+        tl = row['SumoJunctionID']
+
+        if tl in TLLogic:
+            current_tllogic = TLLogic[tl]
+            movement_values = []
+            current_dir = None
+            dir_sequence = []
+            column_index = 0
+            for index, values in current_tllogic.items():
+                movement_values = []
+                column_index = 0
+
+                # Group by 'from'
+                from_groups = {}
+                for index, values in current_tllogic.items():
+                    from_edge = values['from']
+                    direction = values['dir']
+                    from_groups.setdefault(from_edge, {'r': [], 's': [], 'l': []})  # no separate 't' key now
+                    if direction == 't':
+                        from_groups[from_edge]['l'].append(str(index))  # treat 't' as 'l'
+                    else:
+                        from_groups[from_edge][direction].append(str(index))
+
+                for from_edge in from_groups:
+                    for dir_key in ['r', 's', 'l']:
+                        if from_groups[from_edge][dir_key]:
+                            if column_index >= len(Synchro[intid]["Lanes"].columns) - 2:
+                                print(f"  :SUMO junction (id = {tl}) has more movements than Synchro intersection (id = {intid}). Please check.")
+                                break
+                            movement_values.append(','.join(from_groups[from_edge][dir_key]))
+                            column_index += 1
+
+            # If there are remaining columns, print the message indicating the mismatch
+            if column_index < len(Synchro[intid]["Lanes"].columns) - 3:
+                print(f"  :Synchro intersection (id = {intid}) has more movements than SUMO junction (id = {tl}). Please check.")
+
+            # Ensure that the number of columns matches the existing columns in Synchro[intid]["Lanes"]
+            while len(movement_values) < len(Synchro[intid]["Lanes"].columns) - 2:
+                movement_values.append('')
+
+            # Create a new row with "Movement" as RECORDNAME, intid as INTID, and TLLogic values
+            new_movement_row = pd.DataFrame([['Movement', intid] + movement_values], columns=Synchro[intid]["Lanes"].columns)
+            Synchro[intid]["Lanes"] = pd.concat([Synchro[intid]["Lanes"], new_movement_row], ignore_index=True)
+
+    # Matching "Movement" of Synchro[intid]["Lanes"] with "Protected" and "Permitted" in Synchro[intid]["Phases"]
+    phase_flag = False
+    error_msg = ""
+    for intid in Synchro.keys():
+        try:
+            phases_df = Synchro[intid]["Phases"]
+            lanes_df = Synchro[intid]["Lanes"]
+            phases_df['ProtectedMovement'] = ''
+            phases_df['PermittedMovement'] = ''
+            phases_df['RTORMovement'] = ''
+            movement_mapping = {}
+            movement_row = lanes_df[lanes_df['RECORDNAME'] == 'Movement'].iloc[0]
+            for column in lanes_df.columns[2:]:
+                movement_mapping[column] = movement_row[column] if not pd.isna(movement_row[column]) else ''
+
+            for phase_idx, phase_row in phases_df.iterrows():
+                protected_columns = phase_row['Protected'].split(',')
+                protected_movements = [movement_mapping.get(col, '') for col in protected_columns if col in movement_mapping]
+                protected_movements = [mv for mv in protected_movements if mv]
+                phases_df.at[phase_idx, 'ProtectedMovement'] = ','.join(protected_movements)
+                # For "PermittedMovement", extract and map the columns from "Permitted"
+                permitted_columns = phase_row['Permitted'].split(',')
+                permitted_movements = [movement_mapping.get(col, '') for col in permitted_columns if col in movement_mapping]
+                permitted_movements = [mv for mv in permitted_movements if mv]
+                phases_df.at[phase_idx, 'PermittedMovement'] = ','.join(permitted_movements)
+
+                # For "RTORMovement", extract and map the columns from "RTOR"
+                RTOR_columns = phase_row['RTOR'].split(',')
+                RTOR_movements = [movement_mapping.get(col, '') for col in RTOR_columns if col in movement_mapping]
+                RTOR_movements = [mv for mv in RTOR_movements if mv]  # Remove any empty strings
+                phases_df.at[phase_idx, 'RTORMovement'] = ','.join(RTOR_movements)
+
+            # Update the "Phases" DataFrame in Synchro
+            Synchro[intid]["Phases"] = phases_df
+            phase_flag += 1
+        except Exception as e:
+            phase_flag = True
+            error_msg = str(e)
+            # get sumo junction id form lookup_df
+            sumo_id = lookup_df.loc[lookup_df['INTID'] == intid, 'SumoJunctionID'].values[0]
+            print(f"  :Mismatch between SUMO junction {sumo_id} and "
+                  f"Synchro junction {intid} in the input MatchupTable.xlsx.")
+    # # Uncomment this section if you want to raise an error when no phases are found
+
+    if phase_flag:
+        raise Exception(error_msg)
+
+    # # No matching phases found
+    # if phase_flag == 0:
+    #     raise ValueError("No phases found in Synchro data.")
+    # elif phase_flag >= 0:
+    #     # Not all phases matched
+    #     if phase_flag != len(Synchro):
+    #         print(f"  :There are {len(Synchro) - phase_flag} intersections without phases. Please check.")
+
+    tree = ET.parse(path_net)
+    root = tree.getroot()
+    last_edge = root.findall('edge')[-1]
+
+    for tlLogic_elem in root.findall('tlLogic'):
+        tl_id = tlLogic_elem.attrib['id']
+        intid_row = lookup_df[lookup_df['SumoJunctionID'] == tl_id]
+        if intid_row.empty:
+            continue
+
+        intid = intid_row['INTID'].values[0]
+        synchro_data = Synchro[intid]
+        offset = synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Offset', 'DATA'].values[0]
+        detect_lengths = synchro_data["Lanes"].loc[synchro_data["Lanes"]['RECORDNAME'] == 'DetectSize1']
+        detect_lengths_float = detect_lengths.iloc[:, 2:].apply(pd.to_numeric, errors='coerce')
+        detector_length = detect_lengths_float.max(axis=1, skipna=True).max(skipna=True) * 0.3048 if not detect_lengths.empty else ''
+        detector_length_left_turn = detect_lengths_float.min(axis=1, skipna=True).min(skipna=True) * 0.3048 if not detect_lengths.empty else ''
+
+        total_cycle_length = synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Cycle Length', 'DATA'].values[0]
+        new_tlLogic = ET.Element('tlLogic', id=tl_id, offset=str(offset), programID="NEMA", type="NEMA")
+
+        # Add the param elements based on gathered data
+        params = {
+            "detector-length": str(detector_length),
+            "detector-length-leftTurnLane": str(detector_length_left_turn),
+            "total-cycle-length": str(total_cycle_length),
+            "coordinate-mode": "true" if synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Control Type', 'DATA'].values[0] == '3' else "false",
+            "whetherOutputState": "true",
+            "show-detectors": "true",
+            "controllerType": "Type 170" if synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Referenced To', 'DATA'].values[0] in ['1', '4'] else "TS2",
+            "fixForceOff": "true" if synchro_data["Phases"]["InhibitMax"].astype(str).str.contains('1').any() else "false"
+        }
+
+        # Add the 'coordinatePhases' parameter conditionally
+        if params["coordinate-mode"] == "true":
+            reference_phase = synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Reference Phase', 'DATA'].values[0]
+            RP = int(reference_phase)
+            if RP <= 99:
+                coordinate_phases_value = str(RP)
+            else:
+                coordinate_phases_value = f"{RP // 100},{RP - (RP // 100) * 100}"
+            params["coordinatePhases"] = coordinate_phases_value
+
+        # Add the 'minRecall' parameter
+        min_recall_subset = synchro_data["Phases"][synchro_data["Phases"]["Recall"] == '1']
+        min_recall_value = ",".join(min_recall_subset["Phase"].astype(str)) if not min_recall_subset.empty else ""
+        params["minRecall"] = min_recall_value
+        if FixedTime == 1:
+            params["minRecall"] = ""
+
+        # Add the 'maxRecall' parameter
+        max_recall_subset = synchro_data["Phases"][synchro_data["Phases"]["Recall"] == '3']
+        max_recall_value = ",".join(max_recall_subset["Phase"].astype(str)) if not max_recall_subset.empty else ""
+        params["maxRecall"] = max_recall_value
+        if FixedTime == 1:
+            params["maxRecall"] = ",".join(synchro_data["Phases"]["Phase"])
+
+        for key, value in params.items():
+            ET.SubElement(new_tlLogic, 'param', key=key, value=value)
+
+        # Adding <param key="ringX" value=""/> with the updated logic
+        max_ring = synchro_data["Phases"]["Ring"].astype(int).max()
+        previous_phase = 1
+
+        for ring_num in range(1, max_ring + 1):
+            phases_in_ring = synchro_data["Phases"][synchro_data["Phases"]["Ring"].astype(int) == ring_num]["Phase"].astype(int).tolist()
+            if not phases_in_ring:
                 continue
 
-            # Check if it's a table name
-            if line.startswith("["):
-                remove_flag = 1
-                if current_table is None:
-                    current_table = line[1:-1]  # Remove the square brackets
+            largest_phase = max(phases_in_ring)
+            complete_list = []
+
+            for i in range(previous_phase, largest_phase + 1):
+                if i in phases_in_ring:
+                    complete_list.append(i)
                 else:
-                    # Store the previous table data in the dictionary
-                    SignalDict[current_table] = pd.read_csv(
-                        io.StringIO('\n'.join(current_table_data)), dtype=str)
+                    complete_list.append(0)
 
-                    # Start a new table
-                    current_table = line[1:-1]  # Remove the square brackets
-                    current_table_data = []
+            previous_phase = largest_phase + 1
+            ring_value = ",".join(map(str, complete_list))
+            ET.SubElement(new_tlLogic, 'param', key=f"ring{ring_num}", value=ring_value)
+
+        max_barrier = synchro_data["Phases"]["Barrier"].astype(int).max()
+        for barrier_num in range(1, max_barrier + 1):
+            if barrier_num == 1:
+                # Find phases with the largest "Barrier" value
+                largest_barrier_row = synchro_data["Phases"][synchro_data["Phases"]["Barrier"].astype(int) == max_barrier]
+                largest_phases = largest_barrier_row[largest_barrier_row["Position"].astype(int) == largest_barrier_row["Position"].astype(int).max()]["Phase"].astype(int).tolist()
+                barrier_value = ",".join(map(str, sorted(largest_phases)))
+                ET.SubElement(new_tlLogic, 'param', key="barrierPhases", value=barrier_value)
             else:
-                current_table_data.append(line)
+                # Find the previous barrier phases
+                previous_barrier_row = synchro_data["Phases"][synchro_data["Phases"]["Barrier"].astype(int) == barrier_num - 1]
+                largest_phases = previous_barrier_row[previous_barrier_row["Position"].astype(int) == previous_barrier_row["Position"].astype(int).max()]["Phase"].astype(int).tolist()
+                barrier_value = ",".join(map(str, sorted(largest_phases)))
+                ET.SubElement(new_tlLogic, 'param', key=f"barrier{barrier_num}Phases", value=barrier_value)
 
-        # Store the last table in the dictionary
-        SignalDict[current_table] = pd.read_csv(
-            io.StringIO('\n'.join(current_table_data)), dtype=str)
+        # Check and swap barrier phases if needed
+        if params["coordinate-mode"] == "true":
+            # Extract the values of 'coordinatePhases', 'barrierPhases', and 'barrier2Phases'
+            coordinate_phases_value = params.get("coordinatePhases", "")
+            barrier_phases_value = new_tlLogic.find("./param[@key='barrierPhases']").attrib['value']
+            barrier2_phases_element = new_tlLogic.find("./param[@key='barrier2Phases']")
 
-        path_signal_lookup = ConcreteScn.config_dict["Control"].get("Synchro_lookup")
-        path_signal_lookup_abs = pf.path2linux(
-            os.path.join(ConcreteScn.config_dict.get('input_dir'), path_signal_lookup))
-        IDRef = pd.read_csv(path_signal_lookup_abs, dtype=str)
+            if barrier2_phases_element is not None:
+                barrier2_phases_value = barrier2_phases_element.attrib['value']
 
-        # Create a dictionary mapping INTID to OpenDriveJunctionID
-        IDMap = dict(zip(IDRef['INTID'], IDRef['OpenDriveJunctionID']))
+                # Check if 'barrier2Phases' is the same as 'coordinatePhases'
+                if barrier2_phases_value != coordinate_phases_value:
+                    new_tlLogic.find("./param[@key='barrierPhases']").attrib['value'] = barrier2_phases_value
+                    barrier2_phases_element.attrib['value'] = barrier_phases_value
 
-        SignalDict['Links']["INTID"] = SignalDict['Links']["INTID"].astype(
-            str).replace(IDMap).astype(str)
-        SignalDict['Lanes']["INTID"] = SignalDict['Lanes']["INTID"].astype(
-            str).replace(IDMap).astype(str)
-        SignalDict['Timeplans']["INTID"] = SignalDict['Timeplans']["INTID"].astype(
-            str).replace(IDMap).astype(str)
-        SignalDict['Phases']["INTID"] = SignalDict['Phases']["INTID"].astype(
-            str).replace(IDMap).astype(str)
+                # Recheck if 'barrier2Phases' is still not the same as 'coordinatePhases'
+                if barrier2_phases_element.attrib['value'] != coordinate_phases_value:
+                    print("  :Error with barrier phases and coordinated phases at "
+                          f"intersection {intid_row['INTID'].values[0]}, please modify manually.")
 
-        Phases = SignalDict['Phases']
-        Lanes = SignalDict['Lanes']
-        IDs = Phases['INTID'].unique()
-        Synchro = {}
-        for ID in IDs:
-            Synchro[ID] = {}
-            plan_data = {"phase": [],
-                         "time": [],
-                         "SBR": [],
-                         "SBT": [],
-                         "SBL": [],
-                         "WBR": [],
-                         "WBT": [],
-                         "WBL": [],
-                         "NBR": [],
-                         "NBT": [],
-                         "NBL": [],
-                         "EBR": [],
-                         "EBT": [],
-                         "EBL": []}
-            Synchro[ID]['plan'] = pd.DataFrame(plan_data)
-            Synchro[ID]['plan'] = Synchro[ID]['plan'].astype({"phase": int,
-                                                              "time": float,
-                                                              "SBR": str,
-                                                              "SBT": str,
-                                                              "SBL": str,
-                                                              "WBR": str,
-                                                              "WBT": str,
-                                                              "WBL": str,
-                                                              "NBR": str,
-                                                              "NBT": str,
-                                                              "NBL": str,
-                                                              "EBR": str,
-                                                              "EBT": str,
-                                                              "EBL": str})
-            Synchro[ID]['bound'] = {}
+        nm = len(TLLogic[tl_id])
+        for _, phase_row in synchro_data["Phases"].iterrows():
+            state = generate_complete_state_string(phase_row['ProtectedMovement'], phase_row['PermittedMovement'], phase_row['RTORMovement'], nm)
+            maxDur = int(float(phase_row['MaxGreen'])) if pd.notna(phase_row['MaxGreen']) else int(int(total_cycle_length) / 3)
+            if pd.isna(phase_row['MaxGreen']):
+                print(f"  :Maximum green('MaxGreen') is missing for phase {phase_row['Phase']} at "
+                      f"intersection {intid_row['INTID'].values[0]}, {int(int(total_cycle_length) / 3)} sec is used."
+                      " Manual change is probably needed to ensure the length of this ring equal to cycle length.")
 
-            for i in range(1, 17):
-                phase = f'D{i}'
-                # Create the key before trying to access it
-                Synchro[ID][phase] = {}
-                if phase in Phases.columns:
-                    Synchro[ID][phase]['time'] = float(Phases.loc[(Phases["RECORDNAME"] == "MaxGreen") & (
-                        Phases["INTID"] == ID), f'D{i}'].values[0])
-                filtered_row = Lanes[(Lanes['RECORDNAME'] == 'Phase1') & (
-                    Lanes['INTID'] == ID)]
-                Synchro[ID][phase]['protected'] = filtered_row.columns[(
-                    filtered_row == f'{i}').any()].tolist()
-                filtered_row = Lanes[(Lanes['RECORDNAME'] == 'PermPhase1') & (
-                    Lanes['INTID'] == ID)]
-                Synchro[ID][phase]['permitted'] = filtered_row.columns[(
-                    filtered_row == f'{i}').any()].tolist()
-            for i in range(1, 17):
-                new_row_1 = {}
-                new_row_2 = {}
-                new_row_3 = {}
-                phase = f'D{i}'
+            minDur = phase_row['MinGreen'] if pd.notna(phase_row['MinGreen']) else min(6, int(maxDur))
+            if pd.isna(phase_row['MinGreen']):
+                print(f"  :Minimum green('MinGreen') is missing for phase {phase_row['Phase']} at "
+                      f"intersection {intid_row['INTID'].values[0]}, {min(6, maxDur)} sec is used")
 
-                for j in range(0, len(Synchro[ID][phase]['protected'])):
-                    new_row_1[Synchro[ID][phase]['protected'][j]] = 'G'
-                for j in range(0, len(Synchro[ID][phase]['permitted'])):
-                    new_row_1[Synchro[ID][phase]['permitted'][j]] = 'g'
-                if f'D{i}' in Phases.columns:
-                    new_row_1['time'] = float(Phases.loc[(Phases["RECORDNAME"] == "MaxGreen") & (
-                        Phases["INTID"] == ID), f'D{i}'].values[0])
-                    if float(Phases.loc[(Phases["RECORDNAME"] == "Yellow")
-                                        & (Phases["INTID"] == ID),
-                                        f'D{i}'].values[0]) != 0:
-                        for j in range(0, len(Synchro[ID][phase]['protected'])):
-                            new_row_2[Synchro[ID][phase]['protected'][j]] = 'y'
-                        for j in range(0, len(Synchro[ID][phase]['permitted'])):
-                            new_row_2[Synchro[ID][phase]['permitted'][j]] = 'y'
-                        new_row_2['time'] = float(Phases.loc[(Phases["RECORDNAME"] == "Yellow") & (
-                            Phases["INTID"] == ID), f'D{i}'].values[0])
-                    if float(Phases.loc[(Phases["RECORDNAME"] == "AllRed")
-                                        & (Phases["INTID"] == ID),
-                                        f'D{i}'].values[0]) != 0:
-                        for j in range(0, len(Synchro[ID][phase]['protected'])):
-                            new_row_3[Synchro[ID][phase]['protected'][j]] = 'r'
-                        for j in range(0, len(Synchro[ID][phase]['permitted'])):
-                            new_row_3[Synchro[ID][phase]['permitted'][j]] = 'r'
-                        new_row_3['time'] = float(Phases.loc[(Phases["RECORDNAME"] == "AllRed") & (
-                            Phases["INTID"] == ID), f'D{i}'].values[0])
-                    new_df1 = pd.DataFrame(
-                        new_row_1, index=[0], columns=Synchro[ID]['plan'].columns)
-                    new_df2 = pd.DataFrame(
-                        new_row_2, index=[0], columns=Synchro[ID]['plan'].columns)
-                    new_df3 = pd.DataFrame(
-                        new_row_3, index=[0], columns=Synchro[ID]['plan'].columns)
-                    Synchro[ID]['plan'] = pd.concat(
-                        [Synchro[ID]['plan'], new_df1])
-                    Synchro[ID]['plan'] = pd.concat(
-                        [Synchro[ID]['plan'], new_df2])
-                    Synchro[ID]['plan'] = pd.concat([Synchro[ID]['plan'], new_df3])
+            vehext = phase_row['VehExt'] if pd.notna(phase_row['VehExt']) else 2
+            if pd.isna(phase_row['VehExt']):
+                print(f"  :Added green per actuation ('vehext') is missing for phase {phase_row['Phase']} at "
+                      f"intersection {intid_row['INTID'].values[0]}, 2 sec is used.")
 
-            Synchro[ID]['plan'].dropna(how='all', inplace=True)
-            Synchro[ID]['plan'].reset_index(drop=True, inplace=True)
-            Synchro[ID]['plan']["phase"] = Synchro[ID]['plan'].index + 1
-            if (Synchro[ID]['plan']['SBR'].isna().all()
-                & Synchro[ID]['plan']['SBT'].isna().all()
-                    & Synchro[ID]['plan']['SBL'].isna().all()):
-                Synchro[ID]['bound'] = ['WB', 'NB', 'EB']
-            elif (Synchro[ID]['plan']['WBR'].isna().all()
-                  & Synchro[ID]['plan']['WBT'].isna().all()
-                  & Synchro[ID]['plan']['WBL'].isna().all()):
-                Synchro[ID]['bound'] = ['SB', 'NB', 'EB']
-            elif (Synchro[ID]['plan']['NBR'].isna().all()
-                  & Synchro[ID]['plan']['NBT'].isna().all()
-                  & Synchro[ID]['plan']['NBL'].isna().all()):
-                Synchro[ID]['bound'] = ['SB', 'WB', 'EB']
-            elif (Synchro[ID]['plan']['EBR'].isna().all()
-                  & Synchro[ID]['plan']['EBT'].isna().all()
-                  & Synchro[ID]['plan']['EBL'].isna().all()):
-                Synchro[ID]['bound'] = ['SB', 'WB', 'NB']
-            else:
-                Synchro[ID]['bound'] = ['SB', 'WB', 'NB', 'EB']
+            yellow = phase_row['Yellow'] if pd.notna(phase_row['Yellow']) else 3
+            if pd.isna(phase_row['Yellow']):
+                print(f"  :Yellow time('Yellow') is missing for phase {phase_row['Phase']} at "
+                      f"intersection {intid_row['INTID'].values[0]}, 3 sec is used.")
 
-            Synchro[ID]['plan'].fillna('r', inplace=True)
-            Synchro[ID]['plan'].rename(
-                columns={'SBT': 'SBS', 'WBT': 'WBS', 'NBT': 'NBS', 'EBT': 'EBS'}, inplace=True)
-            Synchro[ID]['plan']['SBT'] = Synchro[ID]['plan']['SBL']
-            Synchro[ID]['plan']['WBT'] = Synchro[ID]['plan']['WBL']
-            Synchro[ID]['plan']['NBT'] = Synchro[ID]['plan']['NBL']
-            Synchro[ID]['plan']['EBT'] = Synchro[ID]['plan']['EBL']
-            Synchro[ID]['plan'] = Synchro[ID]['plan'][['phase', 'time', 'SBR', 'SBS', 'SBL', 'SBT',
-                                                       'WBR', 'WBS', 'WBL', 'WBT', 'NBR', 'NBS',
-                                                       'NBL', 'NBT', 'EBR', 'EBS', 'EBL', 'EBT']]
+            red = phase_row['AllRed'] if pd.notna(phase_row['AllRed']) else 0
+            if pd.isna(phase_row['AllRed']):
+                print(f"  :All red time ('AllRed') is missing for phase {phase_row['Phase']} at "
+                      f"intersection {intid_row['INTID'].values[0]}, 0 sec is used.")
 
-        # Read the XML file
+            # Add the phase element
+            ET.SubElement(new_tlLogic, 'phase', duration="99", minDur=str(minDur),
+                          maxDur=str(maxDur), vehext=str(vehext),
+                          yellow=str(yellow), red=str(red),
+                          name=str(phase_row['Phase']), state=state)
 
-        with open(self.Network, 'r', encoding="utf-8") as file:
-            data = file.read()
+        # Replace the existing tlLogic element with the new one in the parent element
+        parent = root.find(".//tlLogic/..")
+        parent.remove(tlLogic_elem)
+        # Insert the new tlLogic element right after the last <edge> element
+        parent.insert(list(parent).index(last_edge) + 1, new_tlLogic)
 
-        # Parse the XML file
-        tree = ET.ElementTree(ET.fromstring(data))
+    tree.write(path_net, encoding='UTF-8')
 
-        # Initialize the dictionary
-        TLLogic = {}
+    prettify_xml(path_net)
 
-        # Iterate over all <tlLogic> elements
-        for elem in tree.iter('tlLogic'):
-            # Use the 'id' attribute as the key and create an empty dictionary as its value
-            TLLogic[elem.attrib['id']] = {}
-
-        # Iterate over all <connection> elements
-        for elem in tree.iter('connection'):
-            # Check if the element has a 'tl' attribute
-            if 'tl' in elem.attrib:
-                # Get the 'tl' attribute
-                tl = elem.attrib['tl']
-                # Get the 'linkIndex' attribute
-                linkIndex = elem.attrib['linkIndex']
-                # Check if the tl exists in TLLogic
-                if tl in TLLogic:
-                    # Create a dictionary for this linkIndex
-                    TLLogic[tl][linkIndex] = {'app': 1, 'dir': elem.attrib['dir'], 'value': elem.find(
-                        'param').attrib['value'] if elem.find('param') is not None else None}
-
-        for tl in TLLogic:
-            dd = 1
-            prev_linkIndex_data = None
-            # Get the sorted link indices for this tl (as integers)
-            sorted_linkIndices = sorted(TLLogic[tl].keys(), key=int)
-            # Iterate over each linkIndex in this tl
-            for linkIndex in sorted_linkIndices:
-                # If this is not the first linkIndex and the data for this linkIndex is different from the previous one
-                if prev_linkIndex_data is not None and TLLogic[tl][linkIndex]['value'] != prev_linkIndex_data:
-                    dd += 1
-                # Update the 'app' value for this linkIndex
-                TLLogic[tl][linkIndex]['app'] = dd
-                # Store the current data for the next iteration
-                prev_linkIndex_data = TLLogic[tl][linkIndex]['value']
-
-        # TLLogic['10']['5']
-
-        tl_from_data = []
-        for tl in TLLogic:
-            if tl in IDs:
-                max_app = max(TLLogic[tl][linkIndex]['app']
-                              for linkIndex in TLLogic[tl])
-                if max_app == len(Synchro[tl]['bound']):
-                    tl_from_data.append(tl)
-                    for linkIndex in TLLogic[tl]:
-                        string_index = TLLogic[tl][linkIndex]['app'] - 1
-                        string = Synchro[tl]['bound'][string_index]
-                        TLLogic[tl][linkIndex]['dir'] = string + \
-                            TLLogic[tl][linkIndex]['dir'].upper()
-
-        tlLogicState = {}
-        for item in tl_from_data:
-            tlLogicState[item] = pd.DataFrame(
-                {'phase': [], 'time': [], 'state': []})
-
-        # let's print the created dictionary
-
-        Order = ['SBR', 'SBS', 'SBL', 'SBT', 'WBR', 'WBS', 'WBL',
-                 'WBT', 'NBR', 'NBS', 'NBL', 'NBT', 'EBR', 'EBS', 'EBL', 'EBT']
-
-        # Iterate over each linkIndex in TLLogic[tl]
-        StateDirDict = {}
-        for tl in tl_from_data:
-            StateDir = []
-            for linkIndex in TLLogic[tl]:
-                # Append the 'dir' value to the list
-                StateDir.append(TLLogic[tl][linkIndex]['dir'])
-            StateDir = sorted(StateDir, key=Order.index)
-            StateDirDict[tl] = StateDir
-
-        for tl in tl_from_data:
-            phase_plan = Synchro[tl]['plan']
-            for phase in Synchro[tl]['plan']['phase']:
-                StateList = phase_plan[phase_plan['phase'] == phase][StateDirDict[tl]].iloc[0]
-                if 'NBR' in StateList:
-                    # all right turn on red
-                    StateList['NBR'] = 'g'
-                if 'SBR' in StateList:
-                    # all right turn on red
-                    StateList['SBR'] = 'g'
-                if 'EBR' in StateList:
-                    # all right turn on red
-                    StateList['EBR'] = 'g'
-                if 'WBR' in StateList:
-                    # all right turn on red
-                    StateList['WBR'] = 'g'
-                State = ''.join(StateList)
-                PhaseTime = phase_plan[phase_plan['phase'] == phase]['time'].iloc[0]
-                new_row = {'phase': phase, 'time': PhaseTime, 'state': State}
-                new_row_df = pd.DataFrame(
-                    new_row, index=[0], columns=tlLogicState[tl].columns)
-                tlLogicState[tl] = pd.concat([tlLogicState[tl], new_row_df])
-                tlLogicState[tl]['phase'] = tlLogicState[tl]['phase'].astype(
-                    int)
-            tlLogicState[tl].reset_index(drop=True, inplace=True)
-        # tlLogicState['12']
-
-        # Parse the XML file
-        parser = etree.XMLParser(remove_blank_text=True, resolve_entities=False)
-        tree = etree.parse(self.Network, parser)
-        root = tree.getroot()
-
-        # List of tlLogic ids
-
-        # Define the namespace
-        # ns = {'default': 'http://sumo.dlr.de/xsd/net_file.xsd'}
-
-        # Iterate over each tlLogic element in the root
-        for tlLogic in root.xpath('.//tlLogic'):
-            # If the id attribute of the tlLogic element is in tlLogic_ids
-            if tlLogic.get('id') in tl_from_data:
-                id_val = tlLogic.get('id')
-                phase_set = tlLogicState[id_val]
-                # Remove all phase elements
-                for phase in tlLogic.findall('phase'):
-                    tlLogic.remove(phase)
-                # Add a new phase element
-                for i in range(0, len(phase_set)):
-                    new_phase = etree.SubElement(tlLogic, 'phase')
-                    new_phase.set('duration', str(
-                        tlLogicState[f'{id_val}']['time'].iloc[i]))
-                    new_phase.set(
-                        'state', tlLogicState[f'{id_val}']['state'].iloc[i])
-            elif len(tlLogic.findall('param')) == 0:
-                for phase in tlLogic.findall('phase'):
-                    if phase.get('state') == 'y' or phase.get('state') == 'r':
-                        tlLogic.remove(phase)
-
-        # Save the modified XML
-        tree.write(self.Network,
-                   pretty_print=True, xml_declaration=True, encoding='UTF-8')
-        print(f"  :SUMO signal updated at: {self.Network}.")
+    return True

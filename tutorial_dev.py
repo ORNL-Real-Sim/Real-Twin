@@ -19,7 +19,7 @@ import realtwin as rt
 if __name__ == '__main__':
 
     # Prepare your configuration file (in YAML format)
-    CONFIG_FILE = "./public_configs.yaml"
+    CONFIG_FILE = "./realtwin_config.yaml"
 
     # initialize the realtwin object
     twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
