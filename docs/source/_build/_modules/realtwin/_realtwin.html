@@ -9,6 +9,7 @@
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/realtwin_css.css?v=836a7079" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
@@ -50,13 +51,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../../pages/install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/realtwin_simulator.html">Supported Simulator</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/realtwin_prepare.html">Preparation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/realtwin_generation.html">Scenario Generation</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../pages/api.html">realtwin API Reference</a></li>
@@ -259,7 +260,7 @@
 
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">generate_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incl_elevation_tif</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">incl_elevation_tif</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Generate user inputs, such as MatchUp table, Control and Traffic data</span>
 
 <span class="sd">        Args:</span>
@@ -298,19 +299,18 @@
                   <span class="p">)</span>
 
         <span class="c1"># check whether the elevation tif data is provided</span>
-        <span class="n">path_elev</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span>
-            <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ElevationMap&quot;</span><span class="p">))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_elev</span><span class="p">):</span>
-            <span class="c1"># print(&quot;  :Elevation map is not provided. we will download from network BBOX.&quot;)</span>
-            <span class="k">if</span> <span class="n">incl_elevation_tif</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Downloading elevation map from network BBOX.&quot;</span><span class="p">)</span>
-                <span class="c1"># download elevation map from network bbox</span>
-                <span class="n">bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Net_BBox&quot;</span><span class="p">)</span>
-                <span class="n">output_file</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;elevation_map.tif&quot;</span><span class="p">)</span>
-                <span class="n">download_elevation_tif_by_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
-
-                <span class="c1"># update tif file in the input configuration</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)[</span><span class="s2">&quot;ElevationMap&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;elevation_map.tif&quot;</span>
+        <span class="c1"># path_elev = pf.path2linux(</span>
+        <span class="c1">#     Path(self.input_config.get(&quot;input_dir&quot;)) / self.input_config.get(&quot;Network&quot;).get(&quot;ElevationMap&quot;))</span>
+        <span class="c1"># if not os.path.exists(path_elev):</span>
+        <span class="c1">#     # print(&quot;  :Elevation map is not provided. we will download from network BBOX.&quot;)</span>
+        <span class="c1">#     if incl_elevation_tif:</span>
+        <span class="c1">#         print(&quot;  :Downloading elevation map from network BBOX.&quot;)</span>
+        <span class="c1">#         # download elevation map from network bbox</span>
+        <span class="c1">#         bbox = self.input_config.get(&quot;Network&quot;).get(&quot;Net_BBox&quot;)</span>
+        <span class="c1">#         output_file = pf.path2linux(Path(self.input_config.get(&quot;input_dir&quot;)) / &quot;elevation_map.tif&quot;)</span>
+        <span class="c1">#         download_elevation_tif_by_bbox(bbox, output_file)</span>
+        <span class="c1">#         # update tif file in the input configuration</span>
+        <span class="c1">#         self.input_config.get(&quot;Network&quot;)[&quot;ElevationMap&quot;] = &quot;elevation_map.tif&quot;</span>
 
         <span class="c1"># generate abstract scenario</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span> <span class="o">=</span> <span class="n">AbstractScenario</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">)</span>
@@ -453,7 +453,7 @@
                         <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">}</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sel_algo</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Error:parameter sel_algo must be a dict with&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Error: parameter sel_algo must be a dict with&quot;</span>
                   <span class="s2">&quot; keys of &#39;turn_inflow&#39; and &#39;behavior&#39;, using&quot;</span>
                   <span class="s2">&quot; genetic algorithm as default values.&quot;</span><span class="p">)</span>
             <span class="n">sel_algo</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">,</span> <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">}</span>
@@ -475,7 +475,7 @@
         <span class="c1"># cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)</span>
         <span class="n">cali_sumo_</span><span class="p">(</span><span class="n">sel_algo</span><span class="o">=</span><span class="n">sel_algo</span><span class="p">,</span> <span class="n">input_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Calibration successfully completed.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calibration successfully completed.&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="kc">True</span>
 

@@ -1,5 +1,5 @@
 ======================
-realtwin API Reference
+API Reference
 ======================
 
 .. currentmodule:: realtwin

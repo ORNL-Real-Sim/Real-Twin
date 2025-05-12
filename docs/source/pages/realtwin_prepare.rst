@@ -1,5 +1,5 @@
 =====================
-realtwin Preparation
+Preparation
 =====================
 
 .. contents:: There are several steps to prepare before the use of Real-Twin package. This includes:
@@ -7,94 +7,13 @@ realtwin Preparation
    :local:
    :backlinks: none
 
-How To Prepare Python Environment (:blue:`Optional`)
-====================================================
-
-If you want to run the realtwin in an isolated virtual environment that not affecting your existing working environment, please follow the following steps.
-
-Create Virtual Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-There are several ways to manager a Python virtual environment.
-    - Using `venv`_ module in Python
-    - Using `conda manage environments`_ package manager (`conda install`_)
-    - Using `virtualenv`_ package
-
-realtwin package provides a simple way to create a virtual environment using the `venv` module in Python.
-
-.. code-block:: python
-    :linenos:
-    :emphasize-lines: 5
-
-    import realtwin as rt
-
-    # venv_name: the name of the virtual environment. Default to be "venv_rt"
-    # venv_dir: the directory to install virtual env. Default to be current folder
-    rt.venv_create(venv_name="venv_rt", venv_dir="")
-
-
-Activate Virtual Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In order to activate your venv, please be aware the different IDE (**integrated development environment**) may need different actions.
-
-For cmd:
-    - https://python.land/virtual-environments/virtualenv
-
-For VS Code:
-    - https://code.visualstudio.com/docs/python/environments
-
-For PyCharm:
-    - https://www.jetbrains.com/help/pycharm/configuring-python-interpreter.html
-
-
-Delete Virtual Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-There are several ways to manager a Python virtual environment.
-    - Using `venv`_ module in Python
-    - Using `conda manage environments`_ package manager (`conda install`_)
-    - Using `virtualenv`_ package
-
-.. code-block:: python
-    :linenos:
-    :emphasize-lines: 5
-
-    import realtwin as rt
-
-    # venv_name: the name of the virtual environment. Default to be "venv_rt"
-    # venv_dir: the directory to install virtual env. Default to be current folder
-    rt.venv_delete(venv_name="venv_rt", venv_dir="")
-
-.. _How To Prepare Elevation Map In TIFF Format:
-
-How To Prepare Elevation Map In TIFF Format (:blue:`Optional`)
-==============================================================
-
-
-.. note::
-    - The elevation map is used to generate the elevation data for the simulation, which can perform real-world scenario generation. If no elevation map is provided, the simulation will consider the network as flat.
-    - You need to add the elevation map to the configuration file. For details on how to add the elevation map to the configuration file, please refer to the section: :ref:`Update Configuration File`.
-
-.. code-block:: python
-    :linenos:
-    :emphasize-lines: 6, 7, 8
-
-    import realtwin as rt
-
-    # prepare the elevation map
-    # This will create a sample elevation map in the current working directory: `elevation_map.tif`
-
-    bbox = "the bounding box of the area you want to download the elevation data for, in the format: (lon_min, lat_min, lon_max, lat_max)"
-    output_file = "elevation_map.tif"  # the name/path of the output file
-    rt.download_elevation_tif_by_bbox(bbox, output_file)
 
 How To Prepare / Update Configuration File (:blue:`Required`)
 =============================================================
 
 The configuration file is a `YAML`_ file that contains all the necessary parameters for the realtwin package to run.
 
-Prepare From `realtwin` Package
+Prepare from `realtwin` Package
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 User can use the sample configuration file provided in the `realtwin` package.
@@ -123,13 +42,15 @@ User can also specify the output directory for the configuration file.
 
 If the configuration file generated, user can modify the file according to their needs. For details on how to modify the configuration file, please refer to the section: :ref:`Update Configuration File`.
 
-Prepare From GitHub
+Prepare from GitHub
 ~~~~~~~~~~~~~~~~~~~~
 Download the sample configuration file from the `Real-Twin GitHub Config`_ and modify it according to your needs. For details on how to modify the configuration file, please refer to the section: :ref:`Update Configuration File`.
 
 
-Update Configuration File
-~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _Update Configuration File:
+
+:red:`Update Configuration File`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are several parameters in the configuration file that need to be updated according to your needs. The following is a list of parameters that need to be updated.
 
@@ -434,10 +355,90 @@ From GradSmart Demands
 
 
 
-From Synchro UTDF Demands
+From Demands: TODO...
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+How To Prepare Python Environment (:blue:`Optional`)
+====================================================
 
+If you want to run the realtwin in an isolated virtual environment that not affecting your existing working environment, please follow the following steps.
+
+Create Virtual Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are several ways to manager a Python virtual environment.
+    - Using `venv`_ module in Python
+    - Using `conda manage environments`_ package manager (`conda install`_)
+    - Using `virtualenv`_ package
+
+realtwin package provides a simple way to create a virtual environment using the `venv` module in Python.
+
+.. code-block:: python
+    :linenos:
+    :emphasize-lines: 5
+
+    import realtwin as rt
+
+    # venv_name: the name of the virtual environment. Default to be "venv_rt"
+    # venv_dir: the directory to install virtual env. Default to be current folder
+    rt.venv_create(venv_name="venv_rt", venv_dir="")
+
+
+Activate Virtual Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to activate your venv, please be aware the different IDE (**integrated development environment**) may need different actions.
+
+For cmd:
+    - https://python.land/virtual-environments/virtualenv
+
+For VS Code:
+    - https://code.visualstudio.com/docs/python/environments
+
+For PyCharm:
+    - https://www.jetbrains.com/help/pycharm/configuring-python-interpreter.html
+
+
+Delete Virtual Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are several ways to manager a Python virtual environment.
+    - Using `venv`_ module in Python
+    - Using `conda manage environments`_ package manager (`conda install`_)
+    - Using `virtualenv`_ package
+
+.. code-block:: python
+    :linenos:
+    :emphasize-lines: 5
+
+    import realtwin as rt
+
+    # venv_name: the name of the virtual environment. Default to be "venv_rt"
+    # venv_dir: the directory to install virtual env. Default to be current folder
+    rt.venv_delete(venv_name="venv_rt", venv_dir="")
+
+.. _How To Prepare Elevation Map In TIFF Format:
+
+How To Prepare Elevation Map In TIFF Format (:blue:`Optional`)
+==============================================================
+
+
+.. note::
+    - The elevation map is used to generate the elevation data for the simulation, which can perform real-world scenario generation. If no elevation map is provided, the simulation will consider the network as flat.
+    - You need to add the elevation map to the configuration file. For details on how to add the elevation map to the configuration file, please refer to the section: :ref:`Update Configuration File`.
+
+.. code-block:: python
+    :linenos:
+    :emphasize-lines: 6, 7, 8
+
+    import realtwin as rt
+
+    # prepare the elevation map
+    # This will create a sample elevation map in the current working directory: `elevation_map.tif`
+
+    bbox = "the bounding box of the area you want to download the elevation data for, in the format: (lon_min, lat_min, lon_max, lat_max)"
+    output_file = "elevation_map.tif"  # the name/path of the output file
+    rt.download_elevation_tif_by_bbox(bbox, output_file)
 
 
 .. _`Real-Twin GitHub Config`: https://github.com/ORNL-Real-Sim/Real-Twin-Dev/blob/main/public_configs.yaml

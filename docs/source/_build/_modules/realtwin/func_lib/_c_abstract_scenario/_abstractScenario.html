@@ -9,6 +9,7 @@
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/realtwin_css.css?v=836a7079" />
 
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
@@ -50,13 +51,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_simulator.html">Supported Simulator</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_prepare.html">Preparation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">Scenario Generation</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">realtwin API Reference</a></li>
@@ -354,10 +355,21 @@
         <span class="k">if</span> <span class="n">signal_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Control</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="n">signal_dict</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">control_dict</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Control&#39;</span><span class="p">):</span>
-                <span class="n">path_signal</span> <span class="o">=</span> <span class="n">control_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Signal&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="n">path_signal_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">),</span> <span class="n">path_signal</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">Control</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="n">load_control_signal</span><span class="p">(</span><span class="n">path_signal_abs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">control_data</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Control&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">control_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">path_signal</span> <span class="o">=</span> <span class="n">control_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Signal&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="n">path_signal_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">),</span> <span class="n">path_signal</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">Control</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="n">load_control_signal</span><span class="p">(</span><span class="n">path_signal_abs</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">control_data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">path_signal</span> <span class="o">=</span> <span class="n">control_data</span>
+                    <span class="n">path_signal_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">),</span> <span class="n">path_signal</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path_signal_abs</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">Control</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="n">load_control_signal</span><span class="p">(</span><span class="n">path_signal_abs</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;  :File not found: </span><span class="si">{</span><span class="n">path_signal_abs</span><span class="si">}</span><span class="s2">. No signal data loaded from input file&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;  :Invalid control data in configuration file. &quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">fillAbstractScenario</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Fill the AbstractScenario with the data from the config_dict&quot;&quot;&quot;</span>

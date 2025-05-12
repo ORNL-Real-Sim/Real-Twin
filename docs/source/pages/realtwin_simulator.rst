@@ -1,5 +1,5 @@
 =============================
-realtwin Supported Simulator
+Supported Simulator
 =============================
 
 

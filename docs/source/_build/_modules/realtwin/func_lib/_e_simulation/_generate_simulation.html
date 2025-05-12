@@ -9,6 +9,7 @@
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/realtwin_css.css?v=836a7079" />
 
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
@@ -50,13 +51,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_simulator.html">Supported Simulator</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_prepare.html">Preparation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">Scenario Generation</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">realtwin API Reference</a></li>
@@ -120,9 +121,9 @@
 
 <div class="viewcode-block" id="SimPrep.__init__">
 <a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.SimPrep.html#realtwin.func_lib.SimPrep.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">SUMOSim</span> <span class="o">=</span> <span class="n">SUMOPrep</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">AimsunSim</span> <span class="o">=</span> <span class="n">AimsunPrep</span><span class="p">()</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SUMOSim</span> <span class="o">=</span> <span class="n">SUMOPrep</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">AimsunSim</span> <span class="o">=</span> <span class="n">AimsunPrep</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_sumo_sim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
