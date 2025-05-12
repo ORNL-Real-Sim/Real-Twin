@@ -18,45 +18,32 @@ import realtwin as rt
 
 if __name__ == '__main__':
 
-    # Prepare your configuration file (in YAML format)
+    # Step 1: Prepare your configuration file (in YAML format)
     CONFIG_FILE = "./realtwin_config.yaml"
 
-    # initialize the realtwin object
+    # Step 2: initialize the realtwin object
     twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
 
-    # NOTE optional: crate or delete a Python virtual environment for the simulation
-    # twin.venv_create(venv_name=twin._venv_name, venv_dir=twin.input_config["output_dir"])
-    # twin.venv_delete(venv_name=twin._venv_name, venv_dir=twin.input_config["output_dir"])
-
-    # check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
+    # Step 3: check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
     twin.env_setup(sel_sim=["SUMO", "VISSIM"])
 
-    # NOTE optional: check simulator including additional selection of directories
-    # change the new_dir to your own directory where the SUMO is installed (multiple versions)
-    # new_dir = [r"C:\Users\xh8\ornl_workspace\github_workspace\Real-Twin\SUMO\sumo-1.20.0\bin"]
-    # twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir)
-
-    # NOTE optional: strict simulator check, if the version is not matched, install the required version
-    # twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir, strict_sumo_version="1.21.0")
-
-    # Create Matchup Table and Require User To Update the Table
+    # Step 4: Create Matchup Table and Update the Table
     twin.generate_inputs()
 
-    # generate abstract scenario
+    # Step 5: generate abstract scenario
     twin.generate_abstract_scenario()
 
-    # generate scenarios
+    # Step 6: generate scenarios
     twin.generate_concrete_scenario()
 
-    # simulate the scenario
+    # Step 7: simulate the scenario
     twin.prepare_simulation()
 
-    # perform calibration
-    # Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
+    # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
     twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"})
 
-    # post-process the simulation results
+    # Step 9 (ongoing): post-process the simulation results
     twin.post_process()  # keywords arguments can be passed to specify the post-processing options
 
-    # visualize the simulation results
+    # Step 10 (ongoing): visualize the simulation results
     twin.visualize()  # keywords arguments can be passed to specify the visualization options
