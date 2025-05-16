@@ -26,7 +26,7 @@ from realtwin.util_lib.download_elevation_tif import download_elevation_tif_by_b
 from realtwin.util_lib.check_abstract_scenario_inputs import check_abstract_inputs
 from realtwin.func_lib._c_abstract_scenario._abstractScenario import AbstractScenario
 from realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation import generate_matchup_table
-from realtwin.func_lib._c_abstract_scenario.rt_demand_generation import generate_turn_demand
+from realtwin.func_lib._c_abstract_scenario.rt_demand_generation import generate_turn_demand, update_matchup_table
 
 from realtwin.func_lib._d_concrete_scenario._concreteScenario import ConcreteScenario
 
@@ -260,7 +260,7 @@ class RealTwin:
         control_dir = pf.path2linux(Path(self.input_config.get("input_dir")) / "Control")
         traffic_dir = pf.path2linux(Path(self.input_config.get("input_dir")) / "Traffic")
         df_volume, df_vol_lookup = generate_turn_demand(path_matchup_table=path_matchup,
-                                                        signal_dir=control_dir,
+                                                        control_dir=control_dir,
                                                         traffic_dir=traffic_dir,)
         self.abstract_scenario.Traffic.VolumeLookupTable = df_vol_lookup
 

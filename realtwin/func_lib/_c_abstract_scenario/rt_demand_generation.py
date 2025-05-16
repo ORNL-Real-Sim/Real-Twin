@@ -105,12 +105,12 @@ def is_missing_or_zero(val) -> bool:
     return False
 
 
-def update_matchup_table(path_matchup_table: str, signal_dir: str = "", traffic_dir: str = "") -> bool:
+def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic_dir: str = "") -> bool:
     """ Update the match table with data from user prepared demands and Synchro UTDF file.
 
     Args:
         path_matchup_table (str): the match table that contains the user input.
-        signal_dir (str, optional): the directory where the Synchro UTDF files are located.
+        control_dir (str, optional): the directory where the Synchro UTDF files are located.
         Defaults to "", which means the current directory.
 
     Returns:
@@ -144,14 +144,11 @@ def update_matchup_table(path_matchup_table: str, signal_dir: str = "", traffic_
             gs_data = pd.read_excel(gs_file_path, header=None, dtype=str)
 
             # Extract IntersectionName_GridSmart
-            intersection_row = gs_data[gs_data.iloc[:, 0]
-                                       == "Intersection"].index
+            intersection_row = gs_data[gs_data.iloc[:, 0] == "Intersection"].index
             if not intersection_row.empty:
-                intersection_col = gs_data.iloc[intersection_row[0], 1:].first_valid_index(
-                )
+                intersection_col = gs_data.iloc[intersection_row[0], 1:].first_valid_index()
                 if intersection_col is not None:
-                    intersection_name = gs_data.iloc[intersection_row[0],
-                                                     intersection_col]
+                    intersection_name = gs_data.iloc[intersection_row[0], intersection_col]
                     MatchupTable_UserInput.loc[MatchupTable_UserInput["JunctionID_OpenDrive"]
                                                == junction_id, "IntersectionName_GridSmart"] = intersection_name
 
@@ -224,7 +221,7 @@ def update_matchup_table(path_matchup_table: str, signal_dir: str = "", traffic_
             if file_synchro_name in synchro_cache:
                 signal_dict = synchro_cache[file_synchro_name]
             else:
-                synchro_file_path = f"{os.path.join(signal_dir, file_synchro_name)}"
+                synchro_file_path = f"{os.path.join(control_dir, file_synchro_name)}"
                 signal_dict = process_signal_from_utdf(synchro_file_path)
                 synchro_cache[file_synchro_name] = signal_dict
 
@@ -307,18 +304,19 @@ def update_matchup_table(path_matchup_table: str, signal_dir: str = "", traffic_
                 if i < len(rows_to_fill):
                     MatchupTable_UserInput.at[rows_to_fill[i], "Turn_Synchro"] = movement
                 else:
-                    print(f'  :There are more turning movements in {file_synchro_name} than OpenDrive junction {junction_id}.')
+                    print(f'  :There are more turning movements in {file_synchro_name} '
+                          f'than OpenDrive junction {junction_id}.')
     return MatchupTable_UserInput
 
 
-def generate_turn_demand(*, path_matchup_table: str ,
-                         signal_dir: str,
+def generate_turn_demand(*, path_matchup_table: str | pd.DataFrame,
+                         control_dir: str,
                          traffic_dir: str, output_dir: str = "") -> list[pd.DataFrame]:
     """ Generate turn demand from user input lookup table and Synchro UTDF files.
 
     Args:
         path_matchup_table (str): Path to the matchup table with user input.
-        signal_dir (str): Directory where Synchro UTDF files are located.
+        control_dir (str): Directory where Synchro UTDF files are located.
             Defaults to "", which means the current directory.
         output_dir (str): Directory to save the output files.
             Defaults to "", which means the current directory.
@@ -337,14 +335,19 @@ def generate_turn_demand(*, path_matchup_table: str ,
         list[pd.DataFrame]: A list containing two DataFrames:
             - TurnDf: DataFrame with turn demand data.
             - IDRef: DataFrame with reference IDs for OpenDrive turns (demand lookup table).
-
     """
 
-    # get the updated lookup table
-    try:
-        MatchupTable_UserInput = update_matchup_table(path_matchup_table, signal_dir, traffic_dir)
-    except Exception as e:
-        raise Exception(f"Error loading user updated lookup table: {e}")
+    if isinstance(path_matchup_table, str):
+        # get the updated lookup table
+        try:
+            MatchupTable_UserInput = update_matchup_table(path_matchup_table, control_dir, traffic_dir)
+        except Exception as e:
+            raise Exception(f"Error loading user updated lookup table: {e}")
+    elif isinstance(path_matchup_table, pd.DataFrame):
+        # Use the provided DataFrame directly
+        MatchupTable_UserInput = path_matchup_table
+    else:
+        raise ValueError("path_matchup_table must be a string or a DataFrame.")
 
     merged_columns = ["JunctionID_OpenDrive", "File_Synchro"]
     MatchupTable_UserInput[merged_columns] = MatchupTable_UserInput[merged_columns].ffill()
