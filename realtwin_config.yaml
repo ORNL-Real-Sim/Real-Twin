@@ -47,6 +47,9 @@ Calibration:
             GEHPercent: 0.85  # accepted match
         calibration_interval: 60  # mins
         demand_interval: 15  # mins
+        calibration_time_step: 1
+        calibration_seed: 42
+        allow_u_turn: false  # if true, the u-turns are allowed in the simulation
 
         # input files for the calibration
         path_turn: "turn.xlsx"
@@ -63,6 +66,8 @@ Calibration:
         params_ranges: [[0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
                         [0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
                         [0, 1], [0, 1], [50, 200], [50, 200], [50, 200], [50, 200]]
+
+        max_inflow: 200  # max inflow for the turning ratio
 
         # Termination criteria
         max_epoch: 1000  # max number of iterations

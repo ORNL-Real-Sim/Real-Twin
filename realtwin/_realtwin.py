@@ -347,14 +347,14 @@ class RealTwin:
         # TDD
         print()
         if sel_algo is None:  # default to genetic algorithm
-            sel_algo = {"turn_inflow": "ga",
-                        "behavior": "ga"}
+            sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
+            print(f"  :sel_algo not specified, use default value: {sel_algo}")
 
         if not isinstance(sel_algo, dict):
+            sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
             print("  :Error: parameter sel_algo must be a dict with"
                   " keys of 'turn_inflow' and 'behavior', using"
-                  " genetic algorithm as default values.")
-            sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
+                  f" default values: {sel_algo}")
 
         # check if the selected algorithm is supported within the package
         # convert the algorithm to lower case

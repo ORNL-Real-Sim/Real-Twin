@@ -312,7 +312,7 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str, path_flow:
         "-t", path_turn,
         "-o", path_rou,
         "--accept-all-destinations",
-        "--remove-loops",
+        "--remove-loops True",
         # "--seed","101",
         "--ignore-errors",  # Continue on errors; remove if not desired
     ]

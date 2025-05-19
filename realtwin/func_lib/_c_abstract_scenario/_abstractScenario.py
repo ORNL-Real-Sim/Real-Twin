@@ -5,6 +5,7 @@ import os
 import warnings
 import io
 import copy
+from pathlib import Path
 
 # import four elements of AbstractScenario
 from ._traffic import Traffic
@@ -251,7 +252,7 @@ class AbstractScenario:
                     self.Control.Signal = load_control_signal(path_signal_abs)
                 elif isinstance(control_data, str):
                     path_signal = control_data
-                    path_signal_abs = pf.path2linux(os.path.join(self.config_dict.get("input_dir"), path_signal))
+                    path_signal_abs = pf.path2linux(Path(self.config_dict.get("input_dir")) / "Control" / path_signal)
                     if os.path.isfile(path_signal_abs):
                         self.Control.Signal = load_control_signal(path_signal_abs)
                     else:

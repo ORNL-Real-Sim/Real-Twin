@@ -12,11 +12,16 @@ from pathlib import Path
 from functools import partial
 
 from mealpy import FloatVar, SA, GA, TS
-from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior import (
-    result_analysis_on_EdgeData,
-    run_SUMO_create_EdgeData,
+# from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior import (
+#     result_analysis_on_EdgeData,
+#     run_SUMO_create_EdgeData,
+#     update_turn_flow_from_solution,
+#     create_rou_turn_flow_xml)
+from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_turn_inflow import (
     update_turn_flow_from_solution,
-    create_rou_turn_flow_xml)
+    run_SUMO_create_EdgeData,
+    run_jtrrouter_to_create_rou_xml,
+    result_analysis_on_EdgeData)
 
 import numpy as np
 import pyufunc as pf
@@ -37,39 +42,56 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
     """ Objective function for SUMO calibration."""
     """ Run a single calibration iteration to get the best solution """
 
-    path_turn = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_turn"))
-    path_inflow = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_inflow"))
-    path_summary = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_summary"))
-    path_edge = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_edge", "EdgeData.xml"))
+    TurnDf_Calibration = scenario_config.get("TurnDf_Calibration")
+    TurnToCalibrate = scenario_config.get("TurnToCalibrate")
+    InflowDf_Calibration = scenario_config.get("InflowDf_Calibration")
+    InflowEdgeToCalibrate = scenario_config.get("InflowEdgeToCalibrate")
+    RealSummary_Calibration = scenario_config.get("RealSummary_Calibration")
+    calibration_interval = scenario_config.get("calibration_interval")
+    demand_interval = scenario_config.get("demand_interval")
+
+    network_name = scenario_config.get("network_name")
+    sim_start_time = scenario_config.get("sim_start_time")
+    sim_end_time = scenario_config.get("sim_end_time")
+    path_net = scenario_config.get("path_net")
+    path_rou = pf.path2linux(Path(scenario_config.get("input_dir")) / "route" / f"{network_name}.rou.xml")
+    sim_name = scenario_config.get("sim_name")
+    path_edge = pf.path2linux(Path(scenario_config.get("input_dir")) / "EdgeData.edg.xml")
+
+    # path_turn = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_turn"))
+    # path_inflow = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_inflow"))
+    # path_summary = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_summary"))
+    # path_edge = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_edge", "EdgeData.xml"))
 
     # TODO will remove in the future iteration - change current working dir at beginning of the calibration
     os.chdir(scenario_config.get("input_dir"))
 
     # update turn and flow
-    df_turn, df_inflow = update_turn_flow_from_solution(path_turn,
-                                                        path_inflow,
-                                                        solution,
-                                                        scenario_config["calibration_interval"],
-                                                        scenario_config["demand_interval"])
+    df_turn, df_inflow = update_turn_flow_from_solution(solution,
+                                                        TurnDf_Calibration,
+                                                        TurnToCalibrate,
+                                                        InflowDf_Calibration,
+                                                        InflowEdgeToCalibrate,
+                                                        calibration_interval,
+                                                        demand_interval)
 
-    # update rou.xml from updated turn and flow
-    create_rou_turn_flow_xml(scenario_config.get("network_name"),
-                             scenario_config.get("sim_start_time"),
-                             scenario_config.get("sim_end_time"),
-                             df_turn,
-                             df_inflow,
-                             scenario_config.get("input_dir"))
+    # update rou.xml from updated turn and flow in route and turn_flow folders
+    run_jtrrouter_to_create_rou_xml(network_name,
+                                    path_net,
+                                    df_turn,
+                                    df_inflow,
+                                    path_rou,
+                                    sim_start_time,
+                                    sim_end_time)
 
     # run SUMO to get EdgeData.xml
-    run_SUMO_create_EdgeData(scenario_config.get("sim_name"),
-                             scenario_config.get("sim_end_time"))
+    run_SUMO_create_EdgeData(sim_name, sim_end_time)
 
     # analyze EdgeData.xml to get best solution
-    _, mean_GEH, GEH_percent = result_analysis_on_EdgeData(path_summary,
+    _, mean_GEH, GEH_percent = result_analysis_on_EdgeData(RealSummary_Calibration,
                                                            path_edge,
-                                                           scenario_config["calibration_target"],
-                                                           scenario_config["sim_start_time"],
-                                                           scenario_config["sim_end_time"])
+                                                           sim_start_time,
+                                                           sim_end_time)
     print(f"  :GEH: Mean Percentage: {mean_GEH}, {GEH_percent}")
 
     # minimize the negative percentage of GEH and the mean GEH
