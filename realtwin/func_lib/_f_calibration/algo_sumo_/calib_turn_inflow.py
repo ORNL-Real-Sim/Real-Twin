@@ -12,16 +12,18 @@ from pathlib import Path
 from functools import partial
 
 from mealpy import FloatVar, SA, GA, TS
-# from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior import (
-#     result_analysis_on_EdgeData,
-#     run_SUMO_create_EdgeData,
-#     update_turn_flow_from_solution,
-#     create_rou_turn_flow_xml)
-from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_turn_inflow import (
-    update_turn_flow_from_solution,
-    run_SUMO_create_EdgeData,
-    run_jtrrouter_to_create_rou_xml,
-    result_analysis_on_EdgeData)
+try:
+    from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_turn_inflow import (
+        update_turn_flow_from_solution,
+        run_SUMO_create_EdgeData,
+        run_jtrrouter_to_create_rou_xml,
+        result_analysis_on_EdgeData)
+except:
+    from util_cali_turn_inflow import (
+        update_turn_flow_from_solution,
+        run_SUMO_create_EdgeData,
+        run_jtrrouter_to_create_rou_xml,
+        result_analysis_on_EdgeData)
 
 import numpy as np
 import pyufunc as pf
@@ -56,7 +58,8 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
     path_net = scenario_config.get("path_net")
     path_rou = pf.path2linux(Path(scenario_config.get("input_dir")) / "route" / f"{network_name}.rou.xml")
     sim_name = scenario_config.get("sim_name")
-    path_edge = pf.path2linux(Path(scenario_config.get("input_dir")) / "EdgeData.edg.xml")
+    path_edge = pf.path2linux(Path(scenario_config.get("input_dir")) / "EdgeData.xml")
+    calibration_target = scenario_config.get("calibration_target")
 
     # path_turn = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_turn"))
     # path_inflow = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_inflow"))
@@ -90,6 +93,7 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
     # analyze EdgeData.xml to get best solution
     _, mean_GEH, GEH_percent = result_analysis_on_EdgeData(RealSummary_Calibration,
                                                            path_edge,
+                                                           calibration_target,
                                                            sim_start_time,
                                                            sim_end_time)
     print(f"  :GEH: Mean Percentage: {mean_GEH}, {GEH_percent}")
@@ -130,10 +134,10 @@ class TurnInflowCalib:
 
         # prepare termination criteria from scenario config
         self.term_dict = {
-            "max_epoch": self.turn_inflow_cfg.get("max_epoch", 1000),
-            "max_fe": self.turn_inflow_cfg.get("max_fe", 10000),
-            "max_time": self.turn_inflow_cfg.get("max_time", 3600),
-            "max_early_stop": self.turn_inflow_cfg.get("max_early_stop", 20),
+            "max_epoch": self.scenario_config.get("max_epoch", 1000),
+            "max_fe": self.scenario_config.get("max_fe", 10000),
+            "max_time": self.scenario_config.get("max_time", 3600),
+            "max_early_stop": self.scenario_config.get("max_early_stop", 20),
         }
 
         # prepare problem dict from algo config
@@ -433,26 +437,14 @@ class TurnInflowCalib:
 if __name__ == "__main__":
 
     scenario_config = {
-        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\input_dir_dummy",
+        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\output\SUMO\turn_inflow",
         "network_name": "chatt",
         "sim_name": "chatt.sumocfg",
         "sim_start_time": 28800,
         "sim_end_time": 32400,
-        "path_turn": "turn.xlsx",
-        "path_inflow": "inflow.xlsx",
-        "path_summary": "summary.xlsx",
-        "path_edge": 'EdgeData.xml',
         "calibration_target": {'GEH': 5, 'GEHPercent': 0.85},
         "calibration_interval": 60,
         "demand_interval": 15,
-        "EB_tt": 240,
-        "WB_tt": 180,
-        "EB_edge_list": ["-312", "-293", "-297", "-288", "-286",
-                         "-302", "-3221", "-322", "-313", "-284",
-                         "-328", "-304"],
-        "WB_edge_list": ["-2801", "-280", "-307", "-327", "-281",
-                         "-315", "-321", "-300", "-2851", "-285",
-                         "-290", "-298", "-295"]
     }
 
     turn_inflow_config = {"initial_params": [0.5, 0.5, 0.5, 0.5, 0.5,
@@ -494,10 +486,10 @@ if __name__ == "__main__":
     opt = TurnInflowCalib(scenario_config=scenario_config, turn_inflow_config=turn_inflow_config, verbose=True)
 
     # Run Genetic Algorithm
-    # g_best = opt.run_GA()
+    g_best = opt.run_GA()
 
     # Run Simulated Annealing
     # g_best = opt.run_SA()
 
     # Run Tabu Search
-    g_best = opt.run_TS()
+    # g_best = opt.run_TS()

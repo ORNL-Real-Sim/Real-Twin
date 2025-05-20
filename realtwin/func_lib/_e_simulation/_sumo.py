@@ -236,9 +236,10 @@ class SUMOPrep:
         """The function to import the signal from the signal file and convert it to SUMO signal file."""
 
         input_dir = ConcreteScn.config_dict.get('input_dir')
-        control_dir = os.path.join(input_dir, 'Control')
+        path_output = ConcreteScn.config_dict.get('output_dir')
+        control_dir = pf.path2linux(Path(input_dir) / 'Control')
         path_MatchupTable = pf.path2linux(os.path.join(input_dir, 'MatchupTable.xlsx'))
-        path_net = self.Network
+        path_net = pf.path2linux(Path(path_output) / f'SUMO/{ConcreteScn.Supply.NetworkName}.net.xml')
 
         # check if the file exists
         if not os.path.exists(path_net):
@@ -253,7 +254,8 @@ class SUMOPrep:
         FixedTime = self.kwargs.get('FixedTime', False)
 
         try:
-            signal_flag = sumo_signal_import(path_net, path_MatchupTable, FixedTime=FixedTime, control_dir=control_dir)
+            signal_flag = sumo_signal_import(path_net=path_net, path_MatchupTable=path_MatchupTable,
+                                             FixedTime=FixedTime, control_dir=control_dir)
             if signal_flag:
                 print(f"  :SUMO signal updated at: {path_net}")
         except Exception as e:
@@ -610,7 +612,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             Synchro[intid]["Lanes"] = pd.concat([Synchro[intid]["Lanes"], new_movement_row], ignore_index=True)
 
     # Matching "Movement" of Synchro[intid]["Lanes"] with "Protected" and "Permitted" in Synchro[intid]["Phases"]
-    phase_flag = False
+    phase_flag = 0
     error_msg = ""
     for intid in Synchro.keys():
         try:
@@ -654,19 +656,17 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             # get sumo junction id form lookup_df
             sumo_id = lookup_df.loc[lookup_df['INTID'] == intid, 'SumoJunctionID'].values[0]
             print(f"  :Mismatch between SUMO junction {sumo_id} and "
-                  f"Synchro junction {intid} in the input MatchupTable.xlsx.")
+                  f"Synchro junction {intid} in the input MatchupTable.xlsx. \n    : {error_msg}")
     # # Uncomment this section if you want to raise an error when no phases are found
-
-    if phase_flag:
-        raise Exception(error_msg)
-
-    # # No matching phases found
-    # if phase_flag == 0:
-    #     raise ValueError("No phases found in Synchro data.")
-    # elif phase_flag >= 0:
-    #     # Not all phases matched
-    #     if phase_flag != len(Synchro):
-    #         print(f"  :There are {len(Synchro) - phase_flag} intersections without phases. Please check.")
+    # if phase_flag:
+    #     raise Exception(error_msg)
+    # No matching phases found
+    if phase_flag == 0:
+        raise ValueError("No phases found in Synchro data.")
+    elif phase_flag >= 0:
+        # Not all phases matched
+        if phase_flag != len(Synchro):
+            print(f"  :Total {phase_flag}/{len(Synchro)} signal intersections.")
 
     tree = ET.parse(path_net)
     root = tree.getroot()
@@ -891,3 +891,12 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
     prettify_xml(path_net)
 
     return True
+
+
+if __name__ == "__main__":
+    # Example usage
+    path_net = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\chatt.net.xml"
+    path_matchup_table = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\MatchupTable.xlsx"
+    control_dir = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\Control"
+
+    sumo_signal_import(path_net=path_net, path_MatchupTable=path_matchup_table, control_dir=control_dir, FixedTime=False)

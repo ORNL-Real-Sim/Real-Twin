@@ -11,6 +11,7 @@
 
 """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group"""
 import os
+import shutil
 from pathlib import Path
 import pyufunc as pf
 
@@ -158,7 +159,7 @@ class RealTwin:
 
         return True
 
-    def generate_inputs(self, *, incl_elevation_tif: bool = False):
+    def generate_inputs(self, *, incl_sumo_net: str = None):
         """ Generate user inputs, such as MatchUp table, Control and Traffic data
 
         Args:
@@ -171,7 +172,7 @@ class RealTwin:
             - How to create/prepare Control and Traffic data
             - How to download elevation tif data from network BBOX
         """
-        print("\nCheck / Create input file and folder for user:")
+        print("\nCheck / Create input files and folders for user:")
         path_input = pf.path2linux(Path(self.input_config.get("input_dir")))
 
         # check if Control folder exists in the input directory
@@ -181,8 +182,7 @@ class RealTwin:
         else:
             print(f"  :Control folder already exists: {path_control}."
                   "\n  :NOTICE: Please include Synchro UTDF file (signal) inside Control folder"
-                  " and add the control file name to the input configuration file.\n"
-                  )
+                  " and add the control file name to the input configuration file.\n")
 
         # check if Traffic folder exists in the input directory
         path_traffic = pf.path2linux(Path(path_input) / "Traffic")
@@ -193,26 +193,40 @@ class RealTwin:
                   "\n  :NOTICE: Please include turn movement file for each intersection inside Traffic folder"
                   " and add the file names to the MatchupTable.xlsx "
                   "(You will notice the generated MatchupTable.xlsx inside your input folder)."
-                  " For how to fill the MatchupTable.xlsx, please refer to the documentation: \n"
-                  )
-
-        # check whether the elevation tif data is provided
-        # path_elev = pf.path2linux(
-        #     Path(self.input_config.get("input_dir")) / self.input_config.get("Network").get("ElevationMap"))
-        # if not os.path.exists(path_elev):
-        #     # print("  :Elevation map is not provided. we will download from network BBOX.")
-        #     if incl_elevation_tif:
-        #         print("  :Downloading elevation map from network BBOX.")
-        #         # download elevation map from network bbox
-        #         bbox = self.input_config.get("Network").get("Net_BBox")
-        #         output_file = pf.path2linux(Path(self.input_config.get("input_dir")) / "elevation_map.tif")
-        #         download_elevation_tif_by_bbox(bbox, output_file)
-        #         # update tif file in the input configuration
-        #         self.input_config.get("Network")["ElevationMap"] = "elevation_map.tif"
+                  " For how to fill the MatchupTable.xlsx, please refer to the documentation: \n")
 
         # generate abstract scenario
         self.abstract_scenario = AbstractScenario(self.input_config)
-        self.abstract_scenario.create_open_drive_network()
+
+        # Create original SUMO network from vertices from config file
+        self.abstract_scenario.create_SUMO_network()
+
+        # crate OpenDrive network from SUMO network, and then rewrite sumo network based on OpenDrive network
+        self.abstract_scenario.create_OpenDrive_network()
+
+        # Update SUMO Network before generating OpenDrive network
+        if incl_sumo_net:
+            # check if the file exists and end with .net.xml
+            if incl_sumo_net.endswith(".net.xml") and os.path.exists(incl_sumo_net):
+                net_name = self.abstract_scenario.Network.OpenDriveNetwork._net_name
+
+                # Copy user updated net file to the OpenDrive folder
+                path_sumo_net = pf.path2linux(
+                    Path(self.input_config.get("input_dir")) / f"output/OpenDrive/{net_name}.net.xml")
+                shutil.copy(incl_sumo_net, path_sumo_net)
+                print(f"  :INFO: SUMO network is copied to {path_sumo_net}.")
+                print(f"  :Using updated SUMO network provide by user: {incl_sumo_net} to generate OpenDrive network.")
+
+                # create opendrive net from updated sumo net, and rewrite sumo net based on OpenDrive net
+                self.abstract_scenario.create_OpenDrive_network()
+            else:
+                print(f"  :NOTE: incl_sumo_net is not exist or not with .net.xml extension: {incl_sumo_net}."
+                      "\n  :Please provide a valid SUMO network file with .net.xml extension or leave it empty.")
+        else:
+            #  let user know they can use their own SUMO network by using incl_sumo_net
+            print("  :INFO: You can use your own SUMO network by providing the path to the incl_sumo_net parameter."
+                  " The path should be a .net.xml file. \n")
+
         print("  :INFO: OpenDrive network is generated.")
 
         # create matchup table for user
@@ -236,11 +250,11 @@ class RealTwin:
                   " For details please refer to the documentation: \n"
                   )
         else:
-            print(f"  :NOTE: Matchup table already exists: {path_matchup}."
-                  "\n  :NOTICE: Please make sure you have updated the Matchup table"
-                  " and then run generate_abstract_scenario()."
-                  " For details please refer to the documentation: \n"
-                  )
+            print(f"  :NOTE: Matchup table already exists: {path_matchup}.")
+
+        # Stop the program to let user update the Matchup table
+        # raise Exception("NOTE: Please update the Matchup table from input folder"
+        #                 " and then run generate_abstract_scenario() and following steps.")
 
     def generate_abstract_scenario(self):
         """Generate the abstract scenario: create OpenDrive files

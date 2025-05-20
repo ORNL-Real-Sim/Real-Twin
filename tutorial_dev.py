@@ -20,6 +20,7 @@ if __name__ == '__main__':
 
     # Step 1: Prepare your configuration file (in YAML format)
     CONFIG_FILE = "./realtwin_config.yaml"
+    updated_sumo_net = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\chatt.net.xml"
 
     # Step 2: initialize the realtwin object
     twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     twin.env_setup(sel_sim=["SUMO", "VISSIM"])
 
     # Step 4: Create Matchup Table and Update the Table
-    twin.generate_inputs()
+    twin.generate_inputs(incl_sumo_net=updated_sumo_net)
 
     # Step 5: generate abstract scenario
     twin.generate_abstract_scenario()

@@ -62,7 +62,14 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
 
     # Prepare Algorithm configure: e.g. {"ga": {}, "sa": {}, "ts": {}}
     algo_config_turn_inflow = input_config["Calibration"]["turn_inflow"]
+    algo_config_turn_inflow["ga_config"] = input_config["Calibration"]["ga_config"]
+    algo_config_turn_inflow["sa_config"] = input_config["Calibration"]["sa_config"]
+    algo_config_turn_inflow["ts_config"] = input_config["Calibration"]["ts_config"]
+
     algo_config_behavior = input_config["Calibration"]["behavior"]
+    algo_config_behavior["ga_config"] = input_config["Calibration"]["ga_config"]
+    algo_config_behavior["sa_config"] = input_config["Calibration"]["sa_config"]
+    algo_config_behavior["ts_config"] = input_config["Calibration"]["ts_config"]
 
     # run calibration based on the selected algorithm: optimize turn and inflow
     print("\n  :Optimize Turn and Inflow...")
@@ -149,6 +156,7 @@ def prepare_scenario_config(input_config: dict) -> dict:
     network_name = input_config.get("Network").get("NetworkName")
     path_net_sumo = pf.path2linux(Path(generated_sumo_dir) / f"{network_name}.net.xml")
     shutil.copy(path_net_sumo, turn_inflow_dir)
+    # shutil.copy(path_net_sumo, turn_inflow_route_dir)
 
     # create Edge.add.xml in turn_inflow directory
     path_edge_add = pf.path2linux(Path(turn_inflow_dir) / "Edge.add.xml")
@@ -163,9 +171,9 @@ def prepare_scenario_config(input_config: dict) -> dict:
     generate_sumocfg_xml(path_sumocfg, network_name, seed, sim_start_time, sim_end_time, calibration_time_step)
 
     # create turn and inflow and summary df
-    path_matchup_table = pf.path2linux(Path(input_config["input_dir"]) / "MatchupTable.csv")
-    traffic_dir = pf.path2linux(Path(input_config["input_dir"]) / "traffic")
-    path_net_turn_inflow = pf.path2linux(Path(turn_inflow_route_dir) / f"{network_name}.turn.xml")
+    path_matchup_table = pf.path2linux(Path(input_config["input_dir"]) / "MatchupTable.xlsx")
+    traffic_dir = pf.path2linux(Path(input_config["input_dir"]) / "Traffic")
+    path_net_turn_inflow = pf.path2linux(Path(turn_inflow_dir) / f"{network_name}.net.xml")
     MatchupTable_UserInput = read_MatchupTable(path_matchup_table=path_matchup_table)
     TurnDf, IDRef = generate_turn_demand_cali(path_matchup_table=path_matchup_table, traffic_dir=traffic_dir)
 

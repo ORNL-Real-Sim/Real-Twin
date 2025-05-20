@@ -78,7 +78,7 @@ def update_turn_flow_from_solution(initial_solution: np.array,
 
     # Inflow calibration assignments based on InflowEdgeToCalibrate
     for edge in InflowEdgeToCalibrate:
-        InflowDf.loc[InflowDf['OpenDriveFromID'] == edge, 'Count'] = initial_solution[i] / CablibrationInterval * DemandInterval
+        InflowDf.loc[InflowDf['OpenDriveFromID'] == edge, 'Count'] = initial_solution[i] / cali_interval * demand_interval
         i += 1
 
     return (TurnDf, InflowDf)
@@ -155,18 +155,19 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
     TreeInflow.write(path_flow, encoding='utf-8', xml_declaration=True)
 
     # Define the jtrrouter command with all necessary arguments
-    cmd = [
-        "jtrrouter",
-        "-n", path_net,
-        "-r", path_flow,
-        "-t", path_turn,
-        "-o", path_rou,
-        "--accept-all-destinations",
-        "--remove-loops True",
-        "--randomize-flows",
-        # "--seed","101",
-        # "--ignore-errors",  # Continue on errors; remove if not desired
-    ]
+    # cmd = [
+    #     "jtrrouter",
+    #     "-n", path_net,
+    #     "-r", path_flow,
+    #     "-t", path_turn,
+    #     "-o", path_rou,
+    #     "--accept-all-destinations",
+    #     "--remove-loops True",
+    #     "--randomize-flows",
+    #     # "--seed","101",
+    #     # "--ignore-errors",  # Continue on errors; remove if not desired
+    # ]
+    cmd = f'cmd /c "jtrrouter -r {path_flow} -t {path_turn} -n {path_net} --accept-all-destinations --remove-loops True --randomize-flows -o {path_rou}"'
 
     # Execute the command
     try:
@@ -175,7 +176,8 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
         process.wait()
         if verbose:
             print(f"  :Route file generated successfully: {path_rou}")
-        shutil.copy(path_rou, pf.path2linux(dir_net / f"{network_name}.rou.xml"))
+
+        shutil.copy(path_rou, dir_net)
     except subprocess.CalledProcessError as e:
         print(f"  :An error occurred while running jtrrouter: {e}")
 

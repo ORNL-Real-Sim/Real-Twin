@@ -71,10 +71,10 @@ class BehaviorCalib:
 
         # prepare termination criteria from scenario config
         self.term_dict = {
-            "max_epoch": self.behavior_cfg.get("max_epoch", 1000),
-            "max_fe": self.behavior_cfg.get("max_fe", 10000),
-            "max_time": self.behavior_cfg.get("max_time", 3600),
-            "max_early_stop": self.behavior_cfg.get("max_early_stop", 20),
+            "max_epoch": self.scenario_config.get("max_epoch", 1000),
+            "max_fe": self.scenario_config.get("max_fe", 10000),
+            "max_time": self.scenario_config.get("max_time", 3600),
+            "max_early_stop": self.scenario_config.get("max_early_stop", 20),
         }
 
         init_params = self.behavior_cfg.get("initial_params", None)

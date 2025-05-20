@@ -183,8 +183,9 @@ class AbstractScenario:
         self.Control = Control()
         self.Application = Application()
 
-    def create_open_drive_network(self):
-        """create OpenDriveNetwork object"""
+    def create_SUMO_network(self):
+        """ Create SUMO Network From Vertices"""
+
         # TDD check whether the config_dict is not None
         if not self.config_dict:
             warnings.warn("  :config_dict is None, no data to update")
@@ -198,14 +199,30 @@ class AbstractScenario:
             self.Network.ElevationMap = network_dict.get('ElevationMap', "No elevation map provided!")
 
             # update the OpenDriveNetwork output directory
-            self.Network._output_dir = self.config_dict.get('output_dir', "RT_Network")
+            self.Network._output_dir = self.config_dict.get('output_dir', "output")
             self.Network.OpenDriveNetwork._output_dir = self.Network._output_dir
 
             # update and crate OpenDriveNetwork
             self.Network.OpenDriveNetwork._net_name = self.Network.NetworkName
             self.Network.OpenDriveNetwork._net_vertices = self.Network.NetworkVertices
             self.Network.OpenDriveNetwork._ele_map = self.Network.ElevationMap
-            self.Network.OpenDriveNetwork.setValue()
+            self.Network.OpenDriveNetwork.create_SUMO_network()
+
+    def create_OpenDrive_network(self):
+        """create OpenDriveNetwork object"""
+        # TDD check whether the config_dict is not None
+        if not self.config_dict:
+            warnings.warn("  :config_dict is None, no data to update")
+            return
+
+        self.Network.OpenDriveNetwork.create_OpenDrive_network()
+
+        # re-write sumo network based on the OpenDriveNetwork
+        net_name = self.Network.OpenDriveNetwork._net_name
+        path_open_drive = pf.path2linux(Path(self.Network._output_dir) / f"OpenDrive/{net_name}.xodr")
+        path_sumo_net = pf.path2linux(Path(self.Network._output_dir) / f"OpenDrive/{net_name}.net.xml")
+        os.system(f'cmd/c "netconvert --opendrive {path_open_drive}'
+                  f' -o {path_sumo_net} --no-internal-links"')
 
     def update_AbstractScenario_from_input(self, df_volume: pd.DataFrame = None, signal_dict: dict = None):
         """ update values from config dict to specific data object"""

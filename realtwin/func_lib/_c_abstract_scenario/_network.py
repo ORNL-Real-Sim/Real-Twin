@@ -1,6 +1,7 @@
 '''
 class to host Network element of Abstract scenario
 '''
+from pathlib import Path
 import osmnx as ox
 import networkx as nx
 import pandas as pd
@@ -15,7 +16,7 @@ import pyufunc as pf
 class Network:
     """The Network class to host the Network element of Abstract scenario
     """
-    def __init__(self, output_dir: str = "RT_Network"):
+    def __init__(self, output_dir: str = "output"):
         self._output_dir = output_dir
         self.NetworkName = "network"
         self.NetworkVertices = ""
@@ -33,7 +34,7 @@ class OpenDriveNetwork:
                  net_name: str = "network",
                  net_vertices: str = "",
                  ele_map: str = "No elevation map provided!",
-                 output_dir: str = "RT_Network"):
+                 output_dir: str = "output"):
 
         self._net_name = net_name
         self._net_vertices = net_vertices
@@ -41,6 +42,19 @@ class OpenDriveNetwork:
 
         self._output_dir = output_dir
         self.OpenDrive_network = []
+
+        # create output directory
+        path_openDrive = pf.path2linux(os.path.join(self._output_dir, 'OpenDrive'))
+
+        if not os.path.exists(self._output_dir):
+            os.makedirs(self._output_dir, exist_ok=True)
+
+        # Create OpenDrive directory
+        if os.path.exists(path_openDrive):
+            # Delete existing directory and its contents
+            shutil.rmtree(path_openDrive)
+        # Create new directory
+        os.makedirs(path_openDrive, exist_ok=True)
 
     def isEmpty(self):
         """Check if the OpenDriveNetwork element is empty"""
@@ -61,7 +75,9 @@ class OpenDriveNetwork:
         # Create new directory
         os.makedirs(path_openDrive, exist_ok=True)
 
-        self.GetRoad()
+        self.create_SUMO_network()
+        self.create_OpenDrive_network()
+
         # self.OpenDrive_network = pf.path2linux(f'{path_openDrive}/{self._net_name}.xodr')
 
         # delete intermediate files         ################################################################################# add back
@@ -78,8 +94,49 @@ class OpenDriveNetwork:
         # if os.path.exists(PathDelete4):
         #     os.remove(PathDelete4)  # Delete the file
 
-    def GetRoad(self):
+    def create_OpenDrive_network(self):
+        """Create OpenDrive network from SUMO Network"""
+        # get node and edge path
+        path_net = pf.path2linux(os.path.join(self._output_dir, f'OpenDrive/{self._net_name}.net.xml'))
+        path_net_elevation = pf.path2linux(
+            os.path.join(self._output_dir, f'OpenDrive/{self._net_name}_WithElevation.net.xml'))
+        path_open_drive_ele = pf.path2linux(
+            os.path.join(self._output_dir, f'OpenDrive/{self._net_name}_WithElevation.xodr'))
+        path_open_drive_output = pf.path2linux(
+            os.path.join(self._output_dir, f'OpenDrive/{self._net_name}.xodr'))
+
+        if not os.path.exists(self._output_dir):
+            os.makedirs(self._output_dir, exist_ok=True)
+
+        if not os.path.exists(Path(self._output_dir) / 'OpenDrive'):
+            os.makedirs(Path(self._output_dir) / 'OpenDrive', exist_ok=True)
+
+        command2 = f'cmd/c "netconvert -s {path_net} --opendrive-output={path_open_drive_output}"'
+        os.system(command2)
+        self.OpenDrive_network = [path_open_drive_output]
+
+        # with elevation data
+        if self._ele_map != "No elevation map provided!":
+            command4 = f'cmd/c "netconvert -s {path_net_elevation} --opendrive-output={path_open_drive_ele}"'
+            os.system(command4)
+            self.OpenDrive_network.append(path_open_drive_ele)
+        else:
+            self.OpenDrive_network.append(None)
+
+    def create_SUMO_network(self):
         """Generate OpenDrive network from OpenStreetMap"""
+
+        path_openDrive = pf.path2linux(os.path.join(self._output_dir, 'OpenDrive'))
+
+        if not os.path.exists(self._output_dir):
+            os.makedirs(self._output_dir, exist_ok=True)
+
+        if os.path.exists(path_openDrive):
+            # Delete existing directory and its contents
+            shutil.rmtree(path_openDrive)
+
+        # Create new directory
+        os.makedirs(path_openDrive, exist_ok=True)
 
         # create networkx graph network
         nx_net = OSMRoad(output_dir=self._output_dir)
@@ -95,25 +152,24 @@ class OpenDriveNetwork:
         path_edge = pf.path2linux(os.path.join(self._output_dir, 'OpenDrive/edges.edg.xml'))
         path_net = pf.path2linux(os.path.join(self._output_dir, f'OpenDrive/{self._net_name}.net.xml'))
         path_net_elevation = pf.path2linux(
-            os.path.join(self._output_dir,
-                         f'OpenDrive/{self._net_name}_WithElevation.net.xml'))
-        path_open_drive_ele = pf.path2linux(
-            os.path.join(self._output_dir,
-                         f'OpenDrive/{self._net_name}_WithElevation.xodr'))
-        path_open_drive_output = pf.path2linux(
-            os.path.join(self._output_dir,
-                         f'OpenDrive/{self._net_name}.xodr'))
+            os.path.join(self._output_dir, f'OpenDrive/{self._net_name}_WithElevation.net.xml'))
+
+        if not os.path.exists(self._output_dir):
+            os.makedirs(self._output_dir, exist_ok=True)
+
+        if not os.path.exists(Path(self._output_dir) / 'OpenDrive'):
+            os.makedirs(Path(self._output_dir) / 'OpenDrive', exist_ok=True)
 
         # without elevation data
         command1 = f'cmd/c "netconvert --node-files={path_node} --edge-files={path_edge}\
         --output-file={path_net} --roundabouts.guess --ramps.guess\
         --tls.discard-simple --tls.join --proj.utm --ignore-errors.edge-type"'
 
-        command2 = f'cmd/c "netconvert -s {path_net} --opendrive-output={path_open_drive_output}"'
+        # command2 = f'cmd/c "netconvert -s {path_net} --opendrive-output={path_open_drive_output}"'
 
         os.system(command1)
-        os.system(command2)
-        self.OpenDrive_network = [path_open_drive_output]
+        # os.system(command2)
+        # self.OpenDrive_network = [path_open_drive_output]
 
         # with elevation data
         if self._ele_map != "No elevation map provided!":
@@ -121,13 +177,14 @@ class OpenDriveNetwork:
             --output-file={path_net_elevation} --roundabouts.guess --ramps.guess\
             --tls.discard-simple --tls.join --heightmap.geotiff {self._net_name}.tif --proj.utm"'
 
-            command4 = f'cmd/c "netconvert -s {path_net_elevation} --opendrive-output={path_open_drive_ele}"'
+            # command4 = f'cmd/c "netconvert -s {path_net_elevation} --opendrive-output={path_open_drive_ele}"'
 
             os.system(command3)
-            os.system(command4)
-            self.OpenDrive_network.append(path_open_drive_ele)
+            # os.system(command4)
+            # self.OpenDrive_network.append(path_open_drive_ele)
         else:
-            self.OpenDrive_network.append(None)
+            # self.OpenDrive_network.append(None)
+            pass
 
 
 class OSMRoad:
