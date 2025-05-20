@@ -642,6 +642,10 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                 phases_df.at[phase_idx, 'RTORMovement'] = ','.join(RTOR_movements)
 
             # Update the "Phases" DataFrame in Synchro
+            phases_df['MinGreen'] = pd.to_numeric(phases_df['MinGreen'], errors='coerce')
+            phases_df['MaxGreen'] = pd.to_numeric(phases_df['MaxGreen'], errors='coerce')
+            phases_df = phases_df[~((phases_df['MinGreen'].fillna(0) == 0) & (phases_df['MaxGreen'].fillna(0) == 0))]
+
             Synchro[intid]["Phases"] = phases_df
             phase_flag += 1
         except Exception as e:
@@ -725,41 +729,99 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             ET.SubElement(new_tlLogic, 'param', key=key, value=value)
 
         # Adding <param key="ringX" value=""/> with the updated logic
-        max_ring = synchro_data["Phases"]["Ring"].astype(int).max()
-        previous_phase = 1
+        # max_ring = synchro_data["Phases"]["Ring"].astype(int).max()
+        # previous_phase = 1
+        # for ring_num in range(1, max_ring + 1):
+        #     phases_in_ring = synchro_data["Phases"][synchro_data["Phases"]["Ring"].astype(int) == ring_num]["Phase"].astype(int).tolist()
+        #     if not phases_in_ring:
+        #         continue
+        #     largest_phase = max(phases_in_ring)
+        #     complete_list = []
+        #     for i in range(previous_phase, largest_phase + 1):
+        #         if i in phases_in_ring:
+        #             complete_list.append(i)
+        #         else:
+        #             complete_list.append(0)
+        #     previous_phase = largest_phase + 1
+        #     ring_value = ",".join(map(str, complete_list))
+        #     ET.SubElement(new_tlLogic, 'param', key=f"ring{ring_num}", value=ring_value)
 
-        for ring_num in range(1, max_ring + 1):
-            phases_in_ring = synchro_data["Phases"][synchro_data["Phases"]["Ring"].astype(int) == ring_num]["Phase"].astype(int).tolist()
-            if not phases_in_ring:
-                continue
+        # Adding <param key="ring1" value=""/>  <param key="ring2" value=""/>
+        # R1B1
+        r1b1 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 1) & (synchro_data["Phases"]['Barrier'] == 1)]
+        if not r1b1.empty:
+            max_pos = r1b1['Position'].max()
+            R1B1 = [0] * max_pos
+            for _, row in r1b1.iterrows():
+                R1B1[int(row['Position']) - 1] = int(row['Phase'])
+        else:
+            R1B1 = None
 
-            largest_phase = max(phases_in_ring)
-            complete_list = []
+        # R1B2
+        r1b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 1) & (synchro_data["Phases"]['Barrier'] == 2)]
+        if not r1b2.empty:
+            max_pos = r1b2['Position'].max()
+            R1B2 = [0] * max_pos
+            for _, row in r1b2.iterrows():
+                R1B2[int(row['Position']) - 1] = int(row['Phase'])
+        else:
+            R1B2 = None
 
-            for i in range(previous_phase, largest_phase + 1):
-                if i in phases_in_ring:
-                    complete_list.append(i)
-                else:
-                    complete_list.append(0)
+        # R2B1
+        r2b1 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 1)]
+        if not r2b1.empty:
+            max_pos = r2b1['Position'].max()
+            R2B1 = [0] * max_pos
+            for _, row in r2b1.iterrows():
+                R2B1[int(row['Position']) - 1] = int(row['Phase'])
+        else:
+            R2B1 = None
 
-            previous_phase = largest_phase + 1
-            ring_value = ",".join(map(str, complete_list))
-            ET.SubElement(new_tlLogic, 'param', key=f"ring{ring_num}", value=ring_value)
+        # R2B2
+        r2b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 2)]
+        if not r2b2.empty:
+            max_pos = r2b2['Position'].max()
+            R2B2 = [0] * max_pos
+            for _, row in r2b2.iterrows():
+                R2B2[int(row['Position']) - 1] = int(row['Phase'])
+        else:
+            R2B2 = None
 
-        max_barrier = synchro_data["Phases"]["Barrier"].astype(int).max()
-        for barrier_num in range(1, max_barrier + 1):
-            if barrier_num == 1:
-                # Find phases with the largest "Barrier" value
-                largest_barrier_row = synchro_data["Phases"][synchro_data["Phases"]["Barrier"].astype(int) == max_barrier]
-                largest_phases = largest_barrier_row[largest_barrier_row["Position"].astype(int) == largest_barrier_row["Position"].astype(int).max()]["Phase"].astype(int).tolist()
-                barrier_value = ",".join(map(str, sorted(largest_phases)))
-                ET.SubElement(new_tlLogic, 'param', key="barrierPhases", value=barrier_value)
-            else:
-                # Find the previous barrier phases
-                previous_barrier_row = synchro_data["Phases"][synchro_data["Phases"]["Barrier"].astype(int) == barrier_num - 1]
-                largest_phases = previous_barrier_row[previous_barrier_row["Position"].astype(int) == previous_barrier_row["Position"].astype(int).max()]["Phase"].astype(int).tolist()
-                barrier_value = ",".join(map(str, sorted(largest_phases)))
-                ET.SubElement(new_tlLogic, 'param', key=f"barrier{barrier_num}Phases", value=barrier_value)
+        # max_barrier = synchro_data["Phases"]["Barrier"].astype(int).max()
+        # for barrier_num in range(1, max_barrier + 1):
+        #     if barrier_num == 1:
+        #         # Find phases with the largest "Barrier" value
+        #         largest_barrier_row = synchro_data["Phases"][synchro_data["Phases"]["Barrier"].astype(int) == max_barrier]
+        #         largest_phases = largest_barrier_row[largest_barrier_row["Position"].astype(int) == largest_barrier_row["Position"].astype(int).max()]["Phase"].astype(int).tolist()
+        #         barrier_value = ",".join(map(str, sorted(largest_phases)))
+        #         ET.SubElement(new_tlLogic, 'param', key="barrierPhases", value=barrier_value)
+        #     else:
+        #         # Find the previous barrier phases
+        #         previous_barrier_row = synchro_data["Phases"][synchro_data["Phases"]["Barrier"].astype(int) == barrier_num - 1]
+        #         largest_phases = previous_barrier_row[previous_barrier_row["Position"].astype(int) == previous_barrier_row["Position"].astype(int).max()]["Phase"].astype(int).tolist()
+        #         barrier_value = ",".join(map(str, sorted(largest_phases)))
+        #         ET.SubElement(new_tlLogic, 'param', key=f"barrier{barrier_num}Phases", value=barrier_value)
+
+        # Apply fallback
+        if R1B1 is None and R2B1 is not None:
+            R1B1 = R2B1
+        if R2B1 is None and R1B1 is not None:
+            R2B1 = R1B1
+        if R1B2 is None and R2B2 is not None:
+            R1B2 = R2B2
+        if R2B2 is None and R1B2 is not None:
+            R2B2 = R1B2
+
+        ET.SubElement(new_tlLogic, 'param', key="ring1", value=",".join(map(str, R1B1 + R1B2)))
+        ET.SubElement(new_tlLogic, 'param', key="ring2", value=",".join(map(str, R2B1 + R2B2)))
+
+        # Adding <param key="barrierPhases" value=""/>  <param key="barrier2Phases" value=""/>
+        barrier2Phases = [R1B1[-1], R2B1[-1]]
+        ET.SubElement(new_tlLogic, 'param', key="barrier2Phases", value=",".join(map(str, barrier2Phases)))
+
+        # Add <param key="barrierPhases" value="R1B2_last,R2B2_last"/>
+        barrierPhases = [R1B2[-1], R2B2[-1]]
+        ET.SubElement(new_tlLogic, 'param', key="barrierPhases", value=",".join(map(str, barrierPhases)))
 
         # Check and swap barrier phases if needed
         if params["coordinate-mode"] == "true":
@@ -784,13 +846,15 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
         nm = len(TLLogic[tl_id])
         for _, phase_row in synchro_data["Phases"].iterrows():
             state = generate_complete_state_string(phase_row['ProtectedMovement'], phase_row['PermittedMovement'], phase_row['RTORMovement'], nm)
-            maxDur = int(float(phase_row['MaxGreen'])) if pd.notna(phase_row['MaxGreen']) else int(int(total_cycle_length) / 3)
+            # maxDur = int(float(phase_row['MaxGreen'])) if pd.notna(phase_row['MaxGreen']) else int(int(total_cycle_length) / 3)
+            maxDur = float(phase_row["MaxGreen"]) if pd.notna(phase_row['MaxGreen']) else round(float(total_cycle_length) / 3, 1)
             if pd.isna(phase_row['MaxGreen']):
                 print(f"  :Maximum green('MaxGreen') is missing for phase {phase_row['Phase']} at "
                       f"intersection {intid_row['INTID'].values[0]}, {int(int(total_cycle_length) / 3)} sec is used."
                       " Manual change is probably needed to ensure the length of this ring equal to cycle length.")
 
-            minDur = phase_row['MinGreen'] if pd.notna(phase_row['MinGreen']) else min(6, int(maxDur))
+            # minDur = phase_row['MinGreen'] if pd.notna(phase_row['MinGreen']) else min(6, int(maxDur))
+            minDur = phase_row['MinGreen'] if pd.notna(phase_row['MinGreen']) else min(6, float(maxDur))
             if pd.isna(phase_row['MinGreen']):
                 print(f"  :Minimum green('MinGreen') is missing for phase {phase_row['Phase']} at "
                       f"intersection {intid_row['INTID'].values[0]}, {min(6, maxDur)} sec is used")
