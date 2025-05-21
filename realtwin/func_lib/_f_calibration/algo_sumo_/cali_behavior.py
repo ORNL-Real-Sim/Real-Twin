@@ -9,9 +9,28 @@
 import os
 import sys
 from functools import partial
+import random
+from pathlib import Path
+import subprocess
+import pandas as pd
+import pyufunc as pf
 
 from mealpy import FloatVar, SA, GA, TS
-from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior import fitness_func
+from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior import (
+    update_turn_flow_from_solution,
+    create_rou_turn_flow_xml,
+    run_SUMO_create_EdgeData,
+    get_travel_time_from_EdgeData_xml,
+    update_flow_xml_from_solution,
+    run_jtrrouter_to_create_rou_xml,
+    result_analysis_on_EdgeData,
+    compute_route_summary,
+    filter_mid_routes,
+    select_two_distinct,
+    get_route_coords,
+    estimate_travel_time,
+    plot_and_report
+)
 import numpy as np
 
 if 'SUMO_HOME' in os.environ:
@@ -26,7 +45,76 @@ import traci
 rng = np.random.default_rng(seed=812)
 
 
-class BehaviorCalib:
+def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, error_func: str = "rmse") -> float:
+    """ Evaluate the fitness of a given solution for SUMO calibration."""
+    # print(f"  :solution: {solution}")
+    # Set up SUMO command with car-following parameters
+    if error_func not in ["rmse", "mae"]:
+        raise ValueError("error_func must be either 'rmse' or 'mae'")
+
+    if solution[5] >= 9.3:  # emergencyDecel
+        solution[5] = 9.3
+    if solution[5] < solution[2]:  # emergencyDecel < deceleration
+        solution[5] = solution[2] + random.randrange(1, 5)
+    # print("after emergencydecel update", solution)
+
+    # get path from scenario_config
+    network_name = scenario_config.get("network_name")
+    sim_input_dir = Path(scenario_config.get("dir_behavior"))
+    path_net = pf.path2linux(sim_input_dir / f"{network_name}.net.xml")
+    path_flow = pf.path2linux(sim_input_dir / f"{network_name}.flow.xml")
+    path_turn = pf.path2linux(sim_input_dir / f"{network_name}.turn.xml")
+    path_rou = pf.path2linux(sim_input_dir / f"{network_name}.rou.xml")
+    path_EdgeData = pf.path2linux(sim_input_dir / "EdgeData.xml")
+    EB_tt = scenario_config.get("EB_tt")
+    WB_tt = scenario_config.get("WB_tt")
+    EB_edge_list = scenario_config.get("EB_edge_list")
+    WB_edge_list = scenario_config.get("WB_edge_list")
+
+    sim_name = scenario_config.get("sim_name")
+    sim_end_time = scenario_config.get("sim_end_time")
+
+    update_flow_xml_from_solution(path_flow, solution)
+
+    run_jtrrouter_to_create_rou_xml(network_name, path_net, path_flow, path_turn, path_rou)
+
+    # change the working directory to the input directory for SUMO
+    os.chdir(sim_input_dir)
+    # Define the command to run SUMO
+    sumo_command = f"sumo -c \"{sim_name}\""
+    sumoProcess = subprocess.Popen(sumo_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    sumoProcess.wait()
+
+    # Read output file or TraCI to evaluate the fitness
+    # Example: calculate average travel time, lower is better
+    # Logic to read and calculate travel time from SUMO output
+    travel_time_EB = get_travel_time_from_EdgeData_xml(path_EdgeData, EB_edge_list)
+    travel_time_WB = get_travel_time_from_EdgeData_xml(path_EdgeData, WB_edge_list)
+
+    if error_func == "rmse":
+        fitness_err = np.sqrt(0.5 * ((EB_tt - travel_time_EB)**2 + (WB_tt - travel_time_WB)**2))
+    elif error_func == "mae":
+        fitness_err = ((abs(EB_tt - travel_time_EB) + abs(WB_tt - travel_time_WB)) / 2)
+    else:
+        raise ValueError("error_func must be either 'rmse' or 'mae'")
+
+    # Calculate GEH from updated results
+    # path_summary = pf.path2linux(sim_input_dir / "summary.xlsx")
+    # calibration_target = scenario_config.get("calibration_target")
+    # sim_start_time = scenario_config.get("sim_start_time")
+    # sim_end_time = scenario_config.get("sim_end_time")
+    # _, mean_geh, geh_percent = result_analysis_on_EdgeData(path_summary,
+    #                                                        path_EdgeData,
+    #                                                        calibration_target,
+    #                                                        sim_start_time,
+    #                                                        sim_end_time)
+    # print(f"  :GEH: Mean Percentage: {mean_geh:.6f}, {geh_percent:.6f}, Travel time error: {fitness_err:.6f}")
+    print(f"  :Travel time error: {fitness_err:.6f}")
+
+    return fitness_err
+
+
+class BehaviorCali:
     """ Behavior Optimization class for SUMO calibration
 
     Args:
@@ -73,8 +161,8 @@ class BehaviorCalib:
         self.term_dict = {
             "max_epoch": self.scenario_config.get("max_epoch", 1000),
             "max_fe": self.scenario_config.get("max_fe", 10000),
-            "max_time": self.scenario_config.get("max_time", 3600),
-            "max_early_stop": self.scenario_config.get("max_early_stop", 20),
+            "max_time": self.scenario_config.get("max_time", None),
+            "max_early_stop": self.scenario_config.get("max_early_stop", 50),
         }
 
         init_params = self.behavior_cfg.get("initial_params", None)
@@ -175,6 +263,8 @@ class BehaviorCalib:
 
         epoch = ga_config.get("epoch", 1000)  # max iterations
         pop_size = ga_config.get("pop_size", 50)  # population size
+        if pop_size < 10:  # minimum population size for GA in mealpy is 10
+            pop_size = 10
         pc = ga_config.get("pc", 0.75)  # crossover probability
         pm = ga_config.get("pm", 0.1)  # mutation probability
 
@@ -428,8 +518,8 @@ if __name__ == "__main__":
                                      },
                        }
 
-    opt = BehaviorCalib(scenario_config=scenario_config,
-                        behavior_config=behavior_config, verbose=True)
+    opt = BehaviorCali(scenario_config=scenario_config,
+                       behavior_config=behavior_config, verbose=True)
 
     # Run Genetic Algorithm
     # g_best = opt.run_GA()

@@ -18,8 +18,8 @@ from .calibration_sumo_ import cali_sumo
 from .calibration_aimsun import cali_aimsun
 from .calibration_vissim import cali_vissim
 
-from .algo_sumo_.calib_behavior import BehaviorCalib
-from .algo_sumo_.calib_turn_inflow import TurnInflowCalib
+from .algo_sumo_.cali_behavior import BehaviorCali
+from .algo_sumo_.cali_turn_inflow import TurnInflowCali
 
 __all__ = [
     # Calibration functions for different simulators
@@ -28,6 +28,6 @@ __all__ = [
     "cali_vissim",
 
     # Calibration algorithms for SUMO simulator
-    "BehaviorCalib",
-    "TurnInflowCalib",
+    "BehaviorCali",
+    "TurnInflowCali",
 ]

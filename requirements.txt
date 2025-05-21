@@ -1,3 +1,4 @@
+folium==0.19.6
 matplotlib==3.10.3
 mealpy==3.0.1
 networkx==3.4.2
@@ -5,12 +6,10 @@ numpy==2.2.6
 openpyxl==3.1.5
 osmnx==2.0.3
 pandas==2.2.3
-pygad==3.4.0
-pyproj==3.7.0
-pytest==8.3.4
+pyproj==3.7.1
 pyufunc==0.4.0
 PyYAML==6.0.2
 Requests==2.32.3
 Shapely==2.1.1
-sphinx_rtd_theme==3.0.2
+sumolib==1.23.1
 traci==1.22.0

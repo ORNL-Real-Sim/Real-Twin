@@ -55,8 +55,8 @@ from realtwin.func_lib._f_calibration.calibration_sumo_ import cali_sumo
 from realtwin.func_lib._f_calibration.calibration_aimsun import cali_aimsun
 from realtwin.func_lib._f_calibration.calibration_vissim import cali_vissim
 
-from realtwin.func_lib._f_calibration.algo_sumo_.calib_behavior import BehaviorCalib
-from realtwin.func_lib._f_calibration.algo_sumo_.calib_turn_inflow import TurnInflowCalib
+from realtwin.func_lib._f_calibration.algo_sumo_.cali_behavior import BehaviorCali
+from realtwin.func_lib._f_calibration.algo_sumo_.cali_turn_inflow import TurnInflowCali
 
 
 __all__ = [
@@ -103,8 +103,8 @@ __all__ = [
     "cali_sumo",  # Calibration function for SUMO simulator
     "cali_aimsun",  # Calibration function for Aimsun simulator
     "cali_vissim",  # Calibration function for Vissim simulator
-    "BehaviorCalib",  # Behavior calibration algorithm for SUMO simulator
-    "TurnInflowCalib"  # Turn inflow calibration algorithm for SUMO simulator
+    "BehaviorCali",  # Behavior calibration algorithm for SUMO simulator
+    "TurnInflowCali"  # Turn inflow calibration algorithm for SUMO simulator
 
     # _g_analyzer
 

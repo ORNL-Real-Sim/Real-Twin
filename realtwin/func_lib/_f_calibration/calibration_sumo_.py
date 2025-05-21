@@ -22,8 +22,8 @@ from pathlib import Path
 import pyufunc as pf
 import copy
 
-from realtwin.func_lib._f_calibration.algo_sumo_.calib_turn_inflow import TurnInflowCalib
-from realtwin.func_lib._f_calibration.algo_sumo_.calib_behavior import BehaviorCalib
+from realtwin.func_lib._f_calibration.algo_sumo_.cali_turn_inflow import TurnInflowCali
+from realtwin.func_lib._f_calibration.algo_sumo_.cali_behavior import BehaviorCali
 from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_turn_inflow import (read_MatchupTable,
                                                                                generate_turn_demand_cali,
                                                                                generate_inflow,
@@ -31,7 +31,7 @@ from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_turn_inflow import (r
 
 
 # for the beta version
-def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool = True) -> bool:
+def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool = True, **kwargs) -> bool:
     """Run SUMO calibration based on the selected algorithm and input configuration.
 
     Args:
@@ -58,7 +58,7 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
         sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
 
     # Prepare scenario_config and algo_config from input_config
-    scenario_config_turn_inflow = prepare_scenario_config(input_config)
+    scenario_config_turn_inflow = prepare_scenario_config_turn_inflow(input_config)
 
     # Prepare Algorithm configure: e.g. {"ga": {}, "sa": {}, "ts": {}}
     algo_config_turn_inflow = input_config["Calibration"]["turn_inflow"]
@@ -66,74 +66,76 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
     algo_config_turn_inflow["sa_config"] = input_config["Calibration"]["sa_config"]
     algo_config_turn_inflow["ts_config"] = input_config["Calibration"]["ts_config"]
 
+    if "update_turn_flow_algo" in kwargs:
+        algo_config_turn_inflow["ga_config"] = algo_config_turn_inflow["ga_config"].update(
+            kwargs["update_turn_flow_algo"].get("ga_config", {}))
+        algo_config_turn_inflow["sa_config"] = algo_config_turn_inflow["sa_config"].update(
+            kwargs["update_turn_flow_algo"].get("sa_config", {}))
+        algo_config_turn_inflow["ts_config"] = algo_config_turn_inflow["ts_config"].update(
+            kwargs["update_turn_flow_algo"].get("ts_config", {}))
+
     algo_config_behavior = input_config["Calibration"]["behavior"]
     algo_config_behavior["ga_config"] = input_config["Calibration"]["ga_config"]
     algo_config_behavior["sa_config"] = input_config["Calibration"]["sa_config"]
     algo_config_behavior["ts_config"] = input_config["Calibration"]["ts_config"]
 
+    if "update_behavior_algo" in kwargs:
+        algo_config_behavior["ga_config"] = algo_config_behavior["ga_config"].update(
+            kwargs["update_behavior_algo"].get("ga_config", {}))
+        algo_config_behavior["sa_config"] = algo_config_behavior["sa_config"].update(
+            kwargs["update_behavior_algo"].get("sa_config", {}))
+        algo_config_behavior["ts_config"] = algo_config_behavior["ts_config"].update(
+            kwargs["update_behavior_algo"].get("ts_config", {}))
+
     # run calibration based on the selected algorithm: optimize turn and inflow
     print("\n  :Optimize Turn and Inflow...")
-    turn_inflow = TurnInflowCalib(scenario_config_turn_inflow, algo_config_turn_inflow, verbose=verbose)
+    turn_inflow = TurnInflowCali(scenario_config_turn_inflow, algo_config_turn_inflow, verbose=verbose)
 
     match sel_algo["turn_inflow"]:
         case "ga":
             g_best, model = turn_inflow.run_GA()
-            path_model_result = pf.path2linux(Path(algo_config_turn_inflow["input_dir"]) / "turn_inflow_ga_result")
-            # path_model_result = "turn_inflow_ga_result"
-
+            path_model_result = "turn_inflow_ga_result"
         case "sa":
             g_best, model = turn_inflow.run_SA()
-            path_model_result = pf.path2linux(Path(algo_config_turn_inflow["input_dir"]) / "turn_inflow_sa_result")
-            # path_model_result = "turn_inflow_sa_result"
+            path_model_result = "turn_inflow_sa_result"
         case "ts":
             g_best, model = turn_inflow.run_TS()
-            path_model_result = pf.path2linux(Path(algo_config_turn_inflow["input_dir"]) / "turn_inflow_ts_result")
-            # path_model_result = "turn_inflow_ts_result"
+            path_model_result = "turn_inflow_ts_result"
         case _:
             print(f"  :Error: unsupported algorithm {sel_algo['turn_inflow']}, using genetic algorithm as default.")
             g_best, model = turn_inflow.run_GA()
-            path_model_result = pf.path2linux(Path(algo_config_turn_inflow["input_dir"]) / "ga_turn_inflow_result")
-            # path_model_result = "ga_turn_inflow_result"
+            path_model_result = "turn_inflow_ga_result"
 
     turn_inflow.run_vis(path_model_result, model)
-
-    # run calibration based on the selected algorithm: optimize behavior
-    # update path_turn and path_flow to generated xml files
-    scenario_config_behavior = copy.deepcopy(scenario_config_turn_inflow)
-    scenario_config_behavior["path_turn"] = f"{scenario_config_behavior.get("network_name")}.turn.xml"
-    scenario_config_behavior["path_inflow"] = f"{scenario_config_behavior.get("network_name")}.flow.xml"
-    scenario_config_behavior["EB_tt"] = algo_config_behavior.get("EB_tt")
-    scenario_config_behavior["WB_tt"] = algo_config_behavior.get("WB_tt")
-    scenario_config_behavior["EB_edge_list"] = algo_config_behavior.get("EB_edge_list")
-    scenario_config_behavior["WB_edge_list"] = algo_config_behavior.get("WB_edge_list")
+    # clean up the temporary files generated during turn and inflow calibration
+    turn_inflow._clean_up()
 
     print("\n  :Optimize Behavior parameters based on the optimized turn and inflow...")
-    behavior = BehaviorCalib(scenario_config_behavior, algo_config_behavior, verbose=verbose)
+    scenario_config_behavior = prepare_scenario_config_behavior(input_config)
+    if "sel_behavior_route" in kwargs:
+        scenario_config_behavior["sel_behavior_route"] = kwargs["sel_behavior_route"]
+    behavior = BehaviorCali(scenario_config_behavior, algo_config_behavior, verbose=verbose)
 
     match sel_algo["behavior"]:
         case "ga":
             g_best, model = behavior.run_GA()
-            path_model_result = pf.path2linux(Path(scenario_config_behavior["input_dir"]) / "behavior_ga_result")
-            # path_model_result = "behavior_ga_result"
+            path_model_result = "behavior_ga_result"
         case "sa":
             g_best, model = behavior.run_SA()
-            path_model_result = pf.path2linux(Path(scenario_config_behavior["input_dir"]) / "behavior_sa_result")
-            # path_model_result = "behavior_sa_result"
+            path_model_result = "behavior_sa_result"
         case "ts":
             g_best, model = behavior.run_TS()
-            path_model_result = pf.path2linux(Path(scenario_config_behavior["input_dir"]) / "behavior_ts_result")
-            # path_model_result = "behavior_ts_result"
+            path_model_result = "behavior_ts_result"
         case _:
             print(f"  :Error: unsupported algorithm {sel_algo['behavior']}, using genetic algorithm as default.")
             g_best, model = behavior.run_GA()
-            path_model_result = pf.path2linux(Path(scenario_config_behavior["input_dir"]) / "ga_behavior_result")
-            # path_model_result = "ga_behavior_result"
+            path_model_result = "behavior_ga_result"
 
     behavior.run_vis(path_model_result, model)
     return True
 
 
-def prepare_scenario_config(input_config: dict) -> dict:
+def prepare_scenario_config_turn_inflow(input_config: dict) -> dict:
     """Prepare scenario_config from input_config"""
 
     scenario_config_dict = input_config.get("Calibration").get("scenario_config")
@@ -150,7 +152,7 @@ def prepare_scenario_config(input_config: dict) -> dict:
     os.makedirs(turn_inflow_route_dir, exist_ok=True)
 
     # add input_dir as turn_inflow_dir
-    scenario_config_dict["input_dir"] = turn_inflow_dir
+    scenario_config_dict["dir_turn_inflow"] = turn_inflow_dir
 
     # copy net.xml to turn_inflow directory
     network_name = input_config.get("Network").get("NetworkName")
@@ -164,10 +166,10 @@ def prepare_scenario_config(input_config: dict) -> dict:
 
     # create .cfg file in turn_inflow directory
     path_sumocfg = pf.path2linux(Path(turn_inflow_dir) / f"{network_name}.sumocfg")
-    seed = scenario_config_dict.get("calibration_seed")
-    sim_start_time = scenario_config_dict.get("sim_start_time")
-    sim_end_time = scenario_config_dict.get("sim_end_time")
-    calibration_time_step = scenario_config_dict.get("calibration_time_step")
+    seed = scenario_config_dict.get("calibration_seed", 812)
+    sim_start_time = scenario_config_dict.get("sim_start_time", 3600 * 8)
+    sim_end_time = scenario_config_dict.get("sim_end_time", 3600 * 10)
+    calibration_time_step = scenario_config_dict.get("calibration_time_step", 1)
     generate_sumocfg_xml(path_sumocfg, network_name, seed, sim_start_time, sim_end_time, calibration_time_step)
 
     # create turn and inflow and summary df
@@ -202,18 +204,47 @@ def prepare_scenario_config(input_config: dict) -> dict:
     scenario_config_dict["sim_name"] = f"{network_name}.sumocfg"
     scenario_config_dict["path_net"] = pf.path2linux(Path(turn_inflow_dir) / f"{network_name}.net.xml")
 
-    # TODO Do not copy generated files to generated_sumo_dir in beta version
-#     # check whether required files exist in the input dir
-#     required_files = {key: value for key, value in scenario_config_dict.items() if key.startswith("path_")}
-#
-#     if not pf.check_files_in_dir(required_files.values(), input_config.get("input_dir")):
-#         return None
-#
-#     # copy required files to generated_sumo_dir
-#     for key, file in required_files.items():
-#         shutil.copy(Path(input_config["input_dir"]) / file, generated_sumo_dir)
-
     return scenario_config_dict
+
+
+def prepare_scenario_config_behavior(input_config: dict) -> dict:
+
+    scenario_config_behavior = input_config.get("Calibration").get("scenario_config")
+    network_name = input_config.get("Network").get("NetworkName")
+
+    # # add input_dir to scenario_config from generated SUMO dir(scenario generation)
+    generated_sumo_dir = pf.path2linux(Path(input_config["output_dir"]) / "SUMO")
+
+    # create behavior directory under generated_sumo_dir
+    behavior_dir = pf.path2linux(Path(generated_sumo_dir) / "behavior")
+    os.makedirs(behavior_dir, exist_ok=True)
+    scenario_config_behavior["dir_behavior"] = behavior_dir
+
+    # copy files from turn_inflow directory to behavior directory
+    turn_inflow_dir = pf.path2linux(Path(generated_sumo_dir) / "turn_inflow")
+    file_sim = Path(turn_inflow_dir) / f"{network_name}.sumocfg"
+    file_net = Path(turn_inflow_dir) / f"{network_name}.net.xml"
+    file_edge_add = Path(turn_inflow_dir) / "Edge.add.xml"
+    file_route = Path(turn_inflow_dir) / f"{network_name}.rou.xml"
+    file_turn = Path(turn_inflow_dir) / f"{network_name}.turn.xml"
+    file_inflow = Path(turn_inflow_dir) / f"{network_name}.flow.xml"
+    file_EdgeData = Path(turn_inflow_dir) / "EdgeData.xml"
+    shutil.copy(file_sim, behavior_dir)
+    shutil.copy(file_net, behavior_dir)
+    shutil.copy(file_edge_add, behavior_dir)
+    shutil.copy(file_route, behavior_dir)
+    shutil.copy(file_turn, behavior_dir)
+    shutil.copy(file_inflow, behavior_dir)
+    shutil.copy(file_EdgeData, behavior_dir)
+
+    scenario_config_behavior["path_turn"] = f"{network_name}.turn.xml"
+    scenario_config_behavior["path_inflow"] = f"{network_name}.flow.xml"
+    scenario_config_behavior["EB_tt"] = input_config["Calibration"]["behavior"].get("EB_tt")
+    scenario_config_behavior["WB_tt"] = input_config["Calibration"]["behavior"].get("WB_tt")
+    scenario_config_behavior["EB_edge_list"] = input_config["Calibration"]["behavior"].get("EB_edge_list")
+    scenario_config_behavior["WB_edge_list"] = input_config["Calibration"]["behavior"].get("WB_edge_list")
+
+    return scenario_config_behavior
 
 
 def generate_edge_add_xml(path_edge_add: str) -> bool:

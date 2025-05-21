@@ -37,6 +37,10 @@ from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
 # calibration
 from realtwin.func_lib._f_calibration.calibration_sumo import cali_sumo
 from realtwin.func_lib._f_calibration.calibration_sumo_ import cali_sumo as cali_sumo_
+from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_turn_inflow import (read_MatchupTable,
+                                                                               generate_turn_demand_cali,
+                                                                               generate_inflow,
+                                                                               generate_turn_summary)
 
 
 class RealTwin:
@@ -276,6 +280,7 @@ class RealTwin:
         df_volume, df_vol_lookup = generate_turn_demand(path_matchup_table=path_matchup,
                                                         control_dir=control_dir,
                                                         traffic_dir=traffic_dir,)
+
         self.abstract_scenario.Traffic.VolumeLookupTable = df_vol_lookup
 
         self.abstract_scenario.update_AbstractScenario_from_input(df_volume=df_volume)
@@ -350,13 +355,28 @@ class RealTwin:
             print(f"\n{simulator.upper()} simulation successfully Prepared.")
         return True
 
-    def calibrate(self, *, sel_algo: dict = None) -> bool:
+    def calibrate(self, *, sel_algo: dict = None,
+                  sel_behavior_route: dict = None,
+                  update_turn_flow_algo: dict = None,
+                  update_behavior_algo: dict = None) -> bool:
         """Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.
 
         Args:
             sel_algo (dict): The dictionary of algorithms to be used for calibration.
                 Default is None, will use genetic algorithm. e.g. {"turn_inflow": "ga", "behavior": "ga"}.
-
+            sel_behavior_route (dict): The dictionary of behavior route parameters to be used for calibration.
+                Default is None. time (in seconds) is ground truth travel time.
+                e.g. sel_behavior_route = {"route_1": {"time": 20, "edge_list": ["edge_id_1", "edge_d_2", ...]}
+                                           "route_2" {"time": 40, "edge_list":["edge_id_1", "edge_d_2", ...]}
+                                           ...}.
+            update_turn_flow_algo (dict): The dictionary of algorithms to be used for updating turn flow.
+                Default is None, will use genetic algorithm.
+                Please refer to input configuration file for keys for each algorithm.
+                e.g. update_turn_flow_algo = {"ga_config": {}, "sa_config":{}, "ts_config":{}}.
+            update_behavior_algo (dict): The dictionary of algorithms to be used for updating behavior.
+                Default is None, will use genetic algorithm.
+                Please refer to input configuration file for keys for each algorithm.
+                e.g. update_behavior_algo = {"ga_config":{}, "sa_config":{}, "ts_config": {}}.
         """
         # TDD
         print()
@@ -383,9 +403,25 @@ class RealTwin:
             print(f"  :{algo} for behavior calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
             return False
 
+        # parse user additional parameters for calibration
+        user_kwargs = {}
+        if sel_behavior_route:
+            user_kwargs["sel_behavior_route"] = sel_behavior_route
+        if update_turn_flow_algo:
+            user_kwargs["update_turn_flow_algo"] = update_turn_flow_algo
+        if update_behavior_algo:
+            user_kwargs["update_behavior_algo"] = update_behavior_algo
+
         # run calibration based on the selected algorithm
-        # cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)
-        cali_sumo_(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)
+        if "sumo" in self.sel_sim:
+            # cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)
+            cali_sumo_(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose, **user_kwargs)
+
+        if "vissim" in self.sel_sim:
+            pass
+
+        if "aimsun" in self.sel_sim:
+            pass
 
         print("Calibration successfully completed.")
 

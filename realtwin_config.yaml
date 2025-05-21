@@ -6,10 +6,9 @@ demo_data: false
 input_dir: datasets/tss
 output_dir:  # optional
 Network:
-    # the name of the network should not have space between words
-    NetworkName: chatt
-    # polygon points for the network in the format of (lon, lat)
-    NetworkVertices: (-85.14977588011192, 35.040346288414916), (-85.15823020212477, 35.04345144844759), (-85.15829457513502, 35.043293338482925), (-85.14986171079225, 35.04018378032611)
+    NetworkName: chatt  # the name of the network should not have space between words
+    # polygon points for the network in the format of [lon, lat]
+    NetworkVertices: [[-85.14977588011192, 35.040346288414916], [-85.15823020212477, 35.04345144844759], [-85.15829457513502, 35.043293338482925], [-85.14986171079225, 35.04018378032611]]
 Traffic: GridSmart
 Control: Synchro_signal.csv
 Calibration:
@@ -20,24 +19,18 @@ Calibration:
         calibration_target:
             GEH: 5  # https://en.wikipedia.org/wiki/GEH_statistic
             GEHPercent: 0.85  # accepted match
-        calibration_interval: 60  # mins
-        demand_interval: 15  # mins
         calibration_time_step: 1
-        calibration_seed: 42
         allow_u_turn: false  # if true, the u-turns are allowed in the simulation
 
-        # Termination criteria for ga, sa and ts algorithms
-        max_epoch: 1000  # max number of iterations
-        max_fe: 10000  # max number of function evaluations
-        max_time: 3600  # max time in seconds
-        max_early_stop: 20  # max number of early stop iterations
+        # (Optional) Termination criteria for ga, sa and ts algorithms
+        # max_epoch: 1000  # max number of iterations
+        # max_fe: 10000  # max number of function evaluations
+        # max_time: 3600  # max time in seconds
+        # max_early_stop: 20  # max number of early stop iterations
 
     turn_inflow:
-        initial_params: [0.5, 0.5, 0.5, 0.5, 0.5,
-                         0.5, 0.5, 0.5, 0.5, 0.5,
-                         0.5, 0.5, 100, 100, 100, 100]
-        params_ranges: [[0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
-                        [0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
+        initial_params: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 100, 100, 100, 100]
+        params_ranges: [[0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
                         [0, 1], [0, 1], [50, 200], [50, 200], [50, 200], [50, 200]]
         max_inflow: 200  # max inflow for the turning ratio
 
@@ -68,45 +61,22 @@ Calibration:
                         "-290", "-298", "-295"]
 
     ga_config:  # generic algorithm configuration
-        epoch: 10  # number of generations
-        pop_size: 8  # population size >=5
-        pc: 0.75  # crossover probability
-        pm: 0.1  # mutation probability
         model_selection: "BaseGA"  #  BaseGA, EliteSingleGA, EliteMultiGA, MultiGA, SingleGA
+        epoch: 10  # number of generations [1, 100000]
+        pop_size: 8  # population size [10, 10000]
+        pc: 0.75  # crossover probability [0.7, 0.95]
+        pm: 0.1  # mutation probability [0.01, 0.2]
 
     sa_config:  # simulated annealing configuration
-        # the original configuration for the Simulated Annealing
-        num_variables: 16
-        num_turning_ratio: 12  # remaining should be inflow
-        initial_temperature: 100
-        ubc: 200  # upper bound of inflow
-        cost_difference: 2
-        accept_prob: 0.5
-        stopping_temperature: 0.001
-
-        # new configuration for the Simulated Annealing
-        epoch: 1000  # number of generations
-        temp_init: 100  # initial temperature
-        cooling_rate: 0.891  # same as previous
-        scale: 0.1  # scale for the temperature
         model_selection: "OriginalSA"  # OriginalSA, GaussianSA, SwarmSA
+        epoch: 10  # number of generations [1, 10000]
+        temp_init: 100  # initial temperature [1, 10000]
+        cooling_rate: 0.891  # same as previous [0, 1]
+        step_size: 0.1  # step size for the random movement [-100, 100]
+        scale: 0.1  # scale for the temperature [0, 1], GaussianSA and SwarmSA Only
 
     ts_config:  # tabu search configuration
-        # the original configuration for the Tabu Search
-        iterations: 3
-        # tabu_size: 120
-        neighborhood_size: 32
-        move_range: 0.5   # initial move range
-        num_turning_ratio: 12
-        max_no_improvement_local: 5
-        max_no_improvement_global: 30
-        lower_bound: 0
-        upper_bound: 1
-        lbc: 0  # lower bound for inflow counts
-        ubc: 200  # upper bound for inflow counts
-
-        # new configuration for the Tabu Search
-        epoch: 1000  # number of generations
-        tabu_size: 10  # size of the tabu list;
-        neighbour_size: 10  # size of the neighbourhood for generating candidate solutions
-        perturbation_scale: 0.05  # scale of perturbation for the solution
+        epoch: 10  # number of generations [1, 10000]
+        tabu_size: 10  # maximum size of the tabu list [2, 10000]
+        neighbour_size: 10  # size of the neighborhood for generating candidate solutions [2, 10000]
+        perturbation_scale: 0.05  # scale of perturbation for the solution [0, 100]

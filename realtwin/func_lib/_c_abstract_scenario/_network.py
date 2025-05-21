@@ -198,14 +198,22 @@ class OSMRoad:
     def get_graph(self, NetworkVertices):
         """Get the graph from OpenStreetMap using osmnx"""
 
-        # NetworkVertices = " (-85.14985634615098, 35.0401442512819), ( -85.15827848213861, 35.04329333848216),
-        # (-85.15818728703556,35.04347780007786), (-85.14975978663011,35.04037264104675)"
+        if isinstance(NetworkVertices, str):
 
-        NetworkVerticesTemp = NetworkVertices.replace(' ', '').split('),(')
-        NetworkVerticesTemp[0] = NetworkVerticesTemp[0][1:]
-        NetworkVerticesTemp[-1] = NetworkVerticesTemp[-1][:-1]
-        NetworkVerticesList = [tuple((float(ele) for ele in tup.split(',')))
-                               for tup in NetworkVerticesTemp]
+            # NetworkVertices = " (-85.14985634615098, 35.0401442512819), ( -85.15827848213861, 35.04329333848216),
+            # (-85.15818728703556,35.04347780007786), (-85.14975978663011,35.04037264104675)"
+
+            NetworkVerticesTemp = NetworkVertices.replace(' ', '').split('),(')
+            NetworkVerticesTemp[0] = NetworkVerticesTemp[0][1:]
+            NetworkVerticesTemp[-1] = NetworkVerticesTemp[-1][:-1]
+            NetworkVerticesList = [tuple((float(ele) for ele in tup.split(',')))
+                                   for tup in NetworkVerticesTemp]
+        elif isinstance(NetworkVertices, list):
+            # Check if the list contains tuples
+            if all(isinstance(item, list) and len(item) == 2 for item in NetworkVertices):
+                NetworkVerticesList = [(float(item[0]), float(item[1])) for item in NetworkVertices]
+            else:
+                raise ValueError("Invalid format: List must contain list of [lon, lat].")
 
         polygon = Polygon(NetworkVerticesList)
         self.G = ox.graph.graph_from_polygon(

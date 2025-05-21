@@ -710,18 +710,19 @@ def generate_turn_summary(TurnDf: pd.DataFrame, MatchupTable_UserInput: pd.DataF
 
 
 if __name__ == "__main__":
-    path_matchup = "./MatchupTable_usr.xlsx"
-    path_net = "./chatt.net.xml"
-
-    MatchupTable_UserInput = read_MatchupTable(path_matchup_table=path_matchup)
-    TurnDf, IDRef = generate_turn_demand_cali(path_matchup_table=path_matchup, traffic_dir="./RealTwinDemand/")
-
-    InflowDf_Calibration, InflowEdgeToCalibrate, N_InflowVariable = generate_inflow(path_net,
-                                                                                    MatchupTable_UserInput,
-                                                                                    TurnDf,
-                                                                                    IDRef)
-
-    (TurnToCalibrate, TurnDf_Calibration,
-     RealSummary_Calibration, N_Variable, N_TurnVariable) = generate_turn_summary(TurnDf,
-                                                                                  MatchupTable_UserInput,
-                                                                                  N_InflowVariable)
+    pass
+#     path_matchup = "./MatchupTable.xlsx"
+#     path_net = "./chatt.net.xml"
+#
+#     MatchupTable_UserInput = read_MatchupTable(path_matchup_table=path_matchup)
+#     TurnDf, IDRef = generate_turn_demand_cali(path_matchup_table=path_matchup, traffic_dir="./RealTwinDemand/")
+#
+#     InflowDf_Calibration, InflowEdgeToCalibrate, N_InflowVariable = generate_inflow(path_net,
+#                                                                                     MatchupTable_UserInput,
+#                                                                                     TurnDf,
+#                                                                                     IDRef)
+#
+#     (TurnToCalibrate, TurnDf_Calibration,
+#      RealSummary_Calibration, N_Variable, N_TurnVariable) = generate_turn_summary(TurnDf,
+#                                                                                   MatchupTable_UserInput,
+#                                                                                   N_InflowVariable)

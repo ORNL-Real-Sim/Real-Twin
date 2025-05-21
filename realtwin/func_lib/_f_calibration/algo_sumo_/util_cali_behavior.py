@@ -14,6 +14,10 @@ import random
 import pandas as pd
 import numpy as np
 import pyufunc as pf
+import folium
+import sumolib
+from itertools import combinations
+import requests
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -420,6 +424,178 @@ def result_analysis_on_EdgeData(path_summary: str,
     return (flag, mean_geh, geh_percent)
 
 
+def compute_route_summary(rou_file: str, net_file: str) -> pd.DataFrame:
+    """
+    Parses the SUMO .rou.xml and .net.xml files, counts each unique route’s frequency,
+    computes its total length, and returns a DataFrame sorted by descending frequency.
+    """
+    # 1) load network
+    net = sumolib.net.readNet(net_file)
+
+    # 2) parse the .rou.xml
+    tree = ET.parse(rou_file)
+    root = tree.getroot()
+
+    # 3) accumulate counts and lengths
+    route_counts = {}
+    route_lengths = {}
+    for route_elem in root.findall(".//route"):
+        edges = tuple(route_elem.attrib["edges"].split())
+        # freq
+        route_counts[edges] = route_counts.get(edges, 0) + 1
+        # length
+        if edges not in route_lengths:
+            route_lengths[edges] = sum(
+                net.getEdge(e).getLength()
+                for e in edges
+                if net.getEdge(e) is not None
+            )
+
+    # 4) build DataFrame
+    df = pd.DataFrame([
+        {
+            "route": " ".join(edges),
+            "frequency": freq,
+            "length_meters": route_lengths[edges]
+        }
+        for edges, freq in route_counts.items()
+    ])
+
+    # 5) sort and return
+    return df.sort_values("frequency", ascending=False).reset_index(drop=True)
+
+
+def filter_mid_routes(df_sorted: pd.DataFrame) -> pd.DataFrame:
+    """Filter 80-90th percentile by length"""
+
+    length_80 = df_sorted["length_meters"].quantile(0.8)
+    length_90 = df_sorted["length_meters"].quantile(0.9)
+    return df_sorted[
+        (df_sorted["length_meters"] >= length_80) &
+        (df_sorted["length_meters"] <  length_90)
+    ].reset_index(drop=True)
+
+
+def select_two_distinct(mid_routes: pd.DataFrame) -> list[list[str]]:
+    """Select two most distinct via Jaccard """
+
+    def jaccard_dist(a: str, b: str) -> float:
+        sa, sb = set(a.split()), set(b.split())
+        return 1 - len(sa & sb) / len(sa | sb)
+
+    pairs = list(combinations(range(len(mid_routes)), 2))
+    scores = [
+        (i, j, jaccard_dist(mid_routes.loc[i, "route"], mid_routes.loc[j, "route"]))
+        for i, j in pairs
+    ]
+    i, j, _ = max(scores, key=lambda x: x[2])
+    return [
+        mid_routes.loc[i, "route"].split(),
+        mid_routes.loc[j, "route"].split()
+    ]
+
+
+def get_route_coords(net, edge_list: list[str]) -> list[tuple[float, float]]:
+    """Extract WGS84 coords for a route
+    net: a sumolib Net object
+    edge_list: list of edge IDs (strings)
+    """
+    pts = []
+    for eid in edge_list:
+        edge = net.getEdge(eid)
+        for x, y in edge.getShape():
+            lon, lat = net.convertXY2LonLat(x, y)
+            pts.append((lat, lon))
+    return pts
+
+
+def estimate_travel_time(route_coords: list[tuple[float, float]], api_key: str = "") -> int | None:
+    """Estimate travel time with waypoint downsampling"""
+    if len(route_coords) < 2:
+        return None
+
+    if not api_key:
+        api_key = "AIzaSyBH5lSmawDWrJpPw9cd4h6wgN04lGNt3_A"
+
+    def downsample(C: list, max_pts=23) -> list:
+        if len(C) <= max_pts:
+            return C
+        step = max(1, len(C) // max_pts)
+        return C[::step][:max_pts]
+
+    origin = f"{route_coords[0][0]},{route_coords[0][1]}"
+    destination = f"{route_coords[-1][0]},{route_coords[-1][1]}"
+    mids = downsample(route_coords[1:-1], 23)
+    waypts = "|".join(f"{lat},{lon}" for lat, lon in mids)
+
+    resp = requests.get(
+        "https://maps.googleapis.com/maps/api/directions/json",
+        params={
+            "origin": origin,
+            "destination": destination,
+            "waypoints": waypts,
+            "departure_time": "now",
+            "key": api_key
+        }
+    )
+    j = resp.json()
+    if j.get("status") == "OK":
+        return sum(leg["duration"]["value"] for leg in j["routes"][0]["legs"])
+    else:
+        print("API error:", j.get("status"), j.get("error_message"))
+        return None
+
+
+def plot_and_report(route_coords_list: list[list[tuple[float, float]]],
+                    travel_times: list[int | None],
+                    selected_routes: list[list[str]],
+                    out_html: str = "routes_travel_time_map.html"):
+
+    """ Plot routes, print edges & times, and add legend"""
+    # Print edge lists and travel times
+    for idx, edges in enumerate(selected_routes, start=1):
+        print(f"Route {idx} edges: {edges}")
+        t = travel_times[idx - 1]
+        if t is not None:
+            print(f"Route {idx} travel time: {t} sec ({t / 60:.1f} min)")
+        else:
+            print(f"Route {idx} travel time: not available")
+
+    # Folium map
+    all_pts = [pt for coords in route_coords_list for pt in coords]
+    center = (
+        sum(lat for lat, lon in all_pts) / len(all_pts),
+        sum(lon for lat, lon in all_pts) / len(all_pts)
+    )
+    m = folium.Map(location=center, zoom_start=14)
+    colors = ["red", "blue"]
+
+    for idx, coords in enumerate(route_coords_list, start=1):
+        tooltip = f"Route {idx}"
+        if travel_times[idx - 1] is not None:
+            tooltip += f": {travel_times[idx - 1]} sec"
+        folium.PolyLine(coords, color=colors[idx - 1], weight=5, opacity=0.8,
+                        tooltip=tooltip).add_to(m)
+
+    # Legend
+    legend_html = """
+     <div style="
+       position: fixed;
+       bottom: 50px; left: 50px; width: 150px; height: 80px;
+       background-color: white; border:2px solid grey; z-index:9999;
+       font-size:14px; line-height:18px;
+       ">
+       &nbsp;<b>Route Legend</b><br>
+       &nbsp;<span style="color:red;">&#8212;&#8212;</span>&nbsp;Route 1<br>
+       &nbsp;<span style="color:blue;">&#8212;&#8212;</span>&nbsp;Route 2
+     </div>
+    """
+    m.get_root().html.add_child(folium.Element(legend_html))
+
+    m.save(out_html)
+    print(f"Map saved → {out_html}")
+
+
 def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, error_func: str = "rmse") -> float:
     """ Evaluate the fitness of a given solution for SUMO calibration."""
     # print(f"  :solution: {solution}")
@@ -435,7 +611,7 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
 
     # get path from scenario_config
     network_name = scenario_config.get("network_name")
-    sim_input_dir = Path(scenario_config.get("input_dir"))
+    sim_input_dir = Path(scenario_config.get("dir_behavior"))
     path_net = pf.path2linux(sim_input_dir / f"{network_name}.net.xml")
     path_flow = pf.path2linux(sim_input_dir / f"{network_name}.flow.xml")
     path_turn = pf.path2linux(sim_input_dir / f"{network_name}.turn.xml")
@@ -474,15 +650,16 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
         raise ValueError("error_func must be either 'rmse' or 'mae'")
 
     # Calculate GEH from updated results
-    path_summary = pf.path2linux(sim_input_dir / "summary.xlsx")
-    calibration_target = scenario_config.get("calibration_target")
-    sim_start_time = scenario_config.get("sim_start_time")
-    sim_end_time = scenario_config.get("sim_end_time")
-    _, mean_geh, geh_percent = result_analysis_on_EdgeData(path_summary,
-                                                           path_EdgeData,
-                                                           calibration_target,
-                                                           sim_start_time,
-                                                           sim_end_time)
-    print(f"  :GEH: Mean Percentage: {mean_geh:.6f}, {geh_percent:.6f}, Travel time error: {fitness_err:.6f}")
+    # path_summary = pf.path2linux(sim_input_dir / "summary.xlsx")
+    # calibration_target = scenario_config.get("calibration_target")
+    # sim_start_time = scenario_config.get("sim_start_time")
+    # sim_end_time = scenario_config.get("sim_end_time")
+    # _, mean_geh, geh_percent = result_analysis_on_EdgeData(path_summary,
+    #                                                        path_EdgeData,
+    #                                                        calibration_target,
+    #                                                        sim_start_time,
+    #                                                        sim_end_time)
+    # print(f"  :GEH: Mean Percentage: {mean_geh:.6f}, {geh_percent:.6f}, Travel time error: {fitness_err:.6f}")
+    print(f"  :Travel time error: {fitness_err:.6f}")
 
     return fitness_err

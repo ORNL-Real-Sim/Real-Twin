@@ -10,7 +10,7 @@ import os
 import sys
 from pathlib import Path
 from functools import partial
-
+import shutil
 from mealpy import FloatVar, SA, GA, TS
 try:
     from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_turn_inflow import (
@@ -18,12 +18,17 @@ try:
         run_SUMO_create_EdgeData,
         run_jtrrouter_to_create_rou_xml,
         result_analysis_on_EdgeData)
-except:
+except ImportError:
     from util_cali_turn_inflow import (
         update_turn_flow_from_solution,
         run_SUMO_create_EdgeData,
         run_jtrrouter_to_create_rou_xml,
-        result_analysis_on_EdgeData)
+        result_analysis_on_EdgeData,
+        read_MatchupTable,
+        generate_turn_demand_cali,
+        generate_inflow,
+        generate_turn_summary,)
+
 
 import numpy as np
 import pyufunc as pf
@@ -49,25 +54,20 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
     InflowDf_Calibration = scenario_config.get("InflowDf_Calibration")
     InflowEdgeToCalibrate = scenario_config.get("InflowEdgeToCalibrate")
     RealSummary_Calibration = scenario_config.get("RealSummary_Calibration")
-    calibration_interval = scenario_config.get("calibration_interval")
-    demand_interval = scenario_config.get("demand_interval")
+    calibration_interval = scenario_config.get("calibration_interval", 60)
+    demand_interval = scenario_config.get("demand_interval", 15)
 
     network_name = scenario_config.get("network_name")
     sim_start_time = scenario_config.get("sim_start_time")
     sim_end_time = scenario_config.get("sim_end_time")
     path_net = scenario_config.get("path_net")
-    path_rou = pf.path2linux(Path(scenario_config.get("input_dir")) / "route" / f"{network_name}.rou.xml")
+    path_rou = pf.path2linux(Path(scenario_config.get("dir_turn_inflow")) / "route" / f"{network_name}.rou.xml")
     sim_name = scenario_config.get("sim_name")
-    path_edge = pf.path2linux(Path(scenario_config.get("input_dir")) / "EdgeData.xml")
+    path_edge = pf.path2linux(Path(scenario_config.get("dir_turn_inflow")) / "EdgeData.xml")
     calibration_target = scenario_config.get("calibration_target")
 
-    # path_turn = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_turn"))
-    # path_inflow = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_inflow"))
-    # path_summary = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_summary"))
-    # path_edge = pf.path2linux(Path(scenario_config.get("input_dir")) / scenario_config.get("path_edge", "EdgeData.xml"))
-
     # TODO will remove in the future iteration - change current working dir at beginning of the calibration
-    os.chdir(scenario_config.get("input_dir"))
+    os.chdir(scenario_config.get("dir_turn_inflow"))
 
     # update turn and flow
     df_turn, df_inflow = update_turn_flow_from_solution(solution,
@@ -103,7 +103,7 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
     return [mean_GEH]
 
 
-class TurnInflowCalib:
+class TurnInflowCali:
     """ Turn and Inflow Optimization class for SUMO calibration.
 
     See Also:
@@ -136,8 +136,8 @@ class TurnInflowCalib:
         self.term_dict = {
             "max_epoch": self.scenario_config.get("max_epoch", 1000),
             "max_fe": self.scenario_config.get("max_fe", 10000),
-            "max_time": self.scenario_config.get("max_time", 3600),
-            "max_early_stop": self.scenario_config.get("max_early_stop", 20),
+            "max_time": self.scenario_config.get("max_time", None),
+            "max_early_stop": self.scenario_config.get("max_early_stop", 50),
         }
 
         # prepare problem dict from algo config
@@ -252,6 +252,9 @@ class TurnInflowCalib:
 
         epoch = ga_config.get("epoch", 1000)  # max iterations
         pop_size = ga_config.get("pop_size", 50)  # population size
+        if pop_size < 10:  # minimum population size for GA in mealpy is 10
+            pop_size = 10
+
         pc = ga_config.get("pc", 0.75)  # crossover probability
         pm = ga_config.get("pm", 0.1)  # mutation probability
 
@@ -310,6 +313,8 @@ class TurnInflowCalib:
                                    mutation=mutation, **kwargs)
 
         # solve the problem
+        if epoch > self.term_dict["max_epoch"]:
+            self.term_dict["max_epoch"] = epoch
         g_best = model_ga.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
@@ -342,6 +347,7 @@ class TurnInflowCalib:
         pop_size = sa_config.get("pop_size", 2)  # population size
         temp_init = sa_config.get("temp_init", 100)  # initial temperature
         cooling_rate = sa_config.get("cooling_rate", 0.891)  # cooling rate
+        step_size = sa_config.get("step_size", 0.1)  # step size for the change
         scale = sa_config.get("scale", 0.1)  # scale of the change
         sel_model = sa_config.get("model_selection", "OriginalSA")  # "OriginalSA", "GaussianSA", "SwarmSA"
 
@@ -358,8 +364,7 @@ class TurnInflowCalib:
             model_sa = SA.OriginalSA(epoch=epoch,
                                      pop_size=pop_size,
                                      temp_init=temp_init,
-                                     cooling_rate=cooling_rate,
-                                     scale=scale,
+                                     step_size=step_size,
                                      **kwargs)
         elif sel_model == "GaussianSA":
             model_sa = SA.GaussianSA(epoch=epoch,
@@ -433,8 +438,38 @@ class TurnInflowCalib:
 
         return (g_best, model_ts)
 
+    def _clean_up(self):
+        """Clean up the temporary files generated during the calibration process."""
+        network_name = self.scenario_config.get("network_name")
+        turn_inflow_dir = self.scenario_config.get("dir_turn_inflow")
+        route_dir = os.path.join(turn_inflow_dir, "route")
+        flow_file = Path(route_dir) / f"{network_name}.flow.xml"
+        turn_file = Path(route_dir) / f"{network_name}.turn.xml"
+        shutil.copy(flow_file, turn_inflow_dir)
+        shutil.copy(turn_file, turn_inflow_dir)
+        # remove the route folder
+        shutil.rmtree(route_dir)
+
 
 if __name__ == "__main__":
+
+    # create turn and inflow and summary df
+    path_matchup_table = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\MatchupTable.xlsx"
+    traffic_dir = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\Traffic"
+    path_net_turn_inflow = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\output\SUMO\turn_inflow\chatt.net.xml"
+    MatchupTable_UserInput = read_MatchupTable(path_matchup_table=path_matchup_table)
+    TurnDf, IDRef = generate_turn_demand_cali(path_matchup_table=path_matchup_table, traffic_dir=traffic_dir)
+
+    InflowDf_Calibration, InflowEdgeToCalibrate, N_InflowVariable = generate_inflow(path_net_turn_inflow,
+                                                                                    MatchupTable_UserInput,
+                                                                                    TurnDf,
+                                                                                    IDRef)
+
+    (TurnToCalibrate, TurnDf_Calibration,
+     RealSummary_Calibration,
+     N_Variable, N_TurnVariable) = generate_turn_summary(TurnDf,
+                                                         MatchupTable_UserInput,
+                                                         N_InflowVariable)
 
     scenario_config = {
         "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\output\SUMO\turn_inflow",
@@ -447,6 +482,16 @@ if __name__ == "__main__":
         "demand_interval": 15,
     }
 
+    scenario_config["TurnToCalibrate"] = TurnToCalibrate
+    scenario_config["TurnDf_Calibration"] = TurnDf_Calibration
+    scenario_config["InflowDf_Calibration"] = InflowDf_Calibration
+    scenario_config["InflowEdgeToCalibrate"] = InflowEdgeToCalibrate
+    scenario_config["RealSummary_Calibration"] = RealSummary_Calibration
+    scenario_config["N_InflowVariable"] = N_InflowVariable
+    scenario_config["N_Variable"] = N_Variable
+    scenario_config["N_TurnVariable"] = N_TurnVariable
+    scenario_config["path_net"] = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\output\SUMO\turn_inflow\chatt.net.xml"
+
     turn_inflow_config = {"initial_params": [0.5, 0.5, 0.5, 0.5, 0.5,
                                              0.5, 0.5, 0.5, 0.5, 0.5,
                                              0.5, 0.5, 100, 100, 100, 100],
@@ -458,9 +503,9 @@ if __name__ == "__main__":
                           "max_time": 3600,
                           "max_early_stop": 20,
 
-                          "ga_config": {"epoch": 1000,
-                                        "pop_size": 30,
-                                        "pc": 0.95,
+                          "ga_config": {"epoch": 10,
+                                        "pop_size": 8,
+                                        "pc": 0.75,
                                         "pm": 0.1,
                                         "selection": "roulette",
                                         "k_way": 0.2,
@@ -473,8 +518,8 @@ if __name__ == "__main__":
                           "sa_config": {"epoch": 1000,
                                         "temp_init": 100,
                                         "cooling_rate": 0.891,
-                                        "scale": 0.1,
-                                        "model_selection": "OriginalSA",
+                                        "scale": 0.1,  # the scale in gaussian random
+                                        "model_selection": "OriginalSA",  # "OriginalSA", "GaussianSA", "SwarmSA"
                                         },
                           "ts_config": {"epoch": 1000,
                                         "tabu_size": 10,
@@ -486,10 +531,10 @@ if __name__ == "__main__":
     opt = TurnInflowCalib(scenario_config=scenario_config, turn_inflow_config=turn_inflow_config, verbose=True)
 
     # Run Genetic Algorithm
-    g_best = opt.run_GA()
+    # g_best = opt.run_GA()
 
     # Run Simulated Annealing
-    # g_best = opt.run_SA()
+    g_best = opt.run_SA()
 
     # Run Tabu Search
     # g_best = opt.run_TS()
