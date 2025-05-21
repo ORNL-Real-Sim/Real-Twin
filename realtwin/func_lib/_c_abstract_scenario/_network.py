@@ -268,7 +268,7 @@ class OSMRoad:
             if 'n_lane' in d:
                 if d['oneway'] is False and isinstance(d['n_lane'], list) is True:
                     k = list(self.G[e2][e1].items())[0][0]
-                    self.G[e2][e1][k]['n_lane'] = f'{float(d['n_lane'][-1]):.0f}'
+                    self.G[e2][e1][k]['n_lane'] = f'{float(d["n_lane"][-1]):.0f}'
 
                     # d['n_lane'] = '%.0f' % (float(d['n_lane'][0]))
                     d["n_lane"] = f"{float(d['n_lane'][0]):.0f}"
@@ -292,7 +292,7 @@ class OSMRoad:
         """Generate edges from the graph"""
         edges = []
         for e1, e2, d in self.G.edges(data=True):
-            edges.append([d['u_id'], e1, e2, f'{d['n_lane']}',
+            edges.append([d['u_id'], e1, e2, f'{d["n_lane"]}',
                           self.line_str(d['geometry']), float(
                               d['speed_kph']) * 0.28 + 2.22,
                           d['spread']])

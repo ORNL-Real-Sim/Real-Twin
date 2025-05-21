@@ -231,7 +231,7 @@ class RealTwin:
 
         # create matchup table for user
         path_sumo_net = pf.path2linux(Path(self.input_config.get(
-            "input_dir")) / "output/OpenDrive" / f"{self.input_config["Network"]["NetworkName"]}.net.xml")
+            "input_dir")) / "output/OpenDrive" / f"{self.input_config['Network']['NetworkName']}.net.xml")
 
         path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
 
