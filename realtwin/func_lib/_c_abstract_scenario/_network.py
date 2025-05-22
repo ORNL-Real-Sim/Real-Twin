@@ -16,7 +16,7 @@ import pyufunc as pf
 class Network:
     """The Network class to host the Network element of Abstract scenario
     """
-    def __init__(self, output_dir: str = "output"):
+    def __init__(self, output_dir: str = None):
         self._output_dir = output_dir
         self.NetworkName = "network"
         self.NetworkVertices = ""

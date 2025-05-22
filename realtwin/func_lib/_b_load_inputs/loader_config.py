@@ -10,6 +10,9 @@
 import os
 import yaml
 import re
+from pathlib import Path
+import shutil
+from zipfile import ZipFile
 
 import pyufunc as pf
 
@@ -80,11 +83,46 @@ def load_input_config(path_config: str) -> dict:
         # convert input_dir to linux format
         config['input_dir'] = pf.path2linux(config['input_dir'])
 
+    # check whether demo mode is enabled
+    available_demo_data = ["chattanooga"]
+    if demo_data := config.get('demo_data'):
+        if not isinstance(demo_data, str):
+            config['demo_data'] = None
+            print("  :Demo data is not a string. Demo mode is disabled.")
+
+        elif demo_data.lower() in available_demo_data:
+            try:
+                # copy demo data to the input directory
+                demo_data_path = pf.path2linux(
+                    Path(__file__).parent.parent.parent / "data_lib" / f"{demo_data.lower()}.zip")
+
+                with ZipFile(demo_data_path, 'r') as zip_ref:
+                    extract_path = os.path.splitext(demo_data_path)[0]
+                    os.makedirs(extract_path, exist_ok=True)
+                    zip_ref.extractall(config['input_dir'])
+                print(f"  :Demo data {demo_data} extracted to {config['input_dir']}.")
+                # update input directory to the extracted demo data
+                config["input_dir"] = pf.path2linux(Path(config['input_dir']) / f"{demo_data.lower()}")
+                config["Network"]["NetworkName"] = demo_data
+                # use dummy coordinates to make sure program works (in generate_inputs)
+                config["Network"]["NetworkVertices"] = [[-85.14977588011192, 35.040346288414916],
+                                                        [-85.15823020212477, 35.04345144844759],
+                                                        [-85.15829457513502, 35.043293338482925],
+                                                        [-85.14986171079225, 35.04018378032611]]
+            except Exception as e:
+                print(f"  :Demo data {demo_data} extraction failed for {e}. Demo mode is disabled.")
+                config['demo_data'] = None
+        else:
+            config['demo_data'] = None
+            print(f"  :Demo data {demo_data} currently not available. Available demo data: {available_demo_data}")
+            print("  :Demo mode is disabled.")
+
     # check output_dir from input configuration file
     if config.get('output_dir') is None:
         # set output_dir to input_dir/output if not specified
-        config['output_dir'] = pf.path2linux(
-            os.path.join(config['input_dir'], 'output'))
+        config['output_dir'] = pf.path2linux(os.path.join(config['input_dir'], 'output'))
+    elif not os.path.exists(config['output_dir']):
+        config['output_dir'] = pf.path2linux(os.path.join(config['input_dir'], 'output'))
 
     # check whether key sections exist in the configuration file
     key_sections = ["Traffic", 'Network', 'Control']

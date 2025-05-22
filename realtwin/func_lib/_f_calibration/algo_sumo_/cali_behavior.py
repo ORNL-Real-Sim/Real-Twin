@@ -60,6 +60,7 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
 
     # get path from scenario_config
     network_name = scenario_config.get("network_name")
+    sel_behavior_route = scenario_config.get("sel_behavior_route")
     sim_input_dir = Path(scenario_config.get("dir_behavior"))
     path_net = pf.path2linux(sim_input_dir / f"{network_name}.net.xml")
     path_flow = pf.path2linux(sim_input_dir / f"{network_name}.flow.xml")
@@ -86,15 +87,23 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
     sumoProcess.wait()
 
     # Read output file or TraCI to evaluate the fitness
+    travel_time_diff_list = []
+    if sel_behavior_route:
+        for route in sel_behavior_route:
+            route_time = sel_behavior_route[route]["time"]
+            route_edge_list = sel_behavior_route[route]["edge_list"]
+            travel_time = get_travel_time_from_EdgeData_xml(path_EdgeData, route_edge_list)
+            travel_time_diff = abs(route_time - travel_time)
+            travel_time_diff_list.append(travel_time_diff)
     # Example: calculate average travel time, lower is better
     # Logic to read and calculate travel time from SUMO output
-    travel_time_EB = get_travel_time_from_EdgeData_xml(path_EdgeData, EB_edge_list)
-    travel_time_WB = get_travel_time_from_EdgeData_xml(path_EdgeData, WB_edge_list)
+    # travel_time_EB = get_travel_time_from_EdgeData_xml(path_EdgeData, EB_edge_list)
+    # travel_time_WB = get_travel_time_from_EdgeData_xml(path_EdgeData, WB_edge_list)
 
     if error_func == "rmse":
-        fitness_err = np.sqrt(0.5 * ((EB_tt - travel_time_EB)**2 + (WB_tt - travel_time_WB)**2))
+        fitness_err = np.sqrt(sum([x ** 2 for x in travel_time_diff_list]) / len(travel_time_diff_list))
     elif error_func == "mae":
-        fitness_err = ((abs(EB_tt - travel_time_EB) + abs(WB_tt - travel_time_WB)) / 2)
+        fitness_err = sum(travel_time_diff_list) / len(travel_time_diff_list)
     else:
         raise ValueError("error_func must be either 'rmse' or 'mae'")
 

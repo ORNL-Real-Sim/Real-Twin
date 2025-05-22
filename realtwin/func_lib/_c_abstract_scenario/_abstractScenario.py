@@ -174,32 +174,32 @@ def load_control_signal(path_signal: str) -> dict:
 class AbstractScenario:
     """Initialize an Abstract Scenario"""
 
-    def __init__(self, config_dict: dict = None):
+    def __init__(self, input_config: dict = None):
 
-        self.config_dict = config_dict
+        self.input_config = input_config
 
         self.Traffic = Traffic()
-        self.Network = Network()
+        self.Network = Network(output_dir=self.input_config.get('output_dir'))
         self.Control = Control()
         self.Application = Application()
 
     def create_SUMO_network(self):
         """ Create SUMO Network From Vertices"""
 
-        # TDD check whether the config_dict is not None
-        if not self.config_dict:
-            warnings.warn("  :config_dict is None, no data to update")
+        # TDD check whether the input_config is not None
+        if not self.input_config:
+            warnings.warn("  :input_config is None, no data to update")
             return
 
         # update Network
-        # network_dict = self.config_dict.get('Network', None)
-        if network_dict := self.config_dict.get('Network'):
+        # network_dict = self.input_config.get('Network', None)
+        if network_dict := self.input_config.get('Network'):
             self.Network.NetworkName = network_dict.get('NetworkName', "network")
             self.Network.NetworkVertices = network_dict.get('NetworkVertices', "")
             self.Network.ElevationMap = network_dict.get('ElevationMap', "No elevation map provided!")
 
             # update the OpenDriveNetwork output directory
-            self.Network._output_dir = self.config_dict.get('output_dir', "output")
+            self.Network._output_dir = self.input_config.get('output_dir')
             self.Network.OpenDriveNetwork._output_dir = self.Network._output_dir
 
             # update and crate OpenDriveNetwork
@@ -210,9 +210,9 @@ class AbstractScenario:
 
     def create_OpenDrive_network(self):
         """create OpenDriveNetwork object"""
-        # TDD check whether the config_dict is not None
-        if not self.config_dict:
-            warnings.warn("  :config_dict is None, no data to update")
+        # TDD check whether the input_config is not None
+        if not self.input_config:
+            warnings.warn("  :input_config is None, no data to update")
             return
 
         self.Network.OpenDriveNetwork.create_OpenDrive_network()
@@ -227,19 +227,19 @@ class AbstractScenario:
     def update_AbstractScenario_from_input(self, df_volume: pd.DataFrame = None, signal_dict: dict = None):
         """ update values from config dict to specific data object"""
 
-        # TDD check whether the config_dict is not None
-        if not self.config_dict:
-            warnings.warn("  :config_dict is None, no data to update")
+        # TDD check whether the input_config is not None
+        if not self.input_config:
+            warnings.warn("  :input_config is None, no data to update")
             return
 
         # # update Network
-        # # network_dict = self.config_dict.get('Network', None)
-        # if network_dict := self.config_dict.get('Network'):
+        # # network_dict = self.input_config.get('Network', None)
+        # if network_dict := self.input_config.get('Network'):
         #     self.Network.NetworkName = network_dict.get('NetworkName', "network")
         #     self.Network.NetworkVertices = network_dict.get('NetworkVertices', "")
         #     self.Network.ElevationMap = network_dict.get('ElevationMap', "No elevation map provided!")
         #     # update the OpenDriveNetwork output directory
-        #     self.Network._output_dir = self.config_dict.get('output_dir', "RT_Network")
+        #     self.Network._output_dir = self.input_config.get('output_dir', "RT_Network")
         #     self.Network.OpenDriveNetwork._output_dir = self.Network._output_dir
         #     # update and crate OpenDriveNetwork
         #     self.Network.OpenDriveNetwork._net_name = self.Network.NetworkName
@@ -252,9 +252,9 @@ class AbstractScenario:
             self.Traffic.Volume = load_traffic_volume(df_volume)
             self.Traffic.TurningRatio = load_traffic_turning_ratio(self.Traffic.Volume)
         else:
-            if traffic_dict := self.config_dict.get('Traffic'):
+            if traffic_dict := self.input_config.get('Traffic'):
                 path_volume = traffic_dict.get('Volume', None)
-                path_volume_abs = pf.path2linux(os.path.join(self.config_dict.get("input_dir"), path_volume))
+                path_volume_abs = pf.path2linux(os.path.join(self.input_config.get("input_dir"), path_volume))
                 self.Traffic.Volume = load_traffic_volume(path_volume_abs)
                 self.Traffic.TurningRatio = load_traffic_turning_ratio(self.Traffic.Volume)
 
@@ -262,14 +262,14 @@ class AbstractScenario:
         if signal_dict is not None:
             self.Control.Signal = signal_dict
         else:
-            if control_data := self.config_dict.get('Control'):
+            if control_data := self.input_config.get('Control'):
                 if isinstance(control_data, dict):
                     path_signal = control_data.get('Signal', None)
-                    path_signal_abs = pf.path2linux(os.path.join(self.config_dict.get("input_dir"), path_signal))
+                    path_signal_abs = pf.path2linux(os.path.join(self.input_config.get("input_dir"), path_signal))
                     self.Control.Signal = load_control_signal(path_signal_abs)
                 elif isinstance(control_data, str):
                     path_signal = control_data
-                    path_signal_abs = pf.path2linux(Path(self.config_dict.get("input_dir")) / "Control" / path_signal)
+                    path_signal_abs = pf.path2linux(Path(self.input_config.get("input_dir")) / "Control" / path_signal)
                     if os.path.isfile(path_signal_abs):
                         self.Control.Signal = load_control_signal(path_signal_abs)
                     else:
@@ -279,5 +279,5 @@ class AbstractScenario:
                     raise ValueError("  :Invalid control data in configuration file. ")
 
     def fillAbstractScenario(self):
-        """Fill the AbstractScenario with the data from the config_dict"""
+        """Fill the AbstractScenario with the data from the input_config"""
         pass

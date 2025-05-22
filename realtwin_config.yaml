@@ -1,9 +1,9 @@
 # if true, the demo data will be used for the simulation, use default data: "chattanooga"
 # or string of the name of the demo data, we provide a list of demo data ["chattanooga", "chicago", "nyc", "la", "sf", "dc"]
 # For Dev, extend to retrieve the data from the db server.
-demo_data: false
+demo_data:
 
-input_dir: datasets/tss
+input_dir: datasets/chattanooga
 output_dir:  # optional
 Network:
     NetworkName: chatt  # the name of the network should not have space between words

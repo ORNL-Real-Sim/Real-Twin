@@ -37,10 +37,6 @@ from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
 # calibration
 from realtwin.func_lib._f_calibration.calibration_sumo import cali_sumo
 from realtwin.func_lib._f_calibration.calibration_sumo_ import cali_sumo as cali_sumo_
-from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_turn_inflow import (read_MatchupTable,
-                                                                               generate_turn_demand_cali,
-                                                                               generate_inflow,
-                                                                               generate_turn_summary)
 
 
 class RealTwin:
@@ -209,14 +205,17 @@ class RealTwin:
         self.abstract_scenario.create_OpenDrive_network()
 
         # Update SUMO Network before generating OpenDrive network
+        if demo_data := self.input_config["demo_data"]:
+            # demo mode is enabled, use the updated SUMO network from demo data
+            incl_sumo_net = pf.path2linux(Path(self.input_config["input_dir"]) / f"updated_net/{demo_data}.net.xml")
         if incl_sumo_net:
             # check if the file exists and end with .net.xml
             if incl_sumo_net.endswith(".net.xml") and os.path.exists(incl_sumo_net):
-                net_name = self.abstract_scenario.Network.OpenDriveNetwork._net_name
+                net_name = self.abstract_scenario.input_config["Network"]["NetworkName"]
 
                 # Copy user updated net file to the OpenDrive folder
                 path_sumo_net = pf.path2linux(
-                    Path(self.input_config.get("input_dir")) / f"output/OpenDrive/{net_name}.net.xml")
+                    Path(self.input_config.get("output_dir")) / f"OpenDrive/{net_name}.net.xml")
                 shutil.copy(incl_sumo_net, path_sumo_net)
                 print(f"  :INFO: SUMO network is copied to {path_sumo_net}.")
                 print(f"  :Using updated SUMO network provide by user: {incl_sumo_net} to generate OpenDrive network.")
@@ -235,7 +234,7 @@ class RealTwin:
 
         # create matchup table for user
         path_sumo_net = pf.path2linux(Path(self.input_config.get(
-            "input_dir")) / "output/OpenDrive" / f"{self.input_config['Network']['NetworkName']}.net.xml")
+            "output_dir")) / "OpenDrive" / f"{self.input_config['Network']['NetworkName']}.net.xml")
 
         path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
 

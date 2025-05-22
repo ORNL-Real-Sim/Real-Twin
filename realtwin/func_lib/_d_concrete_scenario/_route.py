@@ -26,8 +26,8 @@ class Route:
         if not AbsScn.Traffic.VolumeLookupTable.empty:
             IDRef = AbsScn.Traffic.VolumeLookupTable
         else:
-            path_lookup = AbsScn.config_dict["Traffic"].get("GridSmart_lookup")
-            path_lookup_abs = pf.path2linux(os.path.join(AbsScn.config_dict.get("input_dir"), path_lookup))
+            path_lookup = AbsScn.input_config["Traffic"].get("GridSmart_lookup")
+            path_lookup_abs = pf.path2linux(os.path.join(AbsScn.input_config.get("input_dir"), path_lookup))
             IDRef = pd.read_csv(path_lookup_abs)
         IDRef = IDRef.dropna(subset=['OpenDriveFromID', 'OpenDriveToID'])
         IDRef = IDRef.astype({'OpenDriveFromID': int, 'OpenDriveToID': int})

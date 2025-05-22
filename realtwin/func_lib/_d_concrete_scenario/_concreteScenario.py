@@ -25,8 +25,8 @@ class ConcreteScenario:
 
     def get_unified_scenario(self, AbsScn):
         """Generate Concrete Scenario from Abstract Scenario"""
-        # copy the config_dict from AbstractScenario incase it is needed
-        self.config_dict = AbsScn.config_dict
+        # copy the input_config from AbstractScenario incase it is needed
+        self.input_config = AbsScn.input_config
 
         # generate concrete scenario
         self.Supply.generate_network(AbsScn)

@@ -24,6 +24,11 @@ import pyufunc as pf
 pd.options.mode.chained_assignment = None
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_turn_inflow import (read_MatchupTable,
+                                                                               generate_turn_demand_cali,
+                                                                               generate_inflow,
+                                                                               generate_turn_summary)
+
 
 class SUMOPrep:
     """The class to handle the SUMO simulation for the real-twin developed by ORNL ARMS group.
@@ -45,7 +50,7 @@ class SUMOPrep:
         NetworkName = ConcreteScn.Supply.NetworkName
 
         # get output path from the configuration dict
-        path_output = ConcreteScn.config_dict.get('output_dir')
+        path_output = ConcreteScn.input_config.get('output_dir')
 
         self.SUMOPath = pf.path2linux(os.path.join(path_output, 'SUMO'))
         if os.path.exists(self.SUMOPath):
@@ -96,8 +101,28 @@ class SUMOPrep:
         """The function to import the demand from the demand file and convert it to SUMO demand file."""
 
         NetworkName = ConcreteScn.Supply.NetworkName
+
+        # create turn and inflow and summary df
+        path_matchup_table = pf.path2linux(Path(ConcreteScn.input_config["input_dir"]) / "MatchupTable.xlsx")
+        traffic_dir = pf.path2linux(Path(ConcreteScn.input_config["input_dir"]) / "Traffic")
+        path_net_SUMO = pf.path2linux(Path(ConcreteScn.input_config["input_dir"]) / f"output/SUMO/{NetworkName}.net.xml")
+        MatchupTable_UserInput = read_MatchupTable(path_matchup_table=path_matchup_table)
+        TurnDf, IDRef = generate_turn_demand_cali(path_matchup_table=path_matchup_table, traffic_dir=traffic_dir)
+        InflowDf_Calibration, InflowEdgeToCalibrate, N_InflowVariable = generate_inflow(path_net_SUMO,
+                                                                                        MatchupTable_UserInput,
+                                                                                        TurnDf,
+                                                                                        IDRef)
+        (TurnToCalibrate, TurnDf_Calibration,
+        RealSummary_Calibration,
+        N_Variable, N_TurnVariable) = generate_turn_summary(TurnDf,
+                                                            MatchupTable_UserInput,
+                                                            N_InflowVariable)
+        InflowDf = InflowDf_Calibration.copy()
+        TurnDf = TurnDf_Calibration.copy()
+        TurnDf = TurnDf[TurnDf['IntersectionName'].notna()]
+
         # Create the .flow.xml
-        InflowDf = ConcreteScn.Demand.Inflow
+        # InflowDf = ConcreteScn.Demand.Inflow
         InflowDf['IntervalStart'] = InflowDf['IntervalStart'].astype(float)
         InflowDf['IntervalEnd'] = InflowDf['IntervalEnd'].astype(float)
         InflowDf = InflowDf[(InflowDf['IntervalStart'] >= SimulationStartTime)
@@ -128,7 +153,7 @@ class SUMOPrep:
                          encoding='utf-8', xml_declaration=True)
 
         # Create the .turn.xml
-        TurnDf = ConcreteScn.Route.TurningRatio
+        # TurnDf = ConcreteScn.Route.TurningRatio
         TurnDf['IntervalStart'] = TurnDf['IntervalStart'].astype(float)
         TurnDf['IntervalEnd'] = TurnDf['IntervalEnd'].astype(float)
         TurnDf = TurnDf[(TurnDf['IntervalStart'] >= SimulationStartTime) & (
@@ -159,8 +184,7 @@ class SUMOPrep:
         TreeTurn = ET.ElementTree(turns)
         # Write the XML to the file
         path_sumo_turn = pf.path2linux(os.path.join(self.SUMOPath, f'{NetworkName}.turn.xml'))
-        TreeTurn.write(path_sumo_turn,
-                       encoding='utf-8', xml_declaration=True)
+        TreeTurn.write(path_sumo_turn, encoding='utf-8', xml_declaration=True)
 
         for Seed in SeedSet:
             # Create the .rou.xml for each random seed
@@ -235,8 +259,8 @@ class SUMOPrep:
     def importSignal(self, ConcreteScn):
         """The function to import the signal from the signal file and convert it to SUMO signal file."""
 
-        input_dir = ConcreteScn.config_dict.get('input_dir')
-        path_output = ConcreteScn.config_dict.get('output_dir')
+        input_dir = ConcreteScn.input_config.get('input_dir')
+        path_output = ConcreteScn.input_config.get('output_dir')
         control_dir = pf.path2linux(Path(input_dir) / 'Control')
         path_MatchupTable = pf.path2linux(os.path.join(input_dir, 'MatchupTable.xlsx'))
         path_net = pf.path2linux(Path(path_output) / f'SUMO/{ConcreteScn.Supply.NetworkName}.net.xml')

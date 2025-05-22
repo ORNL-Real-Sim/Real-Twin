@@ -469,6 +469,7 @@ def generate_inflow(path_net: str,
     TurnDf['IntervalStart'] = TurnDf['Time'].apply(time_to_seconds)
     TurnDf['IntervalEnd'] = TurnDf['IntervalStart'] + 15 * 60
     TurnDf = TurnDf.drop('Time', axis=1)
+
     # Reshape the DataFrame to the long format
     TurnDfTemp = TurnDf.melt(id_vars=['IntersectionName', 'IntervalStart', 'IntervalEnd'],
                              var_name='Turn',
@@ -566,9 +567,8 @@ def generate_inflow(path_net: str,
                inplace=True)
 
     # create InflowDf_Calibration for turn and inflow purpose
-    InflowDf_Calibration = InflowCount[
-        (InflowCount["IntervalStart"] >= sim_begin) &
-        (InflowCount["IntervalEnd"] <= sim_end)].copy()
+    InflowDf_Calibration = InflowCount[(InflowCount["IntervalStart"] >= sim_begin) &
+                                       (InflowCount["IntervalEnd"] <= sim_end)].copy()
 
     InflowDf_Calibration["OpenDriveFromID"] = InflowDf_Calibration["OpenDriveFromID"].astype(str)
     InflowDf_Calibration["Count"] = InflowDf_Calibration["Count"].astype(int)
@@ -583,9 +583,7 @@ def generate_inflow(path_net: str,
         (MatchupTable_UserInput["FromRoadID_OpenDrive"].isin(MissingInflow)) &
         (MatchupTable_UserInput["Need calibration?"] == "Y")
     ]
-    InflowEdgeToCalibrate = filtered_missing_inflow['FromRoadID_OpenDrive'].dropna(
-    ).unique().tolist()
-
+    InflowEdgeToCalibrate = filtered_missing_inflow['FromRoadID_OpenDrive'].dropna().unique().tolist()
     N_InflowVariable = len(InflowEdgeToCalibrate)
 
     calibration_rows = []
