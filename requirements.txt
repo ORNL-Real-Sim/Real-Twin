@@ -14,3 +14,4 @@ Shapely==2.1.1
 sumolib==1.23.1
 traci==1.22.0
 xlrd
+pygad
