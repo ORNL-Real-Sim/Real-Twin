@@ -211,6 +211,7 @@ class RealTwin:
         if incl_sumo_net:
             # check if the file exists and end with .net.xml
             if incl_sumo_net.endswith(".net.xml") and os.path.exists(incl_sumo_net):
+                self.input_config["incl_sumo_net"] = incl_sumo_net
                 net_name = self.abstract_scenario.input_config["Network"]["NetworkName"]
 
                 # Copy user updated net file to the OpenDrive folder

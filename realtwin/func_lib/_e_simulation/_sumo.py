@@ -65,6 +65,9 @@ class SUMOPrep:
                   f' -o {path_sumo_net} --no-internal-links"')
         self.Network = path_sumo_net
 
+        if ConcreteScn.input_config.get('incl_sumo_net'):
+            shutil.copy(ConcreteScn.input_config["incl_sumo_net"], self.Network)
+
         # Load the XML file
         tree = ET.parse(self.Network)
         root = tree.getroot()

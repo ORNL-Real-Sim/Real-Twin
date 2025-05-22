@@ -63,7 +63,7 @@ Calibration:
     ga_config:  # generic algorithm configuration
         model_selection: "BaseGA"  #  BaseGA, EliteSingleGA, EliteMultiGA, MultiGA, SingleGA
         epoch: 10  # number of generations [1, 100000]
-        pop_size: 8  # population size [10, 10000]
+        pop_size: 40  # population size [10, 10000]
         pc: 0.75  # crossover probability [0.7, 0.95]
         pm: 0.1  # mutation probability [0.01, 0.2]
 
