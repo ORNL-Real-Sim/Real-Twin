@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "realtwin"
-version = "a0.0.1"
+version = "0.0.1alpha"
 description = "ORNL's Real-Twin project is a streamlined scenario generation tool that automatically integrates real-world traffic data to create high-fidelity digital twins for simulating the impacts of connected and automated vehicles in microsimulation environments."
 authors = [
     {name = "Xiangyong Luo", email = "luox1@ornl.gov"},
