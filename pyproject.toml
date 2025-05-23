@@ -48,6 +48,10 @@ dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools]
 include-package-data = true
-py-modules = []
-package-data = {'realtwin' = ['**/*.txt', '*.xls', '*.xlsx', '*.csv', '*.json', '**/*.json', "**/*.yaml", "**.yaml", "**/**.zip", "**.zip"], "test_data" = ['*.xls', '*.json', '*.yaml', '*.zip']}
-license-files = []
+
+[tool.setuptools.packages.find]
+where = ["realtwin"]
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.rst", '*.yaml', '*.zip', '*.json']
+data_lib = ["*.txt", "*.rst", '*.yaml', '*.zip', '*.json']
