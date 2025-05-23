@@ -10,19 +10,19 @@ jobs:
       matrix:
         # macos-13 is an intel runner, macos-14 is apple silicon
         os: [ubuntu-latest, windows-latest, macos-13, macos-14] # macos-14
+        python-version: ["3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: ${{ matrix.python-version }}
 
       - name: Build wheels
         run: |
-          pip install build pyufunc grid2demand
-          pip install utdf2gmns exceltomysql exceltosqlserver exceltopostgresql
+          pip install build pyufunc, utdf2gmns
           python -m build --outdir dist
           # python3 -m build --outdir dist
 
