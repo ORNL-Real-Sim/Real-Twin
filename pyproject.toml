@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "twine"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "realtwin"
+version = "a0.0.1"
+description = "ORNL's Real-Twin project is a streamlined scenario generation tool that automatically integrates real-world traffic data to create high-fidelity digital twins for simulating the impacts of connected and automated vehicles in microsimulation environments."
+authors = [
+    {name = "Xiangyong Luo", email = "luox1@ornl.gov"},
+    {name = "ORNL-RealTwin", email = "realtwin@ornl.gov"},
+]
+maintainers = [
+    {name = "ORNL-RealTwin", email = "realtwin@ornl.gov"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    'Intended Audience :: Developers',
+    "Operating System :: OS Independent",
+    'Topic :: Software Development :: Libraries'
+]
+
+readme = 'README.md'
+# license = {file = 'LICENSE'}
+# license = {text = "Apache License"}
+
+requires-python = ">=3.10"
+keywords = ["Real-Twin", "Digital Twin", "Traffic Micro-simulation", "Scenario Generation", "Connected and Automated Vehicles", "CAV", "Traffic Simulation", "SUMO", "VISSIM", "AIMSUN"]
+
+dynamic = ["dependencies"]
+
+[project.license]
+file="LICENSE"
+
+[project.urls]
+"Homepage" = 'https://github.com/ORNL-Real-Sim/Real-Twin'
+'Bug Tracker' = 'https://github.com/ORNL-Real-Sim/Real-Twin/issues'
+'License' = 'https://github.com/ORNL-Real-Sim/Real-Twin/blob/main/LICENSE'
+'Contact' = 'realtwin@ornl.gov'
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools]
+include-package-data = true
+py-modules = []
+package-data = {'realtwin' = ['**/*.txt', '*.xls', '*.xlsx', '*.csv', '*.json', '**/*.json', "**/*.yaml", "**.yaml", "**/**.zip", "**.zip"], "test_data" = ['*.xls', '*.json', '*.yaml', '*.zip']}
+license-files = []
