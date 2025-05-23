@@ -41,7 +41,7 @@ file="LICENSE"
 "Homepage" = 'https://github.com/ORNL-Real-Sim/Real-Twin'
 'Bug Tracker' = 'https://github.com/ORNL-Real-Sim/Real-Twin/issues'
 'License' = 'https://github.com/ORNL-Real-Sim/Real-Twin/blob/main/LICENSE'
-'Contact' = 'realtwin@ornl.gov'
+'Contact' = 'https://github.com/ORNL-Real-Sim/Real-Twin'
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
