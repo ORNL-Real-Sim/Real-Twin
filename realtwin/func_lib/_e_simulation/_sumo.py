@@ -24,7 +24,7 @@ import pyufunc as pf
 pd.options.mode.chained_assignment = None
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_turn_inflow import (read_MatchupTable,
+from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (read_MatchupTable,
                                                                                generate_turn_demand_cali,
                                                                                generate_inflow,
                                                                                generate_turn_summary)

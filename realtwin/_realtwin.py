@@ -36,7 +36,6 @@ from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
 
 # calibration
 from realtwin.func_lib._f_calibration.calibration_sumo import cali_sumo
-from realtwin.func_lib._f_calibration.calibration_sumo_ import cali_sumo as cali_sumo_
 from realtwin.data_lib.data_lib_config import sel_behavior_routes
 
 
@@ -421,8 +420,7 @@ class RealTwin:
 
         # run calibration based on the selected algorithm
         if "sumo" in self.sel_sim:
-            # cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)
-            cali_sumo_(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose, **user_kwargs)
+            cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose, **user_kwargs)
 
         if "vissim" in self.sel_sim:
             pass

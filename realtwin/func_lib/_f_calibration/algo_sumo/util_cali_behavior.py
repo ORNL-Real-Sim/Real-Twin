@@ -8,12 +8,9 @@
 import os
 import sys
 import xml.etree.ElementTree as ET
-from pathlib import Path
 import subprocess
-import random
 import pandas as pd
 import numpy as np
-import pyufunc as pf
 import folium
 import sumolib
 from itertools import combinations
@@ -127,105 +124,6 @@ def update_turn_flow_from_solution(path_turn: str,
     return (TurnDf, InflowDf)
 
 
-def create_rou_turn_flow_xml(network_name: str, sim_start_time: float, sim_end_time: float,
-                             df_turn: pd.DataFrame,
-                             df_inflow: pd.DataFrame,
-                             input_dir: str) -> bool:
-    """Using SUMO jtrrouter to generate the demand file for the given network
-
-    Args:
-        network_name (str): the name of the network,
-        sim_start_time (float): start time of the simulation
-        sim_end_time (float): end time of the simulation
-        df_turn (pd.DataFrame): the turn dataframe
-        df_inflow (pd.DataFrame): the inflow dataframe
-        ical (str): the iteration number for the calibration
-        input_dir (str): the path to the input directory
-        output_dir (str): the path to the output directory
-        remove_old_files (bool): whether to remove temporary files in time. Defaults to True.
-
-    Returns:
-        bool: True if the demand file is generated successfully
-    """
-
-    # Process the turn dataframe
-    TurnDf = df_turn.copy()
-    TurnDf['IntervalStart'] = TurnDf['IntervalStart'].astype(float)
-    TurnDf['IntervalEnd'] = TurnDf['IntervalEnd'].astype(float)
-
-    # Filter for simulation time only once
-    mask = (TurnDf['IntervalStart'] >= sim_start_time) & (
-        TurnDf['IntervalEnd'] <= sim_end_time)
-    TurnDf = TurnDf.loc[mask]
-
-    # Build the XML for turns
-    turns = ET.Element('turns')
-
-    # Group by interval so we don't re-filter on each iteration
-    for (start, end), group in TurnDf.groupby(['IntervalStart', 'IntervalEnd']):
-        # Create an interval element with begin and end attributes
-        interval_el = ET.SubElement(
-            turns, 'interval', begin=str(start), end=str(end))
-
-        # Iterate over rows quickly using itertuples
-        for row in group.itertuples(index=False):
-            ET.SubElement(
-                interval_el,
-                'edgeRelation',
-                **{'from': str(-int(row.OpenDriveFromID)),
-                   'to': str(-int(row.OpenDriveToID)),
-                   'probability': str(row.TurnRatio)})
-
-    # Write the turn XML file - the hard coded path and will be deleted after the calibration
-    turn_xml_path = f'{pf.path2linux(input_dir)}/{network_name}.turn.xml'
-    ET.ElementTree(turns).write(
-        turn_xml_path, encoding='utf-8', xml_declaration=True)
-
-    # Process the inflow dataframe
-    InflowDf = df_inflow.copy()
-    InflowDf['IntervalStart'] = InflowDf['IntervalStart'].astype(float)
-    InflowDf['IntervalEnd'] = InflowDf['IntervalEnd'].astype(float)
-    mask = (InflowDf['IntervalStart'] >= sim_start_time) & (
-        InflowDf['IntervalEnd'] <= sim_end_time)
-    InflowDf = InflowDf.loc[mask]
-
-    routes = ET.Element('routes')
-    ET.SubElement(routes, 'vType', id='car', type='passenger')
-
-    # Enumerate flows (starting at 1)
-    for flow_id, row in enumerate(InflowDf.itertuples(index=False), start=1):
-        ET.SubElement(
-            routes,
-            'flow',
-            id=str(flow_id),
-            begin=str(row.IntervalStart),
-            end=str(row.IntervalEnd),
-            **{'from': str(-int(row.OpenDriveFromID))},
-            number=str(int(row.Count)),
-            type='car'
-        )
-
-    # Write the inflow XML file
-    inflow_xml_path = f'{pf.path2linux(input_dir)}/{network_name}.flow.xml'
-    ET.ElementTree(routes).write(inflow_xml_path,
-                                 encoding='utf-8', xml_declaration=True)
-
-    # Generate the route file using jtrrouter
-    # Build the command (adjust if necessary for your platform)
-    path_net = pf.path2linux(os.path.join(input_dir, f"{network_name}.net.xml"))
-    path_rou = pf.path2linux(os.path.join(input_dir, f"{network_name}.rou.xml"))
-
-    cmd = (
-        f'cmd /c "jtrrouter -r {inflow_xml_path} -t {turn_xml_path} '
-        f'-n {path_net} --accept-all-destinations '
-        f'--remove-loops True --randomize-flows -o {path_rou}"'
-    )
-    process = subprocess.Popen(cmd, shell=True)
-    process.wait()
-
-    return True
-
-
 def run_SUMO_create_EdgeData(sim_name: str, sim_end_time: float) -> bool:
     """run SUMO simulation using traci module
 
@@ -309,21 +207,24 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str, path_flow:
     """
 
     # Define the jtrrouter command with all necessary arguments
-    cmd = [
-        "jtrrouter",
-        "-n", path_net,
-        "-r", path_flow,
-        "-t", path_turn,
-        "-o", path_rou,
-        "--accept-all-destinations",
-        "--remove-loops True",
-        # "--seed","101",
-        "--ignore-errors",  # Continue on errors; remove if not desired
-    ]
+    # cmd = [
+    #     "jtrrouter",
+    #     "-n", path_net,
+    #     "-r", path_flow,
+    #     "-t", path_turn,
+    #     "-o", path_rou,
+    #     "--accept-all-destinations",
+    #     "--remove-loops True",
+    #     # "--seed","101",
+    #     "--ignore-errors",  # Continue on errors; remove if not desired
+    # ]
+    cmd = f'cmd /c "jtrrouter -r {path_flow} -t {path_turn} -n {path_net} --accept-all-destinations --remove-loops True --randomize-flows -o {path_rou}"'
 
     # Execute the command
     try:
-        subprocess.run(cmd, capture_output=True, text=True)
+        # subprocess.run(cmd, capture_output=True, text=True)
+        process = subprocess.Popen(cmd, shell=True)
+        process.wait()
         if verbose:
             print(f"  :Route file generated successfully: {path_rou}")
     except subprocess.CalledProcessError as e:

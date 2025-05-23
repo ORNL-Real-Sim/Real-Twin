@@ -14,12 +14,12 @@
 # from .calibration_sumo import cali_sumo
 
 # Updated import with third-party library
-from .calibration_sumo_ import cali_sumo
+from .calibration_sumo import cali_sumo
 from .calibration_aimsun import cali_aimsun
 from .calibration_vissim import cali_vissim
 
-from .algo_sumo_.cali_behavior import BehaviorCali
-from .algo_sumo_.cali_turn_inflow import TurnInflowCali
+from .algo_sumo.cali_behavior import BehaviorCali
+from .algo_sumo.cali_turn_inflow import TurnInflowCali
 
 __all__ = [
     # Calibration functions for different simulators

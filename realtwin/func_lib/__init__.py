@@ -51,12 +51,12 @@ from realtwin.func_lib._e_simulation._aimsun import AimsunPrep
 from realtwin.func_lib._e_simulation._vissim import VissimPrep
 
 # _f_calibration: Calibration functions and algorithms for different simulators
-from realtwin.func_lib._f_calibration.calibration_sumo_ import cali_sumo
+from realtwin.func_lib._f_calibration.calibration_sumo import cali_sumo
 from realtwin.func_lib._f_calibration.calibration_aimsun import cali_aimsun
 from realtwin.func_lib._f_calibration.calibration_vissim import cali_vissim
 
-from realtwin.func_lib._f_calibration.algo_sumo_.cali_behavior import BehaviorCali
-from realtwin.func_lib._f_calibration.algo_sumo_.cali_turn_inflow import TurnInflowCali
+from realtwin.func_lib._f_calibration.algo_sumo.cali_behavior import BehaviorCali
+from realtwin.func_lib._f_calibration.algo_sumo.cali_turn_inflow import TurnInflowCali
 
 
 __all__ = [
