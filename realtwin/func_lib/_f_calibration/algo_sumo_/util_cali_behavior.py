@@ -596,70 +596,27 @@ def plot_and_report(route_coords_list: list[list[tuple[float, float]]],
     print(f"Map saved → {out_html}")
 
 
-def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, error_func: str = "rmse") -> float:
-    """ Evaluate the fitness of a given solution for SUMO calibration."""
-    # print(f"  :solution: {solution}")
-    # Set up SUMO command with car-following parameters
-    if error_func not in ["rmse", "mae"]:
-        raise ValueError("error_func must be either 'rmse' or 'mae'")
+def auto_select_two_routes(path_rou: str, path_net: str, api_key: str = "",
+                           path_report: str = "routes_travel_time_map.html") -> tuple:
+    """Automatically select two distinct routes from the given route file and network file.
+    Using Google API to estimate travel time.
 
-    if solution[5] >= 9.3:  # emergencyDecel
-        solution[5] = 9.3
-    if solution[5] < solution[2]:  # emergencyDecel < deceleration
-        solution[5] = solution[2] + random.randrange(1, 5)
-    # print("after emergencydecel update", solution)
+    Args:
+        path_rou (str): sumo .rou.xml file
+        path_net (str): sumo .net.xml file
+        path_output (_type_): save the map to this path
+        api_key (str, optional): Google Api key. Defaults to "".
 
-    # get path from scenario_config
-    network_name = scenario_config.get("network_name")
-    sim_input_dir = Path(scenario_config.get("dir_behavior"))
-    path_net = pf.path2linux(sim_input_dir / f"{network_name}.net.xml")
-    path_flow = pf.path2linux(sim_input_dir / f"{network_name}.flow.xml")
-    path_turn = pf.path2linux(sim_input_dir / f"{network_name}.turn.xml")
-    path_rou = pf.path2linux(sim_input_dir / f"{network_name}.rou.xml")
-    path_EdgeData = pf.path2linux(sim_input_dir / "EdgeData.xml")
-    EB_tt = scenario_config.get("EB_tt")
-    WB_tt = scenario_config.get("WB_tt")
-    EB_edge_list = scenario_config.get("EB_edge_list")
-    WB_edge_list = scenario_config.get("WB_edge_list")
+    Returns:
+        tuple: time and edge id list for the two routes
+    """
 
-    sim_name = scenario_config.get("sim_name")
-    sim_end_time = scenario_config.get("sim_end_time")
+    df_sorted = compute_route_summary(path_rou, path_net)
+    mid_df = filter_mid_routes(df_sorted)
+    routes = select_two_distinct(mid_df)
 
-    update_flow_xml_from_solution(path_flow, solution)
-
-    run_jtrrouter_to_create_rou_xml(network_name, path_net, path_flow, path_turn, path_rou)
-
-    # change the working directory to the input directory for SUMO
-    os.chdir(sim_input_dir)
-    # Define the command to run SUMO
-    sumo_command = f"sumo -c \"{sim_name}\""
-    sumoProcess = subprocess.Popen(sumo_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    sumoProcess.wait()
-
-    # Read output file or TraCI to evaluate the fitness
-    # Example: calculate average travel time, lower is better
-    # Logic to read and calculate travel time from SUMO output
-    travel_time_EB = get_travel_time_from_EdgeData_xml(path_EdgeData, EB_edge_list)
-    travel_time_WB = get_travel_time_from_EdgeData_xml(path_EdgeData, WB_edge_list)
-
-    if error_func == "rmse":
-        fitness_err = np.sqrt(0.5 * ((EB_tt - travel_time_EB)**2 + (WB_tt - travel_time_WB)**2))
-    elif error_func == "mae":
-        fitness_err = ((abs(EB_tt - travel_time_EB) + abs(WB_tt - travel_time_WB)) / 2)
-    else:
-        raise ValueError("error_func must be either 'rmse' or 'mae'")
-
-    # Calculate GEH from updated results
-    # path_summary = pf.path2linux(sim_input_dir / "summary.xlsx")
-    # calibration_target = scenario_config.get("calibration_target")
-    # sim_start_time = scenario_config.get("sim_start_time")
-    # sim_end_time = scenario_config.get("sim_end_time")
-    # _, mean_geh, geh_percent = result_analysis_on_EdgeData(path_summary,
-    #                                                        path_EdgeData,
-    #                                                        calibration_target,
-    #                                                        sim_start_time,
-    #                                                        sim_end_time)
-    # print(f"  :GEH: Mean Percentage: {mean_geh:.6f}, {geh_percent:.6f}, Travel time error: {fitness_err:.6f}")
-    print(f"  :Travel time error: {fitness_err:.6f}")
-
-    return fitness_err
+    net = sumolib.net.readNet(path_net)
+    coords_list = [get_route_coords(net, route) for route in routes]
+    time_list = [estimate_travel_time(coords, api_key) for coords in coords_list]
+    plot_and_report(coords_list, time_list, routes, path_report)
+    return (routes, time_list, coords_list)

@@ -1,6 +1,5 @@
 # if true, the demo data will be used for the simulation, use default data: "chattanooga"
-# or string of the name of the demo data, we provide a list of demo data ["chattanooga", "chicago", "nyc", "la", "sf", "dc"]
-# For Dev, extend to retrieve the data from the db server.
+# or string of the name of the demo data, we provide a list of demo data ["chattanooga",]
 demo_data:
 
 input_dir: datasets/chattanooga
@@ -21,12 +20,6 @@ Calibration:
             GEHPercent: 0.85  # accepted match
         calibration_time_step: 1
         allow_u_turn: false  # if true, the u-turns are allowed in the simulation
-
-        # (Optional) Termination criteria for ga, sa and ts algorithms
-        # max_epoch: 1000  # max number of iterations
-        # max_fe: 10000  # max number of function evaluations
-        # max_time: 3600  # max time in seconds
-        # max_early_stop: 20  # max number of early stop iterations
 
     turn_inflow:
         initial_params: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 100, 100, 100, 100]
@@ -50,20 +43,10 @@ Calibration:
             tau: [0.25, 1.25]
             emergencyDecel: [5.0, 9.3]
 
-        # behavior calibration shared by all algorithms
-        EB_tt: 240  # sec
-        WB_tt: 180  # sec
-        EB_edge_list: ["-312", "-293", "-297", "-288", "-286",
-                        "-302", "-3221", "-322", "-313", "-284",
-                        "-328", "-304"]
-        WB_edge_list: ["-2801", "-280", "-307", "-327", "-281",
-                        "-315", "-321", "-300", "-2851", "-285",
-                        "-290", "-298", "-295"]
-
     ga_config:  # generic algorithm configuration
         model_selection: "BaseGA"  #  BaseGA, EliteSingleGA, EliteMultiGA, MultiGA, SingleGA
         epoch: 10  # number of generations [1, 100000]
-        pop_size: 40  # population size [10, 10000]
+        pop_size: 10  # population size [10, 10000]
         pc: 0.75  # crossover probability [0.7, 0.95]
         pm: 0.1  # mutation probability [0.01, 0.2]
 

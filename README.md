@@ -8,6 +8,28 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-05-23
+
+* Updates input configuration: reduced inputs from **300** lines to **65** lines
+* Standardlize behavior inputs
+* Integrated behavior calibration
+* Update readthedocs
+
+  ![1748015271598](image/README/1748015271598.png)
+
+### 2025-05-22
+
+Integration of Turn and inflow as there are errors and changes from updated code and updated processing logic.
+
+Details:
+
+* 1. Refactor code
+* 2. Fix bugs in converting SUMO net.xml to OpenDrive .xdor (Edge ids are not consistent)
+* 3. Generate executable .sunocfg before calibration (not executable in previous version)
+* 4. Add logic with enable user their updated .net.xml file
+
+TODO: continue work on Behavior calibration integration based on updated code.
+
 ### 2025-05-07
 
 * Update readthedocs (65% Done)

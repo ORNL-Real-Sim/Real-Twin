@@ -37,6 +37,7 @@ from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
 # calibration
 from realtwin.func_lib._f_calibration.calibration_sumo import cali_sumo
 from realtwin.func_lib._f_calibration.calibration_sumo_ import cali_sumo as cali_sumo_
+from realtwin.data_lib.data_lib_config import sel_behavior_routes
 
 
 class RealTwin:
@@ -356,7 +357,7 @@ class RealTwin:
         return True
 
     def calibrate(self, *, sel_algo: dict = None,
-                  sel_behavior_route: dict = None,
+                  sel_behavior_routes: dict = None,
                   update_turn_flow_algo: dict = None,
                   update_behavior_algo: dict = None) -> bool:
         """Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.
@@ -364,9 +365,9 @@ class RealTwin:
         Args:
             sel_algo (dict): The dictionary of algorithms to be used for calibration.
                 Default is None, will use genetic algorithm. e.g. {"turn_inflow": "ga", "behavior": "ga"}.
-            sel_behavior_route (dict): The dictionary of behavior route parameters to be used for calibration.
+            sel_behavior_routes (dict): The dictionary of behavior route parameters to be used for calibration.
                 Default is None. time (in seconds) is ground truth travel time.
-                e.g. sel_behavior_route = {"route_1": {"time": 20, "edge_list": ["edge_id_1", "edge_d_2", ...]}
+                e.g. sel_behavior_routes = {"route_1": {"time": 20, "edge_list": ["edge_id_1", "edge_d_2", ...]},
                                            "route_2" {"time": 40, "edge_list":["edge_id_1", "edge_d_2", ...]}
                                            ...}.
             update_turn_flow_algo (dict): The dictionary of algorithms to be used for updating turn flow.
@@ -405,12 +406,18 @@ class RealTwin:
 
         # parse user additional parameters for calibration
         user_kwargs = {}
-        if sel_behavior_route:
-            user_kwargs["sel_behavior_route"] = sel_behavior_route
+        if sel_behavior_routes:
+            # use user defined behavior route, if not provided, automatically select two routes from the network
+            user_kwargs["sel_behavior_routes"] = sel_behavior_routes
+        if self.input_config["demo_data"] and sel_behavior_routes.get(self.input_config["demo_data"]):
+            # use predefined behavior routes for demo data
+            user_kwargs["sel_behavior_routes"] = sel_behavior_routes.get(self.input_config["demo_data"])
         if update_turn_flow_algo:
             user_kwargs["update_turn_flow_algo"] = update_turn_flow_algo
         if update_behavior_algo:
             user_kwargs["update_behavior_algo"] = update_behavior_algo
+
+        print(f"  :User defined parameters for calibration: {user_kwargs}")
 
         # run calibration based on the selected algorithm
         if "sumo" in self.sel_sim:

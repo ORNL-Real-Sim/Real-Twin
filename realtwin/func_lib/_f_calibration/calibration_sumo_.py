@@ -28,6 +28,7 @@ from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_turn_inflow import (r
                                                                                generate_turn_demand_cali,
                                                                                generate_inflow,
                                                                                generate_turn_summary)
+from realtwin.func_lib._f_calibration.algo_sumo_.util_cali_behavior import auto_select_two_routes
 
 
 # for the beta version
@@ -112,8 +113,23 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
 
     print("\n  :Optimize Behavior parameters based on the optimized turn and inflow...")
     scenario_config_behavior = prepare_scenario_config_behavior(input_config)
-    if "sel_behavior_route" in kwargs:
-        scenario_config_behavior["sel_behavior_route"] = kwargs["sel_behavior_route"]
+    if "sel_behavior_routes" in kwargs:
+        scenario_config_behavior["sel_behavior_routes"] = kwargs["sel_behavior_routes"]
+    else:
+        # automatically select two routes from network
+        dir_behavior = scenario_config_behavior["dir_behavior"]
+        network_name = input_config.get("Network").get("NetworkName")
+        path_net = Path(dir_behavior) / f"{network_name}.net.xml"
+        path_route = Path(dir_behavior) / f"{network_name}.rou.xml"
+        path_report = Path(dir_behavior) / "selected_routes_travel_time_map.html"
+        google_api = ""
+        routes_list, time_list, edge_list = auto_select_two_routes(path_net, path_route,
+                                                                   api_key=google_api, path_report=path_report)
+        sel_route_dict = {}
+        for route_name, travel_time, edge_id_list in zip(routes_list, time_list, edge_list):
+            sel_route_dict[route_name] = {"time": travel_time, "edge_list": edge_id_list}
+        scenario_config_behavior["sel_behavior_routes"] = sel_route_dict
+    print(f"  :Selected behavior routes: {scenario_config_behavior['sel_behavior_routes']}")
     behavior = BehaviorCali(scenario_config_behavior, algo_config_behavior, verbose=verbose)
 
     match sel_algo["behavior"]:
@@ -239,11 +255,6 @@ def prepare_scenario_config_behavior(input_config: dict) -> dict:
 
     scenario_config_behavior["path_turn"] = f"{network_name}.turn.xml"
     scenario_config_behavior["path_inflow"] = f"{network_name}.flow.xml"
-    scenario_config_behavior["EB_tt"] = input_config["Calibration"]["behavior"].get("EB_tt")
-    scenario_config_behavior["WB_tt"] = input_config["Calibration"]["behavior"].get("WB_tt")
-    scenario_config_behavior["EB_edge_list"] = input_config["Calibration"]["behavior"].get("EB_edge_list")
-    scenario_config_behavior["WB_edge_list"] = input_config["Calibration"]["behavior"].get("WB_edge_list")
-
     return scenario_config_behavior
 
 

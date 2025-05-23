@@ -211,13 +211,13 @@ class TurnInflowCali:
         # save the best solution
         try:
             model.history.save_global_objectives_chart(filename=f"{output_dir}/global_objectives")
-            model.history.save_local_objectives_chart(filename=f"{output_dir}/local_objectives")
-            model.history.save_global_best_fitness_chart(filename=f"{output_dir}/global_best_fitness")
-            model.history.save_local_best_fitness_chart(filename=f"{output_dir}/local_best_fitness")
-            model.history.save_runtime_chart(filename=f"{output_dir}/runtime")
-            model.history.save_exploration_exploitation_chart(filename=f"{output_dir}/exploration_exploitation")
-            model.history.save_diversity_chart(filename=f"{output_dir}/diversity")
-            model.history.save_trajectory_chart(filename=f"{output_dir}/trajectory")
+            # model.history.save_local_objectives_chart(filename=f"{output_dir}/local_objectives")
+            # model.history.save_global_best_fitness_chart(filename=f"{output_dir}/global_best_fitness")
+            # model.history.save_local_best_fitness_chart(filename=f"{output_dir}/local_best_fitness")
+            # model.history.save_runtime_chart(filename=f"{output_dir}/runtime")
+            # model.history.save_exploration_exploitation_chart(filename=f"{output_dir}/exploration_exploitation")
+            # model.history.save_diversity_chart(filename=f"{output_dir}/diversity")
+            # model.history.save_trajectory_chart(filename=f"{output_dir}/trajectory")
         except Exception as e:
             print(f"  :Error in saving vis: {e}")
             return False
