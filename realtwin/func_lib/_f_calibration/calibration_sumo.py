@@ -129,7 +129,7 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
         for route_name, travel_time, edge_id_list in zip(routes_list, time_list, edge_list):
             sel_route_dict[route_name] = {"time": travel_time, "edge_list": edge_id_list}
         scenario_config_behavior["sel_behavior_routes"] = sel_route_dict
-    print(f"  :Selected behavior routes: {scenario_config_behavior['sel_behavior_routes']}")
+    print(f"  \n:Selected behavior routes: {scenario_config_behavior['sel_behavior_routes']}\n")
     behavior = BehaviorCali(scenario_config_behavior, algo_config_behavior, verbose=verbose)
 
     match sel_algo["behavior"]:

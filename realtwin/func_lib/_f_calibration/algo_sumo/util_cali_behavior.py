@@ -327,7 +327,7 @@ def result_analysis_on_EdgeData(path_summary: str,
 
 def compute_route_summary(rou_file: str, net_file: str) -> pd.DataFrame:
     """
-    Parses the SUMO .rou.xml and .net.xml files, counts each unique route’s frequency,
+    Parses the SUMO .rou.xml and .net.xml files, counts each unique route's frequency,
     computes its total length, and returns a DataFrame sorted by descending frequency.
     """
     # 1) load network

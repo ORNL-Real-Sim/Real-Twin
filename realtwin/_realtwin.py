@@ -163,8 +163,9 @@ class RealTwin:
         """ Generate user inputs, such as MatchUp table, Control and Traffic data
 
         Args:
-            incl_elevation_tif (bool): Whether to include elevation tif data. Default is False.
-                If True, will download the elevation map from network BBOX.
+            incl_sumo_net (str): The path to the updated SUMO network file (.net.xml) provided by the user.
+                If provided, the OpenDrive network will be generated based on this SUMO network.
+                If not provided, the OpenDrive network will be generated based on the vertices from the config file.
 
         See Also:
             - How to create configuration file
@@ -195,34 +196,41 @@ class RealTwin:
                   "(You will notice the generated MatchupTable.xlsx inside your input folder)."
                   " For how to fill the MatchupTable.xlsx, please refer to the documentation: \n")
 
-        # generate abstract scenario
-        self.abstract_scenario = AbstractScenario(self.input_config)
+        # check if SUMO net file generated (in OpenDrive folder), if not, create the net.
+        net_name = self.input_config["Network"]["NetworkName"]
+        path_sumo_net = pf.path2linux(Path(self.input_config.get("output_dir")) / f"OpenDrive/{net_name}.net.xml")
+        if not os.path.exists(path_sumo_net):
+            # generate abstract scenario
+            self.abstract_scenario = AbstractScenario(self.input_config)
 
-        # Create original SUMO network from vertices from config file
-        self.abstract_scenario.create_SUMO_network()
+            # Create original SUMO network from vertices from config file
+            self.abstract_scenario.create_SUMO_network()
 
-        # crate OpenDrive network from SUMO network, and then rewrite sumo network based on OpenDrive network
-        self.abstract_scenario.create_OpenDrive_network()
+            # crate OpenDrive network from SUMO network, and then rewrite sumo network based on OpenDrive network
+            self.abstract_scenario.create_OpenDrive_network()
+
+            print("  :INFO: OpenDrive network is generated.")
 
         # Update SUMO Network before generating OpenDrive network
         if demo_data := self.input_config["demo_data"]:
             # demo mode is enabled, use the updated SUMO network from demo data
             incl_sumo_net = pf.path2linux(Path(self.input_config["input_dir"]) / f"updated_net/{demo_data}.net.xml")
+
         if incl_sumo_net:
             # check if the file exists and end with .net.xml
             if incl_sumo_net.endswith(".net.xml") and os.path.exists(incl_sumo_net):
                 self.input_config["incl_sumo_net"] = incl_sumo_net
-                net_name = self.abstract_scenario.input_config["Network"]["NetworkName"]
 
                 # Copy user updated net file to the OpenDrive folder
-                path_sumo_net = pf.path2linux(
-                    Path(self.input_config.get("output_dir")) / f"OpenDrive/{net_name}.net.xml")
-                shutil.copy(incl_sumo_net, path_sumo_net)
+                incl_sumo_net = pf.path2linux(Path(incl_sumo_net))  # make sure it's absolute path
+                if incl_sumo_net != path_sumo_net:
+                    shutil.copy(incl_sumo_net, path_sumo_net)
                 print(f"  :INFO: SUMO network is copied to {path_sumo_net}.")
                 print(f"  :Using updated SUMO network provide by user: {incl_sumo_net} to generate OpenDrive network.")
 
                 # create opendrive net from updated sumo net, and rewrite sumo net based on OpenDrive net
                 self.abstract_scenario.create_OpenDrive_network()
+                print("  :INFO: OpenDrive network is generated.")
             else:
                 print(f"  :NOTE: incl_sumo_net is not exist or not with .net.xml extension: {incl_sumo_net}."
                       "\n  :Please provide a valid SUMO network file with .net.xml extension or leave it empty.")
@@ -231,12 +239,7 @@ class RealTwin:
             print("  :INFO: You can use your own SUMO network by providing the path to the incl_sumo_net parameter."
                   " The path should be a .net.xml file. \n")
 
-        print("  :INFO: OpenDrive network is generated.")
-
         # create matchup table for user
-        path_sumo_net = pf.path2linux(Path(self.input_config.get(
-            "output_dir")) / "OpenDrive" / f"{self.input_config['Network']['NetworkName']}.net.xml")
-
         path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
 
         # check if sumo net file exists
@@ -245,20 +248,15 @@ class RealTwin:
                             "please check input configuration file and re-run the script."
                             "For details please refer to the documentation: ")
 
-        # check if matchup table exists
-        if not os.path.exists(path_matchup):
-            generate_matchup_table(path_sumo_net, path_matchup)
-            print(f"  :NOTE: Matchup table is generated and saved to {path_matchup}."
-                  "\n  :NOTICE: Please update the Matchup table from input folder"
-                  " and then run generate_abstract_scenario()."
-                  " For details please refer to the documentation: \n"
-                  )
-        else:
-            print(f"  :NOTE: Matchup table already exists: {path_matchup}.")
+        generate_matchup_table(path_sumo_net, path_matchup)
+        print(f"  :NOTE: Matchup table is generated and saved to {path_matchup}."
+              "\n  :NOTICE: Please update the Matchup table from input folder"
+              " and then run generate_abstract_scenario()."
+              " For details please refer to the documentation: \n")
 
         # Stop the program to let user update the Matchup table
-        # raise Exception("NOTE: Please update the Matchup table from input folder"
-        #                 " and then run generate_abstract_scenario() and following steps.")
+        raise Exception("NOTE: Please update the generated Matchup table from input folder"
+                        " and then run generate_abstract_scenario() and following steps.")
 
     def generate_abstract_scenario(self):
         """Generate the abstract scenario: create OpenDrive files
@@ -415,8 +413,6 @@ class RealTwin:
             user_kwargs["update_turn_flow_algo"] = update_turn_flow_algo
         if update_behavior_algo:
             user_kwargs["update_behavior_algo"] = update_behavior_algo
-
-        print(f"  :User defined parameters for calibration: {user_kwargs}")
 
         # run calibration based on the selected algorithm
         if "sumo" in self.sel_sim:

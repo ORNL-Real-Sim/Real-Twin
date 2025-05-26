@@ -221,8 +221,8 @@ class AbstractScenario:
         net_name = self.Network.OpenDriveNetwork._net_name
         path_open_drive = pf.path2linux(Path(self.Network._output_dir) / f"OpenDrive/{net_name}.xodr")
         path_sumo_net = pf.path2linux(Path(self.Network._output_dir) / f"OpenDrive/{net_name}.net.xml")
-        os.system(f'cmd/c "netconvert --opendrive {path_open_drive}'
-                  f' -o {path_sumo_net} --no-internal-links"')
+        # os.system(f'cmd/c "netconvert --opendrive {path_open_drive}'
+        #           f' -o {path_sumo_net} --no-internal-links"')
 
     def update_AbstractScenario_from_input(self, df_volume: pd.DataFrame = None, signal_dict: dict = None):
         """ update values from config dict to specific data object"""

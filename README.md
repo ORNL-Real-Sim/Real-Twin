@@ -8,6 +8,13 @@ The real-twin developed by ORNL Applied Research and Mobility System (ARMS) grou
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-05-26
+
+* Add Python 3.10 as minimum Python version.
+* Generate Matchup Table on each time of running generate_inputs(), will re-write existing Matchup Table.
+
+* Update logic for user updated SUMO network
+
 ### 2025-05-23
 
 * Updates input configuration: reduced inputs from **300** lines to **65** lines

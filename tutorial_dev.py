@@ -6,8 +6,7 @@
 # license. For the licensing terms see the LICENSE file in the top-level     #
 # directory.                                                                 #
 #                                                                            #
-# Contributors (Add you name below to acknowledge your contribution):        #
-# Xiangyong Roy Luo                                                          #
+# Contributors: ORNL Real-Twin Team, realtwin@ornl.gov                                                         #
 ##############################################################################
 
 
@@ -27,10 +26,18 @@ if __name__ == '__main__':
     # Step 3: check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
     twin.env_setup(sel_sim=["SUMO", "VISSIM"])
 
-    # Step 4: Create Matchup Table and Update the Table
-    twin.generate_inputs(incl_sumo_net=updated_sumo_net)
+    # Step 4: Create Matchup Table
+    twin.generate_inputs(incl_sumo_net=None)
+
+    # Before step 5, there are three steps to be performed:
+    # 1. Prepare Traffic Demand and save it to Traffic Folder in input directory
+    # 2. Prepare Control Data (Signal) and save it to Control Folder in input directory
+    # 3. Manually fill in the Matchup Table in the input directory
 
     # Step 5: generate abstract scenario
+    # 1. Automatically fill in the Matchup Table from traffic and control
+    # 2. Save the filled Matchup Table to the input directory
+    # 3. Manually edit / fixed the Matchup Table if needed
     twin.generate_abstract_scenario()
 
     # Step 6: generate scenarios
@@ -48,7 +55,7 @@ if __name__ == '__main__':
                     "edge_list": ["-2801", "-280", "-307", "-327", "3271", "-281", "-315", "3151",
                                   "-321", "-300", "-2851", "-285", "-290", "-298", "-295"]}}
 
-    twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"}, sel_behavior_routes=sel_behavior_routes)
+    twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"})
 
     # Step 9 (ongoing): post-process the simulation results
     twin.post_process()  # keywords arguments can be passed to specify the post-processing options

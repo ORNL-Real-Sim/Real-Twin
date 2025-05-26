@@ -11,7 +11,7 @@
 # Xiangyong Roy Luo                                                          #
 ##############################################################################
 """Control of module imports for the RealTwin package."""
-
+import sys
 from realtwin._realtwin import RealTwin
 from realtwin.util_lib.create_venv import venv_create, venv_delete
 from realtwin.func_lib._a_install_simulator.check_sim_env import (is_sumo_installed,
@@ -37,3 +37,20 @@ __all__ = [
 
     # func_lib
 ]
+
+
+def check_python_version(min_version: str = "3.10") -> tuple:
+    # Split the version string and convert to tuple of integers
+    version_tuple = tuple(map(int, sys.version.split()[0].split('.')))
+
+    # Check if the version is greater than or equal to the minimum version required
+    major, minor = min_version.split(".")
+    try:
+        if version_tuple < (int(major), int(minor)):
+            raise EnvironmentError(f"Python version {min_version} or higher is required.")
+    except Exception:
+        print(f"pyufunc supports Python {min_version} or higher.")
+    return version_tuple
+
+
+check_python_version(min_version="3.10")
