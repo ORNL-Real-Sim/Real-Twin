@@ -369,12 +369,10 @@ def compute_route_summary(rou_file: str, net_file: str) -> pd.DataFrame:
 def filter_mid_routes(df_sorted: pd.DataFrame) -> pd.DataFrame:
     """Filter 80-90th percentile by length"""
 
-    length_80 = df_sorted["length_meters"].quantile(0.8)
-    length_90 = df_sorted["length_meters"].quantile(0.9)
-    return df_sorted[
-        (df_sorted["length_meters"] >= length_80) &
-        (df_sorted["length_meters"] <  length_90)
-    ].reset_index(drop=True)
+    length_85 = df_sorted["length_meters"].quantile(0.85)
+    length_95 = df_sorted["length_meters"].quantile(0.95)
+    return df_sorted[(df_sorted["length_meters"] >= length_85)
+                     & (df_sorted["length_meters"] < length_95)].reset_index(drop=True)
 
 
 def select_two_distinct(mid_routes: pd.DataFrame) -> list[list[str]]:
