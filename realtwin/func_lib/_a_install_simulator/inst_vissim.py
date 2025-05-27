@@ -6,6 +6,6 @@
 # license. For the licensing terms see the LICENSE file in the top-level     #
 # directory.                                                                 #
 #                                                                            #
-# Contributors (Add you name below to acknowledge your contribution):        #
-# Xiangyong Roy Luo                                                          #
+# Contributors: ORNL Real-Twin Team                                          #
+# Contact: realtwin@ornl.gov                                                 #
 ##############################################################################

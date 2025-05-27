@@ -6,8 +6,8 @@
 # license. For the licensing terms see the LICENSE file in the top-level     #
 # directory.                                                                 #
 #                                                                            #
-# Contributors (Add you name below to acknowledge your contribution):        #
-# Xiangyong Roy Luo                                                          #
+# Contributors: ORNL Real-Twin Team                                          #
+# Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
 # Uncomment this line if you want to use the sumo calibration function from the previous code snippet

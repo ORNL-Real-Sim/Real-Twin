@@ -6,7 +6,8 @@
 # license. For the licensing terms see the LICENSE file in the top-level     #
 # directory.                                                                 #
 #                                                                            #
-# Contributors: ORNL Real-Twin Team, realtwin@ornl.gov                                                         #
+# Contributors: ORNL Real-Twin Team                                          #
+# Email: realtwin@ornl.gov                                                   #
 ##############################################################################
 
 

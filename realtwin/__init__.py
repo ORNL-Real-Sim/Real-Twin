@@ -7,9 +7,10 @@
 # license. For the licensing terms see the LICENSE file in the top-level     #
 # directory.                                                                 #
 #                                                                            #
-# Contributors (Add you name below to acknowledge your contribution):        #
-# Xiangyong Roy Luo                                                          #
+# Contributors: ORNL Real-Twin Team                                          #
+# Email: realtwin@ornl.gov                                                   #
 ##############################################################################
+
 """Control of module imports for the RealTwin package."""
 import sys
 from realtwin._realtwin import RealTwin
