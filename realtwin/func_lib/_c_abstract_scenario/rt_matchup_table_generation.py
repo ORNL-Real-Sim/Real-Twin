@@ -56,14 +56,15 @@ def get_net_connections(path_net: str) -> pd.DataFrame:
     return df_connections
 
 
-def generate_matchup_table(path_net: str, path_output: str = "MatchUp_Table.xlsx") -> bool:
+def generate_matchup_table(df_matchup_table: pd.DataFrame, path_output: str = "MatchUp_Table.xlsx") -> bool:
     network_columns = ["JunctionID_OpenDrive", "Bearing", "Numbering", "FromRoadID_OpenDrive", "ToRoadID_OpenDrive", "Turn"]
     demand_columns = ["File_GridSmart", "Date_GridSmart", "IntersectionName_GridSmart", "Turn_GridSmart"]
     signal_columns = ["File_Synchro", "IntersectionID_Synchro", "Turn_Synchro"]
     other_columns = ["Need calibration?"]
 
+    # df_matchup_table = path_net
     # Generate the matchup table
-    df_matchup_table = format_junction_bearing(path_net)
+    # df_matchup_table = format_junction_bearing(path_net)
 
     wb = Workbook()
     ws = wb.active

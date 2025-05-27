@@ -118,11 +118,18 @@ def cali_sumo(*, sel_algo: dict = None, input_config: dict = None, verbose: bool
         path_route = Path(dir_behavior) / f"{network_name}.rou.xml"
         path_report = Path(dir_behavior) / "selected_routes_travel_time_map.html"
         google_api = ""
-        routes_list, time_list, edge_list = auto_select_two_routes(path_net, path_route,
+        routes_list, time_list, edge_list = auto_select_two_routes(path_route, path_net,
                                                                    api_key=google_api, path_report=path_report)
+        print(f"  : selected routes: {routes_list}")
+        print(f"  : selected travel time: {time_list}")
+        print(f"  : selected edge list: {edge_list}")
         sel_route_dict = {}
+        route_id = 1
         for route_name, travel_time, edge_id_list in zip(routes_list, time_list, edge_list):
-            sel_route_dict[route_name] = {"time": travel_time, "edge_list": edge_id_list}
+            sel_route_dict[f"route_{route_id}"] = {"time": travel_time,
+                                                   "edge_list": edge_id_list,
+                                                   "route_list": route_name}
+            route_id += 1
         scenario_config_behavior["sel_behavior_routes"] = sel_route_dict
     print(f"  \n:Selected behavior routes: {scenario_config_behavior['sel_behavior_routes']}\n")
     behavior = BehaviorCali(scenario_config_behavior, algo_config_behavior, verbose=verbose)

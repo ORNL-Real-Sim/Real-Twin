@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import numpy as np
 import pandas as pd
+from realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation import generate_matchup_table
 
 
 def process_signal_from_utdf(file_utdf: object) -> dict[str, pd.DataFrame]:
@@ -316,10 +317,12 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
                 else:
                     print(f'  :There are more turning movements in {file_synchro_name} '
                           f'than OpenDrive junction {junction_id}.')
+    # save the updated MatchupTable_UserInput to the same file
+    generate_matchup_table(MatchupTable_UserInput, path_matchup_table)
     return MatchupTable_UserInput
 
 
-def generate_turn_demand(*, path_matchup_table: str | pd.DataFrame,
+def generate_turn_demand(*, path_matchup_table: str,
                          control_dir: str,
                          traffic_dir: str, output_dir: str = "") -> list[pd.DataFrame]:
     """ Generate turn demand from user input lookup table and Synchro UTDF files.
@@ -350,7 +353,8 @@ def generate_turn_demand(*, path_matchup_table: str | pd.DataFrame,
     if isinstance(path_matchup_table, str):
         # get the updated lookup table
         try:
-            MatchupTable_UserInput = update_matchup_table(path_matchup_table, control_dir, traffic_dir)
+            MatchupTable_UserInput = pd.read_excel(path_matchup_table, skiprows=1, dtype=str)
+            # MatchupTable_UserInput = update_matchup_table(path_matchup_table, control_dir, traffic_dir)
         except Exception as e:
             raise Exception(f"Error loading user updated lookup table: {e}")
     elif isinstance(path_matchup_table, pd.DataFrame):

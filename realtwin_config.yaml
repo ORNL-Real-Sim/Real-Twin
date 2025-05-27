@@ -2,7 +2,7 @@
 # or string of the name of the demo data, we provide a list of demo data ["chattanooga",]
 demo_data:
 
-input_dir: datasets/chattanooga
+input_dir: datasets/input_dir_dummy
 output_dir:  # optional
 Network:
     NetworkName: chatt  # the name of the network should not have space between words

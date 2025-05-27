@@ -13,3 +13,4 @@ mealpy
 xlrd
 folium
 matplotlib
+rich

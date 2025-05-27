@@ -28,6 +28,7 @@ from realtwin.util_lib.download_elevation_tif import download_elevation_tif_by_b
 from realtwin.util_lib.check_abstract_scenario_inputs import check_abstract_inputs
 from realtwin.func_lib._c_abstract_scenario._abstractScenario import AbstractScenario
 from realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation import generate_matchup_table
+from realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation import format_junction_bearing
 from realtwin.func_lib._c_abstract_scenario.rt_demand_generation import generate_turn_demand, update_matchup_table
 
 from realtwin.func_lib._d_concrete_scenario._concreteScenario import ConcreteScenario
@@ -182,28 +183,34 @@ class RealTwin:
         if not os.path.exists(path_control):
             os.makedirs(path_control)
         else:
-            print(f"  :Control folder already exists: {path_control}."
-                  "\n  :NOTICE: Please include Synchro UTDF file (signal) inside Control folder"
-                  " and add the control file name to the input configuration file.\n")
+            # check if the Control folder is empty
+            if not os.listdir(path_control):
+                print(f"  :Control folder is empty: {path_control}.")
+
+        print(f"  :Control folder exists: {path_control}."
+              "\n  :NOTICE: Please include Synchro UTDF file (signal) inside Control folder \n")
 
         # check if Traffic folder exists in the input directory
         path_traffic = pf.path2linux(Path(path_input) / "Traffic")
         if not os.path.exists(path_traffic):
             os.makedirs(path_traffic)
         else:
-            print(f"  :Traffic folder already exists: {path_traffic}."
-                  "\n  :NOTICE: Please include turn movement file for each intersection inside Traffic folder"
-                  " and add the file names to the MatchupTable.xlsx "
-                  "(You will notice the generated MatchupTable.xlsx inside your input folder)."
-                  " For how to fill the MatchupTable.xlsx, please refer to the documentation: \n")
+            # check if the Traffic folder is empty
+            if not os.listdir(path_traffic):
+                print(f"  :Traffic folder is empty: {path_traffic}.")
+
+        print(f"  :Traffic folder exists: {path_traffic}."
+              "\n  :NOTICE: Please include turn movement file for each intersection inside Traffic folder"
+              " and add the file names to the MatchupTable.xlsx "
+              "(You will notice the generated MatchupTable.xlsx inside your input folder)."
+              " For how to fill the MatchupTable.xlsx, please refer to the documentation: \n")
 
         # check if SUMO net file generated (in OpenDrive folder), if not, create the net.
         net_name = self.input_config["Network"]["NetworkName"]
         path_sumo_net = pf.path2linux(Path(self.input_config.get("output_dir")) / f"OpenDrive/{net_name}.net.xml")
+        # generate abstract scenario
+        self.abstract_scenario = AbstractScenario(self.input_config)
         if not os.path.exists(path_sumo_net):
-            # generate abstract scenario
-            self.abstract_scenario = AbstractScenario(self.input_config)
-
             # Create original SUMO network from vertices from config file
             self.abstract_scenario.create_SUMO_network()
 
@@ -223,7 +230,7 @@ class RealTwin:
                 self.input_config["incl_sumo_net"] = incl_sumo_net
 
                 # Copy user updated net file to the OpenDrive folder
-                incl_sumo_net = pf.path2linux(Path(incl_sumo_net))  # make sure it's absolute path
+                incl_sumo_net = pf.path2linux(Path(incl_sumo_net))  # ensure it's absolute path
                 if incl_sumo_net != path_sumo_net:
                     shutil.copy(incl_sumo_net, path_sumo_net)
                 print(f"  :INFO: SUMO network is copied to {path_sumo_net}.")
@@ -248,16 +255,22 @@ class RealTwin:
             raise Exception(f"  :Error: SUMO net file does not exist: {path_sumo_net},"
                             "please check input configuration file and re-run the script."
                             "For details please refer to the documentation: ")
-
-        generate_matchup_table(path_sumo_net, path_matchup)
+        df_matchup_table = format_junction_bearing(path_sumo_net)
+        generate_matchup_table(df_matchup_table, path_matchup)
         print(f"  :NOTE: Matchup table is generated and saved to {path_matchup}."
               "\n  :NOTICE: Please update the Matchup table from input folder"
               " and then run generate_abstract_scenario()."
-              " For details please refer to the documentation: \n")
+              " For details please refer to official documentation: \n")
 
         # Stop the program to let user update the Matchup table
-        raise Exception("NOTE: Please update the generated Matchup table from input folder"
-                        " and then run generate_abstract_scenario() and following steps.")
+        # raise Exception("NOTE: Please update the generated Matchup table from input folder"
+        #                 " and then run generate_abstract_scenario() and following steps.")
+        usr_input = False
+        while not usr_input:
+            usr_input = input("Please update the generated Matchup Table and press Enter to continue...")
+            if usr_input == "" or usr_input in ["y", "Y", "yes", "Yes"]:
+                print("  :INFO: User confirmed to continue after updating Matchup Table.")
+                usr_input = True
 
     def generate_abstract_scenario(self):
         """Generate the abstract scenario: create OpenDrive files
@@ -276,6 +289,15 @@ class RealTwin:
         path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
         control_dir = pf.path2linux(Path(self.input_config.get("input_dir")) / "Control")
         traffic_dir = pf.path2linux(Path(self.input_config.get("input_dir")) / "Traffic")
+
+        # Auto-fill matchup table, save to matchup table
+        MatchupTable_UserInput = update_matchup_table(path_matchup_table=path_matchup,
+                                                      control_dir=control_dir,
+                                                      traffic_dir=traffic_dir)
+        # Tell user to manually check corrrectness of the Matchup Table
+        print("\n  :NOTE: In the Matchup Table, please check if the turn movement in the "
+              "demand and control data match with bearings in the network data. \n")
+
         df_volume, df_vol_lookup = generate_turn_demand(path_matchup_table=path_matchup,
                                                         control_dir=control_dir,
                                                         traffic_dir=traffic_dir,)

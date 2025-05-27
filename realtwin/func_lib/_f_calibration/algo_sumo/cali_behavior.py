@@ -89,7 +89,7 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
     travel_time_diff_list = []
     for route in sel_behavior_routes:
         route_time = sel_behavior_routes[route]["time"]
-        route_edge_list = sel_behavior_routes[route]["edge_list"]
+        route_edge_list = sel_behavior_routes[route]["route_list"]
         travel_time = get_travel_time_from_EdgeData_xml(path_EdgeData, route_edge_list)
         travel_time_diff = abs(route_time - travel_time)
         travel_time_diff_list.append(travel_time_diff)
