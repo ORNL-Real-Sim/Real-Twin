@@ -167,9 +167,14 @@ class TurnInflowCali:
         else:
             raise ValueError("  :Error: params_ranges in configuration file must be a dict or list of tuples.")
 
+        n_variable = self.scenario_config.get("N_Variable")
+        n_inflow_variable = self.scenario_config.get("N_InflowVariable")
+        n_turn_variable = self.scenario_config.get("N_TurnVariable")
+        max_inflow = self.scenario_config.get("max_inflow", 200)  # max inflow for the inflow variables
+
         self.problem_dict = {
             "obj_func": partial(fitness_func_turn_flow, scenario_config=self.scenario_config),
-            "bounds": FloatVar(lb=params_lb, ub=params_ub,),
+            "bounds": FloatVar(lb=[0] * n_variable, ub=[1] * n_turn_variable + [max_inflow] * n_inflow_variable),
             "minmax": "min",  # maximize or minimize
             "log_to": "console",
             # "log_to": "file",
@@ -277,7 +282,7 @@ class TurnInflowCali:
         sel_model = ga_config.get("model_selection", "BaseGA")
 
         # Generate initial solution for inputs
-        init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
+        # init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
 
         if sel_model not in ["BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA"]:
             print("Error: sel_model must be one of the following: "
@@ -319,7 +324,7 @@ class TurnInflowCali:
         # solve the problem
         if epoch > self.term_dict["max_epoch"]:
             self.term_dict["max_epoch"] = epoch
-        g_best = model_ga.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
+        g_best = model_ga.solve(self.problem_dict, termination=self.term_dict)
 
         # update files with the best solution
         fitness_func_turn_flow(g_best.solution, scenario_config=self.scenario_config)
