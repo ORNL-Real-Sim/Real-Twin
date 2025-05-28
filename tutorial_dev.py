@@ -30,17 +30,15 @@ if __name__ == '__main__':
     # Step 4: Create Matchup Table from SUMO network
     twin.generate_inputs(incl_sumo_net=updated_sumo_net)
 
-    # Before step 5, there are three steps to be performed:
+    # BEFORE step 5, there are three steps to be performed:
     # 1. Prepare Traffic Demand and save it to Traffic Folder in input directory
     # 2. Prepare Control Data (Signal) and save it to Control Folder in input directory
     # 3. Manually fill in the Matchup Table in the input directory
 
     # Step 5: generate abstract scenario
-    # 1. Automatically fill in the Matchup Table from traffic and control
-    # 2. Save the filled Matchup Table to the input directory
-    # 3. Manually edit / fixed the Matchup Table if needed
-    # 4. Read the Modified Matchup Table from 3.
     twin.generate_abstract_scenario()
+
+    # AFTER step 5, Double-check the Matchup Table in the input directory to ensure it is correct.
 
     # Step 6: generate scenarios
     twin.generate_concrete_scenario()

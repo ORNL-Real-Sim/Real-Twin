@@ -145,27 +145,27 @@ class TurnInflowCali:
         }
 
         # prepare problem dict from algo config
-        init_params = self.turn_inflow_cfg.get("initial_params", None)
-        if isinstance(init_params, dict):
-            self.init_solution = list(init_params.values())
-        elif isinstance(init_params, list):
-            self.init_solution = init_params
-        elif isinstance(init_params, np.ndarray):
-            self.init_solution = init_params.tolist()
-        else:
-            if self.verbose:
-                print("  :Info: initial parameters are not provided, using None.")
-            self.init_solution = None
+        # init_params = self.turn_inflow_cfg.get("initial_params", None)
+        # if isinstance(init_params, dict):
+        #     self.init_solution = list(init_params.values())
+        # elif isinstance(init_params, list):
+        #     self.init_solution = init_params
+        # elif isinstance(init_params, np.ndarray):
+        #     self.init_solution = init_params.tolist()
+        # else:
+        #     if self.verbose:
+        #         print("  :Info: initial parameters are not provided, using None.")
+        #     self.init_solution = None
 
-        params_ranges = self.turn_inflow_cfg.get("params_ranges", None)
-        if isinstance(params_ranges, dict):
-            params_lb = [val[0] for val in params_ranges.values()]
-            params_ub = [val[1] for val in params_ranges.values()]
-        elif isinstance(params_ranges, list):  # list of tuples [(min, max), ...]
-            params_lb = [val[0] for val in params_ranges]
-            params_ub = [val[1] for val in params_ranges]
-        else:
-            raise ValueError("  :Error: params_ranges in configuration file must be a dict or list of tuples.")
+        # params_ranges = self.turn_inflow_cfg.get("params_ranges", None)
+        # if isinstance(params_ranges, dict):
+        #     params_lb = [val[0] for val in params_ranges.values()]
+        #     params_ub = [val[1] for val in params_ranges.values()]
+        # elif isinstance(params_ranges, list):  # list of tuples [(min, max), ...]
+        #     params_lb = [val[0] for val in params_ranges]
+        #     params_ub = [val[1] for val in params_ranges]
+        # else:
+        #     raise ValueError("  :Error: params_ranges in configuration file must be a dict or list of tuples.")
 
         n_variable = self.scenario_config.get("N_Variable")
         n_inflow_variable = self.scenario_config.get("N_InflowVariable")

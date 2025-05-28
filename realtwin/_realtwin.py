@@ -14,8 +14,11 @@
 import os
 import shutil
 from pathlib import Path
+import sys
+import time
 import pyufunc as pf
-
+from rich.console import Console
+from rich import print as rprint
 # environment setup
 from realtwin.util_lib.create_venv import venv_create, venv_delete
 from realtwin.func_lib._a_install_simulator.inst_sumo import install_sumo
@@ -39,6 +42,9 @@ from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
 # calibration
 from realtwin.func_lib._f_calibration.calibration_sumo import cali_sumo
 from realtwin.data_lib.data_lib_config import sel_behavior_routes
+
+console = Console()
+# info: dim cyan, warning: magenta, danger: bold red
 
 
 class RealTwin:
@@ -78,7 +84,6 @@ class RealTwin:
                   strict_sumo_version: str = None,
                   strict_vissim_version: str = None,
                   strict_aimsun_version: str = None,
-                  create_venv: bool = False,
                   **kwargs) -> bool:
         """Check and set up the environment for the simulation
 
@@ -92,7 +97,6 @@ class RealTwin:
                 if specified, will check and install the version. Default is False.
             strict_aimsun_version (str): Whether to strictly check the version is installed.
                 if specified, will check and install the version. Default is False.
-            create_venv (bool): Whether to create a virtual environment. Default is False.
             kwargs: Additional keyword arguments.
 
         Examples:
@@ -117,13 +121,6 @@ class RealTwin:
             bool: True if the environment is set up successfully, False otherwise.
         """
 
-        # 0 create a virtual environment
-        if create_venv:
-            print(f"Creating a virtual environment: {self._venv_name}")
-            self.venv_create(venv_name=self._venv_name,
-                             venv_dir=self.input_config["output_dir"],
-                             verbose=True)
-
         # 0. Check if the sim_env is selected,
         #    default to SUMO, case insensitive and add self.sel_sim as a class attribute
         sel_sim = ["sumo"] if not sel_sim else [sim.lower() for sim in sel_sim]
@@ -136,7 +133,8 @@ class RealTwin:
         }
 
         # 2. check if the simulator is installed, if not, install it
-        print("\nCheck / install the selected simulators:")
+        console.print("\n[bold green]Check / Install the selected simulators:")
+
         kwargs['sel_dir'] = sel_dir
         kwargs['strict_sumo_version'] = strict_sumo_version
         kwargs['strict_vissim_version'] = strict_vissim_version
@@ -151,7 +149,7 @@ class RealTwin:
                     invalid_sim.append(simulator)
             except Exception:
                 invalid_sim.append(simulator)
-                print(f"\n  :Could not install {simulator} (strict version) on your operation system")
+                rprint(f"  :[bold magenta]Could not install {simulator} (strict version) on your operation system", end="")
 
         sel_sim_ = list(set(sel_sim) - set(invalid_sim))
 
@@ -175,102 +173,113 @@ class RealTwin:
             - How to create/prepare Control and Traffic data
             - How to download elevation tif data from network BBOX
         """
-        print("\nCheck / Create input files and folders for user:")
-        path_input = pf.path2linux(Path(self.input_config.get("input_dir")))
+        with console.status("[bold cyan]Generating inputs...", spinner="dots"):
+            console.print("\n[bold green]Check / Create input files and folders for user:")
+            path_input = pf.path2linux(Path(self.input_config.get("input_dir")))
 
-        # check if Control folder exists in the input directory
-        path_control = pf.path2linux(Path(path_input) / "Control")
-        if not os.path.exists(path_control):
-            os.makedirs(path_control)
-        else:
-            # check if the Control folder is empty
-            if not os.listdir(path_control):
-                print(f"  :Control folder is empty: {path_control}.")
-
-        print(f"  :Control folder exists: {path_control}."
-              "\n  :NOTICE: Please include Synchro UTDF file (signal) inside Control folder \n")
-
-        # check if Traffic folder exists in the input directory
-        path_traffic = pf.path2linux(Path(path_input) / "Traffic")
-        if not os.path.exists(path_traffic):
-            os.makedirs(path_traffic)
-        else:
-            # check if the Traffic folder is empty
-            if not os.listdir(path_traffic):
-                print(f"  :Traffic folder is empty: {path_traffic}.")
-
-        print(f"  :Traffic folder exists: {path_traffic}."
-              "\n  :NOTICE: Please include turn movement file for each intersection inside Traffic folder"
-              " and add the file names to the MatchupTable.xlsx "
-              "(You will notice the generated MatchupTable.xlsx inside your input folder)."
-              " For how to fill the MatchupTable.xlsx, please refer to the documentation: \n")
-
-        # check if SUMO net file generated (in OpenDrive folder), if not, create the net.
-        net_name = self.input_config["Network"]["NetworkName"]
-        path_sumo_net = pf.path2linux(Path(self.input_config.get("output_dir")) / f"OpenDrive/{net_name}.net.xml")
-        # generate abstract scenario
-        self.abstract_scenario = AbstractScenario(self.input_config)
-        if not os.path.exists(path_sumo_net):
-            # Create original SUMO network from vertices from config file
-            self.abstract_scenario.create_SUMO_network()
-
-            # crate OpenDrive network from SUMO network, and then rewrite sumo network based on OpenDrive network
-            self.abstract_scenario.create_OpenDrive_network()
-
-            print("  :INFO: OpenDrive network is generated.")
-
-        # Update SUMO Network before generating OpenDrive network
-        if demo_data := self.input_config["demo_data"]:
-            # demo mode is enabled, use the updated SUMO network from demo data
-            incl_sumo_net = pf.path2linux(Path(self.input_config["input_dir"]) / f"updated_net/{demo_data}.net.xml")
-
-        if incl_sumo_net:
-            # check if the file exists and end with .net.xml
-            if incl_sumo_net.endswith(".net.xml") and os.path.exists(incl_sumo_net):
-                self.input_config["incl_sumo_net"] = incl_sumo_net
-
-                # Copy user updated net file to the OpenDrive folder
-                incl_sumo_net = pf.path2linux(Path(incl_sumo_net))  # ensure it's absolute path
-                if incl_sumo_net != path_sumo_net:
-                    shutil.copy(incl_sumo_net, path_sumo_net)
-                print(f"  :INFO: SUMO network is copied to {path_sumo_net}.")
-                print(f"  :Using updated SUMO network provide by user: {incl_sumo_net} to generate OpenDrive network.")
-
-                # create opendrive net from updated sumo net, and rewrite sumo net based on OpenDrive net
-                self.abstract_scenario.create_OpenDrive_network()
-                print("  :INFO: OpenDrive network is generated.")
+            # check if Control folder exists in the input directory
+            path_control = pf.path2linux(Path(path_input) / "Control")
+            if not os.path.exists(path_control):
+                os.makedirs(path_control)
             else:
-                print(f"  :NOTE: incl_sumo_net is not exist or not with .net.xml extension: {incl_sumo_net}."
-                      "\n  :Please provide a valid SUMO network file with .net.xml extension or leave it empty.")
-        else:
-            #  let user know they can use their own SUMO network by using incl_sumo_net
-            print("  :INFO: You can use your own SUMO network by providing the path to the incl_sumo_net parameter."
-                  " The path should be a .net.xml file. \n")
+                # check if the Control folder is empty
+                if not os.listdir(path_control):
+                    console.print(f"[dim cyan]Control folder is empty: {path_control}.")
 
-        # create matchup table for user
-        path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
+            console.print(f"  [dim cyan]:Control folder exists: {path_control}.[/dim cyan]\n"
+                          "  :NOTICE: [bold red]Please include Synchro UTDF file (signal) inside Control folder\n")
 
-        # check if sumo net file exists
-        if not os.path.exists(path_sumo_net):
-            raise Exception(f"  :Error: SUMO net file does not exist: {path_sumo_net},"
-                            "please check input configuration file and re-run the script."
-                            "For details please refer to the documentation: ")
-        df_matchup_table = format_junction_bearing(path_sumo_net)
-        generate_matchup_table(df_matchup_table, path_matchup)
-        print(f"  :NOTE: Matchup table is generated and saved to {path_matchup}."
-              "\n  :NOTICE: Please update the Matchup table from input folder"
-              " and then run generate_abstract_scenario()."
-              " For details please refer to official documentation: \n")
+            # check if Traffic folder exists in the input directory
+            path_traffic = pf.path2linux(Path(path_input) / "Traffic")
+            if not os.path.exists(path_traffic):
+                os.makedirs(path_traffic)
+            else:
+                # check if the Traffic folder is empty
+                if not os.listdir(path_traffic):
+                    console.print(f"  [magenta]:Traffic folder is empty: {path_traffic}.")
 
-        # Stop the program to let user update the Matchup table
-        # raise Exception("NOTE: Please update the generated Matchup table from input folder"
-        #                 " and then run generate_abstract_scenario() and following steps.")
-        usr_input = False
-        while not usr_input:
-            usr_input = input("Please update the generated Matchup Table and press Enter to continue...")
-            if usr_input == "" or usr_input in ["y", "Y", "yes", "Yes"]:
-                print("  :INFO: User confirmed to continue after updating Matchup Table.")
-                usr_input = True
+            console.print(f"  [dim cyan]:Traffic folder exists: {path_traffic}.[/dim cyan]\n"
+                          "  :NOTICE: [bold red]Please include turn movement file for each intersection "
+                          "inside Traffic folder and add the file names to the MatchupTable.xlsx "
+                          "(You will notice the generated MatchupTable.xlsx inside your input folder)."
+                          " For how to fill the MatchupTable.xlsx, please refer to official documentation\n",
+                          soft_wrap=True, no_wrap=False)
+
+            # check if SUMO net file generated (in OpenDrive folder), if not, create the net.
+            net_name = self.input_config["Network"]["NetworkName"]
+            path_sumo_net = pf.path2linux(Path(self.input_config.get("output_dir")) / f"OpenDrive/{net_name}.net.xml")
+            # generate abstract scenario
+            self.abstract_scenario = AbstractScenario(self.input_config)
+            if not os.path.exists(path_sumo_net):
+                # Create original SUMO network from vertices from config file
+                self.abstract_scenario.create_SUMO_network()
+
+                # crate OpenDrive network from SUMO network, and then rewrite sumo network based on OpenDrive network
+                self.abstract_scenario.create_OpenDrive_network()
+
+                rprint("  :INFO: OpenDrive network is generated.\n", end="")
+
+            # Update SUMO Network before generating OpenDrive network
+            if demo_data := self.input_config["demo_data"]:
+                # demo mode is enabled, use the updated SUMO network from demo data
+                incl_sumo_net = pf.path2linux(Path(self.input_config["input_dir"]) / f"updated_net/{demo_data}.net.xml")
+
+            if incl_sumo_net:
+                # check if the file exists and end with .net.xml
+                if incl_sumo_net.endswith(".net.xml") and os.path.exists(incl_sumo_net):
+                    self.input_config["incl_sumo_net"] = incl_sumo_net
+
+                    # Copy user updated net file to the OpenDrive folder
+                    incl_sumo_net = pf.path2linux(Path(incl_sumo_net))  # ensure it's absolute path
+                    if incl_sumo_net != path_sumo_net:
+                        shutil.copy(incl_sumo_net, path_sumo_net)
+                    console.print(f"  [dim cyan]:INFO: SUMO network is copied to {path_sumo_net}.\n"
+                                  f"  [dim cyan]:Using updated SUMO network provide by user: {incl_sumo_net} "
+                                  "to generate OpenDrive network.\n", soft_wrap=True, no_wrap=False)
+
+                    # create opendrive net from updated sumo net, and rewrite sumo net based on OpenDrive net
+                    self.abstract_scenario.create_OpenDrive_network()
+                    rprint("  [dim cyan]:INFO: OpenDrive network is generated.", end="")
+                else:
+                    console.print("  [magenta]:NOTE: incl_sumo_net is not exist or not with .net.xml extension.\n"
+                                  "  :Please provide a valid SUMO file with .net.xml extension or leave it empty.",
+                                  soft_wrap=True, no_wrap=False)
+            else:
+                #  let user know they can use their own SUMO network by using incl_sumo_net
+                rprint("  [dim cyan]:INFO: You can use your own SUMO network by providing the path "
+                       "to the incl_sumo_net parameter. The path should be a .net.xml file. \n",
+                       end="")
+
+            # create matchup table for user
+            path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
+
+            # check if sumo net file exists
+            if not os.path.exists(path_sumo_net):
+                raise Exception(f"  :Error: SUMO net file does not exist: {path_sumo_net},"
+                                "please check input configuration file and re-run the script."
+                                "For details please refer to the documentation: ")
+            df_matchup_table = format_junction_bearing(path_sumo_net)
+            generate_matchup_table(df_matchup_table, path_matchup)
+            console.print(f"  [dim cyan]:NOTE: Matchup table is generated and saved to {path_matchup}.[/dim cyan]\n"
+                          "  :NOTICE: [bold red]Please update the Matchup table from input folder"
+                          " and then run generate_abstract_scenario()."
+                          " For details please refer to official documentation: \n", soft_wrap=True, no_wrap=False)
+
+            # Stop the program to let user update the Matchup table
+            # raise Exception("NOTE: Please update the generated Matchup table from input folder"
+            #                 " and then run generate_abstract_scenario() and following steps.")
+            # usr_input = False
+            # while not usr_input:
+            #     usr_input = input("Please update the generated Matchup Table and press Enter to continue...")
+            #     if usr_input == "" or usr_input in ["y", "Y", "yes", "Yes"]:
+            #         console.print("  :INFO: User confirmed to continue after updating Matchup Table.")
+            #         usr_input = True
+            console.rule("[bold green]Program stopped. Please prepare the Control and Traffic data and "
+                         "fill in the Matchup Table before proceeding.\n"
+                         "[bold red]Please run generate_abstract_scenario() "
+                         "after preparing the input data.\n")
+            time.sleep(2)  # wait for 2 seconds before exiting
+            sys.exit(0)
 
     def generate_abstract_scenario(self):
         """Generate the abstract scenario: create OpenDrive files
@@ -294,9 +303,9 @@ class RealTwin:
         MatchupTable_UserInput = update_matchup_table(path_matchup_table=path_matchup,
                                                       control_dir=control_dir,
                                                       traffic_dir=traffic_dir)
-        # Tell user to manually check corrrectness of the Matchup Table
-        print("\n  :NOTE: In the Matchup Table, please check if the turn movement in the "
-              "demand and control data match with bearings in the network data. \n")
+        # Tell user to manually check correctness of the Matchup Table
+        console.print("\n  [magenta]:NOTE: In the Matchup Table, please check if the turn movement in the "
+                      "demand and control data match with bearings in the network data. \n")
 
         df_volume, df_vol_lookup = generate_turn_demand(path_matchup_table=path_matchup,
                                                         control_dir=control_dir,
@@ -305,7 +314,7 @@ class RealTwin:
         self.abstract_scenario.Traffic.VolumeLookupTable = df_vol_lookup
 
         self.abstract_scenario.update_AbstractScenario_from_input(df_volume=df_volume)
-        print("\nAbstract Scenario successfully generated.")
+        console.print("\n[bold green]Abstract Scenario successfully generated.")
 
     def generate_concrete_scenario(self):
         """Generate the concrete scenario: generate unified scenario from abstract scenario
@@ -315,12 +324,13 @@ class RealTwin:
         # 2. Save the concrete scenario to the output directory
 
         if not hasattr(self, 'abstract_scenario'):
-            print("  :Warning: Abstract Scenario is not generated yet. Please (generate_abstract_scenario).")
+            console.print("  [magenta]:Warning: Abstract Scenario is not generated yet. "
+                          "Please run generate_abstract_scenario() first.")
             return
 
         self.concrete_scenario = ConcreteScenario()
         self.concrete_scenario.get_unified_scenario(self.abstract_scenario)
-        print("\nConcrete Scenario successfully generated.")
+        console.print("\n[bold green]Concrete Scenario successfully generated.")
 
     def prepare_simulation(self,
                            start_time: float = 3600 * 8,
@@ -373,7 +383,7 @@ class RealTwin:
                                     end_time=end_time,
                                     seed=seed,
                                     step_length=step_length)
-            print(f"\n{simulator.upper()} simulation successfully Prepared.")
+            console.print(f"\n[bold green]{simulator.upper()} simulation successfully Prepared.")
         return True
 
     def calibrate(self, *, sel_algo: dict = None,
@@ -403,25 +413,25 @@ class RealTwin:
         print()
         if sel_algo is None:  # default to genetic algorithm
             sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
-            print(f"  :sel_algo not specified, use default value: {sel_algo}")
+            console.print(f"  [dim cyan]:sel_algo not specified, use default value: {sel_algo}")
 
         if not isinstance(sel_algo, dict):
             sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
-            print("  :Error: parameter sel_algo must be a dict with"
-                  " keys of 'turn_inflow' and 'behavior', using"
-                  f" default values: {sel_algo}")
+            console.print("  [bold red]:Error: parameter sel_algo must be a dict with"
+                        " keys of 'turn_inflow' and 'behavior', using"
+                        f" default values: {sel_algo}")
 
         # check if the selected algorithm is supported within the package
         # convert the algorithm to lower case
         sel_algo = {key: value.lower() for key, value in sel_algo.items()}
         if (algo := sel_algo["turn_inflow"]) not in ["ga", "sa", "ts"]:
-            print(f"  :Selected algorithms are {sel_algo}")
-            print(f"  :{algo} for turn and inflow calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
+            console.print(f"  [dim cyan]:Selected algorithms are {sel_algo}")
+            console.print(f"  [dim cyan]:{algo} for turn and inflow calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
             return False
 
         if (algo := sel_algo["behavior"]) not in ["ga", "sa", "ts"]:
-            print(f"  :Selected algorithms are {sel_algo}")
-            print(f"  :{algo} for behavior calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
+            console.print(f"  [dim cyan]:Selected algorithms are {sel_algo}")
+            console.print(f"  [div cyan]:{algo} for behavior calibration is not supported. Must be one of ['ga', 'sa', 'ts']")
             return False
 
         # parse user additional parameters for calibration
@@ -447,7 +457,7 @@ class RealTwin:
         if "aimsun" in self.sel_sim:
             pass
 
-        print("Calibration successfully completed.")
+        console.print("[bold green]Calibration successfully completed.\n")
 
         return True
 

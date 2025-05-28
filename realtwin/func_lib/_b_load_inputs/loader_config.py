@@ -19,6 +19,8 @@ import shutil
 from zipfile import ZipFile
 
 import pyufunc as pf
+from rich.console import Console
+console = Console()
 
 
 def get_bounding_box_from(vertices: str | list) -> tuple:
@@ -92,7 +94,7 @@ def load_input_config(path_config: str) -> dict:
     if demo_data := config.get('demo_data'):
         if not isinstance(demo_data, str):
             config['demo_data'] = None
-            print("  :Demo data is not a string. Demo mode is disabled.")
+            console.log("  :Demo data is not a string. Demo mode is disabled.")
 
         elif demo_data.lower() in available_demo_data:
             try:
@@ -104,7 +106,7 @@ def load_input_config(path_config: str) -> dict:
                     extract_path = os.path.splitext(demo_data_path)[0]
                     os.makedirs(extract_path, exist_ok=True)
                     zip_ref.extractall(config['input_dir'])
-                print(f"  :Demo data {demo_data} extracted to {config['input_dir']}.")
+                console.log(f"  :Demo data {demo_data} extracted to {config['input_dir']}.")
                 # update input directory to the extracted demo data
                 config["input_dir"] = pf.path2linux(Path(config['input_dir']) / f"{demo_data.lower()}")
                 config["Network"]["NetworkName"] = demo_data
@@ -114,12 +116,12 @@ def load_input_config(path_config: str) -> dict:
                                                         [-85.15829457513502, 35.043293338482925],
                                                         [-85.14986171079225, 35.04018378032611]]
             except Exception as e:
-                print(f"  :Demo data {demo_data} extraction failed for {e}. Demo mode is disabled.")
+                console.log(f"  :Demo data {demo_data} extraction failed for {e}. Demo mode is disabled.")
                 config['demo_data'] = None
         else:
             config['demo_data'] = None
-            print(f"  :Demo data {demo_data} currently not available. Available demo data: {available_demo_data}")
-            print("  :Demo mode is disabled.")
+            console.log(f"Demo data {demo_data} currently not available. Available demo data: {available_demo_data}")
+            console.log("Demo mode is disabled.")
 
     # check output_dir from input configuration file
     if config.get('output_dir') is None:
@@ -132,7 +134,7 @@ def load_input_config(path_config: str) -> dict:
     key_sections = ["Traffic", 'Network', 'Control']
     for key in key_sections:
         if key not in config:
-            print(f"  :{key} section is not found in the configuration file.")
+            console.log(f"[bold]{key} section is not found in the configuration file.")
 
     # update network bbox if vertices are provided in the input configuration file
     if vertices := config.get('Network', {}).get('NetworkVertices'):
