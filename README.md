@@ -2,17 +2,25 @@
 
 **(Feel free to revise the document to enhance the accuracy and readability)**
 
-The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group that enables the simulation of twin-structured cities.
+ORNL’s Real-Twin project is a streamlined scenario generation tool that automatically integrates real-world traffic data to create high-fidelity digital twins for simulating the impacts of connected and automated vehicles in microsimulation environments.
 
 ## Change Log
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-05-28
+
+* Auto selection calibration variables for turn and inflow
+
+* Clean up input configuration file to minimize user inputs
+* Format print out message for better message noticing
+* Force to terminate the program after the generation of Matchup Table.
+* ![1748449045938](image/README/1748449045938.png)
+
 ### 2025-05-26
 
 * Add Python 3.10 as minimum Python version.
 * Generate Matchup Table on each time of running generate_inputs(), will re-write existing Matchup Table.
-
 * Update logic for user updated SUMO network
 
 ### 2025-05-23
