@@ -566,7 +566,8 @@ def generate_inflow(path_net: str,
             junction = junctions.get(from_junction_id)
             if junction is None:
                 break
-            if junction.get("type") == "dead_end":
+            # if junction.get("type") == "dead_end":
+            if junction.get("id") in DeadEndJunction:
                 Lookup_InflowEdge.loc[len(Lookup_InflowEdge)] = [
                     from_id, current_id]
                 break
