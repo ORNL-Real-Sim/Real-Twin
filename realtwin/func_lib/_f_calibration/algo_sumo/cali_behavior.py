@@ -185,8 +185,7 @@ class BehaviorCali:
             "obj_func": partial(fitness_func, scenario_config=self.scenario_config, error_func="rmse"),
             "bounds": FloatVar(lb=params_lb, ub=params_ub,),
             "minmax": "min",  # maximize or minimize
-            "log_to": "None",  # log to console or file
-            # "log_to": "console",
+            "log_to": "console",
             # "log_to": "file",
             # "log_file": "result.log",
             "save_population": True,              # Default = False
@@ -448,6 +447,8 @@ class BehaviorCali:
                                  neighbour_size=neighbour_size,
                                  perturbation_scale=perturbation_scale,
                                  **kwargs)
+        # not print out log to console
+        self.problem_dict["log_to"] = "None"
         g_best = model_ts.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution

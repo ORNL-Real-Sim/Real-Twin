@@ -440,6 +440,8 @@ class TurnInflowCali:
                                  neighbour_size=neighbour_size,
                                  perturbation_scale=perturbation_scale,
                                  **kwargs)
+        # not print out log to console
+        self.problem_dict["log_to"] = "None"
         g_best = model_ts.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution

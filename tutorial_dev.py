@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     # Step 1: Prepare your configuration file (in YAML format)
     CONFIG_FILE = "./realtwin_config.yaml"
-    updated_sumo_net = r"./datasets/input_dir_dummy/updated_net/chatt.net.xml"
+    updated_sumo_net = r"./datasets/example2/chatt.net.xml"
 
     # Step 2: initialize the realtwin object
     twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
