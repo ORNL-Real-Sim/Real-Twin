@@ -500,10 +500,47 @@ def generate_inflow(path_net: str,
 
     tree = ET.parse(path_net)
     root = tree.getroot()
+    # DeadEndJunction = set()
+    # for junction in root.findall('junction'):
+    #     if junction.attrib.get('type') == 'dead_end':
+    #         DeadEndJunction.add(junction.attrib['id'])
+
+    conn_from_map = {}
+    for conn in root.findall("connection"):
+        from_edge = conn.attrib.get("from")
+        direction = conn.attrib.get("dir")
+        if from_edge:
+            if from_edge not in conn_from_map:
+                conn_from_map[from_edge] = []
+            conn_from_map[from_edge].append(direction)
+
     DeadEndJunction = set()
-    for junction in root.findall('junction'):
-        if junction.attrib.get('type') == 'dead_end':
-            DeadEndJunction.add(junction.attrib['id'])
+    for junction in root.findall("junction"):
+        jid = junction.attrib['id']
+        jtype = junction.attrib.get('type')
+        incLanes = junction.attrib.get('incLanes', '')
+        if jtype == 'dead_end':
+            DeadEndJunction.add(jid)
+            continue
+
+        if jtype == 'internal':
+            continue
+
+        if incLanes == '':
+            DeadEndJunction.add(jid)
+            continue
+
+        lane_ids = incLanes.strip().split()
+        edge_ids = set(lane.split('_')[0] for lane in lane_ids)
+        match = True
+        for edge_id in edge_ids:
+            if edge_id in conn_from_map:
+                if any(d != 't' for d in conn_from_map[edge_id]):
+                    match = False
+                    break
+        if match:
+            DeadEndJunction.add(jid)
+
     InflowRoad = []
     SingleRoad = []
     for edge in root.findall('edge'):
