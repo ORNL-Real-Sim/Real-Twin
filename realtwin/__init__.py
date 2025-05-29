@@ -41,8 +41,10 @@ __all__ = [
 
 
 def check_python_version(min_version: str = "3.10") -> tuple:
+    """ Check if the current Python version meets the minimum requirement."""
     # Split the version string and convert to tuple of integers
-    version_tuple = tuple(map(int, sys.version.split()[0].split('.')))
+    # version_tuple = tuple(map(int, sys.version.split()[0].split('.')))
+    version_tuple = tuple(int(val) for val in sys.version.split()[0].split('.'))
 
     # Check if the version is greater than or equal to the minimum version required
     major, minor = min_version.split(".")

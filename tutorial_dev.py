@@ -47,14 +47,6 @@ if __name__ == '__main__':
     twin.prepare_simulation()
 
     # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
-    sel_behavior_routes = {
-        "route_1": {"time": 240,
-                    "edge_list": ["-312", "-293", "-297", "-288", "-2881", "-286", "-302",
-                                  "-3221", "-322", "-313", "-284", "-2841", "-328", "-304"]},
-        "route_2": {"time": 180,
-                    "edge_list": ["-2801", "-280", "-307", "-327", "3271", "-281", "-315", "3151",
-                                  "-321", "-300", "-2851", "-285", "-290", "-298", "-295"]}}
-
     twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"})
 
     # Step 9 (ongoing): post-process the simulation results

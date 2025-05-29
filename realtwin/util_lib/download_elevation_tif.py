@@ -66,7 +66,7 @@ def download_elevation_tif_by_bbox(bbox: tuple | list, output_file: str) -> bool
     }
 
     # Make a request to the API
-    response = requests.get(usgs_api_url, params=params)
+    response = requests.get(usgs_api_url, params=params, timeout=60 * 10) # 10 minutes timeout
 
     # Check for a successful response
     if response.status_code != 200:
@@ -79,7 +79,7 @@ def download_elevation_tif_by_bbox(bbox: tuple | list, output_file: str) -> bool
 
     # Download the first available GeoTIFF file
     # tiff_url = data["items"][0]["downloadURL"]
-    tiff_url_list = set([item["downloadURL"] for item in data["items"]])
+    tiff_url_list = {item["downloadURL"] for item in data["items"]}
     print("Downloaded URLs: ", tiff_url_list)
 
     # Extract date from each URL
@@ -95,7 +95,7 @@ def download_elevation_tif_by_bbox(bbox: tuple | list, output_file: str) -> bool
     print(f"Downloading GeoTIFF file from: {latest_url}")
 
     # Download the TIFF file
-    tiff_response = requests.get(latest_url, stream=True)
+    tiff_response = requests.get(latest_url, stream=True, timeout=60 * 10)  # 10 minutes timeout
     if tiff_response.status_code == 200:
         # Get the total file size in MB
         total_size = int(tiff_response.headers.get('content-length', 0))

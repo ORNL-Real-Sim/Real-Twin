@@ -21,13 +21,13 @@ from realtwin.util_lib.download_file_from_web import download_single_file_from_w
 
 def install_sumo(sel_dir: list = None,
                  strict_sumo_version: str = "1.21.0",
-                 verbose: bool = True, **kwargs) -> bool:
+                 verbose: bool = True,
+                 **kwargs) -> bool:
     """Install the SUMO simulator.
 
     Args:
-        sumo_version (str): The version of SUMO to be installed. Default is "1.21.0".
         sel_dir (list): A list of directories to search for the SUMO executable. Defaults to None.
-        strict_sumo_version (bool): If True, check and install the exact version of SUMO. Default is False.
+        strict_sumo_version (bool): If True, check and install the exact version of SUMO. Default is 1.21.0
         verbose (bool): If True, print the installation process. Default is True.
         kwargs: Additional keyword arguments.
 

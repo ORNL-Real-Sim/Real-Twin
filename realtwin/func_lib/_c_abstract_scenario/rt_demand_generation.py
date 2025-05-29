@@ -22,7 +22,7 @@ def process_signal_from_utdf(file_utdf: object) -> dict[str, pd.DataFrame]:
     """Process the signal data and return a dictionary of DataFrames.
 
     Args:
-        file_lines (object): An iterable containing lines of the signal data from Synchro Signal file.
+        file_utdf (object): the path to the UTDF file containing signal data.
 
     Returns:
         dict[str, pd.DataFrame]: A dictionary where keys are table names and values
@@ -105,7 +105,7 @@ def is_missing_or_zero(val) -> bool:
     if pd.isna(val):
         return True
     val_str = str(val).strip()
-    if val_str == "" or val_str == "0":
+    if val_str in ("", "0"):
         return True
 
     try:
@@ -121,7 +121,8 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
 
     Args:
         path_matchup_table (str): the match table that contains the user input.
-        control_dir (str, optional): the directory where the Synchro UTDF files are located.
+        control_dir (str): the directory where the Synchro UTDF files are located.
+        traffic_dir (str): the directory where the traffic data files are located.
         Defaults to "", which means the current directory.
 
     Returns:
@@ -226,97 +227,98 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
         ).iloc[0] if not subset["File_Synchro"].isna().all() else None
         if subset["IntersectionID_Synchro"].dropna().empty:
             continue
+
+        intersection_id_synchro = subset["IntersectionID_Synchro"].dropna().iloc[0]
+        # Use the cache if this file was already read
+        if file_synchro_name in synchro_cache:
+            signal_dict = synchro_cache[file_synchro_name]
         else:
-            intersection_id_synchro = subset["IntersectionID_Synchro"].dropna().iloc[0]
-            # Use the cache if this file was already read
-            if file_synchro_name in synchro_cache:
-                signal_dict = synchro_cache[file_synchro_name]
-            else:
-                synchro_file_path = f"{os.path.join(control_dir, file_synchro_name)}"
-                signal_dict = process_signal_from_utdf(synchro_file_path)
-                synchro_cache[file_synchro_name] = signal_dict
+            synchro_file_path = f"{os.path.join(control_dir, file_synchro_name)}"
+            signal_dict = process_signal_from_utdf(synchro_file_path)
+            synchro_cache[file_synchro_name] = signal_dict
 
-            # Ensure the 'Lanes' table exists
-            lanes_df = signal_dict.get('Lanes')
-            if lanes_df is None:
-                print(f'No "Lanes" table found in "{file_synchro_name}".')
-                continue
+        # Ensure the 'Lanes' table exists
+        lanes_df = signal_dict.get('Lanes')
+        if lanes_df is None:
+            print(f'No "Lanes" table found in "{file_synchro_name}".')
+            continue
 
-            # 2.1: Subset rows where INTID equals IntersectionID_Synchro and RECORDNAME is in the allowed list.
-            allowed_recordnames = ["Lanes", "Shared", "Phase1",
-                                   "PermPhase1", "Phase2", "PermPhase2", "Phase3", "PermPhase3"]
-            subset_lanes = lanes_df[
-                (lanes_df['INTID'].astype(str) == str(intersection_id_synchro)) & (
-                    lanes_df['RECORDNAME'].astype(str).isin(allowed_recordnames))
-            ]
+        # 2.1: Subset rows where INTID equals IntersectionID_Synchro and RECORDNAME is in the allowed list.
+        allowed_recordnames = ["Lanes", "Shared", "Phase1",
+                               "PermPhase1", "Phase2", "PermPhase2", "Phase3", "PermPhase3"]
+        subset_lanes = lanes_df[
+            (lanes_df['INTID'].astype(str) == str(intersection_id_synchro)) & (
+                lanes_df['RECORDNAME'].astype(str).isin(allowed_recordnames))
+        ]
 
-            if subset_lanes.empty:
-                print(f'No matching records in Lanes for IntersectionID_Synchro '
-                      f'{intersection_id_synchro} in file {file_synchro_name}.')
-                continue
+        if subset_lanes.empty:
+            print(f'No matching records in Lanes for IntersectionID_Synchro '
+                  f'{intersection_id_synchro} in file {file_synchro_name}.')
+            continue
 
-            # 2.2: Reindex the row numbering (reset the index)
-            subset_lanes.reset_index(drop=True, inplace=True)
+        # 2.2: Reindex the row numbering (reset the index)
+        subset_lanes.reset_index(drop=True, inplace=True)
 
-            # Drop columns based on the condition applied to row 1 (first row, index 0)
-            cols_to_drop = []
-            for col in subset_lanes.columns:
-                # Get the value in the first row (row 1)
-                val_first = subset_lanes.at[0, col]
-                if is_missing_or_zero(val_first):
-                    # Exception 1: if any value from row 3 onward (i.e. index 2 and beyond) is valid, we keep the column.
-                    if subset_lanes.shape[0] > 2:
-                        subsequent_valid = subset_lanes[col].iloc[2:].apply(
-                            lambda x: not is_missing_or_zero(x)).any()
-                    else:
-                        subsequent_valid = False
-
-                    # Exception 2: for any column ending with 'R', check if the corresponding XYT column meets the criteria.
-                    exception2_keep = False
-                    if col.endswith("R"):
-                        col_t = col[:-1] + "T"
-                        if col_t in subset_lanes.columns and subset_lanes.shape[0] > 1:
-                            try:
-                                val_first_t = float(subset_lanes.at[0, col_t])
-                                val_second_t = float(
-                                    subset_lanes.at[1, col_t]) if subset_lanes.shape[0] > 1 else 0
-                                if val_first_t > 0 and val_second_t > 1:
-                                    exception2_keep = True
-                            except ValueError:
-                                pass
-
-                    # Drop the column only if neither exception applies.
-                    if not subsequent_valid and not exception2_keep:
-                        cols_to_drop.append(col)
-
-            # Drop the columns that do not meet the exceptions
-            subset_lanes = subset_lanes.copy()
-            subset_lanes.drop(columns=cols_to_drop, inplace=True)
-
-            # Finally, get the column names and save them in the variable 'movements',
-            # while excluding the unwanted columns
-            movements = [col for col in subset_lanes.columns if col not in [
-                'RECORDNAME', 'INTID', 'PED', 'HOLD']]
-
-            # Sort the original movements using the sort_key
-            sorted_movements = sorted(movements, key=sort_key)
-
-            # For each sorted movement that ends with 'L', immediately add the variant (replace ending 'L' with 'U')
-            enhanced_movements = []
-            for mov in sorted_movements:
-                enhanced_movements.append(mov)
-                if mov.endswith("L"):
-                    variant = mov[:-1] + "U"
-                    enhanced_movements.append(variant)
-
-            # Fill the Turn_Synchro column for the current JunctionID_OpenDrive
-            rows_to_fill = subset.index.tolist()
-            for i, movement in enumerate(enhanced_movements):
-                if i < len(rows_to_fill):
-                    MatchupTable_UserInput.at[rows_to_fill[i], "Turn_Synchro"] = movement
+        # Drop columns based on the condition applied to row 1 (first row, index 0)
+        cols_to_drop = []
+        for col in subset_lanes.columns:
+            # Get the value in the first row (row 1)
+            val_first = subset_lanes.at[0, col]
+            if is_missing_or_zero(val_first):
+                # Exception 1: if any value from row 3 onward (i.e. index 2 and beyond) is valid, we keep the column.
+                if subset_lanes.shape[0] > 2:
+                    subsequent_valid = subset_lanes[col].iloc[2:].apply(
+                        lambda x: not is_missing_or_zero(x)).any()
                 else:
-                    print(f'  :There are more turning movements in {file_synchro_name} '
-                          f'than OpenDrive junction {junction_id}.')
+                    subsequent_valid = False
+
+                # Exception 2: for any column ending with 'R', check if the corresponding XYT column meets the criteria.
+                exception2_keep = False
+                if col.endswith("R"):
+                    col_t = col[:-1] + "T"
+                    if col_t in subset_lanes.columns and subset_lanes.shape[0] > 1:
+                        try:
+                            val_first_t = float(subset_lanes.at[0, col_t])
+                            val_second_t = float(
+                                subset_lanes.at[1, col_t]) if subset_lanes.shape[0] > 1 else 0
+                            if val_first_t > 0 and val_second_t > 1:
+                                exception2_keep = True
+                        except ValueError:
+                            pass
+
+                # Drop the column only if neither exception applies.
+                if not subsequent_valid and not exception2_keep:
+                    cols_to_drop.append(col)
+
+        # Drop the columns that do not meet the exceptions
+        subset_lanes = subset_lanes.copy()
+        subset_lanes.drop(columns=cols_to_drop, inplace=True)
+
+        # Finally, get the column names and save them in the variable 'movements',
+        # while excluding the unwanted columns
+        movements = [col for col in subset_lanes.columns if col not in [
+            'RECORDNAME', 'INTID', 'PED', 'HOLD']]
+
+        # Sort the original movements using the sort_key
+        sorted_movements = sorted(movements, key=sort_key)
+
+        # For each sorted movement that ends with 'L', immediately add the variant (replace ending 'L' with 'U')
+        enhanced_movements = []
+        for mov in sorted_movements:
+            enhanced_movements.append(mov)
+            if mov.endswith("L"):
+                variant = mov[:-1] + "U"
+                enhanced_movements.append(variant)
+
+        # Fill the Turn_Synchro column for the current JunctionID_OpenDrive
+        rows_to_fill = subset.index.tolist()
+        for i, movement in enumerate(enhanced_movements):
+            if i < len(rows_to_fill):
+                MatchupTable_UserInput.at[rows_to_fill[i], "Turn_Synchro"] = movement
+            else:
+                print(f'  :There are more turning movements in {file_synchro_name} '
+                      f'than OpenDrive junction {junction_id}.')
+
     # save the updated MatchupTable_UserInput to the same file
     generate_matchup_table(MatchupTable_UserInput, path_matchup_table)
     return MatchupTable_UserInput
@@ -333,7 +335,7 @@ def generate_turn_demand(*, path_matchup_table: str,
             Defaults to "", which means the current directory.
         output_dir (str): Directory to save the output files.
             Defaults to "", which means the current directory.
-        demand_dir (str): Directory where demand files are located.
+        traffic_dir (str): Directory where demand files are located.
             Defaults to "Traffic".
 
     See Also:
@@ -356,7 +358,7 @@ def generate_turn_demand(*, path_matchup_table: str,
             MatchupTable_UserInput = pd.read_excel(path_matchup_table, skiprows=1, dtype=str)
             # MatchupTable_UserInput = update_matchup_table(path_matchup_table, control_dir, traffic_dir)
         except Exception as e:
-            raise Exception(f"Error loading user updated lookup table: {e}")
+            raise Exception("Error loading user updated lookup table") from e
     elif isinstance(path_matchup_table, pd.DataFrame):
         # Use the provided DataFrame directly
         MatchupTable_UserInput = path_matchup_table
@@ -487,8 +489,7 @@ def generate_turn_demand(*, path_matchup_table: str,
     IDRef = IDRef[IDRef["OpenDriveToID"].astype(str) != ""]
     return [TurnDf, IDRef]
 
-
-if __name__ == "__main__":
-    path_matchup_table = "./MatchupTable_OpenDrive_with user input.xlsx"
-    output_dir = "./"
-    TurnDf, IDRef = generate_turn_demand(path_matchup_table, output_dir="./")
+# if __name__ == "__main__":
+#     path_matchup_table = "./MatchupTable_OpenDrive_with user input.xlsx"
+#     output_dir = "./"
+#     TurnDf, IDRef = generate_turn_demand(path_matchup_table, output_dir="./")

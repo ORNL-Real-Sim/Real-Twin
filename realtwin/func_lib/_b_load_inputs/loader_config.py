@@ -15,7 +15,6 @@ import os
 import yaml
 import re
 from pathlib import Path
-import shutil
 from zipfile import ZipFile
 
 import pyufunc as pf

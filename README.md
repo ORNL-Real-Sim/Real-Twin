@@ -8,10 +8,18 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-05-29
+
+* Not create OpenDrive file if inc_sumo_net assigned in generate_inputs()
+* Not create SUMO network from vertices if it exists (might take long time generating sumo network)
+
+TODO
+
+* Could not load / create flow data as junction attributes might changed from user and this will cause error in creating inflow data.
+
 ### 2025-05-28
 
 * Auto selection calibration variables for turn and inflow
-
 * Clean up input configuration file to minimize user inputs
 * Format print out message for better message noticing
 * Force to terminate the program after the generation of Matchup Table.

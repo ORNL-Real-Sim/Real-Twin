@@ -185,7 +185,8 @@ class BehaviorCali:
             "obj_func": partial(fitness_func, scenario_config=self.scenario_config, error_func="rmse"),
             "bounds": FloatVar(lb=params_lb, ub=params_ub,),
             "minmax": "min",  # maximize or minimize
-            "log_to": "console",
+            "log_to": "None",  # log to console or file
+            # "log_to": "console",
             # "log_to": "file",
             # "log_file": "result.log",
             "save_population": True,              # Default = False
@@ -224,7 +225,8 @@ class BehaviorCali:
 
         # save the best solution
         try:
-            model.history.save_global_objectives_chart(filename=f"{output_dir}/global_objectives")
+            pass
+            # model.history.save_global_objectives_chart(filename=f"{output_dir}/global_objectives")
             # model.history.save_local_objectives_chart(filename=f"{output_dir}/local_objectives")
             # model.history.save_global_best_fitness_chart(filename=f"{output_dir}/global_best_fitness")
             # model.history.save_local_best_fitness_chart(filename=f"{output_dir}/local_best_fitness")

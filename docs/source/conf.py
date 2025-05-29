@@ -12,11 +12,9 @@ import os
 import sys
 from pathlib import Path
 import datetime
-import os
-import sys
-import sphinx_rtd_theme
-import warnings
-import inspect
+# import sphinx_rtd_theme
+# import warnings
+# import inspect
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../'))

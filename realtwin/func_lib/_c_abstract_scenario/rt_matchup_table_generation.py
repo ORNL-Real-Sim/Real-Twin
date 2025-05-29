@@ -20,6 +20,7 @@ import copy
 
 
 def get_net_edges(path_net: str) -> pd.DataFrame:
+    """ Extract edges from a SUMO network XML file and return them as a DataFrame."""
     # Load the network XML file
     tree = ET.parse(path_net)
     root = tree.getroot()
@@ -37,6 +38,7 @@ def get_net_edges(path_net: str) -> pd.DataFrame:
 
 
 def get_net_connections(path_net: str) -> pd.DataFrame:
+    """ Extract connections from a SUMO network XML file and return them as a DataFrame."""
     # Load the network XML file
     tree = ET.parse(path_net)
     root = tree.getroot()
@@ -57,6 +59,7 @@ def get_net_connections(path_net: str) -> pd.DataFrame:
 
 
 def generate_matchup_table(df_matchup_table: pd.DataFrame, path_output: str = "MatchUp_Table.xlsx") -> bool:
+    """ Generate a matchup table from the provided DataFrame and save it to an Excel file."""
     network_columns = ["JunctionID_OpenDrive", "Bearing", "Numbering", "FromRoadID_OpenDrive", "ToRoadID_OpenDrive", "Turn"]
     demand_columns = ["File_GridSmart", "Date_GridSmart", "IntersectionName_GridSmart", "Turn_GridSmart"]
     signal_columns = ["File_Synchro", "IntersectionID_Synchro", "Turn_Synchro"]
@@ -129,6 +132,7 @@ def generate_matchup_table(df_matchup_table: pd.DataFrame, path_output: str = "M
 
 
 def generate_junction_bearing(path_net: str) -> pd.DataFrame:
+    """ Generate a DataFrame containing junction bearings from a SUMO network XML file."""
     tree = ET.parse(path_net)
     root = tree.getroot()
 
@@ -138,7 +142,7 @@ def generate_junction_bearing(path_net: str) -> pd.DataFrame:
     # Extract correct UTM zone and netOffset
     location = root.find("location")
     if location is not None:
-        net_offset_x, net_offset_y = map(float, location.get("netOffset", "0,0").split(","))
+        net_offset_x, net_offset_y = [float(val) for val in location.get("netOffset", "0,0").split(",")]
 
         # Extract the UTM zone from the projection parameters
         proj_params = location.get("projParameter", "")
@@ -191,8 +195,8 @@ def generate_junction_bearing(path_net: str) -> pd.DataFrame:
                             last_point = shape[-1].split(",")[:2]  # Get x, y of the last point
                             second_last_point = shape[-2].split(",")[:2]  # Get x, y of the second last point
 
-                            second_last_point = tuple(map(float, second_last_point))
-                            last_point = tuple(map(float, last_point))
+                            second_last_point = tuple([float(val) for val in second_last_point])
+                            last_point = tuple([float(val) for val in last_point])
 
                             # Convert to lat, lon
                             lat1, lon1 = convert_coordinates(*second_last_point)
@@ -213,11 +217,12 @@ def generate_junction_bearing(path_net: str) -> pd.DataFrame:
                                 "Runway Bearing": int(round(bearing / 10.0) * 10 / 10)
                             })
 
-    junction_bearing = pd.DataFrame(junction_bearing)
-    return junction_bearing
+    df_junction_bearing = pd.DataFrame(junction_bearing)
+    return df_junction_bearing
 
 
 def format_junction_bearing(path_net: str) -> pd.DataFrame:
+    """ Format the junction bearing data from a SUMO network XML file into a matchup table."""
 
     # Generate the original junction bearing DataFrame
     junction_bearing = generate_junction_bearing(path_net)
@@ -283,6 +288,7 @@ def format_junction_bearing(path_net: str) -> pd.DataFrame:
 
 # Function to calculate bearing
 def calculate_bearing(lat1, lon1, lat2, lon2):
+    """ Calculate the bearing between two geographical points."""
     delta_lon = math.radians(lon2 - lon1)
     lat1 = math.radians(lat1)
     lat2 = math.radians(lat2)
@@ -296,6 +302,7 @@ def calculate_bearing(lat1, lon1, lat2, lon2):
 
 # Function to match input road to best bearing
 def match_best_bearing(junction_id, lat1, lon1, lat2, lon2, junction_bearing):
+    """ Match the input road to the best bearing based on the junction bearing DataFrame."""
     if not isinstance(junction_id, str):
         junction_id = str(junction_id)
 
@@ -323,6 +330,6 @@ def match_best_bearing(junction_id, lat1, lon1, lat2, lon2, junction_bearing):
     return best_match['Approach Edge'], int(round(best_match['Degree'] / 10.0) * 10 / 10), abs_difference
 
 
-if __name__ == "__main__":
-    path_net = "./chatt.net.xml"
-    generate_matchup_table(path_net, "MatchupTable.xlsx")
+# if __name__ == "__main__":
+#     path_net = "./chatt.net.xml"
+#     generate_matchup_table(path_net, "MatchupTable.xlsx")

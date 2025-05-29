@@ -16,7 +16,6 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 import shutil
 import subprocess
-import random
 import pandas as pd
 import numpy as np
 import pyufunc as pf
@@ -114,7 +113,7 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
     turns = ET.Element('turns')
     # Create the 'interval' element
     IntervalSet = TurnDf[['IntervalStart', 'IntervalEnd']].drop_duplicates().reset_index(drop=True)
-    for index, IntervalData in IntervalSet.iterrows():
+    for _, IntervalData in IntervalSet.iterrows():
         Interval = ET.SubElement(turns, 'interval')
         Interval.set('begin', str(IntervalData['IntervalStart']))
         Interval.set('end', str(IntervalData['IntervalEnd']))
@@ -212,7 +211,7 @@ def result_analysis_on_EdgeData(Summary_data: pd.DataFrame,
     """Analyze the result of the simulation and return the flag, mean GEH, and GEH percent
 
     Args:
-        path_summary (str or pd.DataFrame): the summary dataframe from summary.xlsx in input dir
+        Summary_data (pd.DataFrame): the summary dataframe from summary.xlsx in input dir
         path_EdgeData (str): the path to the EdgeData.xml file in the input dir
         calibration_target (dict): the calibration target from the scenario config, it should contain GEH and GEHPercent
         sim_start_time (float): the start time of the simulation
@@ -290,7 +289,8 @@ def result_analysis_on_EdgeData(Summary_data: pd.DataFrame,
 
 
 def time_to_seconds(time_str):
-    hour, minute = map(int, time_str.split(':'))
+    """ Convert a time string in the format 'HH:MM' to seconds."""
+    hour, minute = [int(x) for x in time_str.split(':')]
     return (hour * 3600) + (minute * 60)
 
 
@@ -319,18 +319,15 @@ def generate_turn_demand_cali(*, path_matchup_table: str | pd.DataFrame,
 
     Args:
         path_matchup_table (str): Path to the matchup table with user input.
-        signal_dir (str): Directory where Synchro UTDF files are located.
-            Defaults to "", which means the current directory.
-        demand_dir (str): Directory where demand files are located.
+        traffic_dir (str): Directory where demand files are located.
             Defaults to "Traffic".
 
     See Also:
-        demand_dir: check sample demand files in datasets/Traffic directory
+        traffic_dir: check sample demand files in datasets/Traffic directory
 
     Example:
         >>> path_matchup_table = "./MatchupTable_OpenDrive_with user input.xlsx"
-        >>> TurnDf, IDRef = generate_turn_demand(path_matchup_table, signal_dir="",
-            output_dir="./Output", demand_dir="Traffic")
+        >>> TurnDf, IDRef = generate_turn_demand(path_matchup_table, output_dir="./Output", traffic_dir="Traffic")
 
     Returns:
         list[pd.DataFrame]: A list containing two DataFrames:
@@ -468,6 +465,7 @@ def generate_inflow(path_net: str,
                     IDRef: pd.DataFrame,
                     sim_begin: int = 28800,
                     sim_end: int = 32400,):
+    """ Generate inflow data for calibration."""
 
     # Apply the conversion function to the 'Time' column and create a new 'Seconds' column
     TurnDf['IntervalStart'] = TurnDf['Time'].apply(time_to_seconds)
@@ -608,6 +606,7 @@ def generate_inflow(path_net: str,
 
 
 def generate_turn_summary(TurnDf: pd.DataFrame, MatchupTable_UserInput: pd.DataFrame, N_InflowVariable: int, sim_begin: int = 28800, sim_end: int = 32400, allow_u_turn: bool = False):
+    """ Generate turn summary for calibration."""
 
     # create TurnDf_Calibration for turn and inflow purpose
     TurnDfTemp = TurnDf.melt(id_vars=['IntersectionName', 'IntervalStart', 'IntervalEnd'],
