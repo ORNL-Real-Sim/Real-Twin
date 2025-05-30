@@ -1,5 +1,4 @@
 - [Real-Twin](#read-twin)
-  - [Summary](#summary)
   - [Installation](#installation)
   - [Documentation](#documentation)
   - [Quick Example](#quick-example)
