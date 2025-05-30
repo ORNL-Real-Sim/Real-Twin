@@ -1,13 +1,12 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "twine"]
+requires = ["setuptools>=61.0", "wheel", "twine"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "realtwin"
-version = "0.0.1alpha"
+version = "0.0.9.dev2"
 description = "ORNL's Real-Twin project is a streamlined scenario generation tool that automatically integrates real-world traffic data to create high-fidelity digital twins for simulating the impacts of connected and automated vehicles in microsimulation environments."
 authors = [
-    {name = "Xiangyong Luo", email = "luox1@ornl.gov"},
     {name = "ORNL-RealTwin", email = "realtwin@ornl.gov"},
 ]
 maintainers = [
@@ -19,7 +18,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "License :: OSI Approved :: MIT License",
     'Intended Audience :: Developers',
     "Operating System :: OS Independent",
     'Topic :: Software Development :: Libraries'
@@ -40,7 +38,7 @@ file="LICENSE"
 [project.urls]
 "Homepage" = 'https://github.com/ORNL-Real-Sim/Real-Twin'
 'Bug Tracker' = 'https://github.com/ORNL-Real-Sim/Real-Twin/issues'
-'License' = 'https://github.com/ORNL-Real-Sim/Real-Twin/blob/main/LICENSE'
+# 'License' = 'https://github.com/ORNL-Real-Sim/Real-Twin/blob/main/LICENSE'
 'Contact' = 'https://github.com/ORNL-Real-Sim/Real-Twin'
 
 [tool.setuptools.dynamic]
@@ -50,7 +48,8 @@ dependencies = {file = ["requirements.txt"]}
 include-package-data = true
 
 [tool.setuptools.packages.find]
-where = ["realtwin"]
+where = ["."]
+include = ["realtwin", "realtwin.*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.txt", "*.rst", '*.yaml', '*.zip', '*.json']
