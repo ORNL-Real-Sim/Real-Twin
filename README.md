@@ -107,5 +107,5 @@ To cite usage of realtwin, please use the folowing bibtex:
   number       = {X},
   pages        = {1--21},
   publisher    = {SAGE for the National Academy of Sciences: Transportation Research Board},
-  note         = {DOI to be assigned}
+  note         = {In Press, DOI to be assigned}
 }
