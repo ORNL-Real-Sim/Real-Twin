@@ -114,7 +114,7 @@ For more information about the ways you can contribute to realtwin, visit our Gi
 
 ## Funding
 
-This work was supported by the US Department of Energy, Vehicle
+This work is supported by the US Department of Energy, Vehicle
 Technologies Office, Energy Efficient Mobility Systems (EEMS)
 program, under project Real-Twin (EEMS114).
 
