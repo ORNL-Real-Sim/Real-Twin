@@ -131,6 +131,3 @@ To cite usage of Real-Twin, please use the folowing bibtex:
   publisher    = {SAGE for the National Academy of Sciences: Transportation Research Board},
   note         = {In Press, DOI to be assigned}
 }
-
-
-
