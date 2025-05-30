@@ -27,7 +27,6 @@
 - **Emerging Technology Support**  
   Includes a scenario database and pipeline for studying **autonomous vehicles (AVs)**, with planned extensions to **CAVs**, **EVs**, and other advanced technologies.
 
-![Overview of RealTwin](image/README/RT_Overview.png)
 
 ## Installation
 
