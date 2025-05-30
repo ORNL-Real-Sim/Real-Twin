@@ -30,8 +30,6 @@
 
 ![Overview of RealTwin](image/README/RT_Overview.png)
 
-## Summary
-
 ## Installation
 
 ```python
