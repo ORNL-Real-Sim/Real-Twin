@@ -3,6 +3,7 @@
   - [Documentation](#documentation)
   - [Quick Example](#quick-example)
   - [Call for Contributions](#call-for-contributions)
+  - [Funding](#funding)
   - [Citation](#citation)
 
 # Real-Twin
