@@ -8,37 +8,25 @@
   - [Citation](#citation)
 
 # Real-Twin
+
 ## 🔁 Real-Twin: A Unified Simulation Scenario Generation Tool for Mobility Research
 
 **Real-Twin** is a unified, **model-agnostic scenario generation tool** designed to streamline and standardize the evaluation of emerging mobility technologies. It provides an end-to-end framework that includes robust workflows, integrated tools, and comprehensive metrics to generate, calibrate, and benchmark microscopic traffic simulation scenarios across multiple platforms.
 
 ### ✨ Key Features
 
-- **Unified Scenario Generation**  
-  Generate transferable, simulation-ready scenarios from heterogeneous data sources using a consistent workflow.
-
-- **Automated Calibration Workflow**  
-  Bridges simulation and real-world data, minimizing manual effort and making traffic simulation more accessible to researchers and engineers.
-
-- **Model-Agnostic Compatibility**  
-  Supports **SUMO**, **VISSIM**, and **AIMSUN** for cross-platform scenario generation and benchmarking. Enables reliable comparisons and reproducibility across different simulation tools.
-
-- **Consistent Scenarios across Different Simulators**  
-  Generate comparable simulation scenarios across different microscopic traffic simulators, providing users the ability to conduct benchmarking and cross-validation that are crucial for ensuring the reliability and reproducibility of simulation results.
-
-- **Emerging Technology Support**  
+- **Unified Scenario Generation**Generate transferable, simulation-ready scenarios from heterogeneous data sources using a consistent workflow.
+- **Automated Calibration Workflow**Bridges simulation and real-world data, minimizing manual effort and making traffic simulation more accessible to researchers and engineers.
+- **Model-Agnostic Compatibility**Supports **SUMO**, **VISSIM**, and **AIMSUN** for cross-platform scenario generation and benchmarking. Enables reliable comparisons and reproducibility across different simulation tools.
+- **Consistent Scenarios across Different Simulators**Generate comparable simulation scenarios across different microscopic traffic simulators, providing users the ability to conduct benchmarking and cross-validation that are crucial for ensuring the reliability and reproducibility of simulation results.
+- **Emerging Technology Support**
   Includes a scenario database and pipeline for studying **autonomous vehicles (AVs)**, with planned extensions to **CAVs**, **EVs**, and other advanced technologies.
-
 
 ## Installation
 
 ```python
 pip install realtwin
-
-# Or throught wheel:  download the latest wheel from github:
-pip install *.whl
 ```
-
 
 ## Documentation
 
@@ -56,7 +44,6 @@ if __name__ == '__main__':
 
     # Step 1: Prepare your configuration file (in YAML format)
     CONFIG_FILE = "./realtwin_config.yaml"
-    updated_sumo_net = r"./datasets/input_dir_dummy/updated_net/chatt.net.xml"
 
     # Step 2: initialize the realtwin object
     twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
@@ -65,6 +52,7 @@ if __name__ == '__main__':
     twin.env_setup(sel_sim=["SUMO", "VISSIM"])
 
     # Step 4: Create Matchup Table from SUMO network
+    updated_sumo_net = r"./datasets/example2/chatt.net.xml"
     twin.generate_inputs(incl_sumo_net=updated_sumo_net)
 
     # BEFORE step 5, there are three steps to be performed:
@@ -111,7 +99,6 @@ Writing code isn't the only way to contribute to realtwin. You can also:
 
 For more information about the ways you can contribute to realtwin, visit our GitHub. If you' re unsure where to start or how your skills fit in, reach out! You can ask by opening a new issue or leaving a comment on a relevant issue that is already open on GitHub.
 
-
 ## Funding
 
 This work is supported by the US Department of Energy, Vehicle
@@ -131,3 +118,4 @@ To cite usage of Real-Twin, please use the folowing bibtex:
   publisher    = {SAGE for the National Academy of Sciences: Transportation Research Board},
   note         = {In Press, DOI to be assigned}
 }
+```

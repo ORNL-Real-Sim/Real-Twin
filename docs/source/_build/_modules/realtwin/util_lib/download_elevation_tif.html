@@ -9,11 +9,12 @@
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/realtwin_css.css?v=836a7079" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,16 +51,16 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../pages/install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_simulator.html">realtwin Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_simulator.html">Supported Simulator</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_prepare.html">realtwin Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_prepare.html">Preparation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_generation.html">realtwin Scenario Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_generation.html">Scenario Generation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../pages/api.html">realtwin API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/api.html">API Reference</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html">Contact</a></li>
@@ -94,13 +95,17 @@
            <div itemprop="articleBody">
              
   <h1>Source code for realtwin.util_lib.download_elevation_tif</h1><div class="highlight"><pre>
-<span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">##############################################################</span>
-<span class="sd"># Created Date: Wednesday, January 15th 2025</span>
-<span class="sd"># Contact Info: luoxiangyong01@gmail.com</span>
-<span class="sd"># Author/Copyright: Mr. Xiangyong Luo</span>
-<span class="sd">##############################################################</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span></span><span class="c1">##############################################################################</span>
+<span class="c1"># Copyright (c) 2024, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># All rights reserved.                                                       #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># This file is part of RealTwin and is distributed under a MIT               #</span>
+<span class="c1"># license. For the licensing terms see the LICENSE file in the top-level     #</span>
+<span class="c1"># directory.                                                                 #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># Contributors: ORNL Real-Twin Team                                          #</span>
+<span class="c1"># Contact: realtwin@ornl.gov                                                 #</span>
+<span class="c1">##############################################################################</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
@@ -160,7 +165,7 @@
     <span class="p">}</span>
 
     <span class="c1"># Make a request to the API</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">usgs_api_url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">usgs_api_url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span> <span class="c1"># 10 minutes timeout</span>
 
     <span class="c1"># Check for a successful response</span>
     <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
@@ -173,7 +178,7 @@
 
     <span class="c1"># Download the first available GeoTIFF file</span>
     <span class="c1"># tiff_url = data[&quot;items&quot;][0][&quot;downloadURL&quot;]</span>
-    <span class="n">tiff_url_list</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;downloadURL&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;items&quot;</span><span class="p">]])</span>
+    <span class="n">tiff_url_list</span> <span class="o">=</span> <span class="p">{</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;downloadURL&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;items&quot;</span><span class="p">]}</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Downloaded URLs: &quot;</span><span class="p">,</span> <span class="n">tiff_url_list</span><span class="p">)</span>
 
     <span class="c1"># Extract date from each URL</span>
@@ -189,7 +194,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading GeoTIFF file from: </span><span class="si">{</span><span class="n">latest_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># Download the TIFF file</span>
-    <span class="n">tiff_response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">latest_url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">tiff_response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">latest_url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>  <span class="c1"># 10 minutes timeout</span>
     <span class="k">if</span> <span class="n">tiff_response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
         <span class="c1"># Get the total file size in MB</span>
         <span class="n">total_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tiff_response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;content-length&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>

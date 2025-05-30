@@ -11,27 +11,27 @@
       <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/realtwin_css.css?v=836a7079" />
 
-
+  
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../../../_static/documentation_options.js?v=01f34227"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
 
-
-
+          
+          
           <a href="../../../../index.html" class="icon icon-home">
             realtwin
           </a>
@@ -60,7 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">Scenario Generation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">realtwin API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">API Reference</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Contact</a></li>
@@ -93,7 +93,7 @@
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-
+             
   <h1>Source code for realtwin.func_lib._e_simulation._sumo</h1><div class="highlight"><pre>
 <span></span><span class="c1">##############################################################################</span>
 <span class="c1"># Copyright (c) 2024, Oak Ridge National Laboratory                          #</span>
@@ -103,8 +103,8 @@
 <span class="c1"># license. For the licensing terms see the LICENSE file in the top-level     #</span>
 <span class="c1"># directory.                                                                 #</span>
 <span class="c1">#                                                                            #</span>
-<span class="c1"># Contributors (Add you name below to acknowledge your contribution):        #</span>
-<span class="c1"># Xiangyong Roy Luo                                                          #</span>
+<span class="c1"># Contributors: ORNL Real-Twin Team                                          #</span>
+<span class="c1"># Contact: realtwin@ornl.gov                                                 #</span>
 <span class="c1">##############################################################################</span>
 <span class="sd">&quot;&quot;&quot;The module to handle the SUMO simulation for the real-twin developed by ORNL ARMS group.&quot;&quot;&quot;</span>
 
@@ -120,6 +120,11 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyufunc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pf</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">chained_assignment</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">FutureWarning</span><span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">read_MatchupTable</span><span class="p">,</span>
+                                                                               <span class="n">generate_turn_demand_cali</span><span class="p">,</span>
+                                                                               <span class="n">generate_inflow</span><span class="p">,</span>
+                                                                               <span class="n">generate_turn_summary</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="SUMOPrep">
@@ -147,7 +152,7 @@
         <span class="n">NetworkName</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Supply</span><span class="o">.</span><span class="n">NetworkName</span>
 
         <span class="c1"># get output path from the configuration dict</span>
-        <span class="n">path_output</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">)</span>
+        <span class="n">path_output</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_output</span><span class="p">,</span> <span class="s1">&#39;SUMO&#39;</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span><span class="p">):</span>
@@ -161,6 +166,9 @@
         <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cmd/c &quot;netconvert --opendrive </span><span class="si">{</span><span class="n">path_open_drive</span><span class="si">}</span><span class="s1">&#39;</span>
                   <span class="sa">f</span><span class="s1">&#39; -o </span><span class="si">{</span><span class="n">path_sumo_net</span><span class="si">}</span><span class="s1"> --no-internal-links&quot;&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Network</span> <span class="o">=</span> <span class="n">path_sumo_net</span>
+
+        <span class="k">if</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;incl_sumo_net&#39;</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">ConcreteScn</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;incl_sumo_net&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="p">)</span>
 
         <span class="c1"># Load the XML file</span>
         <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="p">)</span>
@@ -198,8 +206,28 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The function to import the demand from the demand file and convert it to SUMO demand file.&quot;&quot;&quot;</span>
 
         <span class="n">NetworkName</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Supply</span><span class="o">.</span><span class="n">NetworkName</span>
+
+        <span class="c1"># create turn and inflow and summary df</span>
+        <span class="n">path_matchup_table</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">ConcreteScn</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;input_dir&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="s2">&quot;MatchupTable.xlsx&quot;</span><span class="p">)</span>
+        <span class="n">traffic_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">ConcreteScn</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;input_dir&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="s2">&quot;Traffic&quot;</span><span class="p">)</span>
+        <span class="n">path_net_SUMO</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">ConcreteScn</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;input_dir&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;output/SUMO/</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s2">.net.xml&quot;</span><span class="p">)</span>
+        <span class="n">MatchupTable_UserInput</span> <span class="o">=</span> <span class="n">read_MatchupTable</span><span class="p">(</span><span class="n">path_matchup_table</span><span class="o">=</span><span class="n">path_matchup_table</span><span class="p">)</span>
+        <span class="n">TurnDf</span><span class="p">,</span> <span class="n">IDRef</span> <span class="o">=</span> <span class="n">generate_turn_demand_cali</span><span class="p">(</span><span class="n">path_matchup_table</span><span class="o">=</span><span class="n">path_matchup_table</span><span class="p">,</span> <span class="n">traffic_dir</span><span class="o">=</span><span class="n">traffic_dir</span><span class="p">)</span>
+        <span class="n">InflowDf_Calibration</span><span class="p">,</span> <span class="n">InflowEdgeToCalibrate</span><span class="p">,</span> <span class="n">N_InflowVariable</span> <span class="o">=</span> <span class="n">generate_inflow</span><span class="p">(</span><span class="n">path_net_SUMO</span><span class="p">,</span>
+                                                                                        <span class="n">MatchupTable_UserInput</span><span class="p">,</span>
+                                                                                        <span class="n">TurnDf</span><span class="p">,</span>
+                                                                                        <span class="n">IDRef</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">TurnToCalibrate</span><span class="p">,</span> <span class="n">TurnDf_Calibration</span><span class="p">,</span>
+        <span class="n">RealSummary_Calibration</span><span class="p">,</span>
+        <span class="n">N_Variable</span><span class="p">,</span> <span class="n">N_TurnVariable</span><span class="p">)</span> <span class="o">=</span> <span class="n">generate_turn_summary</span><span class="p">(</span><span class="n">TurnDf</span><span class="p">,</span>
+                                                            <span class="n">MatchupTable_UserInput</span><span class="p">,</span>
+                                                            <span class="n">N_InflowVariable</span><span class="p">)</span>
+        <span class="n">InflowDf</span> <span class="o">=</span> <span class="n">InflowDf_Calibration</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">TurnDf</span> <span class="o">=</span> <span class="n">TurnDf_Calibration</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">TurnDf</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="p">[</span><span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntersectionName&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()]</span>
+
         <span class="c1"># Create the .flow.xml</span>
-        <span class="n">InflowDf</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Demand</span><span class="o">.</span><span class="n">Inflow</span>
+        <span class="c1"># InflowDf = ConcreteScn.Demand.Inflow</span>
         <span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">InflowDf</span> <span class="o">=</span> <span class="n">InflowDf</span><span class="p">[(</span><span class="n">InflowDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">SimulationStartTime</span><span class="p">)</span>
@@ -230,7 +258,7 @@
                          <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Create the .turn.xml</span>
-        <span class="n">TurnDf</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Route</span><span class="o">.</span><span class="n">TurningRatio</span>
+        <span class="c1"># TurnDf = ConcreteScn.Route.TurningRatio</span>
         <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">TurnDf</span> <span class="o">=</span> <span class="n">TurnDf</span><span class="p">[(</span><span class="n">TurnDf</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">SimulationStartTime</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
@@ -261,8 +289,7 @@
         <span class="n">TreeTurn</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">turns</span><span class="p">)</span>
         <span class="c1"># Write the XML to the file</span>
         <span class="n">path_sumo_turn</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.turn.xml&#39;</span><span class="p">))</span>
-        <span class="n">TreeTurn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">path_sumo_turn</span><span class="p">,</span>
-                       <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">TreeTurn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">path_sumo_turn</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">Seed</span> <span class="ow">in</span> <span class="n">SeedSet</span><span class="p">:</span>
             <span class="c1"># Create the .rou.xml for each random seed</span>
@@ -337,10 +364,11 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">importSignal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ConcreteScn</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The function to import the signal from the signal file and convert it to SUMO signal file.&quot;&quot;&quot;</span>
 
-        <span class="n">input_dir</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;input_dir&#39;</span><span class="p">)</span>
-        <span class="n">control_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_dir</span><span class="p">,</span> <span class="s1">&#39;Control&#39;</span><span class="p">)</span>
+        <span class="n">input_dir</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;input_dir&#39;</span><span class="p">)</span>
+        <span class="n">path_output</span> <span class="o">=</span> <span class="n">ConcreteScn</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">)</span>
+        <span class="n">control_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;Control&#39;</span><span class="p">)</span>
         <span class="n">path_MatchupTable</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_dir</span><span class="p">,</span> <span class="s1">&#39;MatchupTable.xlsx&#39;</span><span class="p">))</span>
-        <span class="n">path_net</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span>
+        <span class="n">path_net</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path_output</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;SUMO/</span><span class="si">{</span><span class="n">ConcreteScn</span><span class="o">.</span><span class="n">Supply</span><span class="o">.</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.net.xml&#39;</span><span class="p">)</span>
 
         <span class="c1"># check if the file exists</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_net</span><span class="p">):</span>
@@ -355,7 +383,8 @@
         <span class="n">FixedTime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;FixedTime&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">signal_flag</span> <span class="o">=</span> <span class="n">sumo_signal_import</span><span class="p">(</span><span class="n">path_net</span><span class="p">,</span> <span class="n">path_MatchupTable</span><span class="p">,</span> <span class="n">FixedTime</span><span class="o">=</span><span class="n">FixedTime</span><span class="p">,</span> <span class="n">control_dir</span><span class="o">=</span><span class="n">control_dir</span><span class="p">)</span>
+            <span class="n">signal_flag</span> <span class="o">=</span> <span class="n">sumo_signal_import</span><span class="p">(</span><span class="n">path_net</span><span class="o">=</span><span class="n">path_net</span><span class="p">,</span> <span class="n">path_MatchupTable</span><span class="o">=</span><span class="n">path_MatchupTable</span><span class="p">,</span>
+                                             <span class="n">FixedTime</span><span class="o">=</span><span class="n">FixedTime</span><span class="p">,</span> <span class="n">control_dir</span><span class="o">=</span><span class="n">control_dir</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">signal_flag</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :SUMO signal updated at: </span><span class="si">{</span><span class="n">path_net</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -713,7 +742,7 @@
             <span class="n">Synchro</span><span class="p">[</span><span class="n">intid</span><span class="p">][</span><span class="s2">&quot;Lanes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">Synchro</span><span class="p">[</span><span class="n">intid</span><span class="p">][</span><span class="s2">&quot;Lanes&quot;</span><span class="p">],</span> <span class="n">new_movement_row</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># Matching &quot;Movement&quot; of Synchro[intid][&quot;Lanes&quot;] with &quot;Protected&quot; and &quot;Permitted&quot; in Synchro[intid][&quot;Phases&quot;]</span>
-    <span class="n">phase_flag</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">phase_flag</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="k">for</span> <span class="n">intid</span> <span class="ow">in</span> <span class="n">Synchro</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
         <span class="k">try</span><span class="p">:</span>
@@ -745,6 +774,10 @@
                 <span class="n">phases_df</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">phase_idx</span><span class="p">,</span> <span class="s1">&#39;RTORMovement&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">RTOR_movements</span><span class="p">)</span>
 
             <span class="c1"># Update the &quot;Phases&quot; DataFrame in Synchro</span>
+            <span class="n">phases_df</span><span class="p">[</span><span class="s1">&#39;MinGreen&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">phases_df</span><span class="p">[</span><span class="s1">&#39;MinGreen&#39;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
+            <span class="n">phases_df</span><span class="p">[</span><span class="s1">&#39;MaxGreen&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">phases_df</span><span class="p">[</span><span class="s1">&#39;MaxGreen&#39;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
+            <span class="n">phases_df</span> <span class="o">=</span> <span class="n">phases_df</span><span class="p">[</span><span class="o">~</span><span class="p">((</span><span class="n">phases_df</span><span class="p">[</span><span class="s1">&#39;MinGreen&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">phases_df</span><span class="p">[</span><span class="s1">&#39;MaxGreen&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))]</span>
+
             <span class="n">Synchro</span><span class="p">[</span><span class="n">intid</span><span class="p">][</span><span class="s2">&quot;Phases&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">phases_df</span>
             <span class="n">phase_flag</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -753,19 +786,17 @@
             <span class="c1"># get sumo junction id form lookup_df</span>
             <span class="n">sumo_id</span> <span class="o">=</span> <span class="n">lookup_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lookup_df</span><span class="p">[</span><span class="s1">&#39;INTID&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">intid</span><span class="p">,</span> <span class="s1">&#39;SumoJunctionID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Mismatch between SUMO junction </span><span class="si">{</span><span class="n">sumo_id</span><span class="si">}</span><span class="s2"> and &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;Synchro junction </span><span class="si">{</span><span class="n">intid</span><span class="si">}</span><span class="s2"> in the input MatchupTable.xlsx.&quot;</span><span class="p">)</span>
+                  <span class="sa">f</span><span class="s2">&quot;Synchro junction </span><span class="si">{</span><span class="n">intid</span><span class="si">}</span><span class="s2"> in the input MatchupTable.xlsx. </span><span class="se">\n</span><span class="s2">    : </span><span class="si">{</span><span class="n">error_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="c1"># # Uncomment this section if you want to raise an error when no phases are found</span>
-
-    <span class="k">if</span> <span class="n">phase_flag</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
-
-    <span class="c1"># # No matching phases found</span>
-    <span class="c1"># if phase_flag == 0:</span>
-    <span class="c1">#     raise ValueError(&quot;No phases found in Synchro data.&quot;)</span>
-    <span class="c1"># elif phase_flag &gt;= 0:</span>
-    <span class="c1">#     # Not all phases matched</span>
-    <span class="c1">#     if phase_flag != len(Synchro):</span>
-    <span class="c1">#         print(f&quot;  :There are {len(Synchro) - phase_flag} intersections without phases. Please check.&quot;)</span>
+    <span class="c1"># if phase_flag:</span>
+    <span class="c1">#     raise Exception(error_msg)</span>
+    <span class="c1"># No matching phases found</span>
+    <span class="k">if</span> <span class="n">phase_flag</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No phases found in Synchro data.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">phase_flag</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Not all phases matched</span>
+        <span class="k">if</span> <span class="n">phase_flag</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Synchro</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Total </span><span class="si">{</span><span class="n">phase_flag</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">Synchro</span><span class="p">)</span><span class="si">}</span><span class="s2"> signal intersections.&quot;</span><span class="p">)</span>
 
     <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">path_net</span><span class="p">)</span>
     <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
@@ -828,41 +859,99 @@
             <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">new_tlLogic</span><span class="p">,</span> <span class="s1">&#39;param&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
 
         <span class="c1"># Adding &lt;param key=&quot;ringX&quot; value=&quot;&quot;/&gt; with the updated logic</span>
-        <span class="n">max_ring</span> <span class="o">=</span> <span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s2">&quot;Ring&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-        <span class="n">previous_phase</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># max_ring = synchro_data[&quot;Phases&quot;][&quot;Ring&quot;].astype(int).max()</span>
+        <span class="c1"># previous_phase = 1</span>
+        <span class="c1"># for ring_num in range(1, max_ring + 1):</span>
+        <span class="c1">#     phases_in_ring = synchro_data[&quot;Phases&quot;][synchro_data[&quot;Phases&quot;][&quot;Ring&quot;].astype(int) == ring_num][&quot;Phase&quot;].astype(int).tolist()</span>
+        <span class="c1">#     if not phases_in_ring:</span>
+        <span class="c1">#         continue</span>
+        <span class="c1">#     largest_phase = max(phases_in_ring)</span>
+        <span class="c1">#     complete_list = []</span>
+        <span class="c1">#     for i in range(previous_phase, largest_phase + 1):</span>
+        <span class="c1">#         if i in phases_in_ring:</span>
+        <span class="c1">#             complete_list.append(i)</span>
+        <span class="c1">#         else:</span>
+        <span class="c1">#             complete_list.append(0)</span>
+        <span class="c1">#     previous_phase = largest_phase + 1</span>
+        <span class="c1">#     ring_value = &quot;,&quot;.join(map(str, complete_list))</span>
+        <span class="c1">#     ET.SubElement(new_tlLogic, &#39;param&#39;, key=f&quot;ring{ring_num}&quot;, value=ring_value)</span>
 
-        <span class="k">for</span> <span class="n">ring_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_ring</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">phases_in_ring</span> <span class="o">=</span> <span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s2">&quot;Ring&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">==</span> <span class="n">ring_num</span><span class="p">][</span><span class="s2">&quot;Phase&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">phases_in_ring</span><span class="p">:</span>
-                <span class="k">continue</span>
+        <span class="c1"># Adding &lt;param key=&quot;ring1&quot; value=&quot;&quot;/&gt;  &lt;param key=&quot;ring2&quot; value=&quot;&quot;/&gt;</span>
+        <span class="c1"># R1B1</span>
+        <span class="n">r1b1</span> <span class="o">=</span> <span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][(</span><span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s1">&#39;Ring&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s1">&#39;Barrier&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">r1b1</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">max_pos</span> <span class="o">=</span> <span class="n">r1b1</span><span class="p">[</span><span class="s1">&#39;Position&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">R1B1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_pos</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">r1b1</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">R1B1</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Position&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">R1B1</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="n">largest_phase</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">phases_in_ring</span><span class="p">)</span>
-            <span class="n">complete_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># R1B2</span>
+        <span class="n">r1b2</span> <span class="o">=</span> <span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][(</span><span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s1">&#39;Ring&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s1">&#39;Barrier&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">r1b2</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">max_pos</span> <span class="o">=</span> <span class="n">r1b2</span><span class="p">[</span><span class="s1">&#39;Position&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">R1B2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_pos</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">r1b2</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">R1B2</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Position&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">R1B2</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">previous_phase</span><span class="p">,</span> <span class="n">largest_phase</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">phases_in_ring</span><span class="p">:</span>
-                    <span class="n">complete_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">complete_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># R2B1</span>
+        <span class="n">r2b1</span> <span class="o">=</span> <span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][(</span><span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s1">&#39;Ring&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s1">&#39;Barrier&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">r2b1</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">max_pos</span> <span class="o">=</span> <span class="n">r2b1</span><span class="p">[</span><span class="s1">&#39;Position&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">R2B1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_pos</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">r2b1</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">R2B1</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Position&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">R2B1</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="n">previous_phase</span> <span class="o">=</span> <span class="n">largest_phase</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="n">ring_value</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">complete_list</span><span class="p">))</span>
-            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">new_tlLogic</span><span class="p">,</span> <span class="s1">&#39;param&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;ring</span><span class="si">{</span><span class="n">ring_num</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">ring_value</span><span class="p">)</span>
+        <span class="c1"># R2B2</span>
+        <span class="n">r2b2</span> <span class="o">=</span> <span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][(</span><span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s1">&#39;Ring&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s1">&#39;Barrier&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">r2b2</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">max_pos</span> <span class="o">=</span> <span class="n">r2b2</span><span class="p">[</span><span class="s1">&#39;Position&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">R2B2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_pos</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">r2b2</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">R2B2</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Position&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">R2B2</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="n">max_barrier</span> <span class="o">=</span> <span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s2">&quot;Barrier&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">barrier_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_barrier</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">barrier_num</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="c1"># Find phases with the largest &quot;Barrier&quot; value</span>
-                <span class="n">largest_barrier_row</span> <span class="o">=</span> <span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s2">&quot;Barrier&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">==</span> <span class="n">max_barrier</span><span class="p">]</span>
-                <span class="n">largest_phases</span> <span class="o">=</span> <span class="n">largest_barrier_row</span><span class="p">[</span><span class="n">largest_barrier_row</span><span class="p">[</span><span class="s2">&quot;Position&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">==</span> <span class="n">largest_barrier_row</span><span class="p">[</span><span class="s2">&quot;Position&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()][</span><span class="s2">&quot;Phase&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-                <span class="n">barrier_value</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">largest_phases</span><span class="p">)))</span>
-                <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">new_tlLogic</span><span class="p">,</span> <span class="s1">&#39;param&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;barrierPhases&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">barrier_value</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Find the previous barrier phases</span>
-                <span class="n">previous_barrier_row</span> <span class="o">=</span> <span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">][</span><span class="s2">&quot;Barrier&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">==</span> <span class="n">barrier_num</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                <span class="n">largest_phases</span> <span class="o">=</span> <span class="n">previous_barrier_row</span><span class="p">[</span><span class="n">previous_barrier_row</span><span class="p">[</span><span class="s2">&quot;Position&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">==</span> <span class="n">previous_barrier_row</span><span class="p">[</span><span class="s2">&quot;Position&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()][</span><span class="s2">&quot;Phase&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-                <span class="n">barrier_value</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">largest_phases</span><span class="p">)))</span>
-                <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">new_tlLogic</span><span class="p">,</span> <span class="s1">&#39;param&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;barrier</span><span class="si">{</span><span class="n">barrier_num</span><span class="si">}</span><span class="s2">Phases&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">barrier_value</span><span class="p">)</span>
+        <span class="c1"># max_barrier = synchro_data[&quot;Phases&quot;][&quot;Barrier&quot;].astype(int).max()</span>
+        <span class="c1"># for barrier_num in range(1, max_barrier + 1):</span>
+        <span class="c1">#     if barrier_num == 1:</span>
+        <span class="c1">#         # Find phases with the largest &quot;Barrier&quot; value</span>
+        <span class="c1">#         largest_barrier_row = synchro_data[&quot;Phases&quot;][synchro_data[&quot;Phases&quot;][&quot;Barrier&quot;].astype(int) == max_barrier]</span>
+        <span class="c1">#         largest_phases = largest_barrier_row[largest_barrier_row[&quot;Position&quot;].astype(int) == largest_barrier_row[&quot;Position&quot;].astype(int).max()][&quot;Phase&quot;].astype(int).tolist()</span>
+        <span class="c1">#         barrier_value = &quot;,&quot;.join(map(str, sorted(largest_phases)))</span>
+        <span class="c1">#         ET.SubElement(new_tlLogic, &#39;param&#39;, key=&quot;barrierPhases&quot;, value=barrier_value)</span>
+        <span class="c1">#     else:</span>
+        <span class="c1">#         # Find the previous barrier phases</span>
+        <span class="c1">#         previous_barrier_row = synchro_data[&quot;Phases&quot;][synchro_data[&quot;Phases&quot;][&quot;Barrier&quot;].astype(int) == barrier_num - 1]</span>
+        <span class="c1">#         largest_phases = previous_barrier_row[previous_barrier_row[&quot;Position&quot;].astype(int) == previous_barrier_row[&quot;Position&quot;].astype(int).max()][&quot;Phase&quot;].astype(int).tolist()</span>
+        <span class="c1">#         barrier_value = &quot;,&quot;.join(map(str, sorted(largest_phases)))</span>
+        <span class="c1">#         ET.SubElement(new_tlLogic, &#39;param&#39;, key=f&quot;barrier{barrier_num}Phases&quot;, value=barrier_value)</span>
+
+        <span class="c1"># Apply fallback</span>
+        <span class="k">if</span> <span class="n">R1B1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">R2B1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">R1B1</span> <span class="o">=</span> <span class="n">R2B1</span>
+        <span class="k">if</span> <span class="n">R2B1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">R1B1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">R2B1</span> <span class="o">=</span> <span class="n">R1B1</span>
+        <span class="k">if</span> <span class="n">R1B2</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">R2B2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">R1B2</span> <span class="o">=</span> <span class="n">R2B2</span>
+        <span class="k">if</span> <span class="n">R2B2</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">R1B2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">R2B2</span> <span class="o">=</span> <span class="n">R1B2</span>
+
+        <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">new_tlLogic</span><span class="p">,</span> <span class="s1">&#39;param&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;ring1&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">R1B1</span> <span class="o">+</span> <span class="n">R1B2</span><span class="p">)))</span>
+        <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">new_tlLogic</span><span class="p">,</span> <span class="s1">&#39;param&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;ring2&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">R2B1</span> <span class="o">+</span> <span class="n">R2B2</span><span class="p">)))</span>
+
+        <span class="c1"># Adding &lt;param key=&quot;barrierPhases&quot; value=&quot;&quot;/&gt;  &lt;param key=&quot;barrier2Phases&quot; value=&quot;&quot;/&gt;</span>
+        <span class="n">barrier2Phases</span> <span class="o">=</span> <span class="p">[</span><span class="n">R1B1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">R2B1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">new_tlLogic</span><span class="p">,</span> <span class="s1">&#39;param&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;barrier2Phases&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">barrier2Phases</span><span class="p">)))</span>
+
+        <span class="c1"># Add &lt;param key=&quot;barrierPhases&quot; value=&quot;R1B2_last,R2B2_last&quot;/&gt;</span>
+        <span class="n">barrierPhases</span> <span class="o">=</span> <span class="p">[</span><span class="n">R1B2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">R2B2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">new_tlLogic</span><span class="p">,</span> <span class="s1">&#39;param&#39;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;barrierPhases&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">barrierPhases</span><span class="p">)))</span>
 
         <span class="c1"># Check and swap barrier phases if needed</span>
         <span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="s2">&quot;coordinate-mode&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span><span class="p">:</span>
@@ -887,13 +976,15 @@
         <span class="n">nm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">TLLogic</span><span class="p">[</span><span class="n">tl_id</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">phase_row</span> <span class="ow">in</span> <span class="n">synchro_data</span><span class="p">[</span><span class="s2">&quot;Phases&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
             <span class="n">state</span> <span class="o">=</span> <span class="n">generate_complete_state_string</span><span class="p">(</span><span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;ProtectedMovement&#39;</span><span class="p">],</span> <span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;PermittedMovement&#39;</span><span class="p">],</span> <span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;RTORMovement&#39;</span><span class="p">],</span> <span class="n">nm</span><span class="p">)</span>
-            <span class="n">maxDur</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;MaxGreen&#39;</span><span class="p">]))</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notna</span><span class="p">(</span><span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;MaxGreen&#39;</span><span class="p">])</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">total_cycle_length</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="c1"># maxDur = int(float(phase_row[&#39;MaxGreen&#39;])) if pd.notna(phase_row[&#39;MaxGreen&#39;]) else int(int(total_cycle_length) / 3)</span>
+            <span class="n">maxDur</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase_row</span><span class="p">[</span><span class="s2">&quot;MaxGreen&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notna</span><span class="p">(</span><span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;MaxGreen&#39;</span><span class="p">])</span> <span class="k">else</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">total_cycle_length</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;MaxGreen&#39;</span><span class="p">]):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Maximum green(&#39;MaxGreen&#39;) is missing for phase </span><span class="si">{</span><span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> at &quot;</span>
                       <span class="sa">f</span><span class="s2">&quot;intersection </span><span class="si">{</span><span class="n">intid_row</span><span class="p">[</span><span class="s1">&#39;INTID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">total_cycle_length</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="s2"> sec is used.&quot;</span>
                       <span class="s2">&quot; Manual change is probably needed to ensure the length of this ring equal to cycle length.&quot;</span><span class="p">)</span>
 
-            <span class="n">minDur</span> <span class="o">=</span> <span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;MinGreen&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notna</span><span class="p">(</span><span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;MinGreen&#39;</span><span class="p">])</span> <span class="k">else</span> <span class="nb">min</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">maxDur</span><span class="p">))</span>
+            <span class="c1"># minDur = phase_row[&#39;MinGreen&#39;] if pd.notna(phase_row[&#39;MinGreen&#39;]) else min(6, int(maxDur))</span>
+            <span class="n">minDur</span> <span class="o">=</span> <span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;MinGreen&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notna</span><span class="p">(</span><span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;MinGreen&#39;</span><span class="p">])</span> <span class="k">else</span> <span class="nb">min</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">maxDur</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;MinGreen&#39;</span><span class="p">]):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Minimum green(&#39;MinGreen&#39;) is missing for phase </span><span class="si">{</span><span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> at &quot;</span>
                       <span class="sa">f</span><span class="s2">&quot;intersection </span><span class="si">{</span><span class="n">intid_row</span><span class="p">[</span><span class="s1">&#39;INTID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="n">maxDur</span><span class="p">)</span><span class="si">}</span><span class="s2"> sec is used&quot;</span><span class="p">)</span>
@@ -930,6 +1021,15 @@
     <span class="n">prettify_xml</span><span class="p">(</span><span class="n">path_net</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Example usage</span>
+    <span class="n">path_net</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\chatt.net.xml&quot;</span>
+    <span class="n">path_matchup_table</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\MatchupTable.xlsx&quot;</span>
+    <span class="n">control_dir</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\Control&quot;</span>
+
+    <span class="n">sumo_signal_import</span><span class="p">(</span><span class="n">path_net</span><span class="o">=</span><span class="n">path_net</span><span class="p">,</span> <span class="n">path_MatchupTable</span><span class="o">=</span><span class="n">path_matchup_table</span><span class="p">,</span> <span class="n">control_dir</span><span class="o">=</span><span class="n">control_dir</span><span class="p">,</span> <span class="n">FixedTime</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 
            </div>
@@ -945,7 +1045,7 @@
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     provided by <a href="https://readthedocs.org">Read the Docs</a>.
-
+   
 
 </footer>
         </div>
@@ -956,7 +1056,7 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
+  </script> 
 
 </body>
 </html>

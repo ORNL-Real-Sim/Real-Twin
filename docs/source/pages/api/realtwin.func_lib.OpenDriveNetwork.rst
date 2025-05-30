@@ -13,8 +13,9 @@ realtwin.func\_lib.OpenDriveNetwork
 
    .. autosummary::
    
-      ~OpenDriveNetwork.GetRoad
       ~OpenDriveNetwork.__init__
+      ~OpenDriveNetwork.create_OpenDrive_network
+      ~OpenDriveNetwork.create_SUMO_network
       ~OpenDriveNetwork.isEmpty
       ~OpenDriveNetwork.setValue
    

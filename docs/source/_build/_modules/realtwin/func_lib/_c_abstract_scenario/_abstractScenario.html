@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../../../_static/documentation_options.js?v=01f34227"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">Scenario Generation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">realtwin API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">API Reference</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Contact</a></li>
@@ -95,13 +95,25 @@
            <div itemprop="articleBody">
              
   <h1>Source code for realtwin.func_lib._c_abstract_scenario._abstractScenario</h1><div class="highlight"><pre>
-<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span></span><span class="c1">##############################################################################</span>
+<span class="c1"># Copyright (c) 2024, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># All rights reserved.                                                       #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># This file is part of RealTwin and is distributed under a MIT               #</span>
+<span class="c1"># license. For the licensing terms see the LICENSE file in the top-level     #</span>
+<span class="c1"># directory.                                                                 #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># Contributors: ORNL Real-Twin Team                                          #</span>
+<span class="c1"># Contact: realtwin@ornl.gov                                                 #</span>
+<span class="c1">##############################################################################</span>
+<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">class to host a unique AbstractScenario definition</span>
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="c1"># import four elements of AbstractScenario</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._traffic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Traffic</span>
@@ -130,7 +142,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;load traffic volume data from file</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        path_demand (str): the demand file path</span>
+<span class="sd">        demand_data (str): the demand file path</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        pd.DataFrame: the converted demand data in DataFrame</span>
@@ -283,56 +295,73 @@
 
 <div class="viewcode-block" id="AbstractScenario.__init__">
 <a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.AbstractScenario.html#realtwin.func_lib.AbstractScenario.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span> <span class="o">=</span> <span class="n">config_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span> <span class="o">=</span> <span class="n">input_config</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">Traffic</span> <span class="o">=</span> <span class="n">Traffic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Network</span> <span class="o">=</span> <span class="n">Network</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Network</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Control</span> <span class="o">=</span> <span class="n">Control</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Application</span> <span class="o">=</span> <span class="n">Application</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_open_drive_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;create OpenDriveNetwork object&quot;&quot;&quot;</span>
-        <span class="c1"># TDD check whether the config_dict is not None</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;  :config_dict is None, no data to update&quot;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_SUMO_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Create SUMO Network From Vertices&quot;&quot;&quot;</span>
+
+        <span class="c1"># TDD check whether the input_config is not None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;  :input_config is None, no data to update&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="c1"># update Network</span>
-        <span class="c1"># network_dict = self.config_dict.get(&#39;Network&#39;, None)</span>
-        <span class="k">if</span> <span class="n">network_dict</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Network&#39;</span><span class="p">):</span>
+        <span class="c1"># network_dict = self.input_config.get(&#39;Network&#39;, None)</span>
+        <span class="k">if</span> <span class="n">network_dict</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Network&#39;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkName</span> <span class="o">=</span> <span class="n">network_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NetworkName&#39;</span><span class="p">,</span> <span class="s2">&quot;network&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkVertices</span> <span class="o">=</span> <span class="n">network_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NetworkVertices&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">ElevationMap</span> <span class="o">=</span> <span class="n">network_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ElevationMap&#39;</span><span class="p">,</span> <span class="s2">&quot;No elevation map provided!&quot;</span><span class="p">)</span>
 
             <span class="c1"># update the OpenDriveNetwork output directory</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">_output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">,</span> <span class="s2">&quot;RT_Network&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">_output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">_output_dir</span>
 
             <span class="c1"># update and crate OpenDriveNetwork</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_net_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkName</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_net_vertices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkVertices</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_ele_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">ElevationMap</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">setValue</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">create_SUMO_network</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_OpenDrive_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;create OpenDriveNetwork object&quot;&quot;&quot;</span>
+        <span class="c1"># TDD check whether the input_config is not None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;  :input_config is None, no data to update&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">create_OpenDrive_network</span><span class="p">()</span>
+
+        <span class="c1"># re-write sumo network based on the OpenDriveNetwork</span>
+        <span class="n">net_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_net_name</span>
+        <span class="n">path_open_drive</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">_output_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;OpenDrive/</span><span class="si">{</span><span class="n">net_name</span><span class="si">}</span><span class="s2">.xodr&quot;</span><span class="p">)</span>
+        <span class="n">path_sumo_net</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">_output_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;OpenDrive/</span><span class="si">{</span><span class="n">net_name</span><span class="si">}</span><span class="s2">.net.xml&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cmd/c &quot;netconvert --opendrive </span><span class="si">{</span><span class="n">path_open_drive</span><span class="si">}</span><span class="s1">&#39;</span>
+                  <span class="sa">f</span><span class="s1">&#39; -o </span><span class="si">{</span><span class="n">path_sumo_net</span><span class="si">}</span><span class="s1"> --no-internal-links&quot;&#39;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">update_AbstractScenario_from_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df_volume</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">signal_dict</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; update values from config dict to specific data object&quot;&quot;&quot;</span>
 
-        <span class="c1"># TDD check whether the config_dict is not None</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;  :config_dict is None, no data to update&quot;</span><span class="p">)</span>
+        <span class="c1"># TDD check whether the input_config is not None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;  :input_config is None, no data to update&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="c1"># # update Network</span>
-        <span class="c1"># # network_dict = self.config_dict.get(&#39;Network&#39;, None)</span>
-        <span class="c1"># if network_dict := self.config_dict.get(&#39;Network&#39;):</span>
+        <span class="c1"># # network_dict = self.input_config.get(&#39;Network&#39;, None)</span>
+        <span class="c1"># if network_dict := self.input_config.get(&#39;Network&#39;):</span>
         <span class="c1">#     self.Network.NetworkName = network_dict.get(&#39;NetworkName&#39;, &quot;network&quot;)</span>
         <span class="c1">#     self.Network.NetworkVertices = network_dict.get(&#39;NetworkVertices&#39;, &quot;&quot;)</span>
         <span class="c1">#     self.Network.ElevationMap = network_dict.get(&#39;ElevationMap&#39;, &quot;No elevation map provided!&quot;)</span>
         <span class="c1">#     # update the OpenDriveNetwork output directory</span>
-        <span class="c1">#     self.Network._output_dir = self.config_dict.get(&#39;output_dir&#39;, &quot;RT_Network&quot;)</span>
+        <span class="c1">#     self.Network._output_dir = self.input_config.get(&#39;output_dir&#39;, &quot;RT_Network&quot;)</span>
         <span class="c1">#     self.Network.OpenDriveNetwork._output_dir = self.Network._output_dir</span>
         <span class="c1">#     # update and crate OpenDriveNetwork</span>
         <span class="c1">#     self.Network.OpenDriveNetwork._net_name = self.Network.NetworkName</span>
@@ -345,9 +374,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">Traffic</span><span class="o">.</span><span class="n">Volume</span> <span class="o">=</span> <span class="n">load_traffic_volume</span><span class="p">(</span><span class="n">df_volume</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Traffic</span><span class="o">.</span><span class="n">TurningRatio</span> <span class="o">=</span> <span class="n">load_traffic_turning_ratio</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Traffic</span><span class="o">.</span><span class="n">Volume</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">traffic_dict</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Traffic&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">traffic_dict</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Traffic&#39;</span><span class="p">):</span>
                 <span class="n">path_volume</span> <span class="o">=</span> <span class="n">traffic_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Volume&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="n">path_volume_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">),</span> <span class="n">path_volume</span><span class="p">))</span>
+                <span class="n">path_volume_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">),</span> <span class="n">path_volume</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">Traffic</span><span class="o">.</span><span class="n">Volume</span> <span class="o">=</span> <span class="n">load_traffic_volume</span><span class="p">(</span><span class="n">path_volume_abs</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">Traffic</span><span class="o">.</span><span class="n">TurningRatio</span> <span class="o">=</span> <span class="n">load_traffic_turning_ratio</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Traffic</span><span class="o">.</span><span class="n">Volume</span><span class="p">)</span>
 
@@ -355,14 +384,14 @@
         <span class="k">if</span> <span class="n">signal_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Control</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="n">signal_dict</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">control_data</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Control&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">control_data</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Control&#39;</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">control_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                     <span class="n">path_signal</span> <span class="o">=</span> <span class="n">control_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Signal&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                    <span class="n">path_signal_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">),</span> <span class="n">path_signal</span><span class="p">))</span>
+                    <span class="n">path_signal_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">),</span> <span class="n">path_signal</span><span class="p">))</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">Control</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="n">load_control_signal</span><span class="p">(</span><span class="n">path_signal_abs</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">control_data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                     <span class="n">path_signal</span> <span class="o">=</span> <span class="n">control_data</span>
-                    <span class="n">path_signal_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">),</span> <span class="n">path_signal</span><span class="p">))</span>
+                    <span class="n">path_signal_abs</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;Control&quot;</span> <span class="o">/</span> <span class="n">path_signal</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path_signal_abs</span><span class="p">):</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">Control</span><span class="o">.</span><span class="n">Signal</span> <span class="o">=</span> <span class="n">load_control_signal</span><span class="p">(</span><span class="n">path_signal_abs</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -372,7 +401,7 @@
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;  :Invalid control data in configuration file. &quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">fillAbstractScenario</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fill the AbstractScenario with the data from the config_dict&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fill the AbstractScenario with the data from the input_config&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
 </pre></div>

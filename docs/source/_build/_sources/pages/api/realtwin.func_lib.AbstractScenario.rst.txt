@@ -14,7 +14,8 @@ realtwin.func\_lib.AbstractScenario
    .. autosummary::
    
       ~AbstractScenario.__init__
-      ~AbstractScenario.create_open_drive_network
+      ~AbstractScenario.create_OpenDrive_network
+      ~AbstractScenario.create_SUMO_network
       ~AbstractScenario.fillAbstractScenario
       ~AbstractScenario.update_AbstractScenario_from_input
    

@@ -93,5 +93,5 @@ Calibration
     func_lib.cali_sumo
     func_lib.cali_aimsun
     func_lib.cali_vissim
-    func_lib.BehaviorCalib
-    func_lib.TurnInflowCalib
+    func_lib.BehaviorCali
+    func_lib.TurnInflowCali

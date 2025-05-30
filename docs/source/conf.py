@@ -32,7 +32,7 @@ sys.setrecursionlimit(5000)
 project = "realtwin"
 copyright = f'2025 - {datetime.datetime.now().year}, ORNL-RealTwin'
 author = 'ORNL-RealTwin'
-version = "0.1"
+version = "0.0.9.dev2"
 release = version
 language = "en"
 
@@ -62,7 +62,7 @@ pygments_style = "sphinx"
 templates_path = ["./_templates/"]
 
 external_links = {
-    "GitHub": ("https: // github.com/ORNL-Real-Sim/Real-Twin")
+    "GitHub": ("https://github.com/ORNL-Real-Sim/Real-Twin")
 }
 
 # If true, section author and module author directives will be shown in the

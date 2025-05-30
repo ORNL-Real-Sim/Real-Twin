@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../pages/realtwin_generation.html">Scenario Generation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../pages/api.html">realtwin API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/api.html">API Reference</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../pages/support.html">Contact</a></li>
@@ -96,21 +96,26 @@
              
   <h1>Source code for realtwin._realtwin</h1><div class="highlight"><pre>
 <span></span><span class="c1">##############################################################################</span>
-<span class="c1"># Copyright (c) 2024-, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># Copyright (c) 2024, Oak Ridge National Laboratory                          #</span>
 <span class="c1"># All rights reserved.                                                       #</span>
 <span class="c1">#                                                                            #</span>
 <span class="c1"># This file is part of RealTwin and is distributed under a MIT               #</span>
 <span class="c1"># license. For the licensing terms see the LICENSE file in the top-level     #</span>
 <span class="c1"># directory.                                                                 #</span>
 <span class="c1">#                                                                            #</span>
+<span class="c1"># Contributors: ORNL Real-Twin Team                                          #</span>
 <span class="c1"># Contact: realtwin@ornl.gov                                                 #</span>
 <span class="c1">##############################################################################</span>
 
 <span class="sd">&quot;&quot;&quot;The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group&quot;&quot;&quot;</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyufunc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pf</span>
-
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich</span><span class="w"> </span><span class="kn">import</span> <span class="nb">print</span> <span class="k">as</span> <span class="n">rprint</span>
 <span class="c1"># environment setup</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.util_lib.create_venv</span><span class="w"> </span><span class="kn">import</span> <span class="n">venv_create</span><span class="p">,</span> <span class="n">venv_delete</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._a_install_simulator.inst_sumo</span><span class="w"> </span><span class="kn">import</span> <span class="n">install_sumo</span>
@@ -119,11 +124,12 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._b_load_inputs.loader_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_input_config</span>
 
 <span class="c1"># scenario generation</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.util_lib.download_elevation_tif</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_elevation_tif_by_bbox</span>
+<span class="c1"># from realtwin.util_lib.download_elevation_tif import download_elevation_tif_by_bbox</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.util_lib.check_abstract_scenario_inputs</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_abstract_inputs</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._c_abstract_scenario._abstractScenario</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractScenario</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_matchup_table</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._c_abstract_scenario.rt_demand_generation</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_turn_demand</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation</span><span class="w"> </span><span class="kn">import</span> <span class="n">format_junction_bearing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._c_abstract_scenario.rt_demand_generation</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_turn_demand</span><span class="p">,</span> <span class="n">update_matchup_table</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._d_concrete_scenario._concreteScenario</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConcreteScenario</span>
 
@@ -132,7 +138,10 @@
 
 <span class="c1"># calibration</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.calibration_sumo</span><span class="w"> </span><span class="kn">import</span> <span class="n">cali_sumo</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.calibration_sumo_</span><span class="w"> </span><span class="kn">import</span> <span class="n">cali_sumo</span> <span class="k">as</span> <span class="n">cali_sumo_</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.data_lib.data_lib_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">sel_behavior_routes</span> <span class="k">as</span> <span class="n">sel_behavior_routes_demo</span>
+
+<span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+<span class="c1"># info: dim cyan, warning: magenta, danger: bold red</span>
 
 
 <div class="viewcode-block" id="RealTwin">
@@ -177,7 +186,6 @@
                   <span class="n">strict_sumo_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                   <span class="n">strict_vissim_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                   <span class="n">strict_aimsun_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                  <span class="n">create_venv</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                   <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check and set up the environment for the simulation</span>
 
@@ -191,7 +199,6 @@
 <span class="sd">                if specified, will check and install the version. Default is False.</span>
 <span class="sd">            strict_aimsun_version (str): Whether to strictly check the version is installed.</span>
 <span class="sd">                if specified, will check and install the version. Default is False.</span>
-<span class="sd">            create_venv (bool): Whether to create a virtual environment. Default is False.</span>
 <span class="sd">            kwargs: Additional keyword arguments.</span>
 
 <span class="sd">        Examples:</span>
@@ -216,13 +223,6 @@
 <span class="sd">            bool: True if the environment is set up successfully, False otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># 0 create a virtual environment</span>
-        <span class="k">if</span> <span class="n">create_venv</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating a virtual environment: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_venv_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">venv_create</span><span class="p">(</span><span class="n">venv_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_venv_name</span><span class="p">,</span>
-                             <span class="n">venv_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;output_dir&quot;</span><span class="p">],</span>
-                             <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
         <span class="c1"># 0. Check if the sim_env is selected,</span>
         <span class="c1">#    default to SUMO, case insensitive and add self.sel_sim as a class attribute</span>
         <span class="n">sel_sim</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sumo&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">sel_sim</span> <span class="k">else</span> <span class="p">[</span><span class="n">sim</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">sim</span> <span class="ow">in</span> <span class="n">sel_sim</span><span class="p">]</span>
@@ -235,7 +235,8 @@
         <span class="p">}</span>
 
         <span class="c1"># 2. check if the simulator is installed, if not, install it</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Check / install the selected simulators:&quot;</span><span class="p">)</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[bold green]Check / Install the selected simulators:&quot;</span><span class="p">)</span>
+
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;sel_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sel_dir</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;strict_sumo_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strict_sumo_version</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;strict_vissim_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">strict_vissim_version</span>
@@ -250,7 +251,7 @@
                     <span class="n">invalid_sim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">simulator</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="n">invalid_sim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">simulator</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :Could not install </span><span class="si">{</span><span class="n">simulator</span><span class="si">}</span><span class="s2"> (strict version) on your operation system&quot;</span><span class="p">)</span>
+                <span class="n">rprint</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :[bold magenta]Could not install </span><span class="si">{</span><span class="n">simulator</span><span class="si">}</span><span class="s2"> (strict version) on your operation system&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
         <span class="n">sel_sim_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">sel_sim</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">invalid_sim</span><span class="p">))</span>
 
@@ -260,12 +261,13 @@
 
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">generate_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">incl_elevation_tif</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">incl_sumo_net</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Generate user inputs, such as MatchUp table, Control and Traffic data</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            incl_elevation_tif (bool): Whether to include elevation tif data. Default is False.</span>
-<span class="sd">                If True, will download the elevation map from network BBOX.</span>
+<span class="sd">            incl_sumo_net (str): The path to the updated SUMO network file (.net.xml) provided by the user.</span>
+<span class="sd">                If provided, the OpenDrive network will be generated based on this SUMO network.</span>
+<span class="sd">                If not provided, the OpenDrive network will be generated based on the vertices from the config file.</span>
 
 <span class="sd">        See Also:</span>
 <span class="sd">            - How to create configuration file</span>
@@ -273,76 +275,111 @@
 <span class="sd">            - How to create/prepare Control and Traffic data</span>
 <span class="sd">            - How to download elevation tif data from network BBOX</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Check / Create input file and folder for user:&quot;</span><span class="p">)</span>
-        <span class="n">path_input</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">)))</span>
+        <span class="k">with</span> <span class="n">console</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="s2">&quot;[bold cyan]Generating inputs...&quot;</span><span class="p">,</span> <span class="n">spinner</span><span class="o">=</span><span class="s2">&quot;dots&quot;</span><span class="p">):</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[bold green]Check / Create input files and folders for user:&quot;</span><span class="p">)</span>
+            <span class="n">path_input</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">)))</span>
 
-        <span class="c1"># check if Control folder exists in the input directory</span>
-        <span class="n">path_control</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path_input</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Control&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_control</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path_control</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Control folder already exists: </span><span class="si">{</span><span class="n">path_control</span><span class="si">}</span><span class="s2">.&quot;</span>
-                  <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :NOTICE: Please include Synchro UTDF file (signal) inside Control folder&quot;</span>
-                  <span class="s2">&quot; and add the control file name to the input configuration file.</span><span class="se">\n</span><span class="s2">&quot;</span>
-                  <span class="p">)</span>
+            <span class="c1"># check if Control folder exists in the input directory</span>
+            <span class="n">path_control</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path_input</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Control&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_control</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path_control</span><span class="p">)</span>
+            <span class="c1"># check if the Control folder is empty</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path_control</span><span class="p">):</span>
+                <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[dim cyan]Control folder is empty: </span><span class="si">{</span><span class="n">path_control</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
-        <span class="c1"># check if Traffic folder exists in the input directory</span>
-        <span class="n">path_traffic</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path_input</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Traffic&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_traffic</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path_traffic</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Traffic folder already exists: </span><span class="si">{</span><span class="n">path_traffic</span><span class="si">}</span><span class="s2">.&quot;</span>
-                  <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :NOTICE: Please include turn movement file for each intersection inside Traffic folder&quot;</span>
-                  <span class="s2">&quot; and add the file names to the MatchupTable.xlsx &quot;</span>
-                  <span class="s2">&quot;(You will notice the generated MatchupTable.xlsx inside your input folder).&quot;</span>
-                  <span class="s2">&quot; For how to fill the MatchupTable.xlsx, please refer to the documentation: </span><span class="se">\n</span><span class="s2">&quot;</span>
-                  <span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [dim cyan]:Control folder exists: </span><span class="si">{</span><span class="n">path_control</span><span class="si">}</span><span class="s2">.[/dim cyan]</span><span class="se">\n</span><span class="s2">&quot;</span>
+                          <span class="s2">&quot;  :NOTICE: [bold red]Please include Synchro UTDF file (signal) inside Control folder</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="c1"># check whether the elevation tif data is provided</span>
-        <span class="c1"># path_elev = pf.path2linux(</span>
-        <span class="c1">#     Path(self.input_config.get(&quot;input_dir&quot;)) / self.input_config.get(&quot;Network&quot;).get(&quot;ElevationMap&quot;))</span>
-        <span class="c1"># if not os.path.exists(path_elev):</span>
-        <span class="c1">#     # print(&quot;  :Elevation map is not provided. we will download from network BBOX.&quot;)</span>
-        <span class="c1">#     if incl_elevation_tif:</span>
-        <span class="c1">#         print(&quot;  :Downloading elevation map from network BBOX.&quot;)</span>
-        <span class="c1">#         # download elevation map from network bbox</span>
-        <span class="c1">#         bbox = self.input_config.get(&quot;Network&quot;).get(&quot;Net_BBox&quot;)</span>
-        <span class="c1">#         output_file = pf.path2linux(Path(self.input_config.get(&quot;input_dir&quot;)) / &quot;elevation_map.tif&quot;)</span>
-        <span class="c1">#         download_elevation_tif_by_bbox(bbox, output_file)</span>
-        <span class="c1">#         # update tif file in the input configuration</span>
-        <span class="c1">#         self.input_config.get(&quot;Network&quot;)[&quot;ElevationMap&quot;] = &quot;elevation_map.tif&quot;</span>
+            <span class="c1"># check if Traffic folder exists in the input directory</span>
+            <span class="n">path_traffic</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path_input</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Traffic&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_traffic</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path_traffic</span><span class="p">)</span>
+            <span class="c1"># check if the Traffic folder is empty</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path_traffic</span><span class="p">):</span>
+                <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [magenta]:Traffic folder is empty: </span><span class="si">{</span><span class="n">path_traffic</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
-        <span class="c1"># generate abstract scenario</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span> <span class="o">=</span> <span class="n">AbstractScenario</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="o">.</span><span class="n">create_open_drive_network</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :INFO: OpenDrive network is generated.&quot;</span><span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [dim cyan]:Traffic folder exists: </span><span class="si">{</span><span class="n">path_traffic</span><span class="si">}</span><span class="s2">.[/dim cyan]</span><span class="se">\n</span><span class="s2">&quot;</span>
+                          <span class="s2">&quot;  :NOTICE: [bold red]Please include turn movement file for each intersection &quot;</span>
+                          <span class="s2">&quot;inside Traffic folder and add the file names to the MatchupTable.xlsx &quot;</span>
+                          <span class="s2">&quot;(You will notice the generated MatchupTable.xlsx inside your input folder).&quot;</span>
+                          <span class="s2">&quot; For how to fill the MatchupTable.xlsx, please refer to official documentation</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                          <span class="n">soft_wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">no_wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="c1"># create matchup table for user</span>
-        <span class="n">path_sumo_net</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-            <span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;output/OpenDrive&quot;</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;Network&quot;</span><span class="p">][</span><span class="s2">&quot;NetworkName&quot;</span><span class="p">]</span><span class="si">}</span><span class="s2">.net.xml&quot;</span><span class="p">)</span>
+            <span class="c1"># check if SUMO net file generated (in OpenDrive folder), if not, create the net.</span>
+            <span class="n">net_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;Network&quot;</span><span class="p">][</span><span class="s2">&quot;NetworkName&quot;</span><span class="p">]</span>
+            <span class="n">path_sumo_net</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;OpenDrive/</span><span class="si">{</span><span class="n">net_name</span><span class="si">}</span><span class="s2">.net.xml&quot;</span><span class="p">)</span>
+            <span class="c1"># generate abstract scenario if sumo net file does not exist</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span> <span class="o">=</span> <span class="n">AbstractScenario</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_sumo_net</span><span class="p">):</span>
+                <span class="c1"># Create original SUMO network from vertices from config file</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="o">.</span><span class="n">create_SUMO_network</span><span class="p">()</span>
 
-        <span class="n">path_matchup</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;MatchupTable.xlsx&quot;</span><span class="p">)</span>
+                <span class="c1"># crate OpenDrive network from SUMO network, and then rewrite sumo network based on OpenDrive network</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="o">.</span><span class="n">create_OpenDrive_network</span><span class="p">()</span>
 
-        <span class="c1"># check if sumo net file exists</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_sumo_net</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Error: SUMO net file does not exist: </span><span class="si">{</span><span class="n">path_sumo_net</span><span class="si">}</span><span class="s2">,&quot;</span>
-                            <span class="s2">&quot;please check input configuration file and re-run the script.&quot;</span>
-                            <span class="s2">&quot;For details please refer to the documentation: &quot;</span><span class="p">)</span>
+                <span class="n">rprint</span><span class="p">(</span><span class="s2">&quot;  :INFO: OpenDrive network is generated.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-        <span class="c1"># check if matchup table exists</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_matchup</span><span class="p">):</span>
-            <span class="n">generate_matchup_table</span><span class="p">(</span><span class="n">path_sumo_net</span><span class="p">,</span> <span class="n">path_matchup</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :NOTE: Matchup table is generated and saved to </span><span class="si">{</span><span class="n">path_matchup</span><span class="si">}</span><span class="s2">.&quot;</span>
-                  <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :NOTICE: Please update the Matchup table from input folder&quot;</span>
-                  <span class="s2">&quot; and then run generate_abstract_scenario().&quot;</span>
-                  <span class="s2">&quot; For details please refer to the documentation: </span><span class="se">\n</span><span class="s2">&quot;</span>
-                  <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :NOTE: Matchup table already exists: </span><span class="si">{</span><span class="n">path_matchup</span><span class="si">}</span><span class="s2">.&quot;</span>
-                  <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :NOTICE: Please make sure you have updated the Matchup table&quot;</span>
-                  <span class="s2">&quot; and then run generate_abstract_scenario().&quot;</span>
-                  <span class="s2">&quot; For details please refer to the documentation: </span><span class="se">\n</span><span class="s2">&quot;</span>
-                  <span class="p">)</span>
+            <span class="c1"># Update SUMO Network before generating OpenDrive network</span>
+            <span class="k">if</span> <span class="n">demo_data</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;demo_data&quot;</span><span class="p">]:</span>
+                <span class="c1"># demo mode is enabled, use the updated SUMO network from demo data</span>
+                <span class="n">incl_sumo_net</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;input_dir&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;updated_net/</span><span class="si">{</span><span class="n">demo_data</span><span class="si">}</span><span class="s2">.net.xml&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">incl_sumo_net</span><span class="p">:</span>
+                <span class="c1"># check if the file exists and end with .net.xml</span>
+                <span class="k">if</span> <span class="n">incl_sumo_net</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.net.xml&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">incl_sumo_net</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;incl_sumo_net&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">incl_sumo_net</span>
+
+                    <span class="c1"># Copy user updated net file to the OpenDrive folder</span>
+                    <span class="n">incl_sumo_net</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">incl_sumo_net</span><span class="p">))</span>  <span class="c1"># ensure it&#39;s absolute path</span>
+                    <span class="k">if</span> <span class="n">incl_sumo_net</span> <span class="o">!=</span> <span class="n">path_sumo_net</span><span class="p">:</span>
+                        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">incl_sumo_net</span><span class="p">,</span> <span class="n">path_sumo_net</span><span class="p">)</span>
+                    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [dim cyan]:INFO: SUMO network is copied to </span><span class="si">{</span><span class="n">path_sumo_net</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="sa">f</span><span class="s2">&quot;  [dim cyan]:Using updated SUMO network provide by user: </span><span class="si">{</span><span class="n">incl_sumo_net</span><span class="si">}</span><span class="s2"> &quot;</span>
+                                  <span class="s2">&quot;to generate OpenDrive network.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">soft_wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">no_wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+                    <span class="c1"># create opendrive net from updated sumo net, and rewrite sumo net based on OpenDrive net</span>
+                    <span class="c1"># self.abstract_scenario.create_OpenDrive_network()</span>
+                    <span class="n">rprint</span><span class="p">(</span><span class="s2">&quot;  [dim cyan]:INFO: OpenDrive network is generated.&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;  [magenta]:NOTE: incl_sumo_net is not exist or not with .net.xml extension.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                  <span class="s2">&quot;  :Please provide a valid SUMO file with .net.xml extension or leave it empty.&quot;</span><span class="p">,</span>
+                                  <span class="n">soft_wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">no_wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#  let user know they can use their own SUMO network by using incl_sumo_net</span>
+                <span class="n">rprint</span><span class="p">(</span><span class="s2">&quot;  [dim cyan]:INFO: You can use your own SUMO network by providing the path &quot;</span>
+                       <span class="s2">&quot;to the incl_sumo_net parameter. The path should be a .net.xml file. </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                       <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="c1"># create matchup table for user</span>
+            <span class="n">path_matchup</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;MatchupTable.xlsx&quot;</span><span class="p">)</span>
+
+            <span class="c1"># check if sumo net file exists</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_sumo_net</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Error: SUMO net file does not exist: </span><span class="si">{</span><span class="n">path_sumo_net</span><span class="si">}</span><span class="s2">,&quot;</span>
+                                <span class="s2">&quot;please check input configuration file and re-run the script.&quot;</span>
+                                <span class="s2">&quot;For details please refer to the documentation: &quot;</span><span class="p">)</span>
+            <span class="n">df_matchup_table</span> <span class="o">=</span> <span class="n">format_junction_bearing</span><span class="p">(</span><span class="n">path_sumo_net</span><span class="p">)</span>
+            <span class="n">generate_matchup_table</span><span class="p">(</span><span class="n">df_matchup_table</span><span class="p">,</span> <span class="n">path_matchup</span><span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [dim cyan]:NOTE: Matchup table is generated and saved to </span><span class="si">{</span><span class="n">path_matchup</span><span class="si">}</span><span class="s2">.[/dim cyan]</span><span class="se">\n</span><span class="s2">&quot;</span>
+                          <span class="s2">&quot;  :NOTICE: [bold red]Please update the Matchup table from input folder&quot;</span>
+                          <span class="s2">&quot; and then run generate_abstract_scenario().&quot;</span>
+                          <span class="s2">&quot; For details please refer to official documentation: </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">soft_wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">no_wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="n">console</span><span class="o">.</span><span class="n">rule</span><span class="p">(</span><span class="s2">&quot;[bold green]Program stopped. Please prepare the Control and Traffic data and &quot;</span>
+                         <span class="s2">&quot;fill in the Matchup Table before proceeding.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                         <span class="s2">&quot;[bold red]Please run generate_abstract_scenario() &quot;</span>
+                         <span class="s2">&quot;after preparing the input data.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># wait for 2 seconds before exiting</span>
+            <span class="c1"># sys.exit(0)</span>
+            <span class="c1"># Stop the program to let user update the Matchup table</span>
+            <span class="c1">#</span>
+            <span class="n">usr_input</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">usr_input</span><span class="p">:</span>
+                <span class="n">usr_input</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s2">&quot;:warning: [bold magenta]Please update the generated Matchup table from &quot;</span>
+                                          <span class="s2">&quot;input folder before pressing Enter or type &#39;y&#39; / &#39;yes&#39; to continue&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">usr_input</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">or</span> <span class="n">usr_input</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;Yes&quot;</span><span class="p">]:</span>
+                    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;  [dim cyan]:INFO: User confirmed to continue (Matchup Table Updated).&quot;</span><span class="p">)</span>
+                    <span class="n">usr_input</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">generate_abstract_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the abstract scenario: create OpenDrive files</span>
@@ -361,13 +398,23 @@
         <span class="n">path_matchup</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;MatchupTable.xlsx&quot;</span><span class="p">)</span>
         <span class="n">control_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;Control&quot;</span><span class="p">)</span>
         <span class="n">traffic_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input_dir&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;Traffic&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Auto-fill matchup table, save to matchup table : MatchupTable_UserInput</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">update_matchup_table</span><span class="p">(</span><span class="n">path_matchup_table</span><span class="o">=</span><span class="n">path_matchup</span><span class="p">,</span>
+                                 <span class="n">control_dir</span><span class="o">=</span><span class="n">control_dir</span><span class="p">,</span>
+                                 <span class="n">traffic_dir</span><span class="o">=</span><span class="n">traffic_dir</span><span class="p">)</span>
+        <span class="c1"># Tell user to manually check correctness of the Matchup Table</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s2">&quot;:warning: [bold magenta]In the Matchup Table, please check if the turn movement in the &quot;</span>
+                      <span class="s2">&quot;demand and control data match with bearings in the network data. Enter any key to continue...&quot;</span><span class="p">)</span>
+
         <span class="n">df_volume</span><span class="p">,</span> <span class="n">df_vol_lookup</span> <span class="o">=</span> <span class="n">generate_turn_demand</span><span class="p">(</span><span class="n">path_matchup_table</span><span class="o">=</span><span class="n">path_matchup</span><span class="p">,</span>
-                                                        <span class="n">signal_dir</span><span class="o">=</span><span class="n">control_dir</span><span class="p">,</span>
+                                                        <span class="n">control_dir</span><span class="o">=</span><span class="n">control_dir</span><span class="p">,</span>
                                                         <span class="n">traffic_dir</span><span class="o">=</span><span class="n">traffic_dir</span><span class="p">,)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="o">.</span><span class="n">Traffic</span><span class="o">.</span><span class="n">VolumeLookupTable</span> <span class="o">=</span> <span class="n">df_vol_lookup</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="o">.</span><span class="n">update_AbstractScenario_from_input</span><span class="p">(</span><span class="n">df_volume</span><span class="o">=</span><span class="n">df_volume</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Abstract Scenario successfully generated.&quot;</span><span class="p">)</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[bold green]Abstract Scenario successfully generated.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">generate_concrete_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the concrete scenario: generate unified scenario from abstract scenario</span>
@@ -377,12 +424,13 @@
         <span class="c1"># 2. Save the concrete scenario to the output directory</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;abstract_scenario&#39;</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Warning: Abstract Scenario is not generated yet. Please (generate_abstract_scenario).&quot;</span><span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;  [magenta]:Warning: Abstract Scenario is not generated yet. &quot;</span>
+                          <span class="s2">&quot;Please run generate_abstract_scenario() first.&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">concrete_scenario</span> <span class="o">=</span> <span class="n">ConcreteScenario</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">concrete_scenario</span><span class="o">.</span><span class="n">get_unified_scenario</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">abstract_scenario</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Concrete Scenario successfully generated.&quot;</span><span class="p">)</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[bold green]Concrete Scenario successfully generated.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">prepare_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                            <span class="n">start_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span>
@@ -435,47 +483,83 @@
                                     <span class="n">end_time</span><span class="o">=</span><span class="n">end_time</span><span class="p">,</span>
                                     <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
                                     <span class="n">step_length</span><span class="o">=</span><span class="n">step_length</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">simulator</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> simulation successfully Prepared.&quot;</span><span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[bold green]</span><span class="si">{</span><span class="n">simulator</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> simulation successfully Prepared.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">calibrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sel_algo</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calibrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sel_algo</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">sel_behavior_routes</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">update_turn_flow_algo</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">update_behavior_algo</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            sel_algo (dict): The dictionary of algorithms to be used for calibration.</span>
 <span class="sd">                Default is None, will use genetic algorithm. e.g. {&quot;turn_inflow&quot;: &quot;ga&quot;, &quot;behavior&quot;: &quot;ga&quot;}.</span>
-
+<span class="sd">            sel_behavior_routes (dict): The dictionary of behavior route parameters to be used for calibration.</span>
+<span class="sd">                Default is None. time (in seconds) is ground truth travel time.</span>
+<span class="sd">                e.g. sel_behavior_routes = {&quot;route_1&quot;: {&quot;time&quot;: 20, &quot;edge_list&quot;: [&quot;edge_id_1&quot;, &quot;edge_d_2&quot;, ...]},</span>
+<span class="sd">                                           &quot;route_2&quot; {&quot;time&quot;: 40, &quot;edge_list&quot;:[&quot;edge_id_1&quot;, &quot;edge_d_2&quot;, ...]}</span>
+<span class="sd">                                           ...}.</span>
+<span class="sd">            update_turn_flow_algo (dict): The dictionary of algorithms to be used for updating turn flow.</span>
+<span class="sd">                Default is None, will use genetic algorithm.</span>
+<span class="sd">                Please refer to input configuration file for keys for each algorithm.</span>
+<span class="sd">                e.g. update_turn_flow_algo = {&quot;ga_config&quot;: {}, &quot;sa_config&quot;:{}, &quot;ts_config&quot;:{}}.</span>
+<span class="sd">            update_behavior_algo (dict): The dictionary of algorithms to be used for updating behavior.</span>
+<span class="sd">                Default is None, will use genetic algorithm.</span>
+<span class="sd">                Please refer to input configuration file for keys for each algorithm.</span>
+<span class="sd">                e.g. update_behavior_algo = {&quot;ga_config&quot;:{}, &quot;sa_config&quot;:{}, &quot;ts_config&quot;: {}}.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TDD</span>
         <span class="nb">print</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">sel_algo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># default to genetic algorithm</span>
-            <span class="n">sel_algo</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">}</span>
+            <span class="n">sel_algo</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">,</span> <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">}</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [dim cyan]:sel_algo not specified, use default value: </span><span class="si">{</span><span class="n">sel_algo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sel_algo</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Error: parameter sel_algo must be a dict with&quot;</span>
-                  <span class="s2">&quot; keys of &#39;turn_inflow&#39; and &#39;behavior&#39;, using&quot;</span>
-                  <span class="s2">&quot; genetic algorithm as default values.&quot;</span><span class="p">)</span>
             <span class="n">sel_algo</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">,</span> <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">}</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;  [bold red]:Error: parameter sel_algo must be a dict with&quot;</span>
+                          <span class="s2">&quot; keys of &#39;turn_inflow&#39; and &#39;behavior&#39;, using&quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot; default values: </span><span class="si">{</span><span class="n">sel_algo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># check if the selected algorithm is supported within the package</span>
         <span class="c1"># convert the algorithm to lower case</span>
         <span class="n">sel_algo</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sel_algo</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">algo</span> <span class="o">:=</span> <span class="n">sel_algo</span><span class="p">[</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">])</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ga&quot;</span><span class="p">,</span> <span class="s2">&quot;sa&quot;</span><span class="p">,</span> <span class="s2">&quot;ts&quot;</span><span class="p">]:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Selected algorithms are </span><span class="si">{</span><span class="n">sel_algo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :</span><span class="si">{</span><span class="n">algo</span><span class="si">}</span><span class="s2"> for turn and inflow calibration is not supported. Must be one of [&#39;ga&#39;, &#39;sa&#39;, &#39;ts&#39;]&quot;</span><span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [dim cyan]:Selected algorithms are </span><span class="si">{</span><span class="n">sel_algo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [dim cyan]:</span><span class="si">{</span><span class="n">algo</span><span class="si">}</span><span class="s2"> for turn and inflow calibration is not supported. &quot;</span>
+                          <span class="s2">&quot;Must be one of [&#39;ga&#39;, &#39;sa&#39;, &#39;ts&#39;]&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">algo</span> <span class="o">:=</span> <span class="n">sel_algo</span><span class="p">[</span><span class="s2">&quot;behavior&quot;</span><span class="p">])</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ga&quot;</span><span class="p">,</span> <span class="s2">&quot;sa&quot;</span><span class="p">,</span> <span class="s2">&quot;ts&quot;</span><span class="p">]:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Selected algorithms are </span><span class="si">{</span><span class="n">sel_algo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :</span><span class="si">{</span><span class="n">algo</span><span class="si">}</span><span class="s2"> for behavior calibration is not supported. Must be one of [&#39;ga&#39;, &#39;sa&#39;, &#39;ts&#39;]&quot;</span><span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [dim cyan]:Selected algorithms are </span><span class="si">{</span><span class="n">sel_algo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [div cyan]:</span><span class="si">{</span><span class="n">algo</span><span class="si">}</span><span class="s2"> for behavior calibration is not supported. &quot;</span>
+                          <span class="s2">&quot;Must be one of [&#39;ga&#39;, &#39;sa&#39;, &#39;ts&#39;]&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-        <span class="c1"># run calibration based on the selected algorithm</span>
-        <span class="c1"># cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)</span>
-        <span class="n">cali_sumo_</span><span class="p">(</span><span class="n">sel_algo</span><span class="o">=</span><span class="n">sel_algo</span><span class="p">,</span> <span class="n">input_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="c1"># parse user additional parameters for calibration</span>
+        <span class="n">user_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">sel_behavior_routes</span><span class="p">:</span>
+            <span class="c1"># use user defined behavior route, if not provided, automatically select two routes from the network</span>
+            <span class="n">user_kwargs</span><span class="p">[</span><span class="s2">&quot;sel_behavior_routes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sel_behavior_routes</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;demo_data&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">sel_behavior_routes_demo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;demo_data&quot;</span><span class="p">]):</span>
+            <span class="c1"># use predefined behavior routes for demo data</span>
+            <span class="n">user_kwargs</span><span class="p">[</span><span class="s2">&quot;sel_behavior_routes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sel_behavior_routes_demo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;demo_data&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">update_turn_flow_algo</span><span class="p">:</span>
+            <span class="n">user_kwargs</span><span class="p">[</span><span class="s2">&quot;update_turn_flow_algo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">update_turn_flow_algo</span>
+        <span class="k">if</span> <span class="n">update_behavior_algo</span><span class="p">:</span>
+            <span class="n">user_kwargs</span><span class="p">[</span><span class="s2">&quot;update_behavior_algo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">update_behavior_algo</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calibration successfully completed.&quot;</span><span class="p">)</span>
+        <span class="c1"># run calibration based on the selected algorithm</span>
+        <span class="k">if</span> <span class="s2">&quot;sumo&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sel_sim</span><span class="p">:</span>
+            <span class="n">cali_sumo</span><span class="p">(</span><span class="n">sel_algo</span><span class="o">=</span><span class="n">sel_algo</span><span class="p">,</span> <span class="n">input_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span> <span class="o">**</span><span class="n">user_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;vissim&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sel_sim</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="s2">&quot;aimsun&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sel_sim</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold green]Calibration successfully completed.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="kc">True</span>
 

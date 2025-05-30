@@ -1,0 +1,453 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin.func_lib._f_calibration.calibration_sumo &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/realtwin_css.css?v=836a7079" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            realtwin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/intro.html">About Real-Twin</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_simulator.html">Supported Simulator</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_prepare.html">Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#citation-request">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/support.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">realtwin.func_lib._f_calibration.calibration_sumo</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for realtwin.func_lib._f_calibration.calibration_sumo</h1><div class="highlight"><pre>
+<span></span><span class="c1">##############################################################################</span>
+<span class="c1"># Copyright (c) 2024, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># All rights reserved.                                                       #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># This file is part of RealTwin and is distributed under a MIT               #</span>
+<span class="c1"># license. For the licensing terms see the LICENSE file in the top-level     #</span>
+<span class="c1"># directory.                                                                 #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># Contributors: ORNL Real-Twin Team                                          #</span>
+<span class="c1"># Contact: realtwin@ornl.gov                                                 #</span>
+<span class="c1">##############################################################################</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xml.dom.minidom</span><span class="w"> </span><span class="kn">import</span> <span class="n">parseString</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyufunc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.algo_sumo.cali_turn_inflow</span><span class="w"> </span><span class="kn">import</span> <span class="n">TurnInflowCali</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.algo_sumo.cali_behavior</span><span class="w"> </span><span class="kn">import</span> <span class="n">BehaviorCali</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">read_MatchupTable</span><span class="p">,</span>
+                                                                               <span class="n">generate_turn_demand_cali</span><span class="p">,</span>
+                                                                               <span class="n">generate_inflow</span><span class="p">,</span>
+                                                                               <span class="n">generate_turn_summary</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.algo_sumo.util_cali_behavior</span><span class="w"> </span><span class="kn">import</span> <span class="n">auto_select_two_routes</span>
+
+
+<span class="c1"># for the beta version</span>
+<div class="viewcode-block" id="cali_sumo">
+<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.cali_sumo.html#realtwin.func_lib.cali_sumo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cali_sumo</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">sel_algo</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">input_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run SUMO calibration based on the selected algorithm and input configuration.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sel_algo (dict): the dictionary of selected algorithm for turn_inflow and behavior. Defaults to None.</span>
+<span class="sd">        input_config (dict): the dictionary contain configurations from input yaml file. Defaults to None.</span>
+<span class="sd">        verbose (bool): print out processing message. Defaults to True.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: if algo_config is not a dict with two levels with keys of &#39;ga&#39;, &#39;sa&#39;, and &#39;ts&#39;</span>
+<span class="sd">        ValueError: if sel_algo is not a dict with keys of &#39;turn_inflow&#39; and &#39;behavior&#39;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if calibration is successful, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Test-driven Development: check selected algorithm from input</span>
+    <span class="k">if</span> <span class="n">sel_algo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># use default algorithm if not provided</span>
+        <span class="n">sel_algo</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">,</span> <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">}</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sel_algo</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Error:parameter sel_algo must be a dict with&quot;</span>
+              <span class="s2">&quot; keys of &#39;turn_inflow&#39; and &#39;behavior&#39;, using&quot;</span>
+              <span class="s2">&quot; genetic algorithm as default values.&quot;</span><span class="p">)</span>
+        <span class="n">sel_algo</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">,</span> <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;ga&quot;</span><span class="p">}</span>
+
+    <span class="c1"># Prepare scenario_config and algo_config from input_config</span>
+    <span class="n">scenario_config_turn_inflow</span> <span class="o">=</span> <span class="n">prepare_scenario_config_turn_inflow</span><span class="p">(</span><span class="n">input_config</span><span class="p">)</span>
+
+    <span class="c1"># Prepare Algorithm configure: e.g. {&quot;ga&quot;: {}, &quot;sa&quot;: {}, &quot;ts&quot;: {}}</span>
+    <span class="n">algo_config_turn_inflow</span> <span class="o">=</span> <span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;Calibration&quot;</span><span class="p">][</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">]</span>
+    <span class="n">algo_config_turn_inflow</span><span class="p">[</span><span class="s2">&quot;ga_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;Calibration&quot;</span><span class="p">][</span><span class="s2">&quot;ga_config&quot;</span><span class="p">]</span>
+    <span class="n">algo_config_turn_inflow</span><span class="p">[</span><span class="s2">&quot;sa_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;Calibration&quot;</span><span class="p">][</span><span class="s2">&quot;sa_config&quot;</span><span class="p">]</span>
+    <span class="n">algo_config_turn_inflow</span><span class="p">[</span><span class="s2">&quot;ts_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;Calibration&quot;</span><span class="p">][</span><span class="s2">&quot;ts_config&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s2">&quot;update_turn_flow_algo&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">algo_config_turn_inflow</span><span class="p">[</span><span class="s2">&quot;ga_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">algo_config_turn_inflow</span><span class="p">[</span><span class="s2">&quot;ga_config&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;update_turn_flow_algo&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ga_config&quot;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="n">algo_config_turn_inflow</span><span class="p">[</span><span class="s2">&quot;sa_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">algo_config_turn_inflow</span><span class="p">[</span><span class="s2">&quot;sa_config&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;update_turn_flow_algo&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sa_config&quot;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="n">algo_config_turn_inflow</span><span class="p">[</span><span class="s2">&quot;ts_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">algo_config_turn_inflow</span><span class="p">[</span><span class="s2">&quot;ts_config&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;update_turn_flow_algo&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ts_config&quot;</span><span class="p">,</span> <span class="p">{}))</span>
+
+    <span class="n">algo_config_behavior</span> <span class="o">=</span> <span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;Calibration&quot;</span><span class="p">][</span><span class="s2">&quot;behavior&quot;</span><span class="p">]</span>
+    <span class="n">algo_config_behavior</span><span class="p">[</span><span class="s2">&quot;ga_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;Calibration&quot;</span><span class="p">][</span><span class="s2">&quot;ga_config&quot;</span><span class="p">]</span>
+    <span class="n">algo_config_behavior</span><span class="p">[</span><span class="s2">&quot;sa_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;Calibration&quot;</span><span class="p">][</span><span class="s2">&quot;sa_config&quot;</span><span class="p">]</span>
+    <span class="n">algo_config_behavior</span><span class="p">[</span><span class="s2">&quot;ts_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;Calibration&quot;</span><span class="p">][</span><span class="s2">&quot;ts_config&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s2">&quot;update_behavior_algo&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">algo_config_behavior</span><span class="p">[</span><span class="s2">&quot;ga_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">algo_config_behavior</span><span class="p">[</span><span class="s2">&quot;ga_config&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;update_behavior_algo&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ga_config&quot;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="n">algo_config_behavior</span><span class="p">[</span><span class="s2">&quot;sa_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">algo_config_behavior</span><span class="p">[</span><span class="s2">&quot;sa_config&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;update_behavior_algo&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sa_config&quot;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="n">algo_config_behavior</span><span class="p">[</span><span class="s2">&quot;ts_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">algo_config_behavior</span><span class="p">[</span><span class="s2">&quot;ts_config&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;update_behavior_algo&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ts_config&quot;</span><span class="p">,</span> <span class="p">{}))</span>
+
+    <span class="c1"># run calibration based on the selected algorithm: optimize turn and inflow</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :Optimize Turn and Inflow...&quot;</span><span class="p">)</span>
+    <span class="n">turn_inflow</span> <span class="o">=</span> <span class="n">TurnInflowCali</span><span class="p">(</span><span class="n">scenario_config_turn_inflow</span><span class="p">,</span> <span class="n">algo_config_turn_inflow</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+    <span class="k">match</span> <span class="n">sel_algo</span><span class="p">[</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">]:</span>
+        <span class="k">case</span> <span class="s2">&quot;ga&quot;</span><span class="p">:</span>
+            <span class="n">g_best</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">turn_inflow</span><span class="o">.</span><span class="n">run_GA</span><span class="p">()</span>
+            <span class="n">path_model_result</span> <span class="o">=</span> <span class="s2">&quot;turn_inflow_ga_result&quot;</span>
+        <span class="k">case</span> <span class="s2">&quot;sa&quot;</span><span class="p">:</span>
+            <span class="n">g_best</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">turn_inflow</span><span class="o">.</span><span class="n">run_SA</span><span class="p">()</span>
+            <span class="n">path_model_result</span> <span class="o">=</span> <span class="s2">&quot;turn_inflow_sa_result&quot;</span>
+        <span class="k">case</span> <span class="s2">&quot;ts&quot;</span><span class="p">:</span>
+            <span class="n">g_best</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">turn_inflow</span><span class="o">.</span><span class="n">run_TS</span><span class="p">()</span>
+            <span class="n">path_model_result</span> <span class="o">=</span> <span class="s2">&quot;turn_inflow_ts_result&quot;</span>
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Error: unsupported algorithm </span><span class="si">{</span><span class="n">sel_algo</span><span class="p">[</span><span class="s1">&#39;turn_inflow&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, using genetic algorithm as default.&quot;</span><span class="p">)</span>
+            <span class="n">g_best</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">turn_inflow</span><span class="o">.</span><span class="n">run_GA</span><span class="p">()</span>
+            <span class="n">path_model_result</span> <span class="o">=</span> <span class="s2">&quot;turn_inflow_ga_result&quot;</span>
+
+    <span class="n">turn_inflow</span><span class="o">.</span><span class="n">run_vis</span><span class="p">(</span><span class="n">path_model_result</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+    <span class="c1"># clean up the temporary files generated during turn and inflow calibration</span>
+    <span class="n">turn_inflow</span><span class="o">.</span><span class="n">_clean_up</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  :Optimize Behavior parameters based on the optimized turn and inflow...&quot;</span><span class="p">)</span>
+    <span class="n">scenario_config_behavior</span> <span class="o">=</span> <span class="n">prepare_scenario_config_behavior</span><span class="p">(</span><span class="n">input_config</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;sel_behavior_routes&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">scenario_config_behavior</span><span class="p">[</span><span class="s2">&quot;sel_behavior_routes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sel_behavior_routes&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># automatically select two routes from network</span>
+        <span class="n">dir_behavior</span> <span class="o">=</span> <span class="n">scenario_config_behavior</span><span class="p">[</span><span class="s2">&quot;dir_behavior&quot;</span><span class="p">]</span>
+        <span class="n">network_name</span> <span class="o">=</span> <span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NetworkName&quot;</span><span class="p">)</span>
+        <span class="n">path_net</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dir_behavior</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.net.xml&quot;</span>
+        <span class="n">path_route</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dir_behavior</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.rou.xml&quot;</span>
+        <span class="n">path_report</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dir_behavior</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;selected_routes_travel_time_map.html&quot;</span>
+        <span class="n">google_api</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">routes_list</span><span class="p">,</span> <span class="n">time_list</span><span class="p">,</span> <span class="n">edge_list</span> <span class="o">=</span> <span class="n">auto_select_two_routes</span><span class="p">(</span><span class="n">path_route</span><span class="p">,</span> <span class="n">path_net</span><span class="p">,</span>
+                                                                   <span class="n">api_key</span><span class="o">=</span><span class="n">google_api</span><span class="p">,</span> <span class="n">path_report</span><span class="o">=</span><span class="n">path_report</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  : selected routes: </span><span class="si">{</span><span class="n">routes_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  : selected travel time: </span><span class="si">{</span><span class="n">time_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  : selected edge list: </span><span class="si">{</span><span class="n">edge_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">sel_route_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">route_id</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">route_name</span><span class="p">,</span> <span class="n">travel_time</span><span class="p">,</span> <span class="n">edge_id_list</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">routes_list</span><span class="p">,</span> <span class="n">time_list</span><span class="p">,</span> <span class="n">edge_list</span><span class="p">):</span>
+            <span class="n">sel_route_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;route_</span><span class="si">{</span><span class="n">route_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">travel_time</span><span class="p">,</span>
+                                                   <span class="s2">&quot;edge_list&quot;</span><span class="p">:</span> <span class="n">edge_id_list</span><span class="p">,</span>
+                                                   <span class="s2">&quot;route_list&quot;</span><span class="p">:</span> <span class="n">route_name</span><span class="p">}</span>
+            <span class="n">route_id</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">scenario_config_behavior</span><span class="p">[</span><span class="s2">&quot;sel_behavior_routes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sel_route_dict</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="se">\n</span><span class="s2">:Selected behavior routes: </span><span class="si">{</span><span class="n">scenario_config_behavior</span><span class="p">[</span><span class="s1">&#39;sel_behavior_routes&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">behavior</span> <span class="o">=</span> <span class="n">BehaviorCali</span><span class="p">(</span><span class="n">scenario_config_behavior</span><span class="p">,</span> <span class="n">algo_config_behavior</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+    <span class="k">match</span> <span class="n">sel_algo</span><span class="p">[</span><span class="s2">&quot;behavior&quot;</span><span class="p">]:</span>
+        <span class="k">case</span> <span class="s2">&quot;ga&quot;</span><span class="p">:</span>
+            <span class="n">g_best</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">run_GA</span><span class="p">()</span>
+            <span class="n">path_model_result</span> <span class="o">=</span> <span class="s2">&quot;behavior_ga_result&quot;</span>
+        <span class="k">case</span> <span class="s2">&quot;sa&quot;</span><span class="p">:</span>
+            <span class="n">g_best</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">run_SA</span><span class="p">()</span>
+            <span class="n">path_model_result</span> <span class="o">=</span> <span class="s2">&quot;behavior_sa_result&quot;</span>
+        <span class="k">case</span> <span class="s2">&quot;ts&quot;</span><span class="p">:</span>
+            <span class="n">g_best</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">run_TS</span><span class="p">()</span>
+            <span class="n">path_model_result</span> <span class="o">=</span> <span class="s2">&quot;behavior_ts_result&quot;</span>
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Error: unsupported algorithm </span><span class="si">{</span><span class="n">sel_algo</span><span class="p">[</span><span class="s1">&#39;behavior&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, using genetic algorithm as default.&quot;</span><span class="p">)</span>
+            <span class="n">g_best</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">run_GA</span><span class="p">()</span>
+            <span class="n">path_model_result</span> <span class="o">=</span> <span class="s2">&quot;behavior_ga_result&quot;</span>
+
+    <span class="n">behavior</span><span class="o">.</span><span class="n">run_vis</span><span class="p">(</span><span class="n">path_model_result</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_scenario_config_turn_inflow</span><span class="p">(</span><span class="n">input_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare scenario_config from input_config&quot;&quot;&quot;</span>
+
+    <span class="n">scenario_config_dict</span> <span class="o">=</span> <span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Calibration&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scenario_config&quot;</span><span class="p">)</span>
+
+    <span class="c1"># # add input_dir to scenario_config from generated SUMO dir(scenario generation)</span>
+    <span class="n">generated_sumo_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;output_dir&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="s2">&quot;SUMO&quot;</span><span class="p">)</span>
+    <span class="c1"># generated_sumo_dir = pf.path2linux(Path(__file__).parents[3] / &quot;datasets/input_dir_dummy/&quot;)</span>
+    <span class="c1"># print(f&quot;  :use dummy input: {generated_sumo_dir} for calibration in beta version&quot;)</span>
+
+    <span class="c1"># create turn_inflow directory under generated_sumo_dir</span>
+    <span class="n">turn_inflow_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">generated_sumo_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;turn_inflow&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">turn_inflow_route_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">generated_sumo_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;turn_inflow&quot;</span> <span class="o">/</span> <span class="s2">&quot;route&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">turn_inflow_route_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># add input_dir as turn_inflow_dir</span>
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;dir_turn_inflow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">turn_inflow_dir</span>
+
+    <span class="c1"># copy net.xml to turn_inflow directory</span>
+    <span class="n">network_name</span> <span class="o">=</span> <span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NetworkName&quot;</span><span class="p">)</span>
+    <span class="n">path_net_sumo</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">generated_sumo_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.net.xml&quot;</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">path_net_sumo</span><span class="p">,</span> <span class="n">turn_inflow_dir</span><span class="p">)</span>
+    <span class="c1"># shutil.copy(path_net_sumo, turn_inflow_route_dir)</span>
+
+    <span class="c1"># create Edge.add.xml in turn_inflow directory</span>
+    <span class="n">path_edge_add</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Edge.add.xml&quot;</span><span class="p">)</span>
+    <span class="n">generate_edge_add_xml</span><span class="p">(</span><span class="n">path_edge_add</span><span class="p">)</span>
+
+    <span class="c1"># create .cfg file in turn_inflow directory</span>
+    <span class="n">path_sumocfg</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.sumocfg&quot;</span><span class="p">)</span>
+    <span class="n">seed</span> <span class="o">=</span> <span class="n">scenario_config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;calibration_seed&quot;</span><span class="p">,</span> <span class="mi">812</span><span class="p">)</span>
+    <span class="n">sim_start_time</span> <span class="o">=</span> <span class="n">scenario_config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sim_start_time&quot;</span><span class="p">,</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="n">sim_end_time</span> <span class="o">=</span> <span class="n">scenario_config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sim_end_time&quot;</span><span class="p">,</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">calibration_time_step</span> <span class="o">=</span> <span class="n">scenario_config_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;calibration_time_step&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">generate_sumocfg_xml</span><span class="p">(</span><span class="n">path_sumocfg</span><span class="p">,</span> <span class="n">network_name</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">sim_start_time</span><span class="p">,</span> <span class="n">sim_end_time</span><span class="p">,</span> <span class="n">calibration_time_step</span><span class="p">)</span>
+
+    <span class="c1"># create turn and inflow and summary df</span>
+    <span class="n">path_matchup_table</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;input_dir&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="s2">&quot;MatchupTable.xlsx&quot;</span><span class="p">)</span>
+    <span class="n">traffic_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;input_dir&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="s2">&quot;Traffic&quot;</span><span class="p">)</span>
+    <span class="n">path_net_turn_inflow</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.net.xml&quot;</span><span class="p">)</span>
+    <span class="n">MatchupTable_UserInput</span> <span class="o">=</span> <span class="n">read_MatchupTable</span><span class="p">(</span><span class="n">path_matchup_table</span><span class="o">=</span><span class="n">path_matchup_table</span><span class="p">)</span>
+    <span class="n">TurnDf</span><span class="p">,</span> <span class="n">IDRef</span> <span class="o">=</span> <span class="n">generate_turn_demand_cali</span><span class="p">(</span><span class="n">path_matchup_table</span><span class="o">=</span><span class="n">path_matchup_table</span><span class="p">,</span> <span class="n">traffic_dir</span><span class="o">=</span><span class="n">traffic_dir</span><span class="p">)</span>
+
+    <span class="n">InflowDf_Calibration</span><span class="p">,</span> <span class="n">InflowEdgeToCalibrate</span><span class="p">,</span> <span class="n">N_InflowVariable</span> <span class="o">=</span> <span class="n">generate_inflow</span><span class="p">(</span><span class="n">path_net_turn_inflow</span><span class="p">,</span>
+                                                                                    <span class="n">MatchupTable_UserInput</span><span class="p">,</span>
+                                                                                    <span class="n">TurnDf</span><span class="p">,</span>
+                                                                                    <span class="n">IDRef</span><span class="p">)</span>
+
+    <span class="p">(</span><span class="n">TurnToCalibrate</span><span class="p">,</span> <span class="n">TurnDf_Calibration</span><span class="p">,</span>
+     <span class="n">RealSummary_Calibration</span><span class="p">,</span>
+     <span class="n">N_Variable</span><span class="p">,</span> <span class="n">N_TurnVariable</span><span class="p">)</span> <span class="o">=</span> <span class="n">generate_turn_summary</span><span class="p">(</span><span class="n">TurnDf</span><span class="p">,</span>
+                                                         <span class="n">MatchupTable_UserInput</span><span class="p">,</span>
+                                                         <span class="n">N_InflowVariable</span><span class="p">)</span>
+
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;TurnToCalibrate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TurnToCalibrate</span>
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;TurnDf_Calibration&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TurnDf_Calibration</span>
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;InflowDf_Calibration&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">InflowDf_Calibration</span>
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;InflowEdgeToCalibrate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">InflowEdgeToCalibrate</span>
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;RealSummary_Calibration&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">RealSummary_Calibration</span>
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;N_InflowVariable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">N_InflowVariable</span>
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;N_Variable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">N_Variable</span>
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;N_TurnVariable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">N_TurnVariable</span>
+
+    <span class="c1"># add network name to scenario_config and sim_name</span>
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;network_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">network_name</span>
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;sim_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.sumocfg&quot;</span>
+    <span class="n">scenario_config_dict</span><span class="p">[</span><span class="s2">&quot;path_net&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.net.xml&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">scenario_config_dict</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_scenario_config_behavior</span><span class="p">(</span><span class="n">input_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+
+    <span class="n">scenario_config_behavior</span> <span class="o">=</span> <span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Calibration&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scenario_config&quot;</span><span class="p">)</span>
+    <span class="n">network_name</span> <span class="o">=</span> <span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NetworkName&quot;</span><span class="p">)</span>
+
+    <span class="c1"># # add input_dir to scenario_config from generated SUMO dir(scenario generation)</span>
+    <span class="n">generated_sumo_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;output_dir&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="s2">&quot;SUMO&quot;</span><span class="p">)</span>
+
+    <span class="c1"># create behavior directory under generated_sumo_dir</span>
+    <span class="n">behavior_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">generated_sumo_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;behavior&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">behavior_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">scenario_config_behavior</span><span class="p">[</span><span class="s2">&quot;dir_behavior&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">behavior_dir</span>
+
+    <span class="c1"># copy files from turn_inflow directory to behavior directory</span>
+    <span class="n">turn_inflow_dir</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">generated_sumo_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;turn_inflow&quot;</span><span class="p">)</span>
+    <span class="n">file_sim</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.sumocfg&quot;</span>
+    <span class="n">file_net</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.net.xml&quot;</span>
+    <span class="n">file_edge_add</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Edge.add.xml&quot;</span>
+    <span class="n">file_route</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.rou.xml&quot;</span>
+    <span class="n">file_turn</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.turn.xml&quot;</span>
+    <span class="n">file_inflow</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.flow.xml&quot;</span>
+    <span class="n">file_EdgeData</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">turn_inflow_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;EdgeData.xml&quot;</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">file_sim</span><span class="p">,</span> <span class="n">behavior_dir</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">file_net</span><span class="p">,</span> <span class="n">behavior_dir</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">file_edge_add</span><span class="p">,</span> <span class="n">behavior_dir</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">file_route</span><span class="p">,</span> <span class="n">behavior_dir</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">file_turn</span><span class="p">,</span> <span class="n">behavior_dir</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">file_inflow</span><span class="p">,</span> <span class="n">behavior_dir</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">file_EdgeData</span><span class="p">,</span> <span class="n">behavior_dir</span><span class="p">)</span>
+
+    <span class="n">scenario_config_behavior</span><span class="p">[</span><span class="s2">&quot;path_turn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.turn.xml&quot;</span>
+    <span class="n">scenario_config_behavior</span><span class="p">[</span><span class="s2">&quot;path_inflow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">.flow.xml&quot;</span>
+    <span class="k">return</span> <span class="n">scenario_config_behavior</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_edge_add_xml</span><span class="p">(</span><span class="n">path_edge_add</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate Edge.add.xml file in the input directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_config (dict): the dictionary contain configurations from input yaml file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># create Edge.add.xml in turn_inflow directory</span>
+    <span class="n">additional</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;additional&quot;</span><span class="p">)</span>
+    <span class="n">edgeData</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">additional</span><span class="p">,</span> <span class="s2">&quot;edgeData&quot;</span><span class="p">)</span>
+    <span class="n">edgeData</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">)</span>
+    <span class="n">edgeData</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="s2">&quot;EdgeData.xml&quot;</span><span class="p">)</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">additional</span><span class="p">)</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">path_edge_add</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_sumocfg_xml</span><span class="p">(</span><span class="n">path_sumocfg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">network_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                         <span class="n">sim_start_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sim_end_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">calibration_time_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="c1"># create .cfg file in turn_inflow directory</span>
+    <span class="c1"># Create XML root</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;configuration&#39;</span><span class="p">)</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;xmlns:xsi&#39;</span><span class="p">,</span> <span class="s1">&#39;http://www.w3.org/2001/XMLSchema-instance&#39;</span><span class="p">)</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;xsi:noNamespaceSchemaLocation&#39;</span><span class="p">,</span> <span class="s1">&#39;http://sumo.dlr.de/xsd/duarouterConfiguration.xsd&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Random seed</span>
+    <span class="n">random</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;random&#39;</span><span class="p">)</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">random</span><span class="p">,</span> <span class="s1">&#39;seed&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">seed</span><span class="p">)})</span>
+
+    <span class="c1"># Input files</span>
+    <span class="n">input_elem</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;input&#39;</span><span class="p">)</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">input_elem</span><span class="p">,</span> <span class="s1">&#39;net-file&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s1">.net.xml&#39;</span><span class="p">})</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">input_elem</span><span class="p">,</span> <span class="s1">&#39;route-files&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s1">.rou.xml&#39;</span><span class="p">})</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">input_elem</span><span class="p">,</span> <span class="s1">&#39;additional-files&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;Edge.add.xml&#39;</span><span class="p">})</span>
+
+    <span class="c1"># Output (empty section placeholder)</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;output&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Time setup</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">)</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s1">&#39;begin&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">sim_start_time</span><span class="p">)})</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">sim_end_time</span><span class="p">)})</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s1">&#39;step-length&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">calibration_time_step</span><span class="p">)})</span>
+
+    <span class="c1"># GUI options</span>
+    <span class="n">gui_only</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;gui_only&#39;</span><span class="p">)</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">gui_only</span><span class="p">,</span> <span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;t&#39;</span><span class="p">})</span>
+
+    <span class="c1"># Report options</span>
+    <span class="n">report</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;report&#39;</span><span class="p">)</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">report</span><span class="p">,</span> <span class="s1">&#39;no-warnings&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span><span class="p">})</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">report</span><span class="p">,</span> <span class="s1">&#39;no-step-log&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span><span class="p">})</span>
+
+    <span class="c1"># Pretty print</span>
+    <span class="n">rough_string</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+    <span class="n">reparsed</span> <span class="o">=</span> <span class="n">parseString</span><span class="p">(</span><span class="n">rough_string</span><span class="p">)</span>
+    <span class="n">xml_string</span> <span class="o">=</span> <span class="n">reparsed</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="s2">&quot;    &quot;</span><span class="p">)</span>
+
+    <span class="c1"># Write to file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_sumocfg</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
