@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "twine"]
+requires = ["setuptools>=77.0", "wheel", "twine"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -24,21 +24,16 @@ classifiers = [
 ]
 
 readme = 'README.md'
-# license = {file = 'LICENSE'}
-# license = {text = "Apache License"}
+license-files = ["LICENSE"]
 
 requires-python = ">=3.10"
 keywords = ["Real-Twin", "Digital Twin", "Traffic Micro-simulation", "Scenario Generation", "Connected and Automated Vehicles", "CAV", "Traffic Simulation", "SUMO", "VISSIM", "AIMSUN"]
 
 dynamic = ["dependencies"]
 
-[project.license]
-file="LICENSE"
-
 [project.urls]
 "Homepage" = 'https://github.com/ORNL-Real-Sim/Real-Twin'
 'Bug Tracker' = 'https://github.com/ORNL-Real-Sim/Real-Twin/issues'
-# 'License' = 'https://github.com/ORNL-Real-Sim/Real-Twin/blob/main/LICENSE'
 'Contact' = 'https://github.com/ORNL-Real-Sim/Real-Twin'
 
 [tool.setuptools.dynamic]
