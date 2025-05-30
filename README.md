@@ -7,9 +7,38 @@
   - [Citation](#citation)
 
 # Real-Twin
+# 🔁 Real-Twin: A Unified Scenario Generation Tool for Mobility Simulation
 
-ORNL’s Real-Twin project is a streamlined scenario generation tool that automatically integrates real-world traffic data to create high-fidelity digital twins for simulating the impacts of connected and automated vehicles in microsimulation environments.
+**Real-Twin** is a unified, **model-agnostic scenario generation tool** designed to streamline and standardize the evaluation of emerging mobility technologies. It provides an end-to-end framework that includes robust workflows, integrated tools, and comprehensive metrics to generate, calibrate, and benchmark microscopic traffic simulation scenarios across multiple platforms.
 
+## ✨ Key Features
+
+- **Unified Scenario Generation**  
+  Generate transferable, simulation-ready scenarios from heterogeneous data sources using a consistent workflow.
+
+- **Model-Agnostic Compatibility**  
+  Supports **SUMO**, **VISSIM**, and **AIMSUN** for cross-platform scenario generation and benchmarking. Enables reliable comparisons and reproducibility across different simulation tools.
+
+- **User-Friendly and Customizable**
+  - **Basic users**: Generate scenarios by simply providing required inputs.
+  - **Advanced users**: Leverage scripting interfaces for fine-tuned control and custom simulation setup.
+
+- **Emerging Technology Support**  
+  Includes a scenario database and pipeline for studying **autonomous vehicles (AVs)**, with planned extensions to **CAVs**, **EVs**, and other advanced technologies.
+
+- **Automated Calibration Workflow**  
+  Bridges simulation and real-world data, minimizing manual effort and making traffic simulation more accessible to researchers and engineers.
+
+- **Comprehensive Scenario Metrics**  
+  Quantifies scenario realism and variation to assess how closely simulation results reflect real-world operations — critical for consistent benchmarking.
+
+## 🎯 Purpose
+
+Real-Twin aims to support **consistent, repeatable, and meaningful evaluation** of new mobility technologies by enabling:
+
+- Efficient scenario creation from real-world data  
+- Cross-simulator validation and benchmarking  
+- Inclusion of emerging vehicle technologies in microscopic traffic simulations
 
 ![Overview of RealTwin](image/README/RT_Overview.png)
 ## Summary
