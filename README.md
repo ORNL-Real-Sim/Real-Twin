@@ -96,3 +96,16 @@ For more information about the ways you can contribute to realtwin, visit our Gi
 ## Citation
 
 To cite usage of realtwin, please use the folowing bibtex:
+
+```bibtex
+@article{xu2025automated,
+  title        = {Developing An Automated Microscopic Traffic Simulation Scenario Generation Tool},
+  author       = {Xu, Guanhao and Saroj, Abhilasha and Wang, Chieh (Ross) and Shao, Yunli},
+  journal      = {Transportation Research Record},
+  year         = {2025},
+  volume       = {XX},
+  number       = {X},
+  pages        = {1--21},
+  publisher    = {SAGE for the National Academy of Sciences: Transportation Research Board},
+  note         = {DOI to be assigned}
+}
