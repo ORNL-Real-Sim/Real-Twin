@@ -16,31 +16,20 @@
 - **Unified Scenario Generation**  
   Generate transferable, simulation-ready scenarios from heterogeneous data sources using a consistent workflow.
 
+- **Automated Calibration Workflow**  
+  Bridges simulation and real-world data, minimizing manual effort and making traffic simulation more accessible to researchers and engineers.
+
 - **Model-Agnostic Compatibility**  
   Supports **SUMO**, **VISSIM**, and **AIMSUN** for cross-platform scenario generation and benchmarking. Enables reliable comparisons and reproducibility across different simulation tools.
 
-- **User-Friendly and Customizable**
-  - **Basic users**: Generate scenarios by simply providing required inputs.
-  - **Advanced users**: Leverage scripting interfaces for fine-tuned control and custom simulation setup.
+- **Consistent Scenarios across Different Simulators**  
+  Generate comparable simulation scenarios across different microscopic traffic simulators, providing users the ability to conduct benchmarking and cross-validation that are crucial for ensuring the reliability and reproducibility of simulation results.
 
 - **Emerging Technology Support**  
   Includes a scenario database and pipeline for studying **autonomous vehicles (AVs)**, with planned extensions to **CAVs**, **EVs**, and other advanced technologies.
 
-- **Automated Calibration Workflow**  
-  Bridges simulation and real-world data, minimizing manual effort and making traffic simulation more accessible to researchers and engineers.
-
-- **Comprehensive Scenario Metrics**  
-  Quantifies scenario realism and variation to assess how closely simulation results reflect real-world operations — critical for consistent benchmarking.
-
-## 🎯 Purpose
-
-Real-Twin aims to support **consistent, repeatable, and meaningful evaluation** of new mobility technologies by enabling:
-
-- Efficient scenario creation from real-world data  
-- Cross-simulator validation and benchmarking  
-- Inclusion of emerging vehicle technologies in microscopic traffic simulations
-
 ![Overview of RealTwin](image/README/RT_Overview.png)
+
 ## Summary
 
 ## Installation
@@ -124,6 +113,13 @@ Writing code isn't the only way to contribute to realtwin. You can also:
 
 For more information about the ways you can contribute to realtwin, visit our GitHub. If you' re unsure where to start or how your skills fit in, reach out! You can ask by opening a new issue or leaving a comment on a relevant issue that is already open on GitHub.
 
+
+## Funding
+
+This work was supported by the US Department of Energy, Vehicle
+Technologies Office, Energy Efficient Mobility Systems (EEMS)
+program, under project Real-Twin (EEMS114).
+
 ## Citation
 
 To cite usage of realtwin, please use the folowing bibtex:
@@ -140,3 +136,6 @@ To cite usage of realtwin, please use the folowing bibtex:
   publisher    = {SAGE for the National Academy of Sciences: Transportation Research Board},
   note         = {In Press, DOI to be assigned}
 }
+
+
+
