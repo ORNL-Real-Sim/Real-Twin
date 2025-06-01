@@ -1,5 +1,6 @@
-- [Real-Twin](#read-twin)
-  - [Description](#-real-twin-a-unified-simulation-scenario-generation-tool-for-mobility-research)
+- [Real-Twin](#real-twin)
+  - [🔁 Real-Twin: A Unified Simulation Scenario Generation Tool for Mobility Research](#-real-twin-a-unified-simulation-scenario-generation-tool-for-mobility-research)
+    - [✨ Key Features](#-key-features)
   - [Installation](#installation)
   - [Documentation](#documentation)
   - [Quick Example](#quick-example)
@@ -115,7 +116,8 @@ To cite usage of Real-Twin, please use the folowing bibtex:
   author       = {Xu, Guanhao and Saroj, Abhilasha and Wang, Chieh (Ross) and Shao, Yunli},
   journal      = {Transportation Research Record},
   year         = {2025},
+  doi          = {https://doi.org/10.1177/03611981251349433},
   publisher    = {SAGE for the National Academy of Sciences: Transportation Research Board},
-  note         = {In Press, DOI to be assigned}
+  note         = {In Press}
 }
 ```
