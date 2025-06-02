@@ -48,7 +48,7 @@ bibliography: paper.bib
 
 **Real-Twin** is a unified, **simulation platform-agnostic scenario generation tool** designed to streamline and standardize the evaluation of emerging mobility technologies. It provides an end-to-end framework that includes robust workflows, integrated tools, and comprehensive metrics to generate, calibrate, and benchmark microscopic traffic simulation scenarios across multiple platforms.
 
-### ✨ Key Features
+### Key Features
 
 * **Unified Scenario Generation** : Generate transferable, simulation-ready scenarios from heterogeneous data sources using a consistent workflow.
 * **Automated Calibration Workflow** : Bridges simulation and real-world data, minimizing manual effort and making traffic simulation more accessible to researchers and engineers.
