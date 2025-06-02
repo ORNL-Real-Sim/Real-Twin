@@ -1,6 +1,12 @@
-realtwin.func\_lib.install\_sumo
-================================
+install\_sumo
+=============
 
-.. currentmodule:: realtwin.func_lib
+.. automodule:: realtwin.func_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. autofunction:: install_sumo
+
+.. autoclass:: install_sumo
+

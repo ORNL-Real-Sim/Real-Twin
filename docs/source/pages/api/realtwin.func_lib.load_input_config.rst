@@ -1,6 +1,12 @@
-realtwin.func\_lib.load\_input\_config
-======================================
+load\_input\_config
+===================
 
-.. currentmodule:: realtwin.func_lib
+.. automodule:: realtwin.func_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. autofunction:: load_input_config
+
+.. autoclass:: load_input_config
+

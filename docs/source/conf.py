@@ -1,10 +1,14 @@
-'''
-##############################################################
-# Created Date: Monday, March 3rd 2025
-# Contact Info: luoxiangyong01@gmail.com
-# Author/Copyright: Mr. Xiangyong Luo
-##############################################################
-'''
+##############################################################################
+# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# All rights reserved.                                                       #
+#                                                                            #
+# This file is part of RealTwin and is distributed under a GPL               #
+# license. For the licensing terms see the LICENSE file in the top-level     #
+# directory.                                                                 #
+#                                                                            #
+# Contributors: ORNL Real-Twin Team                                          #
+# Contact: realtwin@ornl.gov                                                 #
+##############################################################################
 
 from __future__ import absolute_import
 import logging
@@ -23,6 +27,8 @@ sys.path.insert(1, os.path.abspath('../../realtwin'))
 root = Path(__file__).resolve().parents[2]
 sys.path = [str(root)] + sys.path
 
+import realtwin
+
 logger = logging.getLogger(__name__)
 
 # Python's default allowed recursion depth is 1000.
@@ -36,7 +42,9 @@ version = "0.0.9.dev2"
 release = version
 language = "en"
 
-source_suffix = {'.rst': 'restructuredtext'}
+source_suffix = {'.rst': 'restructuredtext',
+                 ".txt": 'restructuredtext',  # allow .txt files to be processed as rst
+                 '.md': 'markdown'}  # allow .md files to be processed as rst, if markdown is installed
 source_encoding = "utf-8"
 master_doc = "index"
 
@@ -56,6 +64,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx_copybutton',
 ]
+autosummary_generate = True
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"

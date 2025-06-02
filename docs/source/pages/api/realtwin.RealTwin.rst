@@ -1,30 +1,12 @@
-realtwin.RealTwin
-=================
+RealTwin
+========
 
-.. currentmodule:: realtwin
+.. automodule:: realtwin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autofunction:: RealTwin
 
 .. autoclass:: RealTwin
 
-   
-   .. automethod:: __init__
-
-   
-   .. rubric:: Methods
-
-   .. autosummary::
-   
-      ~RealTwin.__init__
-      ~RealTwin.calibrate
-      ~RealTwin.env_setup
-      ~RealTwin.generate_abstract_scenario
-      ~RealTwin.generate_concrete_scenario
-      ~RealTwin.generate_inputs
-      ~RealTwin.post_process
-      ~RealTwin.prepare_simulation
-      ~RealTwin.visualize
-   
-   
-
-   
-   
-   

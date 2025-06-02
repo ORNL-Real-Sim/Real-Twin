@@ -16,6 +16,7 @@ from functools import partial
 import random
 from pathlib import Path
 import subprocess
+import warnings
 import pandas as pd
 import pyufunc as pf
 
@@ -42,7 +43,9 @@ if 'SUMO_HOME' in os.environ:
     sys.path = list(set(sys.path))  # remove duplicates
 
 else:
-    sys.exit("please declare environment variable 'SUMO_HOME'")
+    warnings.warn("Environment variable 'SUMO_HOME' is not set. "
+                  "please declare environment variable 'SUMO_HOME'")
+    # sys.exit("please declare environment variable 'SUMO_HOME'")
 import traci
 
 rng = np.random.default_rng(seed=812)
@@ -78,7 +81,7 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
 
     update_flow_xml_from_solution(path_flow, solution)
 
-    # Create the route XML file using jtrrouter 
+    # Create the route XML file using jtrrouter
     run_jtrrouter_to_create_rou_xml(network_name, path_net, path_flow, path_turn, path_rou)
 
     # Define the command to run SUMO

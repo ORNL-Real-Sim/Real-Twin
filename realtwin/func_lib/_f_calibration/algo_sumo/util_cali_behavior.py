@@ -13,6 +13,7 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 import subprocess
+import warnings
 import pandas as pd
 import numpy as np
 import folium
@@ -25,7 +26,9 @@ if 'SUMO_HOME' in os.environ:
     sys.path.append(tools)
     sys.path = list(set(sys.path))  # remove duplicates
 else:
-    sys.exit("please declare environment variable 'SUMO_HOME'")
+    warnings.warn("Environment variable 'SUMO_HOME' is not set. "
+                  "please declare environment variable 'SUMO_HOME'")
+    # sys.exit("please declare environment variable 'SUMO_HOME'")
 import traci
 
 

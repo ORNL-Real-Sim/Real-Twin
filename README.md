@@ -1,3 +1,5 @@
+[![PyPI version](https://badge.fury.io/py/realtwin.svg)](https://badge.fury.io/py/realtwin)[![Downloads](https://static.pepy.tech/badge/realtwin)](https://pepy.tech/project/realtwin)[![](https://img.shields.io/pypi/wheel/gensim.svg)](https://pypi.org/project/realtwin/)[![](https://img.shields.io/pypi/pyversions/realtwin.svg)](https://www.python.org/)[![](https://readthedocs.org/projects/real-twin/badge/?version=latest)](https://real-twin.readthedocs.io/en/latest/?badge=latest)[![](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)[![](https://img.shields.io/badge/License-GPL-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+
 - [Real-Twin](#real-twin)
   - [🔁 Real-Twin: A Unified Simulation Scenario Generation Tool for Mobility Research](#-real-twin-a-unified-simulation-scenario-generation-tool-for-mobility-research)
     - [✨ Key Features](#-key-features)
@@ -12,15 +14,16 @@
 
 ## 🔁 Real-Twin: A Unified Simulation Scenario Generation Tool for Mobility Research
 
-**Real-Twin** is a unified, **model-agnostic scenario generation tool** designed to streamline and standardize the evaluation of emerging mobility technologies. It provides an end-to-end framework that includes robust workflows, integrated tools, and comprehensive metrics to generate, calibrate, and benchmark microscopic traffic simulation scenarios across multiple platforms.
+**Real-Twin** is a unified, **simulation platform-agnostic scenario generation tool** designed to streamline and standardize the evaluation of emerging mobility technologies. It provides an end-to-end framework that includes robust workflows, integrated tools, and comprehensive metrics to generate, calibrate, and benchmark microscopic traffic simulation scenarios across multiple platforms.
 
 ### ✨ Key Features
 
-- **Unified Scenario Generation**: Generate transferable, simulation-ready scenarios from heterogeneous data sources using a consistent workflow.
-- **Automated Calibration Workflow**: Bridges simulation and real-world data, minimizing manual effort and making traffic simulation more accessible to researchers and engineers.
-- **Model-Agnostic Compatibility**: Supports **SUMO**, **VISSIM**, and **AIMSUN** for cross-platform scenario generation and benchmarking. Enables reliable comparisons and reproducibility across different simulation tools.
-- **Consistent Scenarios across Different Simulators**: Generate comparable simulation scenarios across different microscopic traffic simulators, providing users the ability to conduct benchmarking and cross-validation that are crucial for ensuring the reliability and reproducibility of simulation results.
-- **Emerging Technology Support**: Includes a scenario database and pipeline for studying **autonomous vehicles (AVs)**, with planned extensions to **CAVs**, **EVs**, and other advanced technologies.
+- **Unified Scenario Generation**Generate transferable, simulation-ready scenarios from heterogeneous data sources using a consistent workflow.
+- **Automated Calibration Workflow**Bridges simulation and real-world data, minimizing manual effort and making traffic simulation more accessible to researchers and engineers.
+- **Simulation Platform Compatibility**Supports **SUMO**, **VISSIM**, and **AIMSUN** for cross-platform scenario generation and benchmarking. Enables reliable comparisons and reproducibility across different simulation tools.
+- **Consistent Scenarios across Different Simulators**Generate comparable simulation scenarios across different microscopic traffic simulators, providing users the ability to conduct benchmarking and cross-validation that are crucial for ensuring the reliability and reproducibility of simulation results.
+- **Emerging Technology Support**
+  Includes a scenario database and pipeline for studying **autonomous vehicles (AVs)**, with planned extensions to **CAVs**, **EVs**, and other advanced technologies.
 
 ## Installation
 

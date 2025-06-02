@@ -1,6 +1,12 @@
-realtwin.func\_lib.is\_aimsun\_installed
-========================================
+is\_aimsun\_installed
+=====================
 
-.. currentmodule:: realtwin.func_lib
+.. automodule:: realtwin.func_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. autofunction:: is_aimsun_installed
+
+.. autoclass:: is_aimsun_installed
+

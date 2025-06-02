@@ -1,23 +1,12 @@
-realtwin.func\_lib.VissimPrep
-=============================
+VissimPrep
+==========
 
-.. currentmodule:: realtwin.func_lib
+.. automodule:: realtwin.func_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autofunction:: VissimPrep
 
 .. autoclass:: VissimPrep
 
-   
-   .. automethod:: __init__
-
-   
-   .. rubric:: Methods
-
-   .. autosummary::
-   
-      ~VissimPrep.__init__
-      ~VissimPrep.prepare
-   
-   
-
-   
-   
-   

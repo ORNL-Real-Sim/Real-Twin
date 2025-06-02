@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 from functools import partial
 import shutil
+import warnings
 from mealpy import FloatVar, SA, GA, TS
 try:
     from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (
@@ -43,7 +44,9 @@ if 'SUMO_HOME' in os.environ:
     sys.path = list(set(sys.path))  # remove duplicates
 
 else:
-    sys.exit("please declare environment variable 'SUMO_HOME'")
+    warnings.warn("Environment variable 'SUMO_HOME' is not set. "
+                  "please declare environment variable 'SUMO_HOME'")
+    # sys.exit("please declare environment variable 'SUMO_HOME'")
 import traci
 
 rng = np.random.default_rng(seed=812)

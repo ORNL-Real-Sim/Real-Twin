@@ -1,6 +1,12 @@
-realtwin.func\_lib.get\_bounding\_box\_from
-===========================================
+get\_bounding\_box\_from
+========================
 
-.. currentmodule:: realtwin.func_lib
+.. automodule:: realtwin.func_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. autofunction:: get_bounding_box_from
+
+.. autoclass:: get_bounding_box_from
+

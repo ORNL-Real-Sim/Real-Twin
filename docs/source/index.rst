@@ -14,20 +14,14 @@ Welcome to realtwin documentation!
 .. image:: https://img.shields.io/pypi/pyversions/realtwin.svg
    :target: https://www.python.org/
 
-.. image:: https://img.shields.io/pypi/status/realtwin.svg
-   :target: https://img.shields.io/pypi/status/realtwin.svg
+.. image:: https://readthedocs.org/projects/Real-Twin/badge/?version=latest
+   :target: https://real-twin.readthedocs.io/en/latest/?badge=latest
 
-.. image:: https://img.shields.io/github/release-date/ORNL-Real-Sim/realtwin.svg
-   :target: https://img.shields.io/github/release-date/ORNL-Real-Sim/realtwin.svg
+.. image:: https://img.shields.io/github/contributors/ORNL-Real-Sim/real-twin.svg
+   :target: https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin
 
-.. image:: https://readthedocs.org/projects/realtwin/badge/?version=latest
-   :target: https://realtwin.readthedocs.io/en/latest/?badge=latest
-
-.. image:: https://img.shields.io/github/contributors/ORNL-Real-Sim/realtwin.svg
-   :target: https://github.com/ORNL-Real-Sim/Real-Twin/graphs/contributors
-
-.. image:: https://img.shields.io/badge/License-MIT-blue.svg
-   :target: https://www.gnu.org/licenses
+.. image:: https://img.shields.io/badge/License-GPL-blue.svg
+   :target: https://www.gnu.org/licenses/gpl-3.0.en.html
 
 
 .. toctree::
@@ -58,7 +52,7 @@ Welcome to realtwin documentation!
 
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    pages/api.rst
 

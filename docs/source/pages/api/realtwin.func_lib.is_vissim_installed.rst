@@ -1,6 +1,12 @@
-realtwin.func\_lib.is\_vissim\_installed
-========================================
+is\_vissim\_installed
+=====================
 
-.. currentmodule:: realtwin.func_lib
+.. automodule:: realtwin.func_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. autofunction:: is_vissim_installed
+
+.. autoclass:: is_vissim_installed
+

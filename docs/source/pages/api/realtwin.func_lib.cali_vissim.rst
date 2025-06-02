@@ -1,6 +1,12 @@
-realtwin.func\_lib.cali\_vissim
-===============================
+cali\_vissim
+============
 
-.. currentmodule:: realtwin.func_lib
+.. automodule:: realtwin.func_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. autofunction:: cali_vissim
+
+.. autoclass:: cali_vissim
+

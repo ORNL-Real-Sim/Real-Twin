@@ -1,6 +1,12 @@
-realtwin.util\_lib.prepare\_config\_file
-========================================
+prepare\_config\_file
+=====================
 
-.. currentmodule:: realtwin.util_lib
+.. automodule:: realtwin.util_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. autofunction:: prepare_config_file
+
+.. autoclass:: prepare_config_file
+

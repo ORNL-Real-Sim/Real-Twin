@@ -1,6 +1,12 @@
-realtwin.util\_lib.venv\_create
-===============================
+venv\_create
+============
 
-.. currentmodule:: realtwin.util_lib
+.. automodule:: realtwin.util_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. autofunction:: venv_create
+
+.. autoclass:: venv_create
+

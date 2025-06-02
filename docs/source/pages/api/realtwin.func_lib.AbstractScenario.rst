@@ -1,26 +1,12 @@
-realtwin.func\_lib.AbstractScenario
-===================================
+AbstractScenario
+================
 
-.. currentmodule:: realtwin.func_lib
+.. automodule:: realtwin.func_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autofunction:: AbstractScenario
 
 .. autoclass:: AbstractScenario
 
-   
-   .. automethod:: __init__
-
-   
-   .. rubric:: Methods
-
-   .. autosummary::
-   
-      ~AbstractScenario.__init__
-      ~AbstractScenario.create_OpenDrive_network
-      ~AbstractScenario.create_SUMO_network
-      ~AbstractScenario.fillAbstractScenario
-      ~AbstractScenario.update_AbstractScenario_from_input
-   
-   
-
-   
-   
-   

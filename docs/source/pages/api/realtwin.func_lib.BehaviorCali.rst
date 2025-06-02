@@ -1,26 +1,12 @@
-realtwin.func\_lib.BehaviorCali
-===============================
+BehaviorCali
+============
 
-.. currentmodule:: realtwin.func_lib
+.. automodule:: realtwin.func_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autofunction:: BehaviorCali
 
 .. autoclass:: BehaviorCali
 
-   
-   .. automethod:: __init__
-
-   
-   .. rubric:: Methods
-
-   .. autosummary::
-   
-      ~BehaviorCali.__init__
-      ~BehaviorCali.run_GA
-      ~BehaviorCali.run_SA
-      ~BehaviorCali.run_TS
-      ~BehaviorCali.run_vis
-   
-   
-
-   
-   
-   

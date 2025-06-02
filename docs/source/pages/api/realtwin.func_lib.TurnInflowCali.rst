@@ -1,26 +1,12 @@
-realtwin.func\_lib.TurnInflowCali
-=================================
+TurnInflowCali
+==============
 
-.. currentmodule:: realtwin.func_lib
+.. automodule:: realtwin.func_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autofunction:: TurnInflowCali
 
 .. autoclass:: TurnInflowCali
 
-   
-   .. automethod:: __init__
-
-   
-   .. rubric:: Methods
-
-   .. autosummary::
-   
-      ~TurnInflowCali.__init__
-      ~TurnInflowCali.run_GA
-      ~TurnInflowCali.run_SA
-      ~TurnInflowCali.run_TS
-      ~TurnInflowCali.run_vis
-   
-   
-
-   
-   
-   
