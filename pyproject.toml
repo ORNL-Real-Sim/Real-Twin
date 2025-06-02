@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "realtwin"
-version = "0.0.9.dev2"
-description = "ORNL's Real-Twin project is a streamlined scenario generation tool that automatically integrates real-world traffic data to create high-fidelity digital twins for simulating the impacts of connected and automated vehicles in microsimulation environments."
+version = "0.1.0"
+description = "A Unified Simulation Scenario Generation Tool for Mobility Research"
 authors = [
     {name = "ORNL-RealTwin", email = "realtwin@ornl.gov"},
 ]
@@ -33,6 +33,7 @@ dynamic = ["dependencies"]
 
 [project.urls]
 "Homepage" = 'https://github.com/ORNL-Real-Sim/Real-Twin'
+'Documentation' = 'https://real-twin.readthedocs.io/en/latest/'
 'Bug Tracker' = 'https://github.com/ORNL-Real-Sim/Real-Twin/issues'
 'Contact' = 'https://github.com/ORNL-Real-Sim/Real-Twin'
 

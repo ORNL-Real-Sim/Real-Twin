@@ -33,7 +33,7 @@ pip install realtwin
 
 ## Documentation
 
-User guide and API documentation can be found at:
+User guide and API documentation can be found at: [Official Documentation](https://real-twin.readthedocs.io/en/latest/)
 
 ## Quick Example
 
