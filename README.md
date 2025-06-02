@@ -18,12 +18,11 @@
 
 ### ✨ Key Features
 
-- **Unified Scenario Generation**Generate transferable, simulation-ready scenarios from heterogeneous data sources using a consistent workflow.
-- **Automated Calibration Workflow**Bridges simulation and real-world data, minimizing manual effort and making traffic simulation more accessible to researchers and engineers.
-- **Simulation Platform Compatibility**Supports **SUMO**, **VISSIM**, and **AIMSUN** for cross-platform scenario generation and benchmarking. Enables reliable comparisons and reproducibility across different simulation tools.
-- **Consistent Scenarios across Different Simulators**Generate comparable simulation scenarios across different microscopic traffic simulators, providing users the ability to conduct benchmarking and cross-validation that are crucial for ensuring the reliability and reproducibility of simulation results.
-- **Emerging Technology Support**
-  Includes a scenario database and pipeline for studying **autonomous vehicles (AVs)**, with planned extensions to **CAVs**, **EVs**, and other advanced technologies.
+- **Unified Scenario Generation**: Generate transferable, simulation-ready scenarios from heterogeneous data sources using a consistent workflow.
+- **Automated Calibration Workflow**: Bridges simulation and real-world data, minimizing manual effort and making traffic simulation more accessible to researchers and engineers.
+- **Simulation Platform Compatibility**: Supports **SUMO**, **VISSIM**, and **AIMSUN** for cross-platform scenario generation and benchmarking. Enables reliable comparisons and reproducibility across different simulation tools.
+- **Consistent Scenarios across Different Simulators**: Generate comparable simulation scenarios across different microscopic traffic simulators, providing users the ability to conduct benchmarking and cross-validation that are crucial for ensuring the reliability and reproducibility of simulation results.
+- **Emerging Technology Support**: Includes a scenario database and pipeline for studying **autonomous vehicles (AVs)**, with planned extensions to **CAVs**, **EVs**, and other advanced technologies.
 
 ## Installation
 
