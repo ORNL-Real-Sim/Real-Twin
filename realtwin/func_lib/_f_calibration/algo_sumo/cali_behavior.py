@@ -78,6 +78,7 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
 
     update_flow_xml_from_solution(path_flow, solution)
 
+    # Create the route XML file using jtrrouter 
     run_jtrrouter_to_create_rou_xml(network_name, path_net, path_flow, path_turn, path_rou)
 
     # Define the command to run SUMO
