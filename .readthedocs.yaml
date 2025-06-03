@@ -17,7 +17,8 @@ build:
   jobs:
     post_create_environment:
       - pip install pyufunc
-      # - pip install realtwin
+      - pip install realtwin
+      - pip install rich
 
 # Optional but recommended, declare the Python requirements required
 # to build your documentation

@@ -26,3 +26,4 @@ sphinxemoji
 sphinxext-opengraph
 nbsphinx
 numpydoc
+rich
