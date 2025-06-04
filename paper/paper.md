@@ -56,11 +56,7 @@ bibliography: paper.bib
 * **Consistent Scenarios across Different Simulators** : Generate comparable simulation scenarios across different microscopic traffic simulators, providing users the ability to conduct benchmarking and cross-validation that are crucial for ensuring the reliability and reproducibility of simulation results.
 * **Emerging Technology Support** : Includes a scenario database and pipeline for studying  **autonomous vehicles (AVs)** , with planned extensions to  **CAVs** ,  **EVs** , and other advanced technologies.
 
----
-
 [^1]: This manuscript has been authored in part by UT-Battelle, LLC, under contract DE-AC05-00OR22725 with the US Department of Energy (DOE). The publisher acknowledges the US government license to provide public access under the [DOE Public Access Plan](https://www.energy.gov/doe-public-access-plan)
-
----
 
 # Statement of need
 
