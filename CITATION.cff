@@ -1,0 +1,32 @@
+cff-version: 1.1.0
+message: "If you use realtwin software, please cite it as below."
+authors:
+  - family: Luo
+    given-names: Xiangyong
+    orcid: 0009-0003-1290-9983
+
+  - name: Xu
+    given-names: Guanhao
+    orcid: https://orcid.org/0000-0002-1432-6357
+
+  - name: Saroj
+    given-names: Abhilasha
+    orcid: https://orcid.org/0000-0001-9117-8063
+
+  - name: Yuan
+    given-names: Jinghui
+    orcid: https://orcid.org/0000-0003-0895-1997
+
+  - name: Shao
+    given-names: Yunli
+    orcid: https://orcid.org/0000-0001-8528-7925
+
+  - name: Wang
+    given-names: Chieh (Ross)
+    orcid: https://orcid.org/0000-0001-8073-7683
+
+title: "realtwin: A Unified Simulation Scenario Generation Tool for Mobility Research"
+version: 0.1.0
+doi: 10.1177/03611981251349433
+date-released: 2025-06-02
+url: "https://github.com/ORNL-Real-Sim/Real-Twin"
