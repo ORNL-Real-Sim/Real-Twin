@@ -8,6 +8,13 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 **Change Log section will eventually be moved to CHANGLOG.md (currently maintained in README.md for development).**
 
+### 2025-06-04
+
+* Add security.md
+
+* Add code of conduct
+* Make consistancy between readthedocs and GitHub repository
+
 ### 2025-05-29
 
 * Not create OpenDrive file if inc_sumo_net assigned in generate_inputs()

@@ -1,14 +1,14 @@
 [![PyPI version](https://badge.fury.io/py/realtwin.svg)](https://badge.fury.io/py/realtwin)[![Downloads](https://static.pepy.tech/badge/realtwin)](https://pepy.tech/project/realtwin)[![](https://img.shields.io/pypi/wheel/gensim.svg)](https://pypi.org/project/realtwin/)[![](https://img.shields.io/pypi/pyversions/realtwin.svg)](https://www.python.org/)[![](https://readthedocs.org/projects/real-twin/badge/?version=latest)](https://real-twin.readthedocs.io/en/latest/?badge=latest)[![](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)[![](https://img.shields.io/badge/License-GPL-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-- [Real-Twin](#real-twin)
-  - [🔁 Real-Twin: A Unified Simulation Scenario Generation Tool for Mobility Research](#-real-twin-a-unified-simulation-scenario-generation-tool-for-mobility-research)
-    - [✨ Key Features](#-key-features)
-  - [Installation](#installation)
-  - [Documentation](#documentation)
-  - [Quick Example](#quick-example)
-  - [Call for Contributions](#call-for-contributions)
-  - [Funding](#funding)
-  - [Citation](#citation)
+> - [Real-Twin](#real-twin)
+>   - [🔁 Real-Twin: A Unified Simulation Scenario Generation Tool for Mobility Research](#-real-twin-a-unified-simulation-scenario-generation-tool-for-mobility-research)
+>     - [✨ Key Features](#-key-features)
+>   - [Installation](#installation)
+>   - [Documentation](#documentation)
+>   - [Quick Example](#quick-example)
+>   - [Call for Contributions](#call-for-contributions)
+>   - [Funding](#funding)
+>   - [Citation](#citation)
 
 # Real-Twin
 
