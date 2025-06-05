@@ -78,7 +78,8 @@ For detailed documentation: [Official Documentation](https://real-twin.readthedo
 
 import realtwin as rt
 
-# Please refer to the official documentation for more details on RealTwin preparation before running the simulation
+# Please refer to the official documentation for more details
+# on RealTwin preparation before running the simulation
 
 if __name__ == '__main__':
 
@@ -96,14 +97,17 @@ if __name__ == '__main__':
     twin.generate_inputs(incl_sumo_net=updated_sumo_net)
 
     # BEFORE step 5, there are three steps to be performed:
-    # 1. Prepare Traffic Demand and save it to Traffic Folder in input directory
-    # 2. Prepare Control Data (Signal) and save it to Control Folder in input directory
+    # 1. Prepare Traffic Demand Data and
+    #    save it to Traffic Folder in input directory
+    # 2. Prepare Control Data (Signal) and
+    #    save to Control Folder in input directory
     # 3. Manually fill in the Matchup Table in the input directory
 
     # Step 5: generate abstract scenario
     twin.generate_abstract_scenario()
 
-    # AFTER step 5, Double-check the Matchup Table in the input directory to ensure it is correct.
+    # AFTER step 5,
+    # Double-check the Matchup Table in input directory to ensure it is correct.
 
     # Step 6: generate scenarios
     twin.generate_concrete_scenario()
@@ -111,7 +115,8 @@ if __name__ == '__main__':
     # Step 7: simulate the scenario
     twin.prepare_simulation()
 
-    # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
+    # Step 8: perform calibration, Available algorithms:
+    #    GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
     twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"})
 
 ```
