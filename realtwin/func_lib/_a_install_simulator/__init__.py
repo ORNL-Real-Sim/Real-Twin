@@ -2,7 +2,7 @@
 # Copyright (c) 2024, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
-# This file is part of RealTwin and is distributed under a MIT               #
+# This file is part of RealTwin and is distributed under a GPL               #
 # license. For the licensing terms see the LICENSE file in the top-level     #
 # directory.                                                                 #
 #                                                                            #
