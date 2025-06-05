@@ -4,55 +4,52 @@ Scenario Generation
 
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 5
+    :emphasize-lines: 7
 
     import realtwin as rt
 
+    # Please refer to the official documentation for more details on RealTwin preparation before running the simulation
+    # https://real-twin.readthedocs.io/en/latest/index.html
+
     if __name__ == '__main__':
 
-        # Prepare your configuration file (in YAML format)
-        CONFIG_FILE = "./public_configs.yaml"
+        # Step 1: Prepare your configuration file (in YAML format)
+        CONFIG_FILE = "./realtwin_config.yaml"
 
-        # initialize the realtwin object
+        # Step 2: initialize the realtwin object
         twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
 
-        # NOTE optional: crate or delete a Python virtual environment for the simulation
-        # twin.venv_create(venv_name=twin._venv_name, venv_dir=twin.input_config["output_dir"])
-        # twin.venv_delete(venv_name=twin._venv_name, venv_dir=twin.input_config["output_dir"])
-
-        # check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
-        # twin.env_setup(sel_sim=["SUMO", "VISSIM"])
+        # Step 3: check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
         twin.env_setup(sel_sim=["SUMO", "VISSIM"])
 
-        # NOTE optional: check simulator including additional selection of directories
-        # change the new_dir to your own directory where the SUMO is installed (multiple versions)
-        # new_dir = [r"C:\Users\xh8\ornl_workspace\github_workspace\Real-Twin\SUMO\sumo-1.20.0\bin"]
-        # twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir)
+        # Step 4: Create Matchup Table from SUMO network
+        updated_sumo_net = r"./datasets/example2/chatt.net.xml"
+        twin.generate_inputs(incl_sumo_net=updated_sumo_net)
 
-        # NOTE optional: strict simulator check, if the version is not matched, install the required version
-        # twin.env_setup(sel_sim=["SUMO", "VISSIM"], sel_dir=new_dir, strict_sumo_version="1.21.0")
+        # BEFORE step 5, there are three steps to be performed:
+        # 1. Prepare Traffic Demand and save it to Traffic Folder in input directory
+        # 2. Prepare Control Data (Signal) and save it to Control Folder in input directory
+        # 3. Manually fill in the Matchup Table in the input directory
 
-        # generate MatchupTable for user to update from their customized data
-        twin.generate_inputs()
+        # Step 5: generate abstract scenario
+        twin.generate_abstract_scenario()
 
-        # generate abstract scenario
-        twin.generate_abstract_scenario(incl_elevation_tif=True)
+        # AFTER step 5, Double-check the Matchup Table in the input directory to ensure it is correct.
 
-        # generate scenarios
+        # Step 6: generate scenarios
         twin.generate_concrete_scenario()
 
-        # simulate the scenario
+        # Step 7: simulate the scenario
         twin.prepare_simulation()
 
-        # perform calibration
-        # Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
+        # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
         twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"})
 
-        # post-process the simulation results
-        twin.post_process()  # keywords arguments can be passed to specify the post-processing options
+        # Step 9 (ongoing): post-process the simulation results
+        twin.post_process()  # keyword arguments can be passed to specify the post-processing options
 
-        # visualize the simulation results
-        twin.visualize()  # keywords arguments can be passed to specify the visualization options
+        # Step 10 (ongoing): visualize the simulation results
+        twin.visualize()  # keyword arguments can be passed to specify the visualization options
 
 
 

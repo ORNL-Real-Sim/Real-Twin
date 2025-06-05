@@ -14,12 +14,12 @@
 import realtwin as rt
 
 # Please refer to the official documentation for more details on RealTwin preparation before running the simulation
+# https://real-twin.readthedocs.io/en/latest/index.html
 
 if __name__ == '__main__':
 
     # Step 1: Prepare your configuration file (in YAML format)
     CONFIG_FILE = "./realtwin_config.yaml"
-    updated_sumo_net = r"./datasets/example2/chatt.net.xml"
 
     # Step 2: initialize the realtwin object
     twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
@@ -28,6 +28,7 @@ if __name__ == '__main__':
     twin.env_setup(sel_sim=["SUMO", "VISSIM"])
 
     # Step 4: Create Matchup Table from SUMO network
+    updated_sumo_net = r"./datasets/example2/chatt.net.xml"
     twin.generate_inputs(incl_sumo_net=updated_sumo_net)
 
     # BEFORE step 5, there are three steps to be performed:
