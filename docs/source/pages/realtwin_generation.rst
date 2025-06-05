@@ -4,7 +4,7 @@ Scenario Generation
 
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 7
+    :emphasize-lines: 9
 
     import realtwin as rt
 
