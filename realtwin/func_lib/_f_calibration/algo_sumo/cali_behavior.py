@@ -182,7 +182,17 @@ class BehaviorCali:
         else:
             self.init_solution = None
 
-        params_ranges = self.behavior_cfg.get("params_ranges").values()
+        # Default parameter ranges
+        params_ranges_ = {"min_gap": [1.0, 3.0],
+                          "acceleration": [2.5, 3.0],
+                          "deceleration": [4.0, 5.3],
+                          "sigma": [0.0, 1.0],
+                          "tau": [0.25, 1.25],
+                          "emergencyDecel": [5.0, 9.3]
+                          }
+
+        params_ranges = self.behavior_cfg.get("params_ranges",
+                                              params_ranges_).values()
         params_lb = [val[0] for val in params_ranges]
         params_ub = [val[1] for val in params_ranges]
         self.problem_dict = {

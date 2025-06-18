@@ -75,7 +75,7 @@ class RealTwin:
         self._proj_dir = os.getcwd()  # get current working directory
 
         # extract data from kwargs
-        self.verbose = kwargs["verbose"] if "verbose" in kwargs else False
+        self.verbose = kwargs.get("verbose", False)
 
     def env_setup(self,
                   *,
@@ -123,7 +123,7 @@ class RealTwin:
 
         # 0. Check if the sim_env is selected,
         #    default to SUMO, case insensitive and add self.sel_sim as a class attribute
-        sel_sim = ["sumo"] if not sel_sim else [sim.lower() for sim in sel_sim]
+        sel_sim = [sim.lower() for sim in sel_sim] if sel_sim else ["sumo"]
 
         # 1. Check simulator installation - mapping function
         simulator_installation = {
@@ -275,7 +275,7 @@ class RealTwin:
             while not usr_input:
                 usr_input = console.input(":warning: [bold magenta]Please update the generated Matchup table from "
                                           "input folder before pressing Enter or type 'y' / 'yes' to continue")
-                if usr_input == "" or usr_input in ["y", "Y", "yes", "Yes"]:
+                if usr_input in ["", "y", "Y", "yes", "Yes"]:
                     console.print("  [dim cyan]:INFO: User confirmed to continue (Matchup Table Updated).")
                     usr_input = True
 
@@ -388,6 +388,7 @@ class RealTwin:
                   sel_behavior_routes: dict = None,
                   update_turn_flow_algo: dict = None,
                   update_behavior_algo: dict = None) -> bool:
+        # sourcery skip: extract-duplicate-method, remove-empty-nested-block, remove-redundant-if
         """Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.
 
         Args:
