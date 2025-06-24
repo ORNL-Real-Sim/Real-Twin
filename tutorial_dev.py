@@ -28,7 +28,7 @@ if __name__ == '__main__':
     twin.env_setup(sel_sim=["SUMO", "VISSIM"])
 
     # Step 4: Create Matchup Table from SUMO network
-    updated_sumo_net = r"./datasets/example2/chatt.net.xml"
+    updated_sumo_net = r"./datasets/example2/updated.net.xml"
     twin.generate_inputs(incl_sumo_net=updated_sumo_net)
 
     # BEFORE step 5, there are three steps to be performed:

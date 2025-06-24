@@ -303,7 +303,12 @@ class RealTwin:
                             "Please run generate_inputs() first.")
 
         # update traffic and signal
-        path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
+        path_matchup_updated = Path(self.input_config.get(
+            "input_dir")) / "MatchupTable_updated.xlsx"
+        if os.path.exists(path_matchup_updated):
+            path_matchup = pf.path2linux(path_matchup_updated)
+        else:
+            path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
         control_dir = pf.path2linux(Path(self.input_config.get("input_dir")) / "Control")
         traffic_dir = pf.path2linux(Path(self.input_config.get("input_dir")) / "Traffic")
 
