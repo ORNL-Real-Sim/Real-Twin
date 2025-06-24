@@ -77,6 +77,9 @@ class RealTwin:
         # extract data from kwargs
         self.verbose = kwargs.get("verbose", False)
 
+        # whether to stop the program to let user confirm input
+        self._input_confirm = kwargs.get("input_confirm", True)
+
     def env_setup(self,
                   *,
                   sel_sim: list = None,
@@ -84,7 +87,7 @@ class RealTwin:
                   strict_sumo_version: str = None,
                   strict_vissim_version: str = None,
                   strict_aimsun_version: str = None,
-                  **kwargs) -> bool:
+                  **kwargs) -> str:
         """Check and set up the environment for the simulation
 
         Args:
@@ -118,7 +121,7 @@ class RealTwin:
             >>>                sumo_version="1.21.0", strict_sumo_version=True)
 
         Returns:
-            bool: True if the environment is set up successfully, False otherwise.
+            str: The selected simulator installation status.
         """
 
         # 0. Check if the sim_env is selected,
@@ -157,9 +160,9 @@ class RealTwin:
             raise Exception("  :Error: No simulator is available (strict version). Please select available version(s).")
         self.sel_sim = sel_sim_
 
-        return True
+        return f"  :Info: Selected simulators: {sel_sim_} are installed successfully."
 
-    def generate_inputs(self, *, incl_sumo_net: str = None):
+    def generate_inputs(self, *, incl_sumo_net: str = None) -> str:
         """ Generate user inputs, such as MatchUp table, Control and Traffic data
 
         Args:
@@ -172,6 +175,9 @@ class RealTwin:
             - How to create/update MatchUp table
             - How to create/prepare Control and Traffic data
             - How to download elevation tif data from network BBOX
+
+        Returns:
+            str: The status of the input generation.
         """
         with console.status("[bold cyan]Generating inputs...", spinner="dots"):
             console.print("\n[bold green]Check / Create input files and folders for user:")
@@ -263,21 +269,25 @@ class RealTwin:
                           " and then run generate_abstract_scenario()."
                           " For details please refer to official documentation: \n", soft_wrap=True, no_wrap=False)
 
-            console.rule("[bold green]Program stopped. Please prepare the Control and Traffic data and "
-                         "fill in the Matchup Table before proceeding.\n"
-                         "[bold red]Please run generate_abstract_scenario() "
-                         "after preparing the input data.\n")
-            time.sleep(2)  # wait for 2 seconds before exiting
-            # sys.exit(0)
-            # Stop the program to let user update the Matchup table
-            #
-            usr_input = False
-            while not usr_input:
-                usr_input = console.input(":warning: [bold magenta]Please update the generated Matchup table from "
-                                          "input folder before pressing Enter or type 'y' / 'yes' to continue")
-                if usr_input in ["", "y", "Y", "yes", "Yes"]:
-                    console.print("  [dim cyan]:INFO: User confirmed to continue (Matchup Table Updated).")
-                    usr_input = True
+            if self._input_confirm:
+                console.rule("[bold green]Program stopped. Please prepare the Control and Traffic data and "
+                             "fill in the Matchup Table before proceeding.\n"
+                             "[bold red]Please run generate_abstract_scenario() "
+                             "after preparing the input data.\n")
+                time.sleep(2)  # wait for 2 seconds before exiting
+                # sys.exit(0)
+                # Stop the program to let user update the Matchup table
+
+                usr_input = False
+                while not usr_input:
+                    usr_input = console.input(":warning: [bold magenta]Please update the generated Matchup table from "
+                                              "input folder before pressing Enter or type 'y' / 'yes' to continue")
+                    if usr_input in ["", "y", "Y", "yes", "Yes"]:
+                        console.print("  [dim cyan]:INFO: User confirmed to continue (Matchup Table Updated).")
+                        usr_input = True
+
+        return (f"  :Info: Please prepare the Control and Traffic data and save them to the input directory. "
+                f"Please also fill in the Matchup Table at {path_matchup}.\n")
 
     def generate_abstract_scenario(self):
         """Generate the abstract scenario: create OpenDrive files
@@ -301,9 +311,11 @@ class RealTwin:
         _ = update_matchup_table(path_matchup_table=path_matchup,
                                  control_dir=control_dir,
                                  traffic_dir=traffic_dir)
-        # Tell user to manually check correctness of the Matchup Table
-        console.input(":warning: [bold magenta]In the Matchup Table, please check if the turn movement in the "
-                      "demand and control data match with bearings in the network data. Enter any key to continue...")
+
+        if self._input_confirm:
+            # Tell user to manually check correctness of the Matchup Table
+            console.input(":warning: [bold magenta]In the Matchup Table, please check if the turn movement in the "
+                          "demand and control data match with bearings in the network data. Enter any key to continue...")
 
         df_volume, df_vol_lookup = generate_turn_demand(path_matchup_table=path_matchup,
                                                         control_dir=control_dir,
