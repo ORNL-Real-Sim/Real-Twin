@@ -22,7 +22,7 @@ from realtwin.func_lib._a_install_simulator.inst_sumo import (install_sumo,
                                                               install_sumo_macos)
 
 # _b_load_inputs: Functions to load input configurations and data
-from realtwin.func_lib._b_load_inputs.loader_config import load_input_config, get_bounding_box_from
+from realtwin.func_lib._b_load_inputs.loader_config import load_input_config
 
 
 # _c_abstract_scenario: Abstract classes and functions for scenarios

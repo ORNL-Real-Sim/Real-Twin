@@ -17,7 +17,7 @@ from .download_elevation_tif import download_elevation_tif_by_bbox
 from .download_file_from_web import download_single_file_from_web
 from .find_exe_from_PATH import find_executable_from_PATH_on_win
 from .create_config import prepare_config_file
-
+from .get_bbox_from_list_of_coords import get_bounding_box_from_vertices
 
 __all__ = [
 
@@ -30,4 +30,5 @@ __all__ = [
     'find_executable_from_PATH_on_win',
 
     'prepare_config_file',
+    'get_bounding_box_from_vertices',
 ]

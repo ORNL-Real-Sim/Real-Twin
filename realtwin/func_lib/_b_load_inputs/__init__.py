@@ -11,10 +11,9 @@
 ##############################################################################
 
 
-from .loader_config import load_input_config, get_bounding_box_from
+from .loader_config import load_input_config
 
 
 __all__ = [
     "load_input_config",
-    "get_bounding_box_from"
 ]
