@@ -243,7 +243,8 @@ def format_junction_bearing(path_net: str) -> pd.DataFrame:
     MatchupTable.drop_duplicates(subset=["Junction ID", "FromEdge", "ToEdge", "Direction"], inplace=True)
     MatchupTable.reset_index(drop=True, inplace=True)
 
-    MatchupTable["Junction ID Numeric"] = pd.to_numeric(MatchupTable["Junction ID"], errors='coerce')
+    # MatchupTable["Junction ID Numeric"] = pd.to_numeric(MatchupTable["Junction ID"], errors='coerce')
+    MatchupTable["Junction ID Numeric"] = MatchupTable["Junction ID"].astype(str)
     direction_order = {"right": 1, "thru": 2, "left": 3, "Uturn": 4}
     MatchupTable["Direction Order"] = MatchupTable["Direction"].map(direction_order)
     # Sort by "Junction ID", "Degree", and "Direction Order"
