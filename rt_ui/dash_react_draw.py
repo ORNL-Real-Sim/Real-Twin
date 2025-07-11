@@ -2,39 +2,36 @@ import dash
 from dash import html, dcc
 import dash_leaflet as dl
 from dash.dependencies import Input, Output, State
+from shapely.geometry import Point, Polygon
 
-# Example list of existing points (lon, lat)
+# --- your existing data ---
 existing_points = [
     (-74.0059, 40.7128),
     (-74.0020, 40.7150),
     (-74.0100, 40.7100),
     # …add as many as you like
 ]
-
-# Convert to a GeoJSON FeatureCollection
 point_features = [{
     "type": "Feature",
     "geometry": {"type": "Point", "coordinates": pt},
     "properties": {}
 } for pt in existing_points]
 
-# Basemap options and their URLs
 basemap_options = [
     {"label": "OpenStreetMap", "value": "osm"},
-    {"label": "Stamen Toner", "value": "stamen_toner"},
+    {"label": "Stamen Toner",   "value": "stamen_toner"},
     {"label": "CartoDB Positron", "value": "cartodb_positron"},
 ]
-
 basemap_urls = {
-    "osm": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    "stamen_toner": "https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
-    "cartodb_positron": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+    "osm":               "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "stamen_toner":      "https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
+    "cartodb_positron":  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
 }
 
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
-    # Dropdown to select basemap
+    # dropdown to switch basemap
     dcc.Dropdown(
         id="basemap_dropdown",
         options=basemap_options,
@@ -42,7 +39,7 @@ app.layout = html.Div([
         clearable=False,
         style={"width": "300px", "marginBottom": "10px"}
     ),
-    # Map with dynamic TileLayer
+    # the map itself
     dl.Map(
         id="map",
         center=[40.7128, -74.0060],
@@ -50,8 +47,10 @@ app.layout = html.Div([
         style={"width": "100%", "height": "500px"},
         children=[
             dl.TileLayer(id="base_layer", url=basemap_urls["osm"]),
-            dl.GeoJSON(data={"type": "FeatureCollection",
-                       "features": point_features}, id="points_layer"),
+            # all your original points
+            dl.GeoJSON(data={"type": "FeatureCollection", "features": point_features},
+                       id="points_layer"),
+            # layer for the user to draw on
             dl.FeatureGroup(
                 id="editable_layer",
                 children=[
@@ -69,12 +68,14 @@ app.layout = html.Div([
                     )
                 ]
             ),
+            # NEW: layer where we'll add red circle-markers
+            dl.LayerGroup(id="selected_points_layer"),
         ]
     ),
     html.Div(id="output_div", style={"marginTop": "1em"})
 ])
 
-# Callback to update the TileLayer URL based on dropdown selection
+# switch basemap URL
 
 
 @app.callback(
@@ -84,35 +85,71 @@ app.layout = html.Div([
 def update_basemap(value):
     return basemap_urls.get(value, basemap_urls["osm"])
 
-# Callback to display polygon coordinates
 
-
+# when the user draws something, compute which existing points lie inside it
 @app.callback(
-    Output("output_div", "children"),
+    [
+        Output("output_div", "children"),
+        Output("selected_points_layer", "children")
+    ],
     Input("edit_control", "geojson"),
     prevent_initial_call=True
 )
-def display_polygon(geojson):
+def select_points_within(geojson):
     if not geojson or "features" not in geojson:
-        return "No polygon drawn yet."
+        return "No shape drawn yet.", []
+
+    # build one (or more) Shapely polygons from what was drawn
+    regions = []
+    for feat in geojson["features"]:
+        geom_type = feat["geometry"]["type"]
+        coords = feat["geometry"]["coordinates"]
+        if geom_type == "Polygon":
+            # a rectangle, polygon, or drawn‐circle all come back as a Polygon
+            regions.append(Polygon(coords[0]))
+        # you could add elifs here if you want to support other geo‐types
+
+    if not regions:
+        return "No polygonal region detected.", []
+
+    # test each existing point
+    inside = []
+    for lon, lat in existing_points:
+        pt = Point(lon, lat)
+        if any(region.contains(pt) for region in regions):
+            inside.append((lon, lat))
+
+    # format a human‐readable list
+    if inside:
+        msg = "Points inside region:\n" + \
+            "\n".join(f"• ({lon:.6f}, {lat:.6f})" for lon, lat in inside)
+    else:
+        msg = "No existing points fall inside the drawn region.  \n\n"
+
+    # build red CircleMarker for each selected point
+    markers = [
+        dl.CircleMarker(center=[lat, lon], radius=8,
+                        color="red", fillOpacity=0.6)
+        for lon, lat in inside
+    ]
 
     print("GeoJSON data:", geojson)
-    formatted = ""
-    coords = [feature["geometry"]["coordinates"][0] for feature in geojson["features"]]
+    # coords = [feature["geometry"]["coordinates"][0] for feature in geojson["features"]]
 
-    if not coords:
-        return "No coordinates found in the polygon."
+    # if not coords:
+    #     return "No coordinates found in the polygon."
 
     for each_feature in geojson["features"]:
         property_type = each_feature["properties"].get("type", "Polygon")
         property_coords = each_feature["geometry"]["coordinates"]
 
         try:
-            formatted += f"{property_type} vertices: {', '.join(f'({lon:.6f}, {lat:.6f})' for lon, lat in property_coords[0])} \n"
+            msg += f"{property_type} vertices: {', '.join(f'({lon:.6f}, {lat:.6f})' for lon,
+                                                          lat in property_coords[0])} \n\n"
         except TypeError:
-            formatted += f"{property_type} vertices: {', '.join(str(coord) for coord in property_coords)} \n"
+            msg += f"{property_type} vertices: {', '.join(str(coord) for coord in property_coords)} \n\n"
 
-    return formatted or "No coordinates found in the polygon."
+    return msg, markers
 
 
 if __name__ == "__main__":
