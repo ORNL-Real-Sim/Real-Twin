@@ -6,14 +6,20 @@
 ##############################################################
 '''
 
-
-import tempfile
-import shutil
 from typing import Any
 import yaml
-import pytest
 from pathlib import Path
-from realtwin.func_lib._b_load_inputs.loader_config import load_input_config
+import pytest
+
+try:
+    import realtwin
+except ImportError:
+    # If realtwin is not installed, use the local path
+    import sys
+    sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
+    import realtwin
+
+from realtwin.func_lib import load_input_config
 
 
 @pytest.fixture
