@@ -214,14 +214,6 @@ class RealTwin:
             path_sumo_net = pf.path2linux(Path(self.input_config.get("output_dir")) / f"OpenDrive/{net_name}.net.xml")
             # generate abstract scenario if sumo net file does not exist
             self.abstract_scenario = AbstractScenario(self.input_config)
-            if not os.path.exists(path_sumo_net):
-                # Create original SUMO network from vertices from config file
-                self.abstract_scenario.create_SUMO_network()
-
-                # crate OpenDrive network from SUMO network, and then rewrite sumo network based on OpenDrive network
-                self.abstract_scenario.create_OpenDrive_network()
-
-                rprint("  :INFO: OpenDrive network is generated.\n", end="")
 
             # Update SUMO Network before generating OpenDrive network
             if demo_data := self.input_config["demo_data"]:
@@ -243,7 +235,7 @@ class RealTwin:
 
                     # create opendrive net from updated sumo net, and rewrite sumo net based on OpenDrive net
                     # self.abstract_scenario.create_OpenDrive_network()
-                    rprint("  [dim cyan]:INFO: OpenDrive network is generated.", end="")
+                    # rprint("  [dim cyan]:INFO: OpenDrive network is generated.", end="")
                 else:
                     console.print("  [magenta]:NOTE: incl_sumo_net is not exist or not with .net.xml extension.\n"
                                   "  :Please provide a valid SUMO file with .net.xml extension or leave it empty.",
@@ -253,6 +245,15 @@ class RealTwin:
                 rprint("  [dim cyan]:INFO: You can use your own SUMO network by providing the path "
                        "to the incl_sumo_net parameter. The path should be a .net.xml file. \n",
                        end="")
+            # generate SUMO and OpenDrive network if not exists
+            if not os.path.exists(path_sumo_net):
+                # Create original SUMO network from vertices from config file
+                self.abstract_scenario.create_SUMO_network()
+
+                # crate OpenDrive network from SUMO network, and then rewrite sumo network based on OpenDrive network
+                self.abstract_scenario.create_OpenDrive_network()
+
+                rprint("  :INFO: OpenDrive network is generated.\n", end="")
 
             # create matchup table for user
             path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
