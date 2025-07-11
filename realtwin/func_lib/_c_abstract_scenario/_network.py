@@ -221,7 +221,7 @@ class OSMRoad:
                                    for tup in NetworkVerticesTemp]
         elif isinstance(NetworkVertices, list):
             # Check if the list contains tuples
-            if all(isinstance(item, list) and len(item) == 2 for item in NetworkVertices):
+            if all(isinstance(item, (list, tuple)) and len(item) == 2 for item in NetworkVertices):
                 NetworkVerticesList = [(float(item[0]), float(item[1])) for item in NetworkVertices]
             else:
                 raise ValueError("Invalid format: List must contain list of [lon, lat].")

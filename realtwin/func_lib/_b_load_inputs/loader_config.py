@@ -92,7 +92,7 @@ def load_input_config(path_config: str) -> dict:
         # detect the coordinate order
         coord_order = detect_coord_order(vertices)
         if coord_order == "lat, lon":
-            vertices = [(float(lon), float(lat)) for (lat, lon) in vertices]
+            vertices = [[float(lon), float(lat)] for (lat, lon) in vertices]
         elif coord_order == "ambiguous":
             console.log("  :Coordinate order is ambiguous. Assuming (lon, lat) format.")
 
