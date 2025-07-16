@@ -221,11 +221,6 @@ class RealTwin:
                 incl_sumo_net = pf.path2linux(Path(self.input_config["input_dir"]) / f"updated_net/{demo_data}.net.xml")
 
             if incl_sumo_net:
-
-                # convert incl_sumo_net to string if it is a Path object
-                if isinstance(incl_sumo_net, Path):
-                    incl_sumo_net = str(incl_sumo_net)
-
                 # check if the file exists and end with .net.xml
                 if incl_sumo_net.endswith(".net.xml") and os.path.exists(incl_sumo_net):
                     self.input_config["incl_sumo_net"] = incl_sumo_net
@@ -234,6 +229,10 @@ class RealTwin:
                     incl_sumo_net = pf.path2linux(Path(incl_sumo_net))  # ensure it's absolute path
                     if incl_sumo_net != path_sumo_net:
                         shutil.copy(incl_sumo_net, path_sumo_net)
+
+                    # update opendrive network
+                    self.abstract_scenario.Network.OpenDriveNetwork.OpenDrive_network = [incl_sumo_net, ""]
+
                     console.print(f"  [dim cyan]:INFO: SUMO network is copied to {path_sumo_net}.\n"
                                   f"  [dim cyan]:Using updated SUMO network provide by user: {incl_sumo_net} "
                                   "to generate OpenDrive network.\n", soft_wrap=True, no_wrap=False)
@@ -309,12 +308,14 @@ class RealTwin:
                             "Please run generate_inputs() first.")
 
         # update traffic and signal
-        path_matchup_updated = Path(self.input_config.get(
-            "input_dir")) / "MatchupTable_updated.xlsx"
-        if os.path.exists(path_matchup_updated):
-            path_matchup = pf.path2linux(path_matchup_updated)
+        path_matchup_updated = Path(self.input_config.get("input_dir")) / "MatchupTable_updated.xlsx"
+        path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
+        if path_matchup_updated.exists():
+            # update the matchup table with the updated one
+            shutil.copy(path_matchup_updated, path_matchup)
         else:
             path_matchup = pf.path2linux(Path(self.input_config.get("input_dir")) / "MatchupTable.xlsx")
+        print(f"  :INFO: Using Matchup Table: {path_matchup}")
         control_dir = pf.path2linux(Path(self.input_config.get("input_dir")) / "Control")
         traffic_dir = pf.path2linux(Path(self.input_config.get("input_dir")) / "Traffic")
 

@@ -29,5 +29,8 @@ class Supply:
     def generate_network(self, AbsScn):
         """Generate network data from the abstract scenario."""
         self.NetworkName = AbsScn.Network.NetworkName
-        self.Network = AbsScn.Network.OpenDriveNetwork.OpenDrive_network[0]
-        self.NetworkWithElevation = AbsScn.Network.OpenDriveNetwork.OpenDrive_network[1]
+
+        pd_net = AbsScn.Network.OpenDriveNetwork.OpenDrive_network
+        if isinstance(pd_net, list) and len(pd_net) == 2:
+            self.Network = AbsScn.Network.OpenDriveNetwork.OpenDrive_network[0]
+            self.NetworkWithElevation = AbsScn.Network.OpenDriveNetwork.OpenDrive_network[1]

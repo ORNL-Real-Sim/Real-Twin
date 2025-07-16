@@ -191,6 +191,22 @@ class AbstractScenario:
 
         self.Traffic = Traffic()
         self.Network = Network(output_dir=self.input_config.get('output_dir'))
+
+        # update Network
+        if network_dict := self.input_config.get('Network'):
+            self.Network.NetworkName = network_dict.get('NetworkName', "network")
+            self.Network.NetworkVertices = network_dict.get('NetworkVertices', "")
+            self.Network.ElevationMap = network_dict.get('ElevationMap', "No elevation map provided!")
+
+            # update the OpenDriveNetwork output directory
+            self.Network._output_dir = self.input_config.get('output_dir')
+            self.Network.OpenDriveNetwork._output_dir = self.Network._output_dir
+
+            # update and crate OpenDriveNetwork
+            self.Network.OpenDriveNetwork._net_name = self.Network.NetworkName
+            self.Network.OpenDriveNetwork._net_vertices = self.Network.NetworkVertices
+            self.Network.OpenDriveNetwork._ele_map = self.Network.ElevationMap
+
         self.Control = Control()
         self.Application = Application()
 

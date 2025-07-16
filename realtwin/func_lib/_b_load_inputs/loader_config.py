@@ -25,7 +25,7 @@ from realtwin.util_lib.check_lon_lat_from_list_of_coords import detect_coord_ord
 from realtwin.util_lib.get_bbox_from_list_of_coords import get_bounding_box_from_vertices
 
 
-def load_input_config(path_config: str | Path) -> dict:
+def load_input_config(path_config: str) -> dict:
     """load input configuration from yaml file
 
     Args:
