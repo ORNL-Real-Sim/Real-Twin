@@ -25,7 +25,7 @@ from realtwin.util_lib.check_lon_lat_from_list_of_coords import detect_coord_ord
 from realtwin.util_lib.get_bbox_from_list_of_coords import get_bounding_box_from_vertices
 
 
-def load_input_config(path_config: str) -> dict:
+def load_input_config(path_config: str | Path) -> dict:
     """load input configuration from yaml file
 
     Args:
@@ -38,6 +38,9 @@ def load_input_config(path_config: str) -> dict:
     Returns:
         dict: the dictionary of the configuration data
     """
+
+    if isinstance(path_config, Path):
+        path_config = str(path_config)
 
     # TDD check whether the file exists and is a yaml file
     if not os.path.exists(path_config):

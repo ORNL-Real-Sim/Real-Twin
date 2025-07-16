@@ -221,6 +221,11 @@ class RealTwin:
                 incl_sumo_net = pf.path2linux(Path(self.input_config["input_dir"]) / f"updated_net/{demo_data}.net.xml")
 
             if incl_sumo_net:
+
+                # convert incl_sumo_net to string if it is a Path object
+                if isinstance(incl_sumo_net, Path):
+                    incl_sumo_net = str(incl_sumo_net)
+
                 # check if the file exists and end with .net.xml
                 if incl_sumo_net.endswith(".net.xml") and os.path.exists(incl_sumo_net):
                     self.input_config["incl_sumo_net"] = incl_sumo_net
