@@ -542,7 +542,7 @@ if __name__ == "__main__":
                                         },
                           }
 
-    opt = TurnInflowCalib(scenario_config=scenario_config, turn_inflow_config=turn_inflow_config, verbose=True)
+    opt = TurnInflowCali(scenario_config=scenario_config, turn_inflow_config=turn_inflow_config, verbose=True)
 
     # Run Genetic Algorithm
     # g_best = opt.run_GA()

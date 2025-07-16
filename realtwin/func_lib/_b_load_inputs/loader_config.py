@@ -55,6 +55,11 @@ def load_input_config(path_config: str) -> dict:
         # set input_dir to current working directory if not specified
         config['input_dir'] = pf.path2linux(os.getcwd())
     else:
+
+        # check if the input_dir is a valid path
+        if not Path(config['input_dir']).exists():
+            config['input_dir'] = pf.path2linux(os.getcwd())
+
         # convert input_dir to linux format
         config['input_dir'] = pf.path2linux(config['input_dir'])
 
