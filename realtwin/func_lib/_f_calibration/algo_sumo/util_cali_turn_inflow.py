@@ -126,8 +126,8 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
         TurnDictSubset = TurnDfSubset.to_dict(orient='records')
         for TurnData in TurnDictSubset:
             edge_relation = ET.SubElement(Interval, 'edgeRelation')
-            edge_relation.set('from', str(-int(TurnData['OpenDriveFromID'])))
-            edge_relation.set('to', str(-int(TurnData['OpenDriveToID'])))
+            edge_relation.set('from', f"-{TurnData['OpenDriveFromID']}")
+            edge_relation.set('to', f"-{TurnData['OpenDriveToID']}")
             edge_relation.set('probability', str(TurnData['TurnRatio']))
     # <edgeRelation from="" probability="" to=""/>
     TreeTurn = ET.ElementTree(turns)
@@ -150,7 +150,7 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
         flow.set('id', str(FlowID))
         flow.set('begin', str(InflowData['IntervalStart']))
         flow.set('end', str(InflowData['IntervalEnd']))
-        flow.set('from', str(-int(InflowData['OpenDriveFromID'])))
+        flow.set('from', f"-{InflowData['OpenDriveFromID']}")
         flow.set('number', str(int(InflowData['Count'])))
         # flow.set('number', str(int(int(InflowData['Count'])/CablibrationInterval*DemandInterval)))
         flow.set('type', 'car')
@@ -173,12 +173,28 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
     #     # "--seed","101",
     #     # "--ignore-errors",  # Continue on errors; remove if not desired
     # ]
-    cmd = f'cmd /c "jtrrouter -r {path_flow} -t {path_turn} -n {path_net} --accept-all-destinations --remove-loops True --randomize-flows -o {path_rou}"'
+    # cmd = f'jtrrouter -r "{path_flow}" -t "{path_turn}" -n "{path_net}" --accept-all-destinations --remove-loops True --randomize-flows -o "{path_rou}"'
+    cmd = (
+        f'jtrrouter '
+        f'-r "{path_flow}" '
+        f'-t "{path_turn}" '
+        f'-n "{path_net}" '
+        f'--accept-all-destinations '
+        f'--remove-loops True '
+        f'--randomize-flows '
+        f'-o "{path_rou}"'
+    )
 
     # Execute the command
     try:
         # subprocess.run(cmd, capture_output=True, text=True)
         process = subprocess.Popen(cmd, shell=True)
+        # process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+        # # Print output line by line in real time
+        # for line in process.stdout:
+        #     print(line, end='')  # end='' prevents double newlines
+            
         process.wait()
         if verbose:
             print(f"  :Route file generated successfully: {path_rou}")
@@ -487,7 +503,7 @@ def generate_inflow(path_net: str,
 
     IDRef = IDRef.dropna(subset=['OpenDriveFromID', 'OpenDriveToID'])
     IDRef = IDRef[(IDRef['OpenDriveFromID'] != '') & (IDRef['OpenDriveToID'] != '')]
-    IDRef = IDRef.astype({'OpenDriveFromID': int, 'OpenDriveToID': int})
+    # IDRef = IDRef.astype({'OpenDriveFromID': int, 'OpenDriveToID': int})
     IDRef = IDRef.astype(str)
 
     MergedDf1 = pd.merge(Count, IDRef, on=['IntersectionName', 'Turn'], how='left')

@@ -225,7 +225,16 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str, path_flow:
     #     # "--seed","101",
     #     "--ignore-errors",  # Continue on errors; remove if not desired
     # ]
-    cmd = f'cmd /c "jtrrouter -r {path_flow} -t {path_turn} -n {path_net} --accept-all-destinations --remove-loops True --randomize-flows -o {path_rou}"'
+    # cmd = f'jtrrouter -r "{path_flow}" -t "{path_turn}" -n "{path_net}" --accept-all-destinations --remove-loops True --randomize-flows -o "{path_rou}"'
+    cmd = (
+        f'jtrrouter -r "{path_flow}" '
+        f'-t "{path_turn}" '
+        f'-n "{path_net}" '
+        f'--accept-all-destinations '
+        f'--remove-loops True '
+        f'--randomize-flows '
+        f'-o "{path_rou}"'
+    )
 
     # Execute the command
     try:

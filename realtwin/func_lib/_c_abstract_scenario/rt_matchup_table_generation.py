@@ -181,7 +181,8 @@ def generate_junction_bearing(path_net: str) -> pd.DataFrame:
         exit_count = sum(df_edges["From"] == junction_id)
 
         # Check if the junction has at least 2 entrances or at least 2 exits
-        if entrance_count >= 2 or exit_count >= 2:
+        # if entrance_count >= 2 or exit_count >= 2:
+        if exit_count >= 2:
             for edge in root.findall("edge"):
                 edge_id = edge.get("id")
                 if edge_id in edges:
@@ -266,8 +267,8 @@ def format_junction_bearing(path_net: str) -> pd.DataFrame:
     }, inplace=True)
 
     # remove "-" before the sumo edge id to be OpenDrive road id
-    MatchupTable["FromRoadID_OpenDrive"] = MatchupTable["FromRoadID_OpenDrive"].astype(str).str.lstrip("-")
-    MatchupTable["ToRoadID_OpenDrive"] = MatchupTable["ToRoadID_OpenDrive"].astype(str).str.lstrip("-")
+    MatchupTable["FromRoadID_OpenDrive"] = MatchupTable["FromRoadID_OpenDrive"].astype(str).str.replace(r"^-", "", n=1, regex=True)
+    MatchupTable["ToRoadID_OpenDrive"] = MatchupTable["ToRoadID_OpenDrive"].astype(str).str.replace(r"^-", "", n=1, regex=True)
 
     MatchupTable["File_GridSmart"] = None
     MatchupTable["Date_GridSmart"] = None

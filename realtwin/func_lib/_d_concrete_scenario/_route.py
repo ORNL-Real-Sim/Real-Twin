@@ -41,7 +41,7 @@ class Route:
             path_lookup_abs = pf.path2linux(os.path.join(AbsScn.input_config.get("input_dir"), path_lookup))
             IDRef = pd.read_csv(path_lookup_abs)
         IDRef = IDRef.dropna(subset=['OpenDriveFromID', 'OpenDriveToID'])
-        IDRef = IDRef.astype({'OpenDriveFromID': int, 'OpenDriveToID': int})
+        # IDRef = IDRef.astype({'OpenDriveFromID': int, 'OpenDriveToID': int})
         IDRef = IDRef.astype(str)
 
         MergedDf2 = pd.merge(Turn, IDRef, on=['IntersectionName', 'Turn'], how='left')
