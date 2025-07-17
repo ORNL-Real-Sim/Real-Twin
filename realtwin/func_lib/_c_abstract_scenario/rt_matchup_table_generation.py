@@ -181,7 +181,8 @@ def generate_junction_bearing(path_net: str) -> pd.DataFrame:
         exit_count = sum(df_edges["From"] == junction_id)
 
         # Check if the junction has at least 2 entrances or at least 2 exits
-        if entrance_count >= 2 or exit_count >= 2:
+        # if entrance_count >= 2 or exit_count >= 2:
+        if exit_count >= 2:
             for edge in root.findall("edge"):
                 edge_id = edge.get("id")
                 if edge_id in edges:

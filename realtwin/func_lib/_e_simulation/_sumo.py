@@ -12,6 +12,7 @@
 """The module to handle the SUMO simulation for the real-twin developed by ORNL ARMS group."""
 
 import os
+import subprocess
 import shutil
 import warnings
 from pathlib import Path
@@ -143,7 +144,7 @@ class SUMOPrep:
             flow.set('id', str(FlowID))
             flow.set('begin', str(InflowData['IntervalStart']))
             flow.set('end', str(InflowData['IntervalEnd']))
-            flow.set('from', str(-int(InflowData['OpenDriveFromID'])))
+            flow.set('from', f"-{InflowData['OpenDriveFromID']}")
 
             # may need to change
             flow.set('number', str(InflowData['Count']))
@@ -176,10 +177,10 @@ class SUMOPrep:
             for TurnData in TurnDictSubset:
                 edge_relation = ET.SubElement(Interval, 'edgeRelation')
                 edge_relation.set(
-                    'from', str(-int(TurnData['OpenDriveFromID'])))
+                    'from', f"-{TurnData['OpenDriveFromID']}")
 
                 # may need to change
-                edge_relation.set('to', str(-int(TurnData['OpenDriveToID'])))
+                edge_relation.set('to', f"-{TurnData['OpenDriveToID']}")
 
                 # may need to change
                 edge_relation.set('probability', str(TurnData['TurnRatio']))
@@ -194,11 +195,37 @@ class SUMOPrep:
             path_sumo_demand = pf.path2linux(
                 os.path.join(self.SUMOPath, f'{NetworkName}.rou.xml'))
 
-            os.system(f'cmd/c "jtrrouter -r {path_sumo_flow}'
-                      f' -t {path_sumo_turn}'
-                      f' -n {self.Network} --accept-all-destinations'
-                      f' --remove-loops True --randomize-flows --seed {Seed}'
-                      f' -o {path_sumo_demand}"')
+            
+            # os.system(f'cmd/c "jtrrouter -r {path_sumo_flow}'
+            #           f' -t {path_sumo_turn}'
+            #           f' -n {self.Network} --accept-all-destinations'
+            #           f' --remove-loops True --randomize-flows --seed {Seed}'
+            #           f' -o {path_sumo_demand}"')
+
+            # cmd = (f'cmd /c "jtrrouter -r {path_sumo_flow}'
+            #           f' -t {path_sumo_turn}'
+            #           f' -n {self.Network} --accept-all-destinations'
+            #           f' --remove-loops True --randomize-flows --seed {Seed}'
+            #           f' -o {path_sumo_demand}"')
+            
+            # cmd = f'cmd /c "jtrrouter -r {path_sumo_flow} -t {path_sumo_turn} -n {self.Network} --accept-all-destinations --remove-loops True --randomize-flows --seed {Seed} -o {path_sumo_demand}"'
+
+            cmd = (
+                f'jtrrouter -r "{path_sumo_flow}" '
+                f'-t "{path_sumo_turn}" '
+                f'-n "{self.Network}" --accept-all-destinations '
+                f'--remove-loops True --randomize-flows --seed {Seed} '
+                f'-o "{path_sumo_demand}"'
+            )
+
+
+            try:
+                # subprocess.run(cmd, capture_output=True, text=True)
+                process = subprocess.Popen(cmd, shell=True)
+                process.wait()
+                print(f"  :Route file generated successfully: {path_sumo_demand}")
+            except subprocess.CalledProcessError as e:
+                print(f"  :An error occurred while running jtrrouter: {e}")
 
             # add element to the set object
             self.Demand.add(path_sumo_demand)
