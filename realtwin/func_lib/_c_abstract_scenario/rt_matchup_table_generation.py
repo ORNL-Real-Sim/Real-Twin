@@ -266,8 +266,8 @@ def format_junction_bearing(path_net: str) -> pd.DataFrame:
     }, inplace=True)
 
     # remove "-" before the sumo edge id to be OpenDrive road id
-    MatchupTable["FromRoadID_OpenDrive"] = MatchupTable["FromRoadID_OpenDrive"].astype(str).str.lstrip("-")
-    MatchupTable["ToRoadID_OpenDrive"] = MatchupTable["ToRoadID_OpenDrive"].astype(str).str.lstrip("-")
+    MatchupTable["FromRoadID_OpenDrive"] = MatchupTable["FromRoadID_OpenDrive"].astype(str).str.replace(r"^-", "", n=1, regex=True)
+    MatchupTable["ToRoadID_OpenDrive"] = MatchupTable["ToRoadID_OpenDrive"].astype(str).str.replace(r"^-", "", n=1, regex=True)
 
     MatchupTable["File_GridSmart"] = None
     MatchupTable["Date_GridSmart"] = None
