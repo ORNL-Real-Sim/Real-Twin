@@ -427,6 +427,15 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
     signal_path = pf.path2linux(Path(control_dir) / synchro_file)
     SignalDict = process_signal_data(signal_path)
 
+    df_lanes = SignalDict['Lanes']
+    target_rows = df_lanes["RECORDNAME"].isin(["Lanes", "Shared","Phase1","PermPhase1","Allow RTOR"])
+    for idx in df_lanes[target_rows].index:
+        for col in df_lanes.columns:
+            if col != "RECORDNAME" and col != "INTID" and pd.notna(df_lanes.at[idx, col]):
+                df_lanes.at[idx, col] = int(float(df_lanes.at[idx, col]))
+    SignalDict['Lanes'] = df_lanes
+
+
     SignalInfo = {}
     unique_INTIDs = SignalDict['Lanes']['INTID'].dropna().unique()
     # Iterating through each unique 'INTID' and gathering corresponding data from each table
@@ -520,7 +529,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
         allow_rtor_row = lanes_df[lanes_df['RECORDNAME'] == 'Allow RTOR']
 
         for phase_idx, phase_row in phases_df.iterrows():
-            P = phase_row['Phase']
+            P = int(phase_row['Phase'])
             protected_columns = []
             for _, protected_row in existing_protected_rows.iterrows():
                 columns_with_P = protected_row[protected_row == P].index.tolist()
@@ -544,7 +553,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             RTOR_columns = []
             if not allow_rtor_row.empty:
                 for _, rtor_row in allow_rtor_row.iterrows():
-                    rtor_columns = rtor_row[rtor_row == "1"].index.tolist()
+                    rtor_columns = rtor_row[rtor_row.isin(["1", 1])].index.tolist()
                     if 'INTID' in rtor_columns:
                         rtor_columns.remove('INTID')
                     RTOR_columns.extend(rtor_columns)
