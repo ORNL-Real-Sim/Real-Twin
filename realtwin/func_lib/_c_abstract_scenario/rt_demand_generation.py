@@ -251,6 +251,52 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
                 lanes_df['RECORDNAME'].astype(str).isin(allowed_recordnames))
         ]
 
+
+        for col in subset_lanes.columns:
+            if not col.endswith('T'):
+                continue
+
+            base = col[:-1]  # Extract base like 'XY' from 'XYT'
+            try:
+                phaseid = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', col].values[0]
+                shareid_val = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Shared', col].values[0]
+            except IndexError:
+                continue  # Skip if 'Phase1' or 'Shared' row not found
+            except KeyError:
+                continue  # Skip if col not in subset_lanes
+
+            if pd.isna(phaseid) or pd.isna(shareid_val):
+                continue  # Skip if any value is missing
+
+            try:
+                shareid = int(float(shareid_val))
+                # print(shareid)
+            except ValueError:
+                continue
+
+            if shareid == 0:
+                continue
+
+            if shareid in [1, 3] and base + 'L' in subset_lanes.columns:
+                # Left turn logic
+                l_col = base + 'L'
+                l_phase = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', l_col].values[0] if not subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', l_col].empty else np.nan
+                l_perm = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', l_col].values[0] if not subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', l_col].empty else np.nan
+                if pd.isna(l_phase) and pd.isna(l_perm):
+                    subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', l_col] = phaseid
+
+            if shareid in [2, 3] and base + 'R' in subset_lanes.columns:
+                # Right turn logic
+                r_col = base + 'R'
+                r_phase = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', r_col].values[0] if not subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', r_col].empty else np.nan
+                r_perm = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', r_col].values[0] if not subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', r_col].empty else np.nan
+                if pd.isna(r_phase) and pd.isna(r_perm):
+                    subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', r_col] = phaseid   
+
+
+
+
+
         if subset_lanes.empty:
             print(f'No matching records in Lanes for IntersectionID_Synchro '
                   f'{intersection_id_synchro} in file {file_synchro_name}.')
