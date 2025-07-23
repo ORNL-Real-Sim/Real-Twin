@@ -490,6 +490,49 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
     for intid in Synchro.keys():
         lanes_df = SignalDict['Lanes'][SignalDict['Lanes']['INTID'] == intid]
         timeplans_df = SignalDict['Timeplans'][SignalDict['Timeplans']['INTID'] == intid]
+
+        for col in lanes_df.columns:
+            if not col.endswith('T'):
+                continue
+
+            base = col[:-1]  # Extract base like 'XY' from 'XYT'
+            try:
+                phaseid = lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', col].values[0]
+                shareid_val = lanes_df.loc[lanes_df['RECORDNAME'] == 'Shared', col].values[0]
+            except IndexError:
+                continue  # Skip if 'Phase1' or 'Shared' row not found
+            except KeyError:
+                continue  # Skip if col not in
+
+            if pd.isna(phaseid) or pd.isna(shareid_val):
+                continue  # Skip if any value is missing
+
+            try:
+                shareid = int(float(shareid_val))
+
+            except ValueError:
+                continue
+
+            if shareid == 0:
+                continue
+
+            if shareid in [1, 3] and base + 'L' in lanes_df.columns:
+                # Left turn logic
+                l_col = base + 'L'
+                l_phase = lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', l_col].values[0] if not lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', l_col].empty else np.nan
+                l_perm = lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', l_col].values[0] if not lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', l_col].empty else np.nan
+                if pd.isna(l_phase) and pd.isna(l_perm):
+                    lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', l_col] = phaseid
+
+            if shareid in [2, 3] and base + 'R' in lanes_df.columns:
+                # Right turn logic
+                r_col = base + 'R'
+                r_phase = lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', r_col].values[0] if not lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', r_col].empty else np.nan
+                r_perm = lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', r_col].values[0] if not lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', r_col].empty else np.nan
+                if pd.isna(r_phase) and pd.isna(r_perm):
+                    lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', r_col] = phaseid      
+
+
         Synchro[intid]["Lanes"] = lanes_df
         Synchro[intid]["Timeplans"] = timeplans_df
 
