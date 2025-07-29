@@ -30,7 +30,7 @@ TODO
 * Clean up input configuration file to minimize user inputs
 * Format print out message for better message noticing
 * Force to terminate the program after the generation of Matchup Table.
-* ![1748449045938](image/README/1748449045938.png)
+* ![1748449045938](docs/image/README/1748449045938.png)
 
 ### 2025-05-26
 
@@ -45,7 +45,7 @@ TODO
 * Integrated behavior calibration
 * Update readthedocs
 
-  ![1748015271598](image/README/1748015271598.png)
+  ![1748015271598](docs/image/README/1748015271598.png)
 
 ### 2025-05-22
 
@@ -64,7 +64,7 @@ TODO: continue work on Behavior calibration integration based on updated code.
 
 * Update readthedocs (65% Done)
 
-  ![1746650408494](image/README/1746650408494.png)
+  ![1746650408494](docs/image/README/1746650408494.png)
 * Fix concrete generateion bugs
 
 ### 2025-05-06
@@ -78,7 +78,7 @@ TODO: continue work on Behavior calibration integration based on updated code.
 
 * update realthedocs (30%)
 
-![1742843231509](image/README/1742843231509.png)
+![1742843231509](docs/image/README/1742843231509.png)
 
 ### 2025-03-19
 
@@ -87,7 +87,7 @@ TODO: continue work on Behavior calibration integration based on updated code.
 
 TODO: 1. continue working on readthedocs 2. format docstring for functions and classes 3. Learn documentation on real-twin project project
 
-![1742416825779](image/README/1742416825779.png)
+![1742416825779](docs/image/README/1742416825779.png)
 
 ### 2025-03-18
 
@@ -101,13 +101,13 @@ TODO: 1. continue working on readthedocs 2. format docstring for functions and c
 * Re-design configuration file for better implementation and user-friendly midification
 * Update cooresponding codes based on updates from configurations
 
-![1742245531537](image/README/1742245531537.png)
+![1742245531537](docs/image/README/1742245531537.png)
 
 ### 2025-03-12
 
 * updated behavior optimization using mealpy
 
-![1741810140658](image/README/1741810140658.png)
+![1741810140658](docs/image/README/1741810140658.png)
 
 TODO: Integrate BehaviorOpt into realtwin packagte. Convert Turn and Inflow (mealpy)
 
@@ -121,7 +121,7 @@ refactorred realtwin code
 
 1. Updated framework dragram
 
-   ![1741190944081](image/README/1741190944081.png)
+   ![1741190944081](docs/image/README/1741190944081.png)
 2. Explore mealpy...
 
 ### 2025-03-04
@@ -145,7 +145,7 @@ refactorred realtwin code
 
    In this regard, we have to separate between part 1: (abstract -> concrete -> simulation preparation) and part 2: Calibration section.  Current implementation(TODO):  We can generate the network from part 2, but on part 2, we will use default data (not generated network) to calibrate results.  Any feedback?
 
-Calibration integrated into realtwin package![1740770056567](image/README/1740770056567.png)
+Calibration integrated into realtwin package![1740770056567](docs/image/README/1740770056567.png)
 
 #### TODO
 
@@ -158,7 +158,7 @@ Calibration integrated into realtwin package![1740770056567](image/README/174077
 
 * Input files are mixing of xlsx, csv files. We need to choose either xlsx or csv to make inputs uniform
 
-![1740676525987](image/README/1740676525987.png)
+![1740676525987](docs/image/README/1740676525987.png)
 
 * The generated SUMO network failed during the calibration process.
 * Decide whether to create public or private real-twin repositories on GitHub.
@@ -178,7 +178,7 @@ Calibration integrated into realtwin package![1740770056567](image/README/174077
 * update requirements to enable simulation
 * update configuration file to auto load  and fill missing data from loading
 
-  ![1737750085833](image/README/1737750085833.png)
+  ![1737750085833](docs/image/README/1737750085833.png)
 
 #### TODO
 
@@ -202,7 +202,7 @@ Calibration integrated into realtwin package![1740770056567](image/README/174077
 * add func: find executable from selected directory
 * fmt: format print out message for better progress representation
 
-  ![1735680355875](image/README/1735680355875.png)
+  ![1735680355875](docs/image/README/1735680355875.png)
 
 #### TODO
 
@@ -228,7 +228,7 @@ Calibration integrated into realtwin package![1740770056567](image/README/174077
 * test the current functionalities: including create venv, delete venv, check SUMO and install SUMO
 * tutorial_dev.py
 
-  ![1735336343305](image/README/1735336343305.png)
+  ![1735336343305](docs/image/README/1735336343305.png)
 
 #### TODO:
 
@@ -256,7 +256,7 @@ Calibration integrated into realtwin package![1740770056567](image/README/174077
 * add utility functions: venv_create, venv_delete
 * add func_lib in install_simulator: install_sumo_windows
 * add test function: test_is_sumo_installed
-* ![1734989040637](image/README/1734989040637.png)
+* ![1734989040637](docs/image/README/1734989040637.png)
 
 #### TODO:
 
