@@ -181,12 +181,18 @@ class RealTwin:
         """
         with console.status("[bold cyan]Generating inputs...", spinner="dots"):
             console.print("\n[bold green]Check / Create input files and folders for user:")
+
+            # remove output directory if it exists
+            if Path(self.input_config.get("output_dir")).exists():
+                shutil.rmtree(self.input_config.get("output_dir"))
+
             path_input = pf.path2linux(Path(self.input_config.get("input_dir")))
 
             # check if Control folder exists in the input directory
             path_control = pf.path2linux(Path(path_input) / "Control")
             if not os.path.exists(path_control):
                 os.makedirs(path_control)
+
             # check if the Control folder is empty
             elif not os.listdir(path_control):
                 console.print(f"[dim cyan]Control folder is empty: {path_control}.")
@@ -198,6 +204,7 @@ class RealTwin:
             path_traffic = pf.path2linux(Path(path_input) / "Traffic")
             if not os.path.exists(path_traffic):
                 os.makedirs(path_traffic)
+
             # check if the Traffic folder is empty
             elif not os.listdir(path_traffic):
                 console.print(f"  [magenta]:Traffic folder is empty: {path_traffic}.")
@@ -212,11 +219,13 @@ class RealTwin:
             # check if SUMO net file generated (in OpenDrive folder), if not, create the net.
             net_name = self.input_config["Network"]["NetworkName"]
             path_sumo_net = pf.path2linux(Path(self.input_config.get("output_dir")) / f"OpenDrive/{net_name}.net.xml")
+
             # generate abstract scenario if sumo net file does not exist
             self.abstract_scenario = AbstractScenario(self.input_config)
 
             # Update SUMO Network before generating OpenDrive network
             if demo_data := self.input_config["demo_data"]:
+
                 # demo mode is enabled, use the updated SUMO network from demo data
                 incl_sumo_net = pf.path2linux(Path(self.input_config["input_dir"]) / f"updated_net/{demo_data}.net.xml")
 
@@ -249,6 +258,7 @@ class RealTwin:
                 rprint("  [dim cyan]:INFO: You can use your own SUMO network by providing the path "
                        "to the incl_sumo_net parameter. The path should be a .net.xml file. \n",
                        end="")
+
             # generate SUMO and OpenDrive network if not exists
             if not os.path.exists(path_sumo_net):
                 # Create original SUMO network from vertices from config file
