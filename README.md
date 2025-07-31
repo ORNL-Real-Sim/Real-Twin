@@ -132,4 +132,14 @@ howpublished = {[Computer Software] \url{https://doi.org/10.11578/dc.20250602.3}
 year = {2025},
 month = {jun}
 }
+
+@software{luo2025realtwin,
+author = {Luo, Xiangyong and Xu, Guanhao and Saroj, Abhilasha and Yuan, Jinghui and Shao, Yunli and Wang, Chieh (Ross)},
+doi = {https://doi.org/10.11578/dc.20250602.3},
+month = jun,
+title = {realtwin: A Unified Simulation Scenario Generation Tool for Mobility Research},
+url = {https://github.com/ORNL-Real-Sim/Real-Twin},
+version = {0.1.0},
+year = {2025}
+}
 ```
