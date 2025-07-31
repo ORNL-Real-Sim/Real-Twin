@@ -27,6 +27,6 @@ authors:
 
 title: "realtwin: A Unified Simulation Scenario Generation Tool for Mobility Research"
 version: 0.1.0
-doi: 10.1177/03611981251349433
+doi: "https://doi.org/10.11578/dc.20250602.3"
 date-released: 2025-06-02
 url: "https://github.com/ORNL-Real-Sim/Real-Twin"
