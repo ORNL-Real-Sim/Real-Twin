@@ -1,27 +1,27 @@
 cff-version: 1.1.0
 message: "If you use realtwin software, please cite it as below."
 authors:
-  - family: Luo
+  - family-names: Luo
     given-names: Xiangyong
     orcid: 0009-0003-1290-9983
 
-  - name: Xu
+  - family-names: Xu
     given-names: Guanhao
     orcid: https://orcid.org/0000-0002-1432-6357
 
-  - name: Saroj
+  - family-names: Saroj
     given-names: Abhilasha
     orcid: https://orcid.org/0000-0001-9117-8063
 
-  - name: Yuan
+  - family-names: Yuan
     given-names: Jinghui
     orcid: https://orcid.org/0000-0003-0895-1997
 
-  - name: Shao
+  - family-names: Shao
     given-names: Yunli
     orcid: https://orcid.org/0000-0001-8528-7925
 
-  - name: Wang
+  - family-names: Wang
     given-names: Chieh (Ross)
     orcid: https://orcid.org/0000-0001-8073-7683
 
