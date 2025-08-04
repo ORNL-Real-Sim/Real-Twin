@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -194,7 +194,7 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
         # # Print output line by line in real time
         # for line in process.stdout:
         #     print(line, end='')  # end='' prevents double newlines
-            
+
         process.wait()
         if verbose:
             print(f"  :Route file generated successfully: {path_rou}")

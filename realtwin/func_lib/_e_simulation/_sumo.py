@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -195,7 +195,7 @@ class SUMOPrep:
             path_sumo_demand = pf.path2linux(
                 os.path.join(self.SUMOPath, f'{NetworkName}.rou.xml'))
 
-            
+
             # os.system(f'cmd/c "jtrrouter -r {path_sumo_flow}'
             #           f' -t {path_sumo_turn}'
             #           f' -n {self.Network} --accept-all-destinations'
@@ -207,7 +207,7 @@ class SUMOPrep:
             #           f' -n {self.Network} --accept-all-destinations'
             #           f' --remove-loops True --randomize-flows --seed {Seed}'
             #           f' -o {path_sumo_demand}"')
-            
+
             # cmd = f'cmd /c "jtrrouter -r {path_sumo_flow} -t {path_sumo_turn} -n {self.Network} --accept-all-destinations --remove-loops True --randomize-flows --seed {Seed} -o {path_sumo_demand}"'
 
             cmd = (
@@ -530,7 +530,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                 r_phase = lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', r_col].values[0] if not lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', r_col].empty else np.nan
                 r_perm = lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', r_col].values[0] if not lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', r_col].empty else np.nan
                 if pd.isna(r_phase) and pd.isna(r_perm):
-                    lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', r_col] = phaseid      
+                    lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', r_col] = phaseid
 
 
         Synchro[intid]["Lanes"] = lanes_df

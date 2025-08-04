@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -291,7 +291,7 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
                 r_phase = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', r_col].values[0] if not subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', r_col].empty else np.nan
                 r_perm = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', r_col].values[0] if not subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', r_col].empty else np.nan
                 if pd.isna(r_phase) and pd.isna(r_perm):
-                    subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', r_col] = phaseid   
+                    subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', r_col] = phaseid
 
 
 

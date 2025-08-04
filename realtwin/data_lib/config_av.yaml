@@ -1,16 +1,15 @@
 input:
   input_dir: ""  # Input directory including SUMO network, route, flow, and turn files.
-  net_file: "chatt3.net"  # SUMO network file name (.net.xml)
-  rou_file: ""  # SUMO route file name (.rou.xml)
+  net_file: ""  # SUMO network file name (.net.xml)
   flow_file: ""  # SUMO flow file name (.flow.xml)
   turn_file: ""  # SUMO turn file name(.turn.xml)
-  # cfg_file: "chatt3.sumocfg"  # SUMO configuration file name (.sumocfg)
 
 technology: AV # Mention application name: 'AV' for Autonomous Vehicles, 'CAV' for Connected Autonomous Vehicles, 'EV' for Electric Vehicles, etc.
 pct_penetration: 0.0 # Percentage of AVs in the simulation, 0.0 means no AVs. range in [0.0, 100]
 veh_types: ['Human', 'AVnormal']  # Vehicle types to be used in the simulation, Human for human-driven vehicles, AVnormal for normal autonomous vehicles. Could be AVsafe, AVaggressive, CAV, EV etc.
 car_follow_model: 'Krauss'  # Default car-following model for all vehicle types, can be 'Krauss', 'IDM', 'Wied99', 'CoopVisWied99', 'LCVisWied99', 'LCSumoKrauss', 'LCSumoIDM'
 lane_change_model: 'LC2013'  # Default lane change model for all vehicle types, can be 'LC2013', 'LC2016', 'LC2018', 'LC2019', 'LC2020'
+sim_name: "chatt"
 sim_time: 3600  # Simulation time in seconds, default is 3600 seconds (1 hour)
 
 # Please refer to the documentation for more details on the parameters and their usage.

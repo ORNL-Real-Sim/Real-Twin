@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -14,7 +14,7 @@ from pathlib import Path
 import shutil
 
 
-def prepare_config_file(dest_dir: str = "") -> bool:
+def prepare_realtwin_configs(dest_dir: str = "") -> bool:
     """ Create a default/demo configuration file for the RealTwin package.
 
     Args:

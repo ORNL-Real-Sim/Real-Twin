@@ -6,7 +6,7 @@ prepare\_config\_file
    :undoc-members:
    :show-inheritance:
 
-.. autofunction:: prepare_config_file
+.. autofunction:: prepare_realtwin_configs
 
-.. autoclass:: prepare_config_file
+.. autoclass:: prepare_realtwin_configs
 

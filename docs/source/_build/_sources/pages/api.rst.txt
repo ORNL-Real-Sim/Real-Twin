@@ -25,7 +25,7 @@ Utility Functions
     util_lib.download_elevation_tif_by_bbox
     util_lib.download_single_file_from_web
     util_lib.find_executable_from_PATH_on_win
-    util_lib.prepare_config_file
+    util_lib.prepare_realtwin_configs
 
 
 Installation and Environment

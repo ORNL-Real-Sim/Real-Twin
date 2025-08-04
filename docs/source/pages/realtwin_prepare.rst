@@ -26,7 +26,7 @@ User can use the sample configuration file provided in the `realtwin` package.
 
     # prepare the configuration file
     # This will create a sample configuration file in the current working directory: `realtwin_config.yaml`
-    rt.prepare_config_file()
+    rt.prepare_realtwin_configs()
 
 User can also specify the output directory for the configuration file.
 
@@ -38,7 +38,7 @@ User can also specify the output directory for the configuration file.
 
     # This will create a sample configuration file in the specified directory: `realtwin_config.yaml`
     output_dir = "Directory/where/you/want/to/save/the/config/file"
-    rt.prepare_config_file(dest_dir=output_dir)
+    rt.prepare_realtwin_configs(dest_dir=output_dir)
 
 If the configuration file generated, user can modify the file according to their needs. For details on how to modify the configuration file, please refer to the section: :ref:`Update Configuration File`.
 

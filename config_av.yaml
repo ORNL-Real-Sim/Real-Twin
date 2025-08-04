@@ -1,0 +1,92 @@
+input:
+  input_dir: C:\Users\xh8\ORNL_work\github_workspace\Real-Twin\datasets\autonomous_veh  # Input data including SUMO network, flow, and turn files.
+  net_file: "chatt.net.xml"  # SUMO network file name (.net.xml)
+  flow_file: "chatt.flow.xml"  # SUMO flow file name (.flow.xml)
+  turn_file: "chatt.turn.xml"  # SUMO turn file name(.turn.xml)
+
+technology: AV # Mention application name: 'AV' for Autonomous Vehicles, 'CAV' for Connected Autonomous Vehicles, 'EV' for Electric Vehicles, etc.
+pct_penetration: 50 # Percentage of AVs in the simulation, 0.0 means no AVs. range in [0.0, 100]
+veh_types: ['Human', 'AVnormal']  # Vehicle types to be used in the simulation, Human for human-driven vehicles, AVnormal for normal autonomous vehicles. Could be AVsafe, AVaggressive, CAV, EV etc.
+car_follow_model: 'Krauss'  # Default car-following model for all vehicle types, can be 'Krauss', 'IDM', 'Wied99', 'CoopVisWied99', 'LCVisWied99', 'LCSumoKrauss', 'LCSumoIDM'
+lane_change_model: 'LC2013'  # Default lane change model for all vehicle types, can be 'LC2013', 'LC2016', 'LC2018', 'LC2019', 'LC2020'
+sim_name: "chatt"
+sim_time: 3600  # Simulation time in seconds, default is 3600 seconds (1 hour)
+
+# Please refer to the documentation for more details on the parameters and their usage.
+# the default values are following the veh_types order, e.g. if veh_types = ['Human', 'AVnormal'], then the first value in each list corresponds to Human and the second value corresponds to AVnormal.
+
+Wied99Parameters:
+  cc0: [4.92, 3.28]
+  cc1: [2, 1]
+  cc2: [13.12, 5.44]
+  cc3: [-8, -8]
+  cc4: [-0.35, -0.35]
+  cc5: [0.35, 0.35]
+  cc6: [11.44, 0]
+  cc7: [0.82, 1.08]
+  cc8: [11.48, 12.46]
+  cc9: [4.92, 5.9]
+
+KraussParameters:
+  minGap: [2.5, 0.5]
+  accel: [2.6, 3.8]
+  decel: [4.5, 4.5]
+  sigma: [0.5, 0]
+  tau: [1, 0.4]
+  emergencyDecel: [9, 9]
+
+IDMParameters:
+  minGap: [2.5, 1.2]
+  accel: [2.6, 1.2]
+  decel: [4.5, 4.5]
+  tau: [1, 1]
+  emergencyDecel: [9, 9]
+  delta: [4, 4]
+
+CoopVisWied99Parameters:
+  minLookAheadDist: [0, 0]
+  maxLookAheadDist: [820.21, 984.25]
+  minLookBackDist: [0, 0]
+  maxLookBackDist: [492.13, 656.16]
+  noOfInteractObjects: [2, 10]
+
+LCVisWied99Parameters:
+  safetyDistRedFact: [0.6, 0.45]
+  coopLaneChange: [False, True]
+  minClearance: [1.64, 1.64]
+
+LCSumoKraussParameters:
+  LcStrategic: [1, 1]
+  LcCooperative: [1, 1]
+  LcAccelLat: [1, 1]
+
+LCSumoIDMParameters:
+  LcStrategic: [1, 1]
+  LcCooperative: [1, 1]
+
+# # Desired Speed Distribution Range for AVs
+# desSpeedParameters:
+#   desiredSpeedDistRange: -1
+
+# Parameters(Unit): Description
+
+# CC0(m):
+#  Standstill distance: The desired gap between two vehicles in a stopped condition.
+# CC1(s):
+#  Time headway/gap. The time headway(gap) a following driver maintains for safety when moving.
+# CC2(m):
+#  Car-following distance/following variation. The variation in following distance.
+# CC3(s):
+#  Threshold for entering following. The point at which a driver begins decelerating after perceiving a slower-moving leader and initiates an unconscious following behavior.
+# CC4(m/s):
+#  Defines negative speed difference during the following process. Low values result in a more sensitive driver reaction to the acceleration or deceleration of the preceding vehicle.
+# CC5(m/s):
+#  Defines positive speed difference during the following process. Enter a positive value for CC5 which corresponds to the negative value of CC4. Low values result in a more sensitive driver reaction to the acceleration or deceleration of the preceding vehicle.
+# CC6(1/(m • s)):
+#  Speed dependency of oscillation. The influence of distance on speed oscillation during following.
+# CC7(m/s2):
+#  Oscillation during acceleration. Actual acceleration during oscillation in unconscious following.
+# CC8(m/s2):
+#  Standstill acceleration. Desired acceleration when starting from a standstill.
+# CC9(m/s2):
+#  Desired acceleration at 80 km/h (limited by maximum acceleration defined within the acceleration curves)
