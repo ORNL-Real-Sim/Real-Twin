@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2025-08-04 10:33:59 by Eclipse SUMO jtrrouter Version 1.21.0
+<jtrrouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/jtrrouterConfiguration.xsd">
+
+    <input>
+        <net-file value="C:\Users\xh8\ORNL_work\gitlab_workspace\ScenarioGenerator\datasets\avtes\output_AV\chatt3.net.xml"/>
+        <route-files value="C:\Users\xh8\ORNL_work\gitlab_workspace\ScenarioGenerator\datasets\avtes\output_AV\chattnew.flow.xml"/>
+        <turn-ratio-files value="C:\Users\xh8\ORNL_work\gitlab_workspace\ScenarioGenerator\datasets\avtes\output_AV\chattnew.turn.xml"/>
+    </input>
+
+    <output>
+        <output-file value="C:\Users\xh8\ORNL_work\gitlab_workspace\ScenarioGenerator\datasets\avtes\output_AV\chatt3.rou.xml"/>
+        <vtype-output value="C:\Users\xh8\ORNL_work\gitlab_workspace\ScenarioGenerator\datasets\avtes\output_AV\vtype_output.xml"/>
+    </output>
+
+    <processing>
+        <accept-all-destinations value="1"/>
+    </processing>
+
+</jtrrouterConfiguration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vType id="AVnormal" minGap="0.50" probability="1.00" vClass="passenger" laneChangeModel="LC2013" carFollowModel="Krauss" accel="3.8" decel="4.5" emergencyDecel="9" sigma="0" tau="0.4"/>
+</routes>
