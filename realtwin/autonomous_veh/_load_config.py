@@ -48,10 +48,14 @@ def load_av_configs(path_config: str | Path) -> dict:
         config = yaml.safe_load(yaml_data)
 
     # check veh penetration
-    pct_penetration = config.get('pct_penetration', 0.0)
-    if not (0 <= pct_penetration <= 100):
-        pct_penetration = 0.0
-        config['pct_penetration'] = 0.0
+    pct_penetration = config.get('pct_penetration')
+    if not isinstance(pct_penetration, list):
+        raise TypeError("pct_penetration must be a list of percentages.")
+    if sum(pct_penetration) != 100:
+        raise ValueError("pct_penetration must sum to 100%.")
+    for pct in pct_penetration:
+        if not (0 <= pct <= 100):
+            raise ValueError("pct_penetration values must be between 0 and 100.")
 
     # check veh types, from user defined veh_types
     veh_types = config.get('veh_types', [])
@@ -63,6 +67,11 @@ def load_av_configs(path_config: str | Path) -> dict:
         for veh_type in veh_types
         if veh_type not in CFmodel
     }
+
+    for veh_type in veh_types:
+        if veh_type not in CFmodel:
+            CFmodel[veh_type] = CF_DEFAULT_PARAMETERS.copy()
+
     # update the CFmodel parameters for each veh_type
     CF_model_names = list(CF_DEFAULT_PARAMETERS.keys())
     for i in range(len(veh_types)):

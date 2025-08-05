@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2025-08-04 13:55:01 by Eclipse SUMO jtrrouter Version 1.21.0
+<!-- generated on 2025-08-05 14:34:55 by Eclipse SUMO jtrrouter Version 1.21.0
 <jtrrouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/jtrrouterConfiguration.xsd">
 
     <input>
@@ -22,6 +22,7 @@
 -->
 
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
-    <vType id="AVnormal" minGap="0.50" probability="0.50" vClass="passenger" color="cyan" laneChangeModel="LC2013" carFollowModel="Krauss" accel="3.8" decel="4.5" emergencyDecel="9" sigma="0" tau="0.4"/>
-    <vType id="Human" minGap="2.50" probability="0.50" vClass="passenger" color="red" laneChangeModel="LC2013" carFollowModel="Krauss" accel="2.6" decel="4.5" emergencyDecel="9" sigma="0.5" tau="1"/>
+    <vType id="CAV" minGap="0.50" probability="0.30" vClass="passenger" color="blue" laneChangeModel="LC2013" carFollowModel="Krauss" accel="3.8" decel="4.5" emergencyDecel="9" sigma="0" tau="0.4"/>
+    <vType id="Human" minGap="2.50" probability="0.40" vClass="passenger" color="red" laneChangeModel="LC2013" carFollowModel="Krauss" accel="2.6" decel="4.5" emergencyDecel="9" sigma="0.5" tau="1"/>
+    <vType id="AVnormal" minGap="0.50" probability="0.30" vClass="passenger" color="green" laneChangeModel="LC2013" carFollowModel="Krauss" accel="3.8" decel="4.5" emergencyDecel="9" sigma="0" tau="0.4"/>
 </routes>

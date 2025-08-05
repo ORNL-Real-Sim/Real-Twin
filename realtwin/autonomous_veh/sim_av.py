@@ -191,13 +191,18 @@ class SimAV:
         add_veh_types_to_rou(path_rou_output, veh_types, veh_type_attributes)
 
         # create SUMO configuration file
-        path_cfg = output_dir / 'SimAV_config.sumocfg'
+        sim_name = self.av_config.get('sim_name', 'chatt')
+        sim_start = self.av_config.get('sim_start', 0)
+        sim_time = self.av_config.get('sim_time', 3600)
+        sim_end = sim_start + sim_time
+        path_cfg = output_dir / f'{sim_name}.sumocfg'
         create_sumo_config(path_cfg,
-                           sim_name=self.av_config.get('sim_name', 'chatt'),
-                           sim_time=self.av_config.get('sim_time', 3600))
+                           sim_name=sim_name,
+                           sim_start=sim_start,
+                           sim_end=sim_end)
 
         # run simulation
-        run_sumo_simulation(path_cfg, sim_time=self.av_config.get('sim_time', 3600))
+        run_sumo_simulation(path_cfg, sim_time=sim_time)
         print(f"  :Simulation completed successfully. Output files are saved in: {output_dir}")
         return True
 
@@ -233,15 +238,6 @@ def check_inputs_from_config(av_config: dict) -> bool:
         print(f"  :Warning: Network file does not exist: {path_net}")
         return False
 
-    # rou_file = input_dict.get('rou_file', '')
-    # if not rou_file:
-    #     print("  :Warning: Route file not specified in the configuration.")
-    #     return False
-    # path_rou = Path(input_dir) / rou_file
-    # if not path_rou.exists():
-    #     print(f"  :Warning: Route file does not exist: {path_rou}")
-    #     return False
-
     flow_file = input_dict.get('flow_file', '')
     if not flow_file:
         print("  :Warning: Flow file not specified in the configuration.")
@@ -264,6 +260,7 @@ def check_inputs_from_config(av_config: dict) -> bool:
 
 
 def name_without_suffixes(p: Path) -> str:
+    """Return the name of the file without any suffixes."""
     # peel off each suffix until none remain
     while p.suffix:
         p = p.with_suffix('')

@@ -28,6 +28,8 @@ sys.path.append(os.path.join('c:', os.sep, 'whatever',
 
 
 def prettify_xml(xml_tree: ET.ElementTree) -> str:
+    """Return a pretty-printed XML string for the ElementTree."""
+
     xml_tree_str = ET.tostring(xml_tree.getroot(), encoding='utf-8', method='xml')
     parsed_xml = minidom.parseString(xml_tree_str)
     return parsed_xml.toprettyxml(indent="    ")
@@ -52,6 +54,8 @@ def generate_rgb_colors(num_colors: int) -> list:
 
 # Function to generate dictionary with all vehicle type attributes needed to create new vehicle type in SUMO
 def create_veh_type_attributes(av_config: dict) -> dict:
+    """ Create a dictionary with all vehicle type attributes needed to create new vehicle types in SUMO."""
+
     vTypeAttributes = ["id", "vClass",
                        "carFollowModel", "laneChangeModel",
                        "probability",
@@ -60,21 +64,18 @@ def create_veh_type_attributes(av_config: dict) -> dict:
     # Extract values from the configuration
     veh_types = av_config.get("veh_types", [])
     CFmodel_USER = av_config.get("CFmodel", {})
-    pct_penetration = av_config.get("pct_penetration", 0.0)
+    pct_penetration = av_config.get("pct_penetration")
     car_follow_model = av_config.get("car_follow_model", "Krauss")
     lane_change_model = av_config.get("lane_change_model", "LC2013")
 
     # Create a dictionary for vehicle type attributes
     veh_type_attributes = {vType: dict.fromkeys(vTypeAttributes) for vType in veh_types}
-    for vType in veh_types:
+    for i, vType in enumerate(veh_types):
         veh_type_attributes[vType]['id'] = vType
         veh_type_attributes[vType]['vClass'] = "passenger"
         veh_type_attributes[vType]['carFollowModel'] = car_follow_model
         veh_type_attributes[vType]['laneChangeModel'] = lane_change_model
-        if vType != "Human":
-            veh_type_attributes[vType]['probability'] = (100 - pct_penetration) * 0.01
-        else:
-            veh_type_attributes[vType]['probability'] = pct_penetration * 0.01
+        veh_type_attributes[vType]['probability'] = pct_penetration[i] * 0.01
 
         for i in range(5, len(vTypeAttributes)):
             veh_type_attributes[vType][vTypeAttributes[i]] = CFmodel_USER[vType][car_follow_model][vTypeAttributes[i]]
@@ -84,6 +85,7 @@ def create_veh_type_attributes(av_config: dict) -> dict:
 
 # # Incorporate new vehicle types and vehicle type distributions in SUMO flow file to create a new modified flow file
 def update_sumo_flow_xml(path_flow: str, veh_types: list, veh_type_attributes: dict):
+    """ Update the SUMO flow XML file with new vehicle types and their attributes."""
 
     # Create the root element
     root = ET.Element("routes")
@@ -124,6 +126,7 @@ def update_sumo_flow_xml(path_flow: str, veh_types: list, veh_type_attributes: d
 
 
 def create_sumo_rou_xml(path_net: str, path_flow: str, path_turn: str, path_rou: str) -> bool:
+    """ Create a SUMO route file using the provided network, flow, and turn ratio files."""
     # os.system('jtrrouter --route-files='+filepath+'vTypeModifiedFlow.xml --turn-ratio-files='+filepath+'chattnew.turn.xml --net-file='+filepath+'chatt3.net.xml --output-file='+filepath+'chatt3_modified_test.rou.xml --accept-all-destinations 1 --vtype-output='+filepath+'vtype_output_test.xml')
 
     path_vtype_output = Path(path_rou).parent / 'vtype_output.xml'
@@ -135,6 +138,8 @@ def create_sumo_rou_xml(path_net: str, path_flow: str, path_turn: str, path_rou:
 
 
 def add_veh_types_to_rou(path_rou: str, veh_types: list, veh_type_attributes: dict) -> bool:
+    """ Add vehicle types to the SUMO route file."""
+
     Tree = ET.parse(path_rou)
     root = Tree.getroot()
 
@@ -148,11 +153,15 @@ def add_veh_types_to_rou(path_rou: str, veh_types: list, veh_type_attributes: di
         vType_new.set("color", colors_list[i])
         root.insert(0, vType_new)
     Tree.write(path_rou)
-    print("  :Added Vehicle Types into Route File")
+    color_str = ', '.join([f'{vType}: {colors_list[i]}' for i, vType in enumerate(veh_types)])
+    print(f"  :Added Vehicle Types into Route File, color assigned: {color_str}")
     return True
 
 
-def create_sumo_config(path_cfg: str, sim_name: str = "chatt", sim_time: int = 3600):
+def create_sumo_config(path_cfg: str,
+                       sim_name: str = "chatt",
+                       sim_start: int = 0,
+                       sim_end: int = 3600):
     """ Create a SUMO configuration file with default settings.
 
     Args:
@@ -191,10 +200,10 @@ def create_sumo_config(path_cfg: str, sim_name: str = "chatt", sim_time: int = 3
     time_elem = ET.SubElement(root, "time")
 
     time_begin = ET.SubElement(time_elem, "begin")
-    time_begin.set("value", "0")
+    time_begin.set("value", f"{sim_start}")
 
     time_end = ET.SubElement(time_elem, "end")
-    time_end.set("value", f"{sim_time}")  # 1 hour simulation
+    time_end.set("value", f"{sim_end}")  # 1 hour simulation
 
     time_step_length = ET.SubElement(time_elem, "step-length")
     time_step_length.set("value", "0.1")  # 100 ms time step
@@ -225,9 +234,19 @@ def create_sumo_config(path_cfg: str, sim_name: str = "chatt", sim_time: int = 3
     return True
 
 
-def run_sumo_simulation(path_cfg: str, sim_time: int = 3600):
+def run_sumo_simulation(path_cfg: str, sim_time: int = 3600) -> bool:
+    """ Run a SUMO simulation using the provided configuration file.
+
+    Args:
+        path_cfg (str): the path to the SUMO configuration file.
+        sim_time (int, optional): the duration of the simulation in seconds. Defaults to 3600.
+
+    Returns:
+        bool: True if the simulation ran successfully, False otherwise.
+    """
     traci.start(["sumo-gui", "-c", f"{path_cfg}"])
-    step = 0
-    while step < sim_time:
+    while traci.simulation.getTime() < sim_time:
         traci.simulationStep()
     traci.close()
+    print(f"  :Simulation completed successfully. Output files are saved in: {Path(path_cfg).parent}")
+    return True

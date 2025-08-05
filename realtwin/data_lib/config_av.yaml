@@ -4,16 +4,22 @@ input:
   flow_file: ""  # SUMO flow file name (.flow.xml)
   turn_file: ""  # SUMO turn file name(.turn.xml)
 
-technology: AV # Mention application name: 'AV' for Autonomous Vehicles, 'CAV' for Connected Autonomous Vehicles, 'EV' for Electric Vehicles, etc.
-pct_penetration: 0.0 # Percentage of AVs in the simulation, 0.0 means no AVs. range in [0.0, 100]
-veh_types: ['Human', 'AVnormal']  # Vehicle types to be used in the simulation, Human for human-driven vehicles, AVnormal for normal autonomous vehicles. Could be AVsafe, AVaggressive, CAV, EV etc.
-car_follow_model: 'Krauss'  # Default car-following model for all vehicle types, can be 'Krauss', 'IDM', 'Wied99', 'CoopVisWied99', 'LCVisWied99', 'LCSumoKrauss', 'LCSumoIDM'
-lane_change_model: 'LC2013'  # Default lane change model for all vehicle types, can be 'LC2013', 'LC2016', 'LC2018', 'LC2019', 'LC2020'
-sim_name: "chatt"
+technology: AV # Could be: 'AV', 'CAV', 'EV' etc.
+veh_types: ['Human', 'AVnormal']  # Could be AVsafe, AVaggressive, CAV, EV etc.
+pct_penetration: [70, 30] # Total of 100% penetration rate, e.g. [70, 30] means 70% Human and 30% AV
+
+
+# Car-following and lane changing: https://sumo.dlr.de/docs/Definition_of_Vehicles%2C_Vehicle_Types%2C_and_Routes.html
+car_follow_model: 'Krauss'  # Car-following model can be 'Krauss', 'IDM', 'W99', 'IDMM', 'ACC'
+lane_change_model: 'LC2013'  # Lane change model can be 'LC2013', 'SL2015', 'DK2008'
+
+# SUMO Simulation parameters
+sim_name: "chatt"  # Simulation name, used for naming of .sumocfg and output files
+sim_start: 0  # Simulation start time in seconds, default is 0 seconds
 sim_time: 3600  # Simulation time in seconds, default is 3600 seconds (1 hour)
 
-# Please refer to the documentation for more details on the parameters and their usage.
-# the default values are following the veh_types order, e.g. if veh_types = ['Human', 'AVnormal'], then the first value in each list corresponds to Human and the second value corresponds to AVnormal.
+# Default values are following the veh_types order,
+# e.g. if veh_types = ['Human', 'AVnormal'], then the first value in each list corresponds to Human and the second value corresponds to AVnormal.
 
 Wied99Parameters:
   cc0: [4.92, 3.28]

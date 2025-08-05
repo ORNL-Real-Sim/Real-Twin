@@ -19,14 +19,15 @@ import realtwin as rt
 if __name__ == '__main__':
 
     # Step 1: Prepare/generate configuration file (in YAML format)
-    rt.prepare_av_configs()
-    CONFIG_FILE = "path-to-generated-config-file"
+    # rt.prepare_av_configs()
+    # CONFIG_FILE = "path-to-generated-config-file"
+    CONFIG_FILE = r"C:\Users\xh8\ORNL_work\github_workspace\Real-Twin\config_av.yaml"
 
     # Step 2: Update the configuration file
     # Manually update the configuration file from User.
 
     # Step 3: initialize the SimAV object
-    sim = rt.SimAV(input_config_file=CONFIG_FILE, verbose=True)
+    sim = rt.SimAV(path_config=CONFIG_FILE, verbose=True)
 
     # Step 4: Simulation generation
     sim.run_simulation()
