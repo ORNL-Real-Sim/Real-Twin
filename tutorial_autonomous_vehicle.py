@@ -13,15 +13,12 @@
 
 import realtwin as rt
 
-# Please refer to the official documentation for more details on RealTwin preparation before running the simulation
-# # https://real-twin.readthedocs.io/en/latest/index.html
 
 if __name__ == '__main__':
 
     # Step 1: Prepare/generate configuration file (in YAML format)
     # rt.prepare_av_configs()
-    # CONFIG_FILE = "path-to-generated-config-file"
-    CONFIG_FILE = r"C:\Users\xh8\ORNL_work\github_workspace\Real-Twin\config_av.yaml"
+    CONFIG_FILE = "path-to-generated-config-file"
 
     # Step 2: Update the configuration file
     # Manually update the configuration file from User.
