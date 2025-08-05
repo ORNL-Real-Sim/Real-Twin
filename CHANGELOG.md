@@ -8,6 +8,16 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 ### 2025-08-05
 
+* update tutorial documents
+* update autonomous vehicle configuration
+
+TODO:
+
+* SUMO & OpenDrive ID mapping Integration
+* Update readthedocs
+
+### 2025-08-04
+
 * add Autonomous Vehicle Simulation
 * update copyright info
 
