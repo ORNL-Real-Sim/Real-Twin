@@ -22,7 +22,7 @@ jobs:
 
       - name: Build wheels
         run: |
-          pip install build pyufunc utdf2gmns, realtwin
+          pip install build pyufunc utdf2gmns realtwin
           python -m build --outdir dist
           # python3 -m build --outdir dist
 
