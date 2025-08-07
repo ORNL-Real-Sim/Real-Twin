@@ -208,25 +208,24 @@ class SUMOPrep:
                 process = subprocess.Popen(cmd, shell=True)
                 process.wait()
 
-                # check if path_sumo_demand exists
-                if not Path(path_sumo_demand).exists():
-                    # create rou.xml using randomTrips
+                # # check if path_sumo_demand exists
+                # if not Path(path_sumo_demand).exists():
+                #     # create rou.xml using randomTrips
+                #     # get the path of the randomTrips.py file under the func_lib directory
+                #     print("  :Generating SUMO .rou.xml file with random trips...")
+                #     sumo_home_dir = os.environ.get('SUMO_HOME', '')
+                #     sumo_tool_dir = Path(sumo_home_dir) / 'tools'
+                #     if sumo_tool_dir.exists():
+                #         path_random_trips = sumo_tool_dir / "randomTrips.py"
+                #         path_random_trips = pf.path2linux(path_random_trips)
+                #         # run randomTrips.py to generate .rou.xml file
+                #         subprocess.run(["python",
+                #                         path_random_trips,
+                #                         "-n", path_net_SUMO,
+                #                         "-r", path_sumo_demand],
+                #                        capture_output=True,
+                #                        text=True)
 
-                    # get the path of the randomTrips.py file under the func_lib directory
-                    print("  :Generating SUMO .rou.xml file with random trips...")
-                    sumo_home_dir = os.environ.get('SUMO_HOME', '')
-                    sumo_tool_dir = Path(sumo_home_dir) / 'tools'
-                    if sumo_tool_dir.exists():
-                        path_random_trips = sumo_tool_dir / "randomTrips.py"
-                        path_random_trips = pf.path2linux(path_random_trips)
-
-                        # run randomTrips.py to generate .rou.xml file
-                        subprocess.run(["python",
-                                        path_random_trips,
-                                        "-n", path_net_SUMO,
-                                        "-r", path_sumo_demand],
-                                       capture_output=True,
-                                       text=True)
                 if not Path(path_sumo_demand).exists():
                     print(f"  :Failed to generate route file: {path_sumo_demand}")
                 else:
