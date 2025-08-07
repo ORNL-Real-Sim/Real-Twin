@@ -25,6 +25,7 @@ from realtwin.func_lib._a_install_simulator.inst_sumo import install_sumo
 
 # input data loading
 from realtwin.func_lib._b_load_inputs.loader_config import load_input_config
+from realtwin.util_lib.mapping_SUMO_OpenDrive_ID import parse_SUMO_ID, parse_SUMO_to_OpenDrive, parse_SUMO_TLS_ID
 
 # scenario generation
 # from realtwin.util_lib.download_elevation_tif import download_elevation_tif_by_bbox
@@ -240,7 +241,12 @@ class RealTwin:
                         shutil.copy(incl_sumo_net, path_sumo_net)
 
                     # update opendrive network
-                    self.abstract_scenario.Network.OpenDriveNetwork.OpenDrive_network = [incl_sumo_net, ""]
+                    self.abstract_scenario.Network.OpenDriveNetwork.OpenDrive_network = [
+                        path_sumo_net, ""]
+
+                    # mapping SUMO to OpenDrive IDs
+                    parse_SUMO_ID(path_sumo_net)
+                    parse_SUMO_to_OpenDrive(path_sumo_net)
 
                     console.print(f"  [dim cyan]:INFO: SUMO network is copied to {path_sumo_net}.\n"
                                   f"  [dim cyan]:Using updated SUMO network provide by user: {incl_sumo_net} "
@@ -346,6 +352,10 @@ class RealTwin:
         self.abstract_scenario.Traffic.VolumeLookupTable = df_vol_lookup
 
         self.abstract_scenario.update_AbstractScenario_from_input(df_volume=df_volume)
+
+        parse_SUMO_TLS_ID(path_matchup_table=path_matchup,
+                          path_net_file=self.abstract_scenario.Network.OpenDriveNetwork.OpenDrive_network[0])
+
         console.print("\n[bold green]Abstract Scenario successfully generated.")
 
     def generate_concrete_scenario(self):

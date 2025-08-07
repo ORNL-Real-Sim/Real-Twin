@@ -26,9 +26,9 @@ pd.options.mode.chained_assignment = None
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (read_MatchupTable,
-                                                                               generate_turn_demand_cali,
-                                                                               generate_inflow,
-                                                                               generate_turn_summary)
+                                                                              generate_turn_demand_cali,
+                                                                              generate_inflow,
+                                                                              generate_turn_summary)
 
 
 class SUMOPrep:
@@ -195,21 +195,6 @@ class SUMOPrep:
             path_sumo_demand = pf.path2linux(
                 os.path.join(self.SUMOPath, f'{NetworkName}.rou.xml'))
 
-
-            # os.system(f'cmd/c "jtrrouter -r {path_sumo_flow}'
-            #           f' -t {path_sumo_turn}'
-            #           f' -n {self.Network} --accept-all-destinations'
-            #           f' --remove-loops True --randomize-flows --seed {Seed}'
-            #           f' -o {path_sumo_demand}"')
-
-            # cmd = (f'cmd /c "jtrrouter -r {path_sumo_flow}'
-            #           f' -t {path_sumo_turn}'
-            #           f' -n {self.Network} --accept-all-destinations'
-            #           f' --remove-loops True --randomize-flows --seed {Seed}'
-            #           f' -o {path_sumo_demand}"')
-
-            # cmd = f'cmd /c "jtrrouter -r {path_sumo_flow} -t {path_sumo_turn} -n {self.Network} --accept-all-destinations --remove-loops True --randomize-flows --seed {Seed} -o {path_sumo_demand}"'
-
             cmd = (
                 f'jtrrouter -r "{path_sumo_flow}" '
                 f'-t "{path_sumo_turn}" '
@@ -218,12 +203,34 @@ class SUMOPrep:
                 f'-o "{path_sumo_demand}"'
             )
 
-
             try:
                 # subprocess.run(cmd, capture_output=True, text=True)
                 process = subprocess.Popen(cmd, shell=True)
                 process.wait()
-                print(f"  :Route file generated successfully: {path_sumo_demand}")
+
+                # check if path_sumo_demand exists
+                if not Path(path_sumo_demand).exists():
+                    # create rou.xml using randomTrips
+
+                    # get the path of the randomTrips.py file under the func_lib directory
+                    print("  :Generating SUMO .rou.xml file with random trips...")
+                    sumo_home_dir = os.environ.get('SUMO_HOME', '')
+                    sumo_tool_dir = Path(sumo_home_dir) / 'tools'
+                    if sumo_tool_dir.exists():
+                        path_random_trips = sumo_tool_dir / "randomTrips.py"
+                        path_random_trips = pf.path2linux(path_random_trips)
+
+                        # run randomTrips.py to generate .rou.xml file
+                        subprocess.run(["python",
+                                        path_random_trips,
+                                        "-n", path_net_SUMO,
+                                        "-r", path_sumo_demand],
+                                       capture_output=True,
+                                       text=True)
+                if not Path(path_sumo_demand).exists():
+                    print(f"  :Failed to generate route file: {path_sumo_demand}")
+                else:
+                    print(f"  :Route file generated successfully: {path_sumo_demand}")
             except subprocess.CalledProcessError as e:
                 print(f"  :An error occurred while running jtrrouter: {e}")
 

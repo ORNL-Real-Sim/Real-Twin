@@ -14,3 +14,4 @@ xlrd
 folium
 matplotlib
 rich
+lxml
