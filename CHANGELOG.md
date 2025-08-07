@@ -6,6 +6,10 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 ## Change Log
 
+### 2025-08-07
+
+* mapping SUMO and OpenDrive IDs
+
 ### 2025-08-05
 
 * update tutorial documents
