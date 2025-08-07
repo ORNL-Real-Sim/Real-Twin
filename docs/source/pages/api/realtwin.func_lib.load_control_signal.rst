@@ -1,12 +1,6 @@
-load\_control\_signal
-=====================
+realtwin.func\_lib.load\_control\_signal
+========================================
 
-.. automodule:: realtwin.func_lib
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. currentmodule:: realtwin.func_lib
 
 .. autofunction:: load_control_signal
-
-.. autoclass:: load_control_signal
-

@@ -71,7 +71,6 @@ __all__ = [
 
     # _b_load_inputs
     "load_input_config",
-    "get_bounding_box_from",
 
     # _c_abstract_scenario
     "AbstractScenario",

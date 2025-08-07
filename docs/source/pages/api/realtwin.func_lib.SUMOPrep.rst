@@ -1,12 +1,26 @@
-SUMOPrep
-========
+realtwin.func\_lib.SUMOPrep
+===========================
 
-.. automodule:: realtwin.func_lib
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autofunction:: SUMOPrep
+.. currentmodule:: realtwin.func_lib
 
 .. autoclass:: SUMOPrep
 
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SUMOPrep.__init__
+      ~SUMOPrep.generateConfig
+      ~SUMOPrep.importDemand
+      ~SUMOPrep.importNetwork
+      ~SUMOPrep.importSignal
+   
+   
+
+   
+   
+   

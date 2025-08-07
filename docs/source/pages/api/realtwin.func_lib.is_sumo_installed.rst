@@ -1,12 +1,6 @@
-is\_sumo\_installed
-===================
+realtwin.func\_lib.is\_sumo\_installed
+======================================
 
-.. automodule:: realtwin.func_lib
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. currentmodule:: realtwin.func_lib
 
 .. autofunction:: is_sumo_installed
-
-.. autoclass:: is_sumo_installed
-

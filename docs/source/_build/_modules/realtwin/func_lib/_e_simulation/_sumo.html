@@ -11,27 +11,27 @@
       <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/realtwin_css.css?v=836a7079" />
 
-
+  
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../../_static/documentation_options.js?v=c7632d00"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
 
-
-
+          
+          
           <a href="../../../../index.html" class="icon icon-home">
             realtwin
           </a>
@@ -58,6 +58,9 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/autonomous_vehicles_simulation.html">Autonomous Vehicle Simulation</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">API Reference</a></li>
@@ -93,7 +96,7 @@
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-
+             
   <h1>Source code for realtwin.func_lib._e_simulation._sumo</h1><div class="highlight"><pre>
 <span></span><span class="c1">##############################################################################</span>
 <span class="c1"># Copyright (c) 2024-, Oak Ridge National Laboratory                          #</span>
@@ -109,6 +112,7 @@
 <span class="sd">&quot;&quot;&quot;The module to handle the SUMO simulation for the real-twin developed by ORNL ARMS group.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -122,9 +126,9 @@
 <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">FutureWarning</span><span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">read_MatchupTable</span><span class="p">,</span>
-                                                                               <span class="n">generate_turn_demand_cali</span><span class="p">,</span>
-                                                                               <span class="n">generate_inflow</span><span class="p">,</span>
-                                                                               <span class="n">generate_turn_summary</span><span class="p">)</span>
+                                                                              <span class="n">generate_turn_demand_cali</span><span class="p">,</span>
+                                                                              <span class="n">generate_inflow</span><span class="p">,</span>
+                                                                              <span class="n">generate_turn_summary</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="SUMOPrep">
@@ -245,7 +249,7 @@
             <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">FlowID</span><span class="p">))</span>
             <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;begin&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">InflowData</span><span class="p">[</span><span class="s1">&#39;IntervalStart&#39;</span><span class="p">]))</span>
             <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">InflowData</span><span class="p">[</span><span class="s1">&#39;IntervalEnd&#39;</span><span class="p">]))</span>
-            <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;from&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">InflowData</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">])))</span>
+            <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;from&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">InflowData</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="c1"># may need to change</span>
             <span class="n">flow</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;number&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">InflowData</span><span class="p">[</span><span class="s1">&#39;Count&#39;</span><span class="p">]))</span>
@@ -278,10 +282,10 @@
             <span class="k">for</span> <span class="n">TurnData</span> <span class="ow">in</span> <span class="n">TurnDictSubset</span><span class="p">:</span>
                 <span class="n">edge_relation</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">Interval</span><span class="p">,</span> <span class="s1">&#39;edgeRelation&#39;</span><span class="p">)</span>
                 <span class="n">edge_relation</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-                    <span class="s1">&#39;from&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">TurnData</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">])))</span>
+                    <span class="s1">&#39;from&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">TurnData</span><span class="p">[</span><span class="s1">&#39;OpenDriveFromID&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
                 <span class="c1"># may need to change</span>
-                <span class="n">edge_relation</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;to&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">TurnData</span><span class="p">[</span><span class="s1">&#39;OpenDriveToID&#39;</span><span class="p">])))</span>
+                <span class="n">edge_relation</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;to&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">TurnData</span><span class="p">[</span><span class="s1">&#39;OpenDriveToID&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
                 <span class="c1"># may need to change</span>
                 <span class="n">edge_relation</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;probability&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">TurnData</span><span class="p">[</span><span class="s1">&#39;TurnRatio&#39;</span><span class="p">]))</span>
@@ -296,11 +300,43 @@
             <span class="n">path_sumo_demand</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUMOPath</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">NetworkName</span><span class="si">}</span><span class="s1">.rou.xml&#39;</span><span class="p">))</span>
 
-            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cmd/c &quot;jtrrouter -r </span><span class="si">{</span><span class="n">path_sumo_flow</span><span class="si">}</span><span class="s1">&#39;</span>
-                      <span class="sa">f</span><span class="s1">&#39; -t </span><span class="si">{</span><span class="n">path_sumo_turn</span><span class="si">}</span><span class="s1">&#39;</span>
-                      <span class="sa">f</span><span class="s1">&#39; -n </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="si">}</span><span class="s1"> --accept-all-destinations&#39;</span>
-                      <span class="sa">f</span><span class="s1">&#39; --remove-loops True --randomize-flows --seed </span><span class="si">{</span><span class="n">Seed</span><span class="si">}</span><span class="s1">&#39;</span>
-                      <span class="sa">f</span><span class="s1">&#39; -o </span><span class="si">{</span><span class="n">path_sumo_demand</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;jtrrouter -r &quot;</span><span class="si">{</span><span class="n">path_sumo_flow</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;-t &quot;</span><span class="si">{</span><span class="n">path_sumo_turn</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;-n &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="si">}</span><span class="s1">&quot; --accept-all-destinations &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;--remove-loops True --randomize-flows --seed </span><span class="si">{</span><span class="n">Seed</span><span class="si">}</span><span class="s1"> &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;-o &quot;</span><span class="si">{</span><span class="n">path_sumo_demand</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+            <span class="p">)</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># subprocess.run(cmd, capture_output=True, text=True)</span>
+                <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">process</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+                <span class="c1"># # check if path_sumo_demand exists</span>
+                <span class="c1"># if not Path(path_sumo_demand).exists():</span>
+                <span class="c1">#     # create rou.xml using randomTrips</span>
+                <span class="c1">#     # get the path of the randomTrips.py file under the func_lib directory</span>
+                <span class="c1">#     print(&quot;  :Generating SUMO .rou.xml file with random trips...&quot;)</span>
+                <span class="c1">#     sumo_home_dir = os.environ.get(&#39;SUMO_HOME&#39;, &#39;&#39;)</span>
+                <span class="c1">#     sumo_tool_dir = Path(sumo_home_dir) / &#39;tools&#39;</span>
+                <span class="c1">#     if sumo_tool_dir.exists():</span>
+                <span class="c1">#         path_random_trips = sumo_tool_dir / &quot;randomTrips.py&quot;</span>
+                <span class="c1">#         path_random_trips = pf.path2linux(path_random_trips)</span>
+                <span class="c1">#         # run randomTrips.py to generate .rou.xml file</span>
+                <span class="c1">#         subprocess.run([&quot;python&quot;,</span>
+                <span class="c1">#                         path_random_trips,</span>
+                <span class="c1">#                         &quot;-n&quot;, path_net_SUMO,</span>
+                <span class="c1">#                         &quot;-r&quot;, path_sumo_demand],</span>
+                <span class="c1">#                        capture_output=True,</span>
+                <span class="c1">#                        text=True)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">path_sumo_demand</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Failed to generate route file: </span><span class="si">{</span><span class="n">path_sumo_demand</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Route file generated successfully: </span><span class="si">{</span><span class="n">path_sumo_demand</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :An error occurred while running jtrrouter: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="c1"># add element to the set object</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Demand</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">path_sumo_demand</span><span class="p">)</span>
@@ -503,6 +539,15 @@
     <span class="n">signal_path</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">control_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">synchro_file</span><span class="p">)</span>
     <span class="n">SignalDict</span> <span class="o">=</span> <span class="n">process_signal_data</span><span class="p">(</span><span class="n">signal_path</span><span class="p">)</span>
 
+    <span class="n">df_lanes</span> <span class="o">=</span> <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Lanes&#39;</span><span class="p">]</span>
+    <span class="n">target_rows</span> <span class="o">=</span> <span class="n">df_lanes</span><span class="p">[</span><span class="s2">&quot;RECORDNAME&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">&quot;Lanes&quot;</span><span class="p">,</span> <span class="s2">&quot;Shared&quot;</span><span class="p">,</span><span class="s2">&quot;Phase1&quot;</span><span class="p">,</span><span class="s2">&quot;PermPhase1&quot;</span><span class="p">,</span><span class="s2">&quot;Allow RTOR&quot;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">df_lanes</span><span class="p">[</span><span class="n">target_rows</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df_lanes</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="s2">&quot;RECORDNAME&quot;</span> <span class="ow">and</span> <span class="n">col</span> <span class="o">!=</span> <span class="s2">&quot;INTID&quot;</span> <span class="ow">and</span> <span class="n">pd</span><span class="o">.</span><span class="n">notna</span><span class="p">(</span><span class="n">df_lanes</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">col</span><span class="p">]):</span>
+                <span class="n">df_lanes</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">df_lanes</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">col</span><span class="p">]))</span>
+    <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Lanes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_lanes</span>
+
+
     <span class="n">SignalInfo</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">unique_INTIDs</span> <span class="o">=</span> <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Lanes&#39;</span><span class="p">][</span><span class="s1">&#39;INTID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
     <span class="c1"># Iterating through each unique &#39;INTID&#39; and gathering corresponding data from each table</span>
@@ -557,6 +602,49 @@
     <span class="k">for</span> <span class="n">intid</span> <span class="ow">in</span> <span class="n">Synchro</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
         <span class="n">lanes_df</span> <span class="o">=</span> <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Lanes&#39;</span><span class="p">][</span><span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Lanes&#39;</span><span class="p">][</span><span class="s1">&#39;INTID&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">intid</span><span class="p">]</span>
         <span class="n">timeplans_df</span> <span class="o">=</span> <span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Timeplans&#39;</span><span class="p">][</span><span class="n">SignalDict</span><span class="p">[</span><span class="s1">&#39;Timeplans&#39;</span><span class="p">][</span><span class="s1">&#39;INTID&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">intid</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">col</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="n">base</span> <span class="o">=</span> <span class="n">col</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Extract base like &#39;XY&#39; from &#39;XYT&#39;</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">phaseid</span> <span class="o">=</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Phase1&#39;</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">shareid_val</span> <span class="o">=</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Shared&#39;</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c1"># Skip if &#39;Phase1&#39; or &#39;Shared&#39; row not found</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c1"># Skip if col not in</span>
+
+            <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">phaseid</span><span class="p">)</span> <span class="ow">or</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">shareid_val</span><span class="p">):</span>
+                <span class="k">continue</span>  <span class="c1"># Skip if any value is missing</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">shareid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">shareid_val</span><span class="p">))</span>
+
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">shareid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">shareid</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="ow">and</span> <span class="n">base</span> <span class="o">+</span> <span class="s1">&#39;L&#39;</span> <span class="ow">in</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="c1"># Left turn logic</span>
+                <span class="n">l_col</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s1">&#39;L&#39;</span>
+                <span class="n">l_phase</span> <span class="o">=</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Phase1&#39;</span><span class="p">,</span> <span class="n">l_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Phase1&#39;</span><span class="p">,</span> <span class="n">l_col</span><span class="p">]</span><span class="o">.</span><span class="n">empty</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="n">l_perm</span> <span class="o">=</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PermPhase1&#39;</span><span class="p">,</span> <span class="n">l_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PermPhase1&#39;</span><span class="p">,</span> <span class="n">l_col</span><span class="p">]</span><span class="o">.</span><span class="n">empty</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">l_phase</span><span class="p">)</span> <span class="ow">and</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">l_perm</span><span class="p">):</span>
+                    <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PermPhase1&#39;</span><span class="p">,</span> <span class="n">l_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">phaseid</span>
+
+            <span class="k">if</span> <span class="n">shareid</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="ow">and</span> <span class="n">base</span> <span class="o">+</span> <span class="s1">&#39;R&#39;</span> <span class="ow">in</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="c1"># Right turn logic</span>
+                <span class="n">r_col</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s1">&#39;R&#39;</span>
+                <span class="n">r_phase</span> <span class="o">=</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Phase1&#39;</span><span class="p">,</span> <span class="n">r_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Phase1&#39;</span><span class="p">,</span> <span class="n">r_col</span><span class="p">]</span><span class="o">.</span><span class="n">empty</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="n">r_perm</span> <span class="o">=</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PermPhase1&#39;</span><span class="p">,</span> <span class="n">r_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PermPhase1&#39;</span><span class="p">,</span> <span class="n">r_col</span><span class="p">]</span><span class="o">.</span><span class="n">empty</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">r_phase</span><span class="p">)</span> <span class="ow">and</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">r_perm</span><span class="p">):</span>
+                    <span class="n">lanes_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Phase1&#39;</span><span class="p">,</span> <span class="n">r_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">phaseid</span>
+
+
         <span class="n">Synchro</span><span class="p">[</span><span class="n">intid</span><span class="p">][</span><span class="s2">&quot;Lanes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lanes_df</span>
         <span class="n">Synchro</span><span class="p">[</span><span class="n">intid</span><span class="p">][</span><span class="s2">&quot;Timeplans&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timeplans_df</span>
 
@@ -596,7 +684,7 @@
         <span class="n">allow_rtor_row</span> <span class="o">=</span> <span class="n">lanes_df</span><span class="p">[</span><span class="n">lanes_df</span><span class="p">[</span><span class="s1">&#39;RECORDNAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Allow RTOR&#39;</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">phase_idx</span><span class="p">,</span> <span class="n">phase_row</span> <span class="ow">in</span> <span class="n">phases_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-            <span class="n">P</span> <span class="o">=</span> <span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">]</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">phase_row</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">])</span>
             <span class="n">protected_columns</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">protected_row</span> <span class="ow">in</span> <span class="n">existing_protected_rows</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
                 <span class="n">columns_with_P</span> <span class="o">=</span> <span class="n">protected_row</span><span class="p">[</span><span class="n">protected_row</span> <span class="o">==</span> <span class="n">P</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -620,7 +708,7 @@
             <span class="n">RTOR_columns</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_rtor_row</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">rtor_row</span> <span class="ow">in</span> <span class="n">allow_rtor_row</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-                    <span class="n">rtor_columns</span> <span class="o">=</span> <span class="n">rtor_row</span><span class="p">[</span><span class="n">rtor_row</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="n">rtor_columns</span> <span class="o">=</span> <span class="n">rtor_row</span><span class="p">[</span><span class="n">rtor_row</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">])]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
                     <span class="k">if</span> <span class="s1">&#39;INTID&#39;</span> <span class="ow">in</span> <span class="n">rtor_columns</span><span class="p">:</span>
                         <span class="n">rtor_columns</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;INTID&#39;</span><span class="p">)</span>
                     <span class="n">RTOR_columns</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rtor_columns</span><span class="p">)</span>
@@ -1045,7 +1133,7 @@
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     provided by <a href="https://readthedocs.org">Read the Docs</a>.
-
+   
 
 </footer>
         </div>
@@ -1056,7 +1144,7 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
+  </script> 
 
 </body>
 </html>

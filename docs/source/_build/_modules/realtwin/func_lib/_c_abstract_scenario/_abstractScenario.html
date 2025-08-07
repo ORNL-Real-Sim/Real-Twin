@@ -11,27 +11,27 @@
       <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/realtwin_css.css?v=836a7079" />
 
-
+  
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../../_static/documentation_options.js?v=c7632d00"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
 
-
-
+          
+          
           <a href="../../../../index.html" class="icon icon-home">
             realtwin
           </a>
@@ -58,6 +58,9 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/autonomous_vehicles_simulation.html">Autonomous Vehicle Simulation</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">API Reference</a></li>
@@ -93,7 +96,7 @@
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-
+             
   <h1>Source code for realtwin.func_lib._c_abstract_scenario._abstractScenario</h1><div class="highlight"><pre>
 <span></span><span class="c1">##############################################################################</span>
 <span class="c1"># Copyright (c) 2024-, Oak Ridge National Laboratory                          #</span>
@@ -301,6 +304,22 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">Traffic</span> <span class="o">=</span> <span class="n">Traffic</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Network</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">))</span>
+
+        <span class="c1"># update Network</span>
+        <span class="k">if</span> <span class="n">network_dict</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Network&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkName</span> <span class="o">=</span> <span class="n">network_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NetworkName&#39;</span><span class="p">,</span> <span class="s2">&quot;network&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkVertices</span> <span class="o">=</span> <span class="n">network_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NetworkVertices&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">ElevationMap</span> <span class="o">=</span> <span class="n">network_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ElevationMap&#39;</span><span class="p">,</span> <span class="s2">&quot;No elevation map provided!&quot;</span><span class="p">)</span>
+
+            <span class="c1"># update the OpenDriveNetwork output directory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">_output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_output_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">_output_dir</span>
+
+            <span class="c1"># update and crate OpenDriveNetwork</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_net_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkName</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_net_vertices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">NetworkVertices</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">OpenDriveNetwork</span><span class="o">.</span><span class="n">_ele_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Network</span><span class="o">.</span><span class="n">ElevationMap</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">Control</span> <span class="o">=</span> <span class="n">Control</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Application</span> <span class="o">=</span> <span class="n">Application</span><span class="p">()</span></div>
 
@@ -419,7 +438,7 @@
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     provided by <a href="https://readthedocs.org">Read the Docs</a>.
-
+   
 
 </footer>
         </div>
@@ -430,7 +449,7 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
+  </script> 
 
 </body>
 </html>

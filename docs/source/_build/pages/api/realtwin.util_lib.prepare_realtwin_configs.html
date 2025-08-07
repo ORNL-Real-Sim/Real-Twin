@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>realtwin.func_lib.get_bounding_box_from &mdash; realtwin</title>
+  <title>realtwin.util_lib.prepare_realtwin_configs &mdash; realtwin</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -23,8 +23,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="realtwin.func_lib.AbstractScenario" href="realtwin.func_lib.AbstractScenario.html" />
-    <link rel="prev" title="realtwin.func_lib.load_input_config" href="realtwin.func_lib.load_input_config.html" /> 
+    <link rel="next" title="realtwin.util_lib.get_bounding_box_from_vertices" href="realtwin.util_lib.get_bounding_box_from_vertices.html" />
+    <link rel="prev" title="realtwin.util_lib.find_executable_from_PATH_on_win" href="realtwin.util_lib.find_executable_from_PATH_on_win.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -62,19 +62,27 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../realtwin_generation.html">Scenario Generation</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../autonomous_vehicles_simulation.html">Autonomous Vehicle Simulation</a></li>
+</ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../api.html#realtwin-api">RealTwin API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api.html#utility-functions">Utility Functions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#utility-functions">Utility Functions</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.venv_create.html">realtwin.util_lib.venv_create</a></li>
+<li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.venv_delete.html">realtwin.util_lib.venv_delete</a></li>
+<li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.download_elevation_tif_by_bbox.html">realtwin.util_lib.download_elevation_tif_by_bbox</a></li>
+<li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.download_single_file_from_web.html">realtwin.util_lib.download_single_file_from_web</a></li>
+<li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.find_executable_from_PATH_on_win.html">realtwin.util_lib.find_executable_from_PATH_on_win</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">realtwin.util_lib.prepare_realtwin_configs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#realtwin.util_lib.prepare_realtwin_configs"><code class="docutils literal notranslate"><span class="pre">prepare_realtwin_configs()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="realtwin.util_lib.get_bounding_box_from_vertices.html">realtwin.util_lib.get_bounding_box_from_vertices</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#installation-and-environment">Installation and Environment</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="../api.html#load-inputs">Load Inputs</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="realtwin.func_lib.load_input_config.html">realtwin.func_lib.load_input_config</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">realtwin.func_lib.get_bounding_box_from</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#realtwin.func_lib.get_bounding_box_from"><code class="docutils literal notranslate"><span class="pre">get_bounding_box_from()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#load-inputs">Load Inputs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#abstract-scenario-generation">Abstract Scenario Generation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#concrete-scenario-generation">Concrete Scenario Generation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#prepare-simulation-documents">Prepare Simulation Documents</a></li>
@@ -105,9 +113,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
-      <li class="breadcrumb-item active">realtwin.func_lib.get_bounding_box_from</li>
+      <li class="breadcrumb-item active">realtwin.util_lib.prepare_realtwin_configs</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/pages/api/realtwin.func_lib.get_bounding_box_from.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/pages/api/realtwin.util_lib.prepare_realtwin_configs.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -117,26 +125,30 @@
              
   <blockquote>
 <div></div></blockquote>
-<section id="realtwin-func-lib-get-bounding-box-from">
-<h1>realtwin.func_lib.get_bounding_box_from<a class="headerlink" href="#realtwin-func-lib-get-bounding-box-from" title="Link to this heading"></a></h1>
+<section id="realtwin-util-lib-prepare-realtwin-configs">
+<h1>realtwin.util_lib.prepare_realtwin_configs<a class="headerlink" href="#realtwin-util-lib-prepare-realtwin-configs" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="realtwin.func_lib.get_bounding_box_from">
-<span class="sig-prename descclassname"><span class="pre">realtwin.func_lib.</span></span><span class="sig-name descname"><span class="pre">get_bounding_box_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="../../_modules/realtwin/func_lib/_b_load_inputs/loader_config.html#get_bounding_box_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#realtwin.func_lib.get_bounding_box_from" title="Link to this definition"></a></dt>
-<dd><p>get the bounding box from the vertices string</p>
+<dt class="sig sig-object py" id="realtwin.util_lib.prepare_realtwin_configs">
+<span class="sig-prename descclassname"><span class="pre">realtwin.util_lib.</span></span><span class="sig-name descname"><span class="pre">prepare_realtwin_configs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dest_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/realtwin/util_lib/create_config.html#prepare_realtwin_configs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#realtwin.util_lib.prepare_realtwin_configs" title="Link to this definition"></a></dt>
+<dd><p>Create a default/demo configuration file for the RealTwin package.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>vertices</strong> (<em>str</em>) – the vertices of the network in string format
-“(lon, lat),(lon, lat),…”</p>
+<dd class="field-odd"><p><strong>dest_dir</strong> (<em>str</em>) – save the configuration file to destination dir.
+Defaults to “”, which means the current working directory.</p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>The vertices format can be found in configuration file</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rt</span><span class="o">.</span><span class="n">create_configuration_file</span><span class="p">()</span>  <span class="c1"># will create a configuration file in the current working directory</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rt</span><span class="o">.</span><span class="n">create_configuration_file</span><span class="p">(</span><span class="n">dest_dir</span><span class="o">=</span><span class="s2">&quot;path/to/directory&quot;</span><span class="p">)</span>  <span class="c1"># will create in the specified directory</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>the bounding box of the network: (min_lon, min_lat, max_lon, max_lat)</p>
+<dd class="field-odd"><p>True if the configuration file is created successfully.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>tuple</p>
+<dd class="field-even"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -147,8 +159,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="realtwin.func_lib.load_input_config.html" class="btn btn-neutral float-left" title="realtwin.func_lib.load_input_config" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="realtwin.func_lib.AbstractScenario.html" class="btn btn-neutral float-right" title="realtwin.func_lib.AbstractScenario" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="realtwin.util_lib.find_executable_from_PATH_on_win.html" class="btn btn-neutral float-left" title="realtwin.util_lib.find_executable_from_PATH_on_win" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="realtwin.util_lib.get_bounding_box_from_vertices.html" class="btn btn-neutral float-right" title="realtwin.util_lib.get_bounding_box_from_vertices" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

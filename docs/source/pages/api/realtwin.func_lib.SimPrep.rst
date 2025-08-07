@@ -1,12 +1,25 @@
-SimPrep
-=======
+realtwin.func\_lib.SimPrep
+==========================
 
-.. automodule:: realtwin.func_lib
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autofunction:: SimPrep
+.. currentmodule:: realtwin.func_lib
 
 .. autoclass:: SimPrep
 
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SimPrep.__init__
+      ~SimPrep.create_aimsun_sim
+      ~SimPrep.create_sumo_sim
+      ~SimPrep.create_vissim_sim
+   
+   
+
+   
+   
+   

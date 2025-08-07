@@ -1,12 +1,6 @@
-venv\_delete
-============
+realtwin.util\_lib.venv\_delete
+===============================
 
-.. automodule:: realtwin.util_lib
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. currentmodule:: realtwin.util_lib
 
 .. autofunction:: venv_delete
-
-.. autoclass:: venv_delete
-
