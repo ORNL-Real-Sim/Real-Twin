@@ -4,7 +4,7 @@ import dash_leaflet as dl
 from dash.dependencies import Input, Output, State
 from shapely.geometry import Point, Polygon
 
-# --- your existing data ---
+# existing data
 existing_points = [
     (-74.0059, 40.7128),
     (-74.0020, 40.7150),
@@ -19,13 +19,13 @@ point_features = [{
 
 basemap_options = [
     {"label": "OpenStreetMap", "value": "osm"},
-    {"label": "Stamen Toner",   "value": "stamen_toner"},
+    # {"label": "Stamen Toner", "value": "stamen_toner"},
     {"label": "CartoDB Positron", "value": "cartodb_positron"},
 ]
 basemap_urls = {
-    "osm":               "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    "stamen_toner":      "https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
-    "cartodb_positron":  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+    "osm": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    # "stamen_toner": "https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
+    "cartodb_positron": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
 }
 
 app = dash.Dash(__name__)
