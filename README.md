@@ -1,4 +1,4 @@
-[![PyPI version](https://badge.fury.io/py/realtwin.svg)](https://badge.fury.io/py/realtwin)[![Downloads](https://static.pepy.tech/badge/realtwin)](https://pepy.tech/project/realtwin)[![](https://img.shields.io/pypi/wheel/gensim.svg)](https://pypi.org/project/realtwin/)[![](https://img.shields.io/pypi/pyversions/realtwin.svg)](https://www.python.org/)[![](https://readthedocs.org/projects/real-twin/badge/?version=latest)](https://real-twin.readthedocs.io/en/latest/?badge=latest)[![](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)[![](https://img.shields.io/badge/License-GPL-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)<!-- gh-dependents-info-used-by-start --><!-- gh-dependents-info-used-by-end -->
+[![PyPI version](https://badge.fury.io/py/realtwin.svg)](https://badge.fury.io/py/realtwin)[![Downloads](https://static.pepy.tech/badge/realtwin)](https://pepy.tech/project/realtwin)[![](https://img.shields.io/pypi/wheel/gensim.svg)](https://pypi.org/project/realtwin/)[![](https://img.shields.io/pypi/pyversions/realtwin.svg)](https://www.python.org/)[![](https://readthedocs.org/projects/real-twin/badge/?version=latest)](https://real-twin.readthedocs.io/en/latest/?badge=latest)[![](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)[![](https://img.shields.io/badge/License-GPL-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)`<!-- gh-dependents-info-used-by-start --><!-- gh-dependents-info-used-by-end -->`
 
 > - [Real-Twin](#real-twin)
 >   - [🔁 Real-Twin: A Unified Simulation Scenario Generation Tool for Mobility Research](#-real-twin-a-unified-simulation-scenario-generation-tool-for-mobility-research)
@@ -133,7 +133,6 @@ This work is supported by the US Department of Energy, Vehicle Technologies Offi
 
 To cite usage of Real-Twin, please use the folowing bibtex:
 
-```bibtex
 @article{xu2025automated,
   title        = {Developing An Automated Microscopic Traffic Simulation Scenario Generation Tool},
   author       = {Xu, Guanhao and Saroj, Abhilasha and Wang, Chieh (Ross) and Shao, Yunli},
@@ -141,13 +140,11 @@ To cite usage of Real-Twin, please use the folowing bibtex:
   year         = {2025},
   doi          = {https://doi.org/10.1177/03611981251349433},
   publisher    = {SAGE for the National Academy of Sciences: Transportation Research Board},
-  note         = {In Press}
 }
 
 @misc{ doecode_147051,
 title = {Real-Twin},
 author = {Wang, Chieh (Ross) and Xu, Guanhao and Saroj, Abhilasha and Luo, Xiangyong (Roy) and Yuan, Jinghui and Shao, Yunli},
-abstractNote = {Real-Twin is a unified, model-agnostic scenario generation tool designed to streamline and standardize the evaluation of emerging mobility technologies. It provides an end-to-end framework that includes robust workflows, integrated tools, and comprehensive metrics to generate, calibrate, and benchmark microscopic traffic simulation scenarios across multiple platforms. Key Features of Real-Twin include: - Unified Scenario Generation: generate transferable, simulation-ready scenarios from heterogeneous data sources using a consistent workflow. - Automated Calibration Workflow: bridges simulation and real-world data, minimizing manual effort and making traffic simulation more accessible to researchers and engineers. - Model-Agnostic Compatibility: supports SUMO, VISSIM, and AIMSUN for cross-platform scenario generation and benchmarking. Enables reliable comparisons and reproducibility across different simulation tools. - Consistent Scenarios across Different Simulators: generate comparable simulation scenarios across different microscopic traffic simulators, providing users the ability to conduct benchmarking and cross-validation that are crucial for ensuring the reliability and reproducibility of simulation results. - Emerging Technology Support: includes a scenario database and pipeline for studying autonomous vehicles (AVs), with planned extensions to CAVs, EVs, and other advanced technologies.},
 doi = {10.11578/dc.20250602.3},
 url = {https://doi.org/10.11578/dc.20250602.3},
 howpublished = {[Computer Software] \url{https://doi.org/10.11578/dc.20250602.3}},
@@ -164,4 +161,3 @@ url = {https://github.com/ORNL-Real-Sim/Real-Twin},
 version = {0.1.0},
 year = {2025}
 }
-```
