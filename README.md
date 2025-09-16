@@ -136,31 +136,31 @@ To cite usage of Real-Twin, please use the folowing bibtex:
 ```bibtex
 
 @article{xu2025automated,
-  title        = {Developing An Automated Microscopic Traffic Simulation Scenario Generation Tool},
-  author       = {Xu, Guanhao and Saroj, Abhilasha and Wang, Chieh (Ross) and Shao, Yunli},
-  journal      = {Transportation Research Record},
-  year         = {2025},
-  doi          = {https://doi.org/10.1177/03611981251349433},
-  publisher    = {SAGE for the National Academy of Sciences: Transportation Research Board},
+    title        = {Developing An Automated Microscopic Traffic Simulation Scenario Generation Tool},
+    author       = {Xu, Guanhao and Saroj, Abhilasha and Wang, Chieh (Ross) and Shao, Yunli},
+    journal      = {Transportation Research Record},
+    year         = {2025},
+    doi          = {https://doi.org/10.1177/03611981251349433},
+    publisher    = {SAGE for the National Academy of Sciences: Transportation Research Board}
 }
 
 @misc{ doecode_147051,
-title = {Real-Twin},
-author = {Wang, Chieh (Ross) and Xu, Guanhao and Saroj, Abhilasha and Luo, Xiangyong (Roy) and Yuan, Jinghui and Shao, Yunli},
-doi = {10.11578/dc.20250602.3},
-url = {https://doi.org/10.11578/dc.20250602.3},
-howpublished = {[Computer Software] \url{https://doi.org/10.11578/dc.20250602.3}},
-year = {2025},
-month = {jun}
+    title        = {Real-Twin},
+    author       = {Wang, Chieh (Ross) and Xu, Guanhao and Saroj, Abhilasha and Luo, Xiangyong (Roy) and Yuan, Jinghui and Shao, Yunli},
+    doi          = {10.11578/dc.20250602.3},
+    url          = {https://doi.org/10.11578/dc.20250602.3},
+    howpublished = {[Computer Software] \url{https://doi.org/10.11578/dc.20250602.3}},
+    year         = {2025},
+    month        = {jun}
 }
 
 @software{luo2025realtwin,
-author = {Luo, Xiangyong and Xu, Guanhao and Saroj, Abhilasha and Yuan, Jinghui and Shao, Yunli and Wang, Chieh (Ross)},
-doi = {https://doi.org/10.11578/dc.20250602.3},
-month = jun,
-title = {realtwin: A Unified Simulation Scenario Generation Tool for Mobility Research},
-url = {https://github.com/ORNL-Real-Sim/Real-Twin},
-version = {0.1.0},
-year = {2025}
+    author       = {Luo, Xiangyong and Xu, Guanhao and Saroj, Abhilasha and Yuan, Jinghui and Shao, Yunli and Wang, Chieh (Ross)},
+    doi          = {https://doi.org/10.11578/dc.20250602.3},
+    month        = jun,
+    title        = {realtwin: A Unified Simulation Scenario Generation Tool for Mobility Research},
+    url          = {https://github.com/ORNL-Real-Sim/Real-Twin},
+    version      = {0.1.0},
+    year         = {2025}
 }
 ```
