@@ -167,6 +167,8 @@ def create_sumo_config(path_cfg: str,
     Args:
         path_cfg (str): The path where the configuration file will be saved.
         sim_name (str): The name of the simulation. Defaults to "chatt".
+        sim_start (int): The start time of the simulation in seconds. Defaults to 0.
+        sim_end (int): The end time of the simulation in seconds. Defaults to 3600.
     """
 
     # create the root element
@@ -226,7 +228,7 @@ def create_sumo_config(path_cfg: str,
     tree = ET.ElementTree(root)
 
     formatted_string = prettify_xml(tree)
-    with open(path_cfg, 'w') as file:
+    with open(path_cfg, 'w', encoding='utf-8') as file:
         file.write(formatted_string)
 
     # tree.write(path_cfg, encoding='utf-8', xml_declaration=True)

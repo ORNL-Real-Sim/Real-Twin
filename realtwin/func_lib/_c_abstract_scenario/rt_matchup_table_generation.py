@@ -10,6 +10,8 @@
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
+""" Functions to generate matchup table from SUMO network XML file. """
+
 import xml.etree.ElementTree as ET
 import pandas as pd
 from pyproj import Proj, Transformer
@@ -177,7 +179,7 @@ def generate_junction_bearing(path_net: str) -> pd.DataFrame:
         edges = set(lane.rsplit("_", 1)[0] for lane in inc_lanes if lane)
 
         # Get entrance and exit counts for this junction
-        entrance_count = sum(df_edges["To"] == junction_id)
+        # entrance_count = sum(df_edges["To"] == junction_id)
         exit_count = sum(df_edges["From"] == junction_id)
 
         # Check if the junction has at least 2 entrances or at least 2 exits
@@ -196,8 +198,8 @@ def generate_junction_bearing(path_net: str) -> pd.DataFrame:
                             last_point = shape[-1].split(",")[:2]  # Get x, y of the last point
                             second_last_point = shape[-2].split(",")[:2]  # Get x, y of the second last point
 
-                            second_last_point = tuple([float(val) for val in second_last_point])
-                            last_point = tuple([float(val) for val in last_point])
+                            second_last_point = tuple(float(val) for val in second_last_point)
+                            last_point = tuple(float(val) for val in last_point)
 
                             # Convert to lat, lon
                             lat1, lon1 = convert_coordinates(*second_last_point)
@@ -316,7 +318,7 @@ def match_best_bearing(junction_id, lat1, lon1, lat2, lon2, junction_bearing):
 
     if matching_junctions.empty:
         print(f"No matching junction found for {junction_id}.")
-        return
+        return None, None, None
 
     # Find the best matching edge
     matching_junctions.loc[:, "Bearing Difference"] = abs(matching_junctions["Degree"] - input_bearing)

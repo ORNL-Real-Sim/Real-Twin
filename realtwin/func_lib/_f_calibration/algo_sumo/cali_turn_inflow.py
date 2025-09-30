@@ -10,6 +10,8 @@
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
+""" Turn and Inflow Calibration Algorithm for SUMO """
+
 import os
 import sys
 from pathlib import Path
@@ -22,7 +24,11 @@ try:
         update_turn_flow_from_solution,
         run_SUMO_create_EdgeData,
         run_jtrrouter_to_create_rou_xml,
-        result_analysis_on_EdgeData)
+        result_analysis_on_EdgeData,
+        read_MatchupTable,
+        generate_turn_demand_cali,
+        generate_inflow,
+        generate_turn_summary,)
 except ImportError:
     from util_cali_turn_inflow import (
         update_turn_flow_from_solution,
@@ -47,14 +53,20 @@ else:
     warnings.warn("Environment variable 'SUMO_HOME' is not set. "
                   "please declare environment variable 'SUMO_HOME'")
     # sys.exit("please declare environment variable 'SUMO_HOME'")
-import traci
 
 rng = np.random.default_rng(seed=812)
 
 
 def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = None, **kwargs) -> float:
-    """ Objective function for SUMO calibration."""
-    """ Run a single calibration iteration to get the best solution """
+    """ Objective function for SUMO calibration, Run a single calibration iteration to get the best solution
+
+    Args:
+        solution (list | np.ndarray): the solution to evaluate.
+        scenario_config (dict): the configuration for the scenario. Defaults to None.
+        **kwargs: additional keyword arguments.
+    Returns:
+        float: the fitness value.
+    """
 
     TurnDf_Calibration = scenario_config.get("TurnDf_Calibration")
     TurnToCalibrate = scenario_config.get("TurnToCalibrate")
@@ -159,6 +171,7 @@ class TurnInflowCali:
         #     if self.verbose:
         #         print("  :Info: initial parameters are not provided, using None.")
         #     self.init_solution = None
+        self.init_solution = None
 
         # params_ranges = self.turn_inflow_cfg.get("params_ranges", None)
         # if isinstance(params_ranges, dict):
@@ -206,7 +219,7 @@ class TurnInflowCali:
             return np.array(list(init_vals) * pop_size).reshape(pop_size, len(init_vals))
         return None
 
-    def run_vis(self, output_dir: str, model) -> bool:
+    def run_vis(self, output_dir: str, model: GA.BaseGA) -> bool:
         """Save the results of the optimization.
 
         See Also:
@@ -244,6 +257,14 @@ class TurnInflowCali:
             3. Additional keyword arguments (`**kwargs`) can be passed for specific GA models.
             4. Please check original GA model documentation for more kwargs in details: https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
 
+            GA input parameters:
+                epoch (int): the iterations. Defaults to 1000.
+                pop_size (int): population size. Defaults to 50.
+                pc (float): crossover probability. Defaults to 0.95.
+                pm (float): mutation probability. Defaults to 0.025.
+                ga_model (str): the type of GA model to use. Defaults to "BaseGA".
+                    options: "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA".
+
         See Also:
             https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
 
@@ -251,12 +272,6 @@ class TurnInflowCali:
             You can change the input parameters only from input_config.yaml file.
 
         Args:
-            epoch (int): the iterations. Defaults to 1000.
-            pop_size (int): population size. Defaults to 50.
-            pc (float): crossover probability. Defaults to 0.95.
-            pm (float): mutation probability. Defaults to 0.025.
-            ga_model (str): the type of GA model to use. Defaults to "BaseGA".
-                options: "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA".
             **kwargs: additional keyword arguments for specific GA models.
         """
         if (ga_config := self.turn_inflow_cfg.get("ga_config")) is None:
@@ -264,8 +279,8 @@ class TurnInflowCali:
 
         epoch = ga_config.get("epoch", 1000)  # max iterations
         pop_size = ga_config.get("pop_size", 50)  # population size
-        if pop_size < 10:  # minimum population size for GA in mealpy is 10
-            pop_size = 10
+        # minimum population size for GA in mealpy is 10
+        pop_size = max(pop_size, 10)
 
         pc = ga_config.get("pc", 0.75)  # crossover probability
         pm = ga_config.get("pm", 0.1)  # mutation probability
@@ -343,13 +358,16 @@ class TurnInflowCali:
         Warning:
             You can change the input parameters only from input_config.yaml file.
 
+        Notes:
+            SA input parameters:
+                epoch (int): iterations. Defaults to 1000.
+                pop_size (int): population size. Defaults to 2.
+                temp_init (float): initial temperature. Defaults to 100.
+                cooling_rate (float): Defaults to 0.99.
+                scale (float): the change scale of initialization. Defaults to 0.1.
+                sel_model (str): select diff. Defaults to "OriginalSA".
+
         Args:
-            epoch (int): iterations. Defaults to 1000.
-            pop_size (int): population size. Defaults to 2.
-            temp_init (float): initial temperature. Defaults to 100.
-            cooling_rate (float): Defaults to 0.99.
-            scale (float): the change scale of initialization. Defaults to 0.1.
-            sel_model (str): select diff. Defaults to "OriginalSA".
             kwargs: additional keyword arguments for specific SA models. Navigate to See Also for more details.
         """
         if (sa_config := self.turn_inflow_cfg.get("sa_config")) is None:
@@ -413,12 +431,15 @@ class TurnInflowCali:
         Warning:
             You can change the input parameters only from input_config.yaml file.
 
+        Notes:
+            TS input parameters:
+                epoch (int): iterations. Defaults to 1000.
+                pop_size (int): population size. Defaults to 2.
+                tabu_size (int): maximum size of tabu list. Defaults to 10.
+                neighbour_size (int): size of the neighborhood for generating candidate solutions. Defaults to 10.
+                perturbation_scale (float): scale of perturbation for generating candidate solutions. Defaults to 0.05.
+
         Args:
-            epoch (int): max iterations. Defaults to 1000.
-            pop_size (int): population size. Defaults to 2.
-            tabu_size (int): maximum size of tabu list. Defaults to 10.
-            neighbour_size (int): size of the neighborhood for generating candidate solutions. Defaults to 10.
-            perturbation_scale (float): scale of perturbation for generating candidate solutions. Defaults to 0.05.
             kwargs: additional keyword arguments for specific TS models. Navigate to See Also for more details.
         """
         if (ts_config := self.turn_inflow_cfg.get("ts_config")) is None:
@@ -466,89 +487,90 @@ class TurnInflowCali:
 
 
 if __name__ == "__main__":
+    pass
 
-    # create turn and inflow and summary df
-    path_matchup_table = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\MatchupTable.xlsx"
-    traffic_dir = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\Traffic"
-    path_net_turn_inflow = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\output\SUMO\turn_inflow\chatt.net.xml"
-    MatchupTable_UserInput = read_MatchupTable(path_matchup_table=path_matchup_table)
-    TurnDf, IDRef = generate_turn_demand_cali(path_matchup_table=path_matchup_table, traffic_dir=traffic_dir)
-
-    InflowDf_Calibration, InflowEdgeToCalibrate, N_InflowVariable = generate_inflow(path_net_turn_inflow,
-                                                                                    MatchupTable_UserInput,
-                                                                                    TurnDf,
-                                                                                    IDRef)
-
-    (TurnToCalibrate, TurnDf_Calibration,
-     RealSummary_Calibration,
-     N_Variable, N_TurnVariable) = generate_turn_summary(TurnDf,
-                                                         MatchupTable_UserInput,
-                                                         N_InflowVariable)
-
-    scenario_config = {
-        "input_dir": r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\output\SUMO\turn_inflow",
-        "network_name": "chatt",
-        "sim_name": "chatt.sumocfg",
-        "sim_start_time": 28800,
-        "sim_end_time": 32400,
-        "calibration_target": {'GEH': 5, 'GEHPercent': 0.85},
-        "calibration_interval": 60,
-        "demand_interval": 15,
-    }
-
-    scenario_config["TurnToCalibrate"] = TurnToCalibrate
-    scenario_config["TurnDf_Calibration"] = TurnDf_Calibration
-    scenario_config["InflowDf_Calibration"] = InflowDf_Calibration
-    scenario_config["InflowEdgeToCalibrate"] = InflowEdgeToCalibrate
-    scenario_config["RealSummary_Calibration"] = RealSummary_Calibration
-    scenario_config["N_InflowVariable"] = N_InflowVariable
-    scenario_config["N_Variable"] = N_Variable
-    scenario_config["N_TurnVariable"] = N_TurnVariable
-    scenario_config["path_net"] = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\output\SUMO\turn_inflow\chatt.net.xml"
-
-    turn_inflow_config = {"initial_params": [0.5, 0.5, 0.5, 0.5, 0.5,
-                                             0.5, 0.5, 0.5, 0.5, 0.5,
-                                             0.5, 0.5, 100, 100, 100, 100],
-                          "params_ranges": [[0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
-                                            [0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
-                                            [0, 1], [0, 1], [50, 200], [50, 200], [50, 200], [50, 200]],
-                          "max_epoch": 1000,
-                          "max_fe": 10000,
-                          "max_time": 3600,
-                          "max_early_stop": 20,
-
-                          "ga_config": {"epoch": 10,
-                                        "pop_size": 8,
-                                        "pc": 0.75,
-                                        "pm": 0.1,
-                                        "selection": "roulette",
-                                        "k_way": 0.2,
-                                        "crossover": "uniform",
-                                        "mutation": "swap",
-                                        "elite_best": 0.1,
-                                        "elite_worst": 0.3,
-                                        "model_selection": "BaseGA",
-                                        },
-                          "sa_config": {"epoch": 1000,
-                                        "temp_init": 100,
-                                        "cooling_rate": 0.891,
-                                        "scale": 0.1,  # the scale in gaussian random
-                                        "model_selection": "OriginalSA",  # "OriginalSA", "GaussianSA", "SwarmSA"
-                                        },
-                          "ts_config": {"epoch": 1000,
-                                        "tabu_size": 10,
-                                        "neighbour_size": 10,
-                                        "perturbation_scale": 0.05,
-                                        },
-                          }
-
-    opt = TurnInflowCali(scenario_config=scenario_config, turn_inflow_config=turn_inflow_config, verbose=True)
-
-    # Run Genetic Algorithm
-    # g_best = opt.run_GA()
-
-    # Run Simulated Annealing
-    g_best = opt.run_SA()
-
-    # Run Tabu Search
-    # g_best = opt.run_TS()
+#     # create turn and inflow and summary df
+#     path_matchup_table = r"datasets\tss\MatchupTable.xlsx"
+#     traffic_dir = r"datasets\tss\Traffic"
+#     path_net_turn_inflow = r"datasets\tss\output\SUMO\turn_inflow\chatt.net.xml"
+#     MatchupTable_UserInput = read_MatchupTable(path_matchup_table=path_matchup_table)
+#     TurnDf, IDRef = generate_turn_demand_cali(path_matchup_table=path_matchup_table, traffic_dir=traffic_dir)
+#
+#     InflowDf_Calibration, InflowEdgeToCalibrate, N_InflowVariable = generate_inflow(path_net_turn_inflow,
+#                                                                                     MatchupTable_UserInput,
+#                                                                                     TurnDf,
+#                                                                                     IDRef)
+#
+#     (TurnToCalibrate, TurnDf_Calibration,
+#      RealSummary_Calibration,
+#      N_Variable, N_TurnVariable) = generate_turn_summary(TurnDf,
+#                                                          MatchupTable_UserInput,
+#                                                          N_InflowVariable)
+#
+#     scenario_config = {
+#         "input_dir": r"datasets\tss\output\SUMO\turn_inflow",
+#         "network_name": "chatt",
+#         "sim_name": "chatt.sumocfg",
+#         "sim_start_time": 28800,
+#         "sim_end_time": 32400,
+#         "calibration_target": {'GEH': 5, 'GEHPercent': 0.85},
+#         "calibration_interval": 60,
+#         "demand_interval": 15,
+#     }
+#
+#     scenario_config["TurnToCalibrate"] = TurnToCalibrate
+#     scenario_config["TurnDf_Calibration"] = TurnDf_Calibration
+#     scenario_config["InflowDf_Calibration"] = InflowDf_Calibration
+#     scenario_config["InflowEdgeToCalibrate"] = InflowEdgeToCalibrate
+#     scenario_config["RealSummary_Calibration"] = RealSummary_Calibration
+#     scenario_config["N_InflowVariable"] = N_InflowVariable
+#     scenario_config["N_Variable"] = N_Variable
+#     scenario_config["N_TurnVariable"] = N_TurnVariable
+#     scenario_config["path_net"] = r"datasets\tss\output\SUMO\turn_inflow\chatt.net.xml"
+#
+#     turn_inflow_config = {"initial_params": [0.5, 0.5, 0.5, 0.5, 0.5,
+#                                              0.5, 0.5, 0.5, 0.5, 0.5,
+#                                              0.5, 0.5, 100, 100, 100, 100],
+#                           "params_ranges": [[0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
+#                                             [0, 1], [0, 1], [0, 1], [0, 1], [0, 1],
+#                                             [0, 1], [0, 1], [50, 200], [50, 200], [50, 200], [50, 200]],
+#                           "max_epoch": 1000,
+#                           "max_fe": 10000,
+#                           "max_time": 3600,
+#                           "max_early_stop": 20,
+#
+#                           "ga_config": {"epoch": 10,
+#                                         "pop_size": 8,
+#                                         "pc": 0.75,
+#                                         "pm": 0.1,
+#                                         "selection": "roulette",
+#                                         "k_way": 0.2,
+#                                         "crossover": "uniform",
+#                                         "mutation": "swap",
+#                                         "elite_best": 0.1,
+#                                         "elite_worst": 0.3,
+#                                         "model_selection": "BaseGA",
+#                                         },
+#                           "sa_config": {"epoch": 1000,
+#                                         "temp_init": 100,
+#                                         "cooling_rate": 0.891,
+#                                         "scale": 0.1,  # the scale in gaussian random
+#                                         "model_selection": "OriginalSA",  # "OriginalSA", "GaussianSA", "SwarmSA"
+#                                         },
+#                           "ts_config": {"epoch": 1000,
+#                                         "tabu_size": 10,
+#                                         "neighbour_size": 10,
+#                                         "perturbation_scale": 0.05,
+#                                         },
+#                           }
+#
+#     opt = TurnInflowCali(scenario_config=scenario_config, turn_inflow_config=turn_inflow_config, verbose=True)
+#
+#     # Run Genetic Algorithm
+#     # g_best = opt.run_GA()
+#
+#     # Run Simulated Annealing
+#     g_best = opt.run_SA()
+#
+#     # Run Tabu Search
+#     # g_best = opt.run_TS()

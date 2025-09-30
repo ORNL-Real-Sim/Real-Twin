@@ -11,9 +11,9 @@
 ##############################################################################
 
 
-from .loader_config import load_input_config
+from .loader_config import load_input_configs
 
 
 __all__ = [
-    "load_input_config",
+    "load_input_configs",
 ]

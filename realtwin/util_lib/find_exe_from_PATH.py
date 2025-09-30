@@ -9,9 +9,11 @@
 # Contributors: ORNL Real-Twin Team                                          #
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
+
+""" Find the executable from the system PATH """
+
 import os
 import subprocess
-from typing import Optional
 import pyufunc as pf
 
 

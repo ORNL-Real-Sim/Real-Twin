@@ -9,6 +9,9 @@
 # Contributors: ORNL Real-Twin Team                                          #
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
+
+""" Test the find_executable_from_PATH_on_win function """
+
 import os
 import pytest
 from pathlib import Path

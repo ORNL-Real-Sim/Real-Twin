@@ -18,9 +18,10 @@ import warnings
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString
-import xml.dom.minidom as minidom
+from xml.dom import minidom
 import pandas as pd
 import io
+import numpy as np
 import pyufunc as pf
 pd.options.mode.chained_assignment = None
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -112,15 +113,13 @@ class SUMOPrep:
         path_net_SUMO = pf.path2linux(Path(ConcreteScn.input_config["input_dir"]) / f"output/SUMO/{NetworkName}.net.xml")
         MatchupTable_UserInput = read_MatchupTable(path_matchup_table=path_matchup_table)
         TurnDf, IDRef = generate_turn_demand_cali(path_matchup_table=path_matchup_table, traffic_dir=traffic_dir)
-        InflowDf_Calibration, InflowEdgeToCalibrate, N_InflowVariable = generate_inflow(path_net_SUMO,
-                                                                                        MatchupTable_UserInput,
-                                                                                        TurnDf,
-                                                                                        IDRef)
-        (TurnToCalibrate, TurnDf_Calibration,
-        RealSummary_Calibration,
-        N_Variable, N_TurnVariable) = generate_turn_summary(TurnDf,
-                                                            MatchupTable_UserInput,
-                                                            N_InflowVariable)
+        InflowDf_Calibration, _, N_InflowVariable = generate_inflow(path_net_SUMO,
+                                                                    MatchupTable_UserInput,
+                                                                    TurnDf,
+                                                                    IDRef)
+        (_, TurnDf_Calibration, _, _, _) = generate_turn_summary(TurnDf,
+                                                                 MatchupTable_UserInput,
+                                                                 N_InflowVariable)
         InflowDf = InflowDf_Calibration.copy()
         TurnDf = TurnDf_Calibration.copy()
         TurnDf = TurnDf[TurnDf['IntersectionName'].notna()]
@@ -319,12 +318,13 @@ class SUMOPrep:
             if signal_flag:
                 print(f"  :SUMO signal updated at: {path_net}")
         except Exception as e:
-            raise Exception(f"Error in importing SUMO signal: {e}")
+            raise Exception(f"Error in importing SUMO signal: {e}") from e
 
 
 def process_signal_data(path_signal: str) -> dict:
+    """ Process the signal data from the given file path and return a dictionary of DataFrames."""
 
-    with open(path_signal, 'r') as file:
+    with open(path_signal, 'r', encoding="utf-8") as file:
         SignalData = file.readlines()
 
     SignalDict = {}
@@ -359,17 +359,19 @@ def process_signal_data(path_signal: str) -> dict:
 
 
 def generate_complete_state_string(protected_mov, permitted_mov, rtor_mov, nm):
+    """ Generate a complete state string for traffic signals. """
     state = ['r'] * nm
     if rtor_mov:
-        for idx in map(int, rtor_mov.split(',')):
+        # for idx in map(int, rtor_mov.split(',')):
+        for idx in [int(i) for i in rtor_mov.split(',')]:
             if idx < nm and state[idx] == 'r':
                 state[idx] = 's'
     if protected_mov:
-        for idx in map(int, protected_mov.split(',')):
+        for idx in [int(i) for i in protected_mov.split(',')]:
             if idx < nm:
                 state[idx] = 'G'
     if permitted_mov:
-        for idx in map(int, permitted_mov.split(',')):
+        for idx in [int(i) for i in permitted_mov.split(',')]:
             if idx < nm and (state[idx] == 'r' or state[idx] == 's'):
                 state[idx] = 'g'
     return ''.join(state)
@@ -377,12 +379,13 @@ def generate_complete_state_string(protected_mov, permitted_mov, rtor_mov, nm):
 
 # format the XML file to make it more readable
 def prettify_xml(file_path):
-    with open(file_path, 'r') as file:
+    """ Prettify the XML file at the given file path. """
+    with open(file_path, 'r', encoding="utf-8") as file:
         xml_content = file.read()
     parsed_xml = minidom.parseString(xml_content)
     pretty_xml_as_string = parsed_xml.toprettyxml(indent="    ")
 
-    with open(file_path, 'w') as file:
+    with open(file_path, 'w', encoding="utf-8") as file:
         file.write("\n".join([line for line in pretty_xml_as_string.splitlines() if line.strip()]))
 
 
@@ -394,6 +397,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
         path_net (str): SUMO network file path.
         path_MatchupTable (str): Path to the MatchupTable file.
         FixedTime (bool): If True, the signal is fixed time, otherwise it is actuated. Default is False.
+        control_dir (str): Directory where the signal control files are located. Default is "Control".
 
     Returns:
         bool: True if the import was successful, False otherwise.
@@ -440,7 +444,6 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             if col != "RECORDNAME" and col != "INTID" and pd.notna(df_lanes.at[idx, col]):
                 df_lanes.at[idx, col] = int(float(df_lanes.at[idx, col]))
     SignalDict['Lanes'] = df_lanes
-
 
     SignalInfo = {}
     unique_INTIDs = SignalDict['Lanes']['INTID'].dropna().unique()
@@ -537,7 +540,6 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                 r_perm = lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', r_col].values[0] if not lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', r_col].empty else np.nan
                 if pd.isna(r_phase) and pd.isna(r_perm):
                     lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', r_col] = phaseid
-
 
         Synchro[intid]["Lanes"] = lanes_df
         Synchro[intid]["Timeplans"] = timeplans_df
@@ -648,7 +650,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                             Synchro[intid]["Phases"]["Protected"].at[idx] = ",".join(movements + turns_to_add)
                     Synchro[intid]["Phases"]["RTOR"].at[idx] = Synchro[intid]["Phases"]["RTOR"].at[idx].replace(",,", ",").strip(",")
 
-    with open(path_net, 'r') as file:
+    with open(path_net, 'r', encoding="utf-8") as file:
         NetworkData = file.read()
 
     tree = ET.ElementTree(ET.fromstring(NetworkData))
@@ -684,8 +686,8 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
         if tl in TLLogic:
             current_tllogic = TLLogic[tl]
             movement_values = []
-            current_dir = None
-            dir_sequence = []
+            # current_dir = None
+            # dir_sequence = []
             column_index = 0
             for index, values in current_tllogic.items():
                 movement_values = []
@@ -1006,9 +1008,10 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
 
 
 if __name__ == "__main__":
-    # Example usage
-    path_net = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\chatt.net.xml"
-    path_matchup_table = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\MatchupTable.xlsx"
-    control_dir = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\Control"
-
-    sumo_signal_import(path_net=path_net, path_MatchupTable=path_matchup_table, control_dir=control_dir, FixedTime=False)
+    pass
+#     # Example usage
+#     path_net = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\chatt.net.xml"
+#     path_matchup_table = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\MatchupTable.xlsx"
+#     control_dir = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\Control"
+#
+#     sumo_signal_import(path_net=path_net, path_MatchupTable=path_matchup_table, control_dir=control_dir, FixedTime=False)
