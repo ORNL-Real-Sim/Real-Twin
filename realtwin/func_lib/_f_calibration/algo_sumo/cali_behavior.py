@@ -141,7 +141,7 @@ class BehaviorCali:
         termination_dict: https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination
 
     Examples:
-        >>> from realtwin import BehaviorOpt
+        >>> from realtwin import BehaviorCali
         >>> prob_dict = {"obj_func": partial(fitness_func, scenario_config=scenario_config, error_func="rmse"),
                         "bounds": FloatVar(lb=[1.0, 2.5, 4, 0.0, 0.25, 5.0], ub=[3.0, 3.0, 5.3, 1.0, 1.25, 9.3],),
                         "minmax": "max",  # maximize or minimize
@@ -149,7 +149,7 @@ class BehaviorCali:
                         "save_population": True}
         >>> init_solution = [2.5, 2.6, 4.5, 0.5, 1.0, 9.0]
         >>> term_dict = {"max_epoch": 500, "max_fe": 10000, "max_time": 3600, "max_early_stop": 20}
-        >>> opt = BehaviorOpt(problem_dict=prob_dict, init_solution=init_solution, term_dict=term_dict)
+        >>> opt = BehaviorCali(problem_dict=prob_dict, init_solution=init_solution, term_dict=term_dict)
         >>> g_best, model_opt = opt.run_GA(epoch=1000, pop_size=30, pc=0.95, pm=0.1, sel_model="BaseGA")
 
         Save result figures to output_dir

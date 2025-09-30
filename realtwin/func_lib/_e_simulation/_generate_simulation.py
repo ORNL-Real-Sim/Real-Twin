@@ -15,6 +15,7 @@
 # import four elements of AbstractScenario
 from ._sumo import SUMOPrep
 from ._aimsun import AimsunPrep
+from ._vissim import VissimPrep
 
 
 class SimPrep:
@@ -23,6 +24,7 @@ class SimPrep:
     def __init__(self, **kwargs):
         self.SUMOSim = SUMOPrep(**kwargs)
         self.AimsunSim = AimsunPrep(**kwargs)
+        self.VissimSim = VissimPrep(**kwargs)
 
     def create_sumo_sim(self,
                         ConcreteScn,
@@ -73,13 +75,6 @@ class SimPrep:
                           seed: list | int = 812,
                           step_length: float = 0.1):
         """Prepare VISSIM documents for simulation."""
-        pass
 
-#     def createSimulation(self, ConcreteScn, start_time, end_time, seed, step_length):
-#
-#         # SUMO
-#         # NetworkName = ConcreteScn.Supply.NetworkName
-#         self.Sumo.importNetwork(ConcreteScn)
-#         # self.Sumo.importSignal(ConcreteScn)
-#         self.Sumo.importDemand(ConcreteScn, start_time, end_time, seed)
-#         self.Sumo.generateConfig(ConcreteScn, start_time, end_time, seed, step_length)
+        print("  :VISSIM simulation preparation is not implemented yet.")
+        self.VissimSim.verbose = True

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "realtwin"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Unified Simulation Scenario Generation Tool for Mobility Research"
 authors = [
     {name = "ORNL-RealTwin", email = "realtwin@ornl.gov"},
