@@ -6,6 +6,15 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 ## Change Log
 
+### 2025-09-30
+
+* refactor code with pylint score of 9.74/10
+* include coveage.py for test of robustness of developed code: coverage run -m pytest
+
+TODO:
+
+    improve the code coverage from 22% coverage to 90% plus
+
 ### 2025-08-07
 
 * mapping SUMO and OpenDrive IDs
