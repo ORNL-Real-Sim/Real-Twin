@@ -10,6 +10,8 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 * Add testing functions for the realtwion with coverage from 22% to 38%.  Will implement core-functionalities only in the future update.
 
+  ![1759330864369](image/CHANGELOG/1759330864369.png)
+
 ### 2025-09-30
 
 * refactor code with pylint score of 9.74/10
