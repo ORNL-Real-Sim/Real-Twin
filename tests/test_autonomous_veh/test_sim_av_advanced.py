@@ -16,16 +16,9 @@ import pytest
 import yaml
 from pathlib import Path
 from unittest.mock import patch, MagicMock
-# from tests.proj_add_sys_path import add_pkg_to_sys_path
-# add_pkg_to_sys_path("realtwin")
 
-try:
-    import realtwin
-except ImportError:
-    # If realtwin is not installed, use the local path
-    import sys
-    sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-    import realtwin
+from tests.proj_add_sys_path import add_pkg_to_sys_path
+add_pkg_to_sys_path("realtwin")
 
 from realtwin.autonomous_veh.sim_av import (
     SimAV,

@@ -1,6 +1,6 @@
 [run]
 omit =
-    */tests/*
+    # */tests/*
     */Program Files (x86)/*
     # */func_lib/*
     */mapping_SUMO_OpenDrive_ID.py

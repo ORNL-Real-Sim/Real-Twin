@@ -13,16 +13,8 @@
 """ Test the car-following and lane-changing model parameters """
 
 from pathlib import Path
-# from tests.proj_add_sys_path import add_pkg_to_sys_path
-# add_pkg_to_sys_path("realtwin")
-
-try:
-    import realtwin
-except ImportError:
-    # If realtwin is not installed, use the local path
-    import sys
-    sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-    import realtwin
+from tests.proj_add_sys_path import add_pkg_to_sys_path
+add_pkg_to_sys_path("realtwin")
 
 from realtwin.autonomous_veh._carfollowing_lanechanging_model import (
     CFmodel,
