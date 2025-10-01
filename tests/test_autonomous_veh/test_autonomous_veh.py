@@ -18,7 +18,7 @@ import shutil
 import pytest
 import yaml
 from pathlib import Path
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock
 # from tests.proj_add_sys_path import add_pkg_to_sys_path
 # add_pkg_to_sys_path("realtwin")
 
@@ -378,7 +378,7 @@ class TestCheckInputsFromConfig:
             'input': {
                 'net_file': 'test.net.xml',
                 'flow_file': 'test.flow.xml',
-                'turn_file': 'test.turn.xml'
+                'turn_file': 'test.turn.xml',
             }
         }
 
@@ -389,7 +389,7 @@ class TestCheckInputsFromConfig:
         """Test checking config with non-existent directory"""
         config = {
             'input': {
-                'input_dir': '/nonexistent/directory',
+                'input_dir': 'test.net.xml',
                 'net_file': 'test.net.xml',
                 'flow_file': 'test.flow.xml',
                 'turn_file': 'test.turn.xml'

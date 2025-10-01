@@ -15,7 +15,7 @@ import shutil
 import pytest
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch
 
 try:
     import realtwin

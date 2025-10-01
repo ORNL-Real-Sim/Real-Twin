@@ -13,7 +13,6 @@
 """ Test the car-following and lane-changing model parameters """
 
 from pathlib import Path
-import pytest
 # from tests.proj_add_sys_path import add_pkg_to_sys_path
 # add_pkg_to_sys_path("realtwin")
 

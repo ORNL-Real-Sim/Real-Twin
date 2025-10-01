@@ -1,0 +1,7 @@
+[run]
+omit =
+    */tests/*
+    */Program Files (x86)/*
+    # */func_lib/*
+    */mapping_SUMO_OpenDrive_ID.py
+    */download_elevation_tif.py
