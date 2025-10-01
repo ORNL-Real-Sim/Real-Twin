@@ -54,7 +54,7 @@ def load_av_configs(path_config: str | Path) -> dict:
     if sum(pct_penetration) != 100:
         raise ValueError("pct_penetration must sum to 100%.")
     for pct in pct_penetration:
-        if not 0 <= pct <= 100:
+        if (pct < 0) or (pct > 100):
             raise ValueError("pct_penetration values must be between 0 and 100.")
 
     # check veh types, from user defined veh_types

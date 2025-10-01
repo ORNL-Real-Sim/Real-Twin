@@ -127,8 +127,8 @@ def generate_sumo_loop_detector_add_xml(path_net: str | Path, *,
     return True
 
 
-if __name__ == "__main__":
-    pass
+# if __name__ == "__main__":
+#     pass
 
     # path_net_ = Path(r"../../datasets/avtes/chatt3_updated_signal_v2.net.xml")
     # detector_type_ = "E1"
