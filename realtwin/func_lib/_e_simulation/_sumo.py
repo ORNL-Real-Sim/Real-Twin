@@ -312,6 +312,13 @@ class SUMOPrep:
 
         FixedTime = self.kwargs.get('FixedTime', False)
 
+        # update net file from matchup table before importing signal
+        try:
+            update_net_before_signal(path_net=path_net, path_MatchupTable=path_MatchupTable)
+        except Exception as e:
+            print(f"  :Error in updating SUMO net before importing signal: {e}")
+
+        # import signal
         try:
             signal_flag = sumo_signal_import(path_net=path_net, path_MatchupTable=path_MatchupTable,
                                              FixedTime=FixedTime, control_dir=control_dir)
@@ -424,13 +431,18 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             MatchupTable_UserInput['IntersectionID_Synchro'] == intid, 'JunctionID_OpenDrive'
         ].dropna().iloc[0]
     )
+    # lookup_df['StartingBound'] = lookup_df['INTID'].apply(
+    #     lambda intid: MatchupTable_UserInput.loc[
+    #         (MatchupTable_UserInput['IntersectionID_Synchro'] == intid) &
+    #         (MatchupTable_UserInput['Bearing'].astype(float) >= 180),
+    #         'Turn_Synchro'
+    #     ].dropna().iloc[0]
+    # )
+
     lookup_df['StartingBound'] = lookup_df['INTID'].apply(
         lambda intid: MatchupTable_UserInput.loc[
-            (MatchupTable_UserInput['IntersectionID_Synchro'] == intid) &
-            (MatchupTable_UserInput['Bearing'].astype(float) >= 180),
-            'Turn_Synchro'
-        ].dropna().iloc[0]
-    )
+            (MatchupTable_UserInput['IntersectionID_Synchro'] == intid)]['Turn_Synchro'].dropna().iloc[0])
+
     lookup_df = lookup_df.astype(str)
 
     synchro_file = MatchupTable_UserInput['File_Synchro'].dropna().iloc[0].strip()
@@ -1006,6 +1018,96 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
 
     return True
 
+
+def update_net_before_signal(path_net: str, path_MatchupTable: str) -> bool:
+    """Update the SUMO network file with signal information from the MatchupTable_UserInput.
+
+    Args:
+        path_net (str): Path to the input SUMO network file (.net.xml).
+        path_MatchupTable (str): Path to the MatchupTable Excel file.
+
+    Returns:
+        bool: True if the operation was successful, False otherwise.
+    """
+
+    MatchupTable_UserInput = pd.read_excel(
+        path_MatchupTable, skiprows=1, dtype=str)
+    merged_columns = ["JunctionID_OpenDrive",
+                      "File_GridSmart",
+                      "Date_GridSmart",
+                      "IntersectionName_GridSmart",
+                      "File_Synchro",
+                      "IntersectionID_Synchro",
+                      "Need calibration?",
+                      ]
+    for col in merged_columns:
+        if col not in MatchupTable_UserInput.columns:
+            MatchupTable_UserInput[col] = pd.NA
+
+    MatchupTable_UserInput[merged_columns] = MatchupTable_UserInput[merged_columns].ffill(
+    )
+
+    required_cols = ["JunctionID_OpenDrive",
+                     "Turn_Synchro",
+                     "FromRoadID_OpenDrive",
+                     "ToRoadID_OpenDrive",
+                     ]
+    missing = [c for c in required_cols if c not in MatchupTable_UserInput.columns]
+    if missing:
+        raise ValueError(f"Missing required columns in Excel: {missing}")
+
+    # load network file
+    tree = ET.parse(path_net)
+    root = tree.getroot()
+
+    from_to_index = {}
+    for conn in root.findall(".//connection"):
+        f = conn.get("from")
+        t = conn.get("to")
+        if not f or not t:
+            continue
+        from_to_index.setdefault((f, t), []).append(conn)
+
+    total_groups = 0
+    total_rows = 0
+    total_updated = 0
+    total_skipped_groups = 0
+    total_missing_matches = 0
+
+    for _, group in MatchupTable_UserInput.groupby("JunctionID_OpenDrive", dropna=False):
+        first_turn = group["Turn_Synchro"].iloc[0]
+        if pd.isna(first_turn) or (isinstance(first_turn, str) and first_turn.strip() == ""):
+            total_skipped_groups += 1
+            continue
+
+        total_groups += 1
+        link_idx = 0  # reset per group
+
+        for _, row in group.iterrows():
+            total_rows += 1
+            from_id = str(row.get("FromRoadID_OpenDrive", "") or "").strip()
+            to_id = str(row.get("ToRoadID_OpenDrive", "") or "").strip()
+
+            if not from_id or not to_id:
+                total_missing_matches += 1
+                continue
+
+            key = (f"-{from_id}", f"-{to_id}")
+            conns = from_to_index.get(key, [])
+
+            if not conns:
+                total_missing_matches += 1
+                continue
+
+            for conn in conns:
+                conn.set("linkIndex", str(link_idx))
+                link_idx += 1
+                total_updated += 1
+
+    # OUTPUT
+    tree.write(path_net, encoding="UTF-8", xml_declaration=True)
+
+    return True
 
 if __name__ == "__main__":
     pass

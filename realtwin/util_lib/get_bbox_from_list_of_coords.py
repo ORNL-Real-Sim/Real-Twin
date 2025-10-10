@@ -13,7 +13,7 @@
 import re
 
 
-def get_bounding_box_from_vertices(vertices: str | list) -> tuple:
+def get_bbox_from_vertices(vertices: str | list) -> tuple:
     """get the bounding box from the vertices string
 
     Args:

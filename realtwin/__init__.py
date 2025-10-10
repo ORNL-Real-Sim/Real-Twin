@@ -29,7 +29,7 @@ from realtwin.func_lib import (install_sumo,
 
 from realtwin.util_lib.create_venv import venv_create, venv_delete
 from realtwin.util_lib.create_config import prepare_realtwin_configs
-from realtwin.util_lib import get_bounding_box_from_vertices
+from realtwin.util_lib import get_bbox_from_vertices
 
 # Autonomous vehicle simulation
 from realtwin.autonomous_veh import SimAV, prepare_av_configs, load_av_configs
@@ -47,7 +47,7 @@ __all__ = [
     # util_lib
     'venv_create', 'venv_delete',
     'is_sumo_installed', 'is_vissim_installed', 'is_aimsun_installed',
-    "get_bounding_box_from_vertices",
+    "get_bbox_from_vertices",
 
     # func_lib
     'install_sumo', 'SimPrep', 'BehaviorCali', 'TurnInflowCali', 'cali_sumo', 'cali_aimsun', 'cali_vissim',
