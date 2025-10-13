@@ -10,14 +10,17 @@
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
+""" Check if a list of coordinates follows (lon, lat) or (lat, lon) """
 
-from typing import List, Tuple
 
+def detect_coord_order(coords: list[tuple[float, float]]) -> str:
+    """Checks whether a list of coordinate pairs follows (lon, lat) or (lat, lon).
 
-def detect_coord_order(coords: List[Tuple[float, float]]) -> str:
-    """
-    Checks whether a list of coordinate pairs follows (lon, lat) or (lat, lon).
-    Returns "lon, lat", "lat, lon", or "ambiguous".
+    Args:
+        coords (list[tuple[float, float]]): List of coordinate pairs to check.
+
+    Returns:
+        str: Returns "lon, lat", "lat, lon", or "ambiguous".
     """
     def is_lon_lat(x, y):
         return -180 <= x <= 180 and -90 <= y <= 90
@@ -46,5 +49,5 @@ def detect_coord_order(coords: List[Tuple[float, float]]) -> str:
         return "lon, lat"
     elif latlon_count > lonlat_count and latlon_count >= ambiguous_count:
         return "lat, lon"
-    else:
-        return "ambiguous"
+
+    return "ambiguous"

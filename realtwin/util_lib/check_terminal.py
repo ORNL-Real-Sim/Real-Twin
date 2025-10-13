@@ -10,6 +10,8 @@
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
+""" Check if the code is running in a Jupyter Notebook environment """
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -17,11 +19,12 @@ if TYPE_CHECKING:
 
 
 def is_running_in_notebook():
+    """ Check if the code is running in a Jupyter Notebook environment """
     try:
         shell = get_ipython().__class__.__name__
-        if shell == 'ZMQInteractiveShell':
-            return True  # Running in a Jupyter Notebook or IPython
-        else:
-            return False  # Running in a different IPython environment (e.g., IPython shell)
+        return shell == 'ZMQInteractiveShell'
+        # if shell == 'ZMQInteractiveShell':
+        #     return True  # Running in a Jupyter Notebook or IPython
+        # return False  # Running in a different IPython environment (e.g., IPython shell)
     except NameError:
-        return False  # Not running in an IPython environment (likely a standard terminal)
+        return False

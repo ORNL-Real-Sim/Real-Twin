@@ -26,3 +26,6 @@ def cali_vissim(*, sel_algo: dict = None, input_config: dict = None, verbose: bo
     Returns:
         bool: _description_
     """
+
+    print("  :VISSIM calibration is not implemented yet. Please check from future releases.")
+    return False

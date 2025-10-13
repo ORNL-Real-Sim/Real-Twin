@@ -10,9 +10,8 @@
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
+""" Generate loop detector .add.xml file for SUMO."""
 
-import os
-import sys
 from pathlib import Path
 from datetime import datetime
 from xml.dom import minidom
@@ -21,6 +20,7 @@ import xml.etree.ElementTree as ET
 
 def xml_prettify(element: str) -> str:
     """Return a pretty-printed XML string for the Element."""
+
     rough_string = ET.tostring(element, 'utf-8')
     re_parsed = minidom.parseString(rough_string)
     return re_parsed.toprettyxml(indent="    ")
@@ -31,15 +31,16 @@ def generate_sumo_loop_detector_add_xml(path_net: str | Path, *,
                                         add_fname: str = "detector.add.xml",
                                         detector_output_fname: str = "",
                                         dest_dir: str = "") -> bool:
-    """""Generate the .add.xml file for SUMO and add loop detectors for each lane that has a detector.
+    """Generate the .add.xml file for SUMO and add loop detectors for each lane that has a detector.
 
     Args:
-        utdf_dict (dict): A dictionary containing UTDF data.
+        path_net (str | Path): Path to the SUMO network file (.net.xml).
         detector_type (str): The type of detector to be added. Defaults to "E1".
-            Accepted type: E1: Inductive loop detector, E2: Lane area detector, E0: Instant induction loops.
-        fname (str, optional): SUMO additional file. Defaults to "detector.add.xml".
+            Accepted types: E1: Inductive loop detector, E2: Lane area detector, E0: Instant induction loops.
+        add_fname (str): SUMO additional file. Defaults to "detector.add.xml".
         detector_output_fname (str): The output file name to record loop detectors data in simulation.
-            the output file name in default is: detector_output_YYYYMMDDHHMM.xml
+            the output file name in default is detector_output_YYYYMMDDHHMM.xml
+        dest_dir (str): The destination directory to save the .add.xml file. Defaults to the current directory.
 
     See Also:
         For different detector types, please refer to the SUMO documentation:
@@ -121,15 +122,16 @@ def generate_sumo_loop_detector_add_xml(path_net: str | Path, *,
 
     xml_str = xml_prettify(add_elem)
     path_output = Path(dest_dir) / add_fname if dest_dir else Path(add_fname)
-    with open(path_output, "w") as f:
+    with open(path_output, "w", encoding="utf-8") as f:
         f.write(xml_str)
     return True
 
 
-if __name__ == "__main__":
-    path_net = Path(
-        r"C:\Users\xh8\ORNL_work\gitlab_workspace\ScenarioGenerator\datasets\avtes\chatt3_updated_signal_v2.net.xml")
-    detector_type = "E1"
-    add_fname = "../datasets/avtes/detector.add.xml"
-    sim_output_fname = "detector_output.xml"
-    generate_sumo_loop_detector_add_xml(path_net, detector_type, add_fname, sim_output_fname)
+# if __name__ == "__main__":
+#     pass
+
+    # path_net_ = Path(r"../../datasets/avtes/chatt3_updated_signal_v2.net.xml")
+    # detector_type_ = "E1"
+    # add_fname_ = "../datasets/avtes/detector.add.xml"
+    # sim_output_fname_ = "detector_output.xml"
+    # generate_sumo_loop_detector_add_xml(path_net_, detector_type_, add_fname_, sim_output_fname_)

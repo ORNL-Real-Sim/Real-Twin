@@ -54,7 +54,7 @@ def load_av_configs(path_config: str | Path) -> dict:
     if sum(pct_penetration) != 100:
         raise ValueError("pct_penetration must sum to 100%.")
     for pct in pct_penetration:
-        if not (0 <= pct <= 100):
+        if (pct < 0) or (pct > 100):
             raise ValueError("pct_penetration values must be between 0 and 100.")
 
     # check veh types, from user defined veh_types
@@ -74,9 +74,11 @@ def load_av_configs(path_config: str | Path) -> dict:
 
     # update the CFmodel parameters for each veh_type
     CF_model_names = list(CF_DEFAULT_PARAMETERS.keys())
-    for i in range(len(veh_types)):
+
+    # for i in range(len(veh_types)):
+    for i, veh_type in enumerate(veh_types):
         # copy the default CFmodel for each veh_type
-        CFmodel_USER[veh_types[i]] = CFmodel[veh_types[i]].copy()
+        CFmodel_USER[veh_type] = CFmodel[veh_type].copy()
 
         # update default parameters with user defined parameters
         for model_name in CF_model_names:
@@ -89,7 +91,7 @@ def load_av_configs(path_config: str | Path) -> dict:
                 with contextlib.suppress(IndexError):
                     # get the parameter value from user input
                     param_values = user_model[model_param][i]
-                    CFmodel_USER[veh_types[i]][model_name][model_param] = param_values
+                    CFmodel_USER[veh_type][model_name][model_param] = param_values
             # delete the model_key from config to avoid confusion
             if model_key in config:
                 del config[model_key]

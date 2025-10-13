@@ -22,10 +22,10 @@ from rich.console import Console
 console = Console()
 
 from realtwin.util_lib.check_lon_lat_from_list_of_coords import detect_coord_order
-from realtwin.util_lib.get_bbox_from_list_of_coords import get_bounding_box_from_vertices
+from realtwin.util_lib.get_bbox_from_list_of_coords import get_bbox_from_vertices
 
 
-def load_input_config(path_config: str) -> dict:
+def load_input_configs(path_config: str) -> dict:
     """load input configuration from yaml file
 
     Args:
@@ -110,7 +110,7 @@ def load_input_config(path_config: str) -> dict:
         # update the bounding box if it is not provided
         bbox = config.get('Network', {}).get('Net_BBox')
         if not bbox:
-            config['Network']['Net_BBox'] = get_bounding_box_from_vertices(vertices)
+            config['Network']['Net_BBox'] = get_bbox_from_vertices(vertices)
 
     # check whether demo mode is enabled
     config = check_demo_data_enabled(config)

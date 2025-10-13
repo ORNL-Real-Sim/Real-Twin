@@ -278,32 +278,30 @@ class AbstractScenario:
         if df_volume is not None:
             self.Traffic.Volume = load_traffic_volume(df_volume)
             self.Traffic.TurningRatio = load_traffic_turning_ratio(self.Traffic.Volume)
-        else:
-            if traffic_dict := self.input_config.get('Traffic'):
-                path_volume = traffic_dict.get('Volume', None)
-                path_volume_abs = pf.path2linux(os.path.join(self.input_config.get("input_dir"), path_volume))
-                self.Traffic.Volume = load_traffic_volume(path_volume_abs)
-                self.Traffic.TurningRatio = load_traffic_turning_ratio(self.Traffic.Volume)
+        elif traffic_dict := self.input_config.get('Traffic'):
+            path_volume = traffic_dict.get('Volume', None)
+            path_volume_abs = pf.path2linux(os.path.join(self.input_config.get("input_dir"), path_volume))
+            self.Traffic.Volume = load_traffic_volume(path_volume_abs)
+            self.Traffic.TurningRatio = load_traffic_turning_ratio(self.Traffic.Volume)
 
         # update Control
         if signal_dict is not None:
             self.Control.Signal = signal_dict
-        else:
-            if control_data := self.input_config.get('Control'):
-                if isinstance(control_data, dict):
-                    path_signal = control_data.get('Signal', None)
-                    path_signal_abs = pf.path2linux(os.path.join(self.input_config.get("input_dir"), path_signal))
+        elif control_data := self.input_config.get('Control'):
+            if isinstance(control_data, dict):
+                path_signal = control_data.get('Signal', None)
+                path_signal_abs = pf.path2linux(os.path.join(self.input_config.get("input_dir"), path_signal))
+                self.Control.Signal = load_control_signal(path_signal_abs)
+            elif isinstance(control_data, str):
+                path_signal = control_data
+                path_signal_abs = pf.path2linux(Path(self.input_config.get("input_dir")) / "Control" / path_signal)
+                if os.path.isfile(path_signal_abs):
                     self.Control.Signal = load_control_signal(path_signal_abs)
-                elif isinstance(control_data, str):
-                    path_signal = control_data
-                    path_signal_abs = pf.path2linux(Path(self.input_config.get("input_dir")) / "Control" / path_signal)
-                    if os.path.isfile(path_signal_abs):
-                        self.Control.Signal = load_control_signal(path_signal_abs)
-                    else:
-                        raise FileNotFoundError(
-                            f"  :File not found: {path_signal_abs}. No signal data loaded from input file")
                 else:
-                    raise ValueError("  :Invalid control data in configuration file. ")
+                    raise FileNotFoundError(
+                        f"  :File not found: {path_signal_abs}. No signal data loaded from input file")
+            else:
+                raise ValueError("  :Invalid control data in configuration file. ")
 
     def fillAbstractScenario(self):
         """Fill the AbstractScenario with the data from the input_config"""

@@ -26,7 +26,7 @@ Utility Functions
     util_lib.download_single_file_from_web
     util_lib.find_executable_from_PATH_on_win
     util_lib.prepare_realtwin_configs
-    util_lib.get_bounding_box_from_vertices
+    util_lib.get_bbox_from_vertices
 
 
 Installation and Environment

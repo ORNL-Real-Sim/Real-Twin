@@ -21,6 +21,6 @@ from ._generate_loop_detector import generate_sumo_loop_detector_add_xml
 __all__ = [
     'SimAV',
     'prepare_av_configs',
-    'generate_sumo_loop_detector_add_xml',
     'load_av_configs',
+    'generate_sumo_loop_detector_add_xml',
 ]

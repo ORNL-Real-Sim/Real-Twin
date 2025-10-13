@@ -10,10 +10,13 @@
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
-# Pre-selected routes for the behavior calibration for demo data
 
 # time in seconds
 # edge_list is the list of edge IDs in the route, user can open generated SUMO net file manually see the edge IDs
+
+""" Pre-selected routes for the behavior calibration for demo data."""
+
+
 sel_behavior_routes = {
     "chattanooga": {"route_1": {"time": 240,
                                 "edge_list": ["-312", "-293", "-297", "-288", "-2881", "-286", "-302",

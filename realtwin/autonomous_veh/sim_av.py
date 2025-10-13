@@ -109,7 +109,7 @@ class SimAV:
         """Load the configuration file for autonomous vehicles simulation.
 
         Args:
-            config_file (str): Path to the configuration file.
+            path_config (str): Path to the configuration file.
 
         Returns:
             dict: Loaded configuration data.

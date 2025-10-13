@@ -33,7 +33,7 @@ def process_signal_from_utdf(file_utdf: object) -> dict[str, pd.DataFrame]:
     current_table = None
     current_table_data = []
 
-    with open(file_utdf, 'r') as f:
+    with open(file_utdf, 'r', encoding='utf-8') as f:
         file_lines = f.readlines()
 
     removal_flag = 0
@@ -105,7 +105,7 @@ def is_missing_or_zero(val) -> bool:
     if pd.isna(val):
         return True
     val_str = str(val).strip()
-    if val_str in ("", "0"):
+    if val_str in {"", "0"}:
         return True
 
     try:
@@ -176,7 +176,7 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
             # Identify movement columns outside loop
             movement_columns = {}
             for col in gs_data.columns[1:]:
-                for movement in ["Right", "Through", "Left"]:
+                for movement in ("Right", "Through", "Left"):
                     if gs_data.iloc[:, col].eq(movement).any():
                         movement_columns[movement] = col
 
@@ -251,7 +251,6 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
                 lanes_df['RECORDNAME'].astype(str).isin(allowed_recordnames))
         ]
 
-
         for col in subset_lanes.columns:
             if not col.endswith('T'):
                 continue
@@ -292,10 +291,6 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
                 r_perm = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', r_col].values[0] if not subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', r_col].empty else np.nan
                 if pd.isna(r_phase) and pd.isna(r_perm):
                     subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', r_col] = phaseid
-
-
-
-
 
         if subset_lanes.empty:
             print(f'No matching records in Lanes for IntersectionID_Synchro '

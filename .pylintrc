@@ -157,7 +157,7 @@ logging-modules=logging
 
 # The type of string formatting that logging methods do. `old` means using %
 # formatting, `new` is for `{}` formatting.
-logging-format-style=old
+logging-format-style=new
 
 
 [MISCELLANEOUS]
@@ -214,7 +214,7 @@ redefining-builtins-modules=six.moves,past.builtins,future.builtins,builtins,io
 [FORMAT]
 
 # Maximum number of characters on a single line.
-max-line-length=100
+max-line-length=120
 
 # Regexp for a line that is allowed to be longer than the limit.
 ignore-long-lines=^\s*(# )?<?https?://\S+>?$

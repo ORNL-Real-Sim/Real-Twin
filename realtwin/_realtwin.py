@@ -11,10 +11,10 @@
 ##############################################################################
 
 """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group"""
+
 import os
 import shutil
 from pathlib import Path
-import sys
 import time
 import pyufunc as pf
 from rich.console import Console
@@ -24,7 +24,7 @@ from realtwin.util_lib.create_venv import venv_create, venv_delete
 from realtwin.func_lib._a_install_simulator.inst_sumo import install_sumo
 
 # input data loading
-from realtwin.func_lib._b_load_inputs.loader_config import load_input_config
+from realtwin.func_lib._b_load_inputs.loader_config import load_input_configs
 from realtwin.util_lib.mapping_SUMO_OpenDrive_ID import parse_SUMO_ID, parse_SUMO_to_OpenDrive, parse_SUMO_TLS_ID
 
 # scenario generation
@@ -67,7 +67,7 @@ class RealTwin:
                 "\n  :Input configuration file is not provided."
                 "\n  :RealTwin requires a configuration file to be provided.")
 
-        self.input_config = load_input_config(input_config_file)
+        self.input_config = load_input_configs(input_config_file)
 
         # add venv_create and delete as object methods
         self.venv_create = venv_create
@@ -180,6 +180,7 @@ class RealTwin:
         Returns:
             str: The status of the input generation.
         """
+
         with console.status("[bold cyan]Generating inputs...", spinner="dots"):
             console.print("\n[bold green]Check / Create input files and folders for user:")
 
@@ -303,7 +304,7 @@ class RealTwin:
                 while not usr_input:
                     usr_input = console.input(":warning: [bold magenta]Please update the generated Matchup table from "
                                               "input folder before pressing Enter or type 'y' / 'yes' to continue")
-                    if usr_input in ["", "y", "Y", "yes", "Yes"]:
+                    if usr_input in {"", "y", "Y", "yes", "Yes"}:
                         console.print("  [dim cyan]:INFO: User confirmed to continue (Matchup Table Updated).")
                         usr_input = True
 

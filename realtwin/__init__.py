@@ -12,41 +12,50 @@
 ##############################################################################
 
 """Control of module imports for the RealTwin package."""
+
 import sys
 from realtwin._realtwin import RealTwin
-from realtwin.util_lib.create_venv import venv_create, venv_delete
 from realtwin.func_lib._a_install_simulator.check_sim_env import (is_sumo_installed,
                                                                   is_vissim_installed,
                                                                   is_aimsun_installed)
+from realtwin.func_lib import (install_sumo,
+                               SimPrep,
+                               BehaviorCali,
+                               TurnInflowCali,
+                               cali_sumo,
+                               cali_aimsun,
+                               cali_vissim,
+                               load_input_configs)
+
+from realtwin.util_lib.create_venv import venv_create, venv_delete
 from realtwin.util_lib.create_config import prepare_realtwin_configs
-from realtwin.util_lib.download_elevation_tif import download_elevation_tif_by_bbox
+from realtwin.util_lib import get_bbox_from_vertices
 
 # Autonomous vehicle simulation
-from realtwin.autonomous_veh.sim_av import SimAV, prepare_av_configs
-# from realtwin.autonomous_veh._generate_loop_detector import generate_sumo_loop_detector_add_xml
-# from realtwin.autonomous_veh._load_config import load_av_configs
+from realtwin.autonomous_veh import SimAV, prepare_av_configs, load_av_configs
 
-__version__ = '0.1.0'
+
+__version__ = '0.1.1'
 
 "The minimum required Python version for RealTwin is 3.10"
 
 __all__ = [
     'RealTwin',
-
-    # util_lib.check_env
-    'is_sumo_installed', 'is_vissim_installed', 'is_aimsun_installed',
-
-    # util_lib.create_venv
-    'venv_create', 'venv_delete',
     'prepare_realtwin_configs',
-    'download_elevation_tif_by_bbox',
+    "load_input_configs",
+
+    # util_lib
+    'venv_create', 'venv_delete',
+    'is_sumo_installed', 'is_vissim_installed', 'is_aimsun_installed',
+    "get_bbox_from_vertices",
 
     # func_lib
+    'install_sumo', 'SimPrep', 'BehaviorCali', 'TurnInflowCali', 'cali_sumo', 'cali_aimsun', 'cali_vissim',
 
     # autonomous_veh
-    'SimAV', 'prepare_av_configs',
-    # 'generate_sumo_loop_detector_add_xml',
-    # 'load_av_configs',
+    'SimAV',
+    'prepare_av_configs',
+    'load_av_configs',
 ]
 
 

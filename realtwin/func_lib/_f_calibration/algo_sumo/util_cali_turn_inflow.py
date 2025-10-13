@@ -10,6 +10,8 @@
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
+""" Utility functions for calibration of turn ratios and inflow counts in SUMO simulations."""
+
 import os
 import sys
 import xml.etree.ElementTree as ET
@@ -42,9 +44,11 @@ def update_turn_flow_from_solution(initial_solution: np.array,
     """assign the new turn ratios and inflow counts to the given dataframes
 
     Args:
-        df_turn (pd.DataFrame): the turn dataframe from turn.xlsx
-        df_inflow (pd.DataFrame): the inflow dataframe from inflow.xlsx
         initial_solution (np.array): the initial solution from the genetic algorithm
+        TurnDf (pd.DataFrame): the turn dataframe from turn.xlsx
+        TurnToCalibrate (pd.DataFrame): the turn dataframe from TurnToCalibrate.xlsx
+        InflowDf (pd.DataFrame): the inflow dataframe from inflow.xlsx
+        InflowEdgeToCalibrate (list): the list of edges to calibrate inflow
         cali_interval (int): the calibration interval
         demand_interval (int): the demand interval
 
@@ -99,9 +103,11 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
     Args:
         network_name (str): The name of the network.
         path_net (str): The path to the network file.
-        path_flow (str): The path to the flow file.
-        path_turn (str): The path to the turn file.
+        TurnDf (pd.DataFrame): DataFrame containing turn ratio data.
+        InflowDf (pd.DataFrame): DataFrame containing inflow count data.
         path_rou (str): The path to the output route file.
+        sim_start_time (float): The start time of the simulation.
+        sim_end_time (float): The end time of the simulation.
         verbose (bool): If True, print additional information. Defaults to False.
     """
 
