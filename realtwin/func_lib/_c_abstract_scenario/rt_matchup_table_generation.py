@@ -250,13 +250,27 @@ def format_junction_bearing(path_net: str) -> pd.DataFrame:
     MatchupTable["Junction ID Numeric"] = MatchupTable["Junction ID"].astype(str)
     direction_order = {"right": 1, "thru": 2, "left": 3, "Uturn": 4}
     MatchupTable["Direction Order"] = MatchupTable["Direction"].map(direction_order)
+
     # Sort by "Junction ID", "Degree", and "Direction Order"
+    # MatchupTable = MatchupTable.sort_values(
+    #     by=["Junction ID Numeric", "Degree", "Direction Order"],
+    #     ascending=[True, True, True],
+    #     na_position='last'
+    # )
+    # MatchupTable.drop(columns=["Junction ID Numeric", "Direction Order"], inplace=True)
+    # MatchupTable.reset_index(drop=True, inplace=True)
+
+    MatchupTable['Degree'] = MatchupTable['Degree'].astype(float)
+    # Shift Degree so that 337.5 becomes the new zero reference
+    MatchupTable['Degree_shifted'] = (MatchupTable['Degree'] - 337.5) % 360
+    # Sort by Junction ID, shifted Degree, and Direction Order
     MatchupTable = MatchupTable.sort_values(
-        by=["Junction ID Numeric", "Degree", "Direction Order"],
+        by=["Junction ID Numeric", "Degree_shifted", "Direction Order"],
         ascending=[True, True, True],
         na_position='last'
     )
-    MatchupTable.drop(columns=["Junction ID Numeric", "Direction Order"], inplace=True)
+    # Drop helper column
+    MatchupTable.drop(columns=["Junction ID Numeric", "Direction Order", 'Degree_shifted'], inplace=True)
     MatchupTable.reset_index(drop=True, inplace=True)
 
     MatchupTable.rename(columns={
