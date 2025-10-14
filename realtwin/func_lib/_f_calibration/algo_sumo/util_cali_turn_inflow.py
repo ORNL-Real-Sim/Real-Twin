@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -9,6 +9,8 @@
 # Contributors: ORNL Real-Twin Team                                          #
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
+
+""" Utility functions for calibration of turn ratios and inflow counts in SUMO simulations."""
 
 import os
 import sys
@@ -42,9 +44,11 @@ def update_turn_flow_from_solution(initial_solution: np.array,
     """assign the new turn ratios and inflow counts to the given dataframes
 
     Args:
-        df_turn (pd.DataFrame): the turn dataframe from turn.xlsx
-        df_inflow (pd.DataFrame): the inflow dataframe from inflow.xlsx
         initial_solution (np.array): the initial solution from the genetic algorithm
+        TurnDf (pd.DataFrame): the turn dataframe from turn.xlsx
+        TurnToCalibrate (pd.DataFrame): the turn dataframe from TurnToCalibrate.xlsx
+        InflowDf (pd.DataFrame): the inflow dataframe from inflow.xlsx
+        InflowEdgeToCalibrate (list): the list of edges to calibrate inflow
         cali_interval (int): the calibration interval
         demand_interval (int): the demand interval
 
@@ -99,9 +103,11 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
     Args:
         network_name (str): The name of the network.
         path_net (str): The path to the network file.
-        path_flow (str): The path to the flow file.
-        path_turn (str): The path to the turn file.
+        TurnDf (pd.DataFrame): DataFrame containing turn ratio data.
+        InflowDf (pd.DataFrame): DataFrame containing inflow count data.
         path_rou (str): The path to the output route file.
+        sim_start_time (float): The start time of the simulation.
+        sim_end_time (float): The end time of the simulation.
         verbose (bool): If True, print additional information. Defaults to False.
     """
 
@@ -126,8 +132,8 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
         TurnDictSubset = TurnDfSubset.to_dict(orient='records')
         for TurnData in TurnDictSubset:
             edge_relation = ET.SubElement(Interval, 'edgeRelation')
-            edge_relation.set('from', str(-int(TurnData['OpenDriveFromID'])))
-            edge_relation.set('to', str(-int(TurnData['OpenDriveToID'])))
+            edge_relation.set('from', f"-{TurnData['OpenDriveFromID']}")
+            edge_relation.set('to', f"-{TurnData['OpenDriveToID']}")
             edge_relation.set('probability', str(TurnData['TurnRatio']))
     # <edgeRelation from="" probability="" to=""/>
     TreeTurn = ET.ElementTree(turns)
@@ -150,7 +156,7 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
         flow.set('id', str(FlowID))
         flow.set('begin', str(InflowData['IntervalStart']))
         flow.set('end', str(InflowData['IntervalEnd']))
-        flow.set('from', str(-int(InflowData['OpenDriveFromID'])))
+        flow.set('from', f"-{InflowData['OpenDriveFromID']}")
         flow.set('number', str(int(InflowData['Count'])))
         # flow.set('number', str(int(int(InflowData['Count'])/CablibrationInterval*DemandInterval)))
         flow.set('type', 'car')
@@ -173,12 +179,28 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
     #     # "--seed","101",
     #     # "--ignore-errors",  # Continue on errors; remove if not desired
     # ]
-    cmd = f'cmd /c "jtrrouter -r {path_flow} -t {path_turn} -n {path_net} --accept-all-destinations --remove-loops True --randomize-flows -o {path_rou}"'
+    # cmd = f'jtrrouter -r "{path_flow}" -t "{path_turn}" -n "{path_net}" --accept-all-destinations --remove-loops True --randomize-flows -o "{path_rou}"'
+    cmd = (
+        f'jtrrouter '
+        f'-r "{path_flow}" '
+        f'-t "{path_turn}" '
+        f'-n "{path_net}" '
+        f'--accept-all-destinations '
+        f'--remove-loops True '
+        f'--randomize-flows '
+        f'-o "{path_rou}"'
+    )
 
     # Execute the command
     try:
         # subprocess.run(cmd, capture_output=True, text=True)
         process = subprocess.Popen(cmd, shell=True)
+        # process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+        # # Print output line by line in real time
+        # for line in process.stdout:
+        #     print(line, end='')  # end='' prevents double newlines
+
         process.wait()
         if verbose:
             print(f"  :Route file generated successfully: {path_rou}")
@@ -487,7 +509,7 @@ def generate_inflow(path_net: str,
 
     IDRef = IDRef.dropna(subset=['OpenDriveFromID', 'OpenDriveToID'])
     IDRef = IDRef[(IDRef['OpenDriveFromID'] != '') & (IDRef['OpenDriveToID'] != '')]
-    IDRef = IDRef.astype({'OpenDriveFromID': int, 'OpenDriveToID': int})
+    # IDRef = IDRef.astype({'OpenDriveFromID': int, 'OpenDriveToID': int})
     IDRef = IDRef.astype(str)
 
     MergedDf1 = pd.merge(Count, IDRef, on=['IntersectionName', 'Turn'], how='left')

@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -22,10 +22,10 @@ from rich.console import Console
 console = Console()
 
 from realtwin.util_lib.check_lon_lat_from_list_of_coords import detect_coord_order
-from realtwin.util_lib.get_bbox_from_list_of_coords import get_bounding_box_from_vertices
+from realtwin.util_lib.get_bbox_from_list_of_coords import get_bbox_from_vertices
 
 
-def load_input_config(path_config: str) -> dict:
+def load_input_configs(path_config: str) -> dict:
     """load input configuration from yaml file
 
     Args:
@@ -38,6 +38,9 @@ def load_input_config(path_config: str) -> dict:
     Returns:
         dict: the dictionary of the configuration data
     """
+
+    if isinstance(path_config, Path):
+        path_config = str(path_config)
 
     # TDD check whether the file exists and is a yaml file
     if not os.path.exists(path_config):
@@ -55,6 +58,11 @@ def load_input_config(path_config: str) -> dict:
         # set input_dir to current working directory if not specified
         config['input_dir'] = pf.path2linux(os.getcwd())
     else:
+
+        # check if the input_dir is a valid path
+        if not Path(config['input_dir']).exists():
+            config['input_dir'] = pf.path2linux(os.getcwd())
+
         # convert input_dir to linux format
         config['input_dir'] = pf.path2linux(config['input_dir'])
 
@@ -102,7 +110,7 @@ def load_input_config(path_config: str) -> dict:
         # update the bounding box if it is not provided
         bbox = config.get('Network', {}).get('Net_BBox')
         if not bbox:
-            config['Network']['Net_BBox'] = get_bounding_box_from_vertices(vertices)
+            config['Network']['Net_BBox'] = get_bbox_from_vertices(vertices)
 
     # check whether demo mode is enabled
     config = check_demo_data_enabled(config)

@@ -1,19 +1,26 @@
-'''
-##############################################################
-# Created Date: Friday, July 11th 2025
-# Contact Info: luoxiangyong01@gmail.com
-# Author/Copyright: Mr. Xiangyong Luo
-##############################################################
-'''
+##############################################################################
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
+# All rights reserved.                                                       #
+#                                                                            #
+# This file is part of RealTwin and is distributed under a GPL               #
+# license. For the licensing terms see the LICENSE file in the top-level     #
+# directory.                                                                 #
+#                                                                            #
+# Contributors: ORNL Real-Twin Team                                          #
+# Contact: realtwin@ornl.gov                                                 #
+##############################################################################
+
+""" Check if a list of coordinates follows (lon, lat) or (lat, lon) """
 
 
-from typing import List, Tuple
+def detect_coord_order(coords: list[tuple[float, float]]) -> str:
+    """Checks whether a list of coordinate pairs follows (lon, lat) or (lat, lon).
 
+    Args:
+        coords (list[tuple[float, float]]): List of coordinate pairs to check.
 
-def detect_coord_order(coords: List[Tuple[float, float]]) -> str:
-    """
-    Checks whether a list of coordinate pairs follows (lon, lat) or (lat, lon).
-    Returns "lon, lat", "lat, lon", or "ambiguous".
+    Returns:
+        str: Returns "lon, lat", "lat, lon", or "ambiguous".
     """
     def is_lon_lat(x, y):
         return -180 <= x <= 180 and -90 <= y <= 90
@@ -42,5 +49,5 @@ def detect_coord_order(coords: List[Tuple[float, float]]) -> str:
         return "lon, lat"
     elif latlon_count > lonlat_count and latlon_count >= ambiguous_count:
         return "lat, lon"
-    else:
-        return "ambiguous"
+
+    return "ambiguous"

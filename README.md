@@ -1,4 +1,4 @@
-[![PyPI version](https://badge.fury.io/py/realtwin.svg)](https://badge.fury.io/py/realtwin)[![Downloads](https://static.pepy.tech/badge/realtwin)](https://pepy.tech/project/realtwin)[![](https://img.shields.io/pypi/wheel/gensim.svg)](https://pypi.org/project/realtwin/)[![](https://img.shields.io/pypi/pyversions/realtwin.svg)](https://www.python.org/)[![](https://readthedocs.org/projects/real-twin/badge/?version=latest)](https://real-twin.readthedocs.io/en/latest/?badge=latest)[![](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)[![](https://img.shields.io/badge/License-GPL-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+[![PyPI version](https://badge.fury.io/py/realtwin.svg)](https://badge.fury.io/py/realtwin)[![Downloads](https://static.pepy.tech/badge/realtwin)](https://pepy.tech/project/realtwin)[![](https://img.shields.io/pypi/wheel/gensim.svg)](https://pypi.org/project/realtwin/)[![](https://img.shields.io/pypi/pyversions/realtwin.svg)](https://www.python.org/)[![](https://readthedocs.org/projects/real-twin/badge/?version=latest)](https://real-twin.readthedocs.io/en/latest/?badge=latest)[![](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)](https://img.shields.io/github/contributors/ORNL-Real-Sim/Real-Twin)[![](https://img.shields.io/badge/License-GPL-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)<!-- gh-dependents-info-used-by-start --><!-- gh-dependents-info-used-by-end -->
 
 > - [Real-Twin](#real-twin)
 >   - [🔁 Real-Twin: A Unified Simulation Scenario Generation Tool for Mobility Research](#-real-twin-a-unified-simulation-scenario-generation-tool-for-mobility-research)
@@ -34,7 +34,7 @@ pip install realtwin
 
 User guide and API documentation can be found at: [Official Documentation](https://real-twin.readthedocs.io/en/latest/)
 
-## Quick Example
+## Quick Example - realtwin
 
 ```python
 
@@ -83,6 +83,30 @@ if __name__ == '__main__':
     twin.visualize()  # keyword arguments can be passed to specify the visualization options
 ```
 
+## Quick Example - Autonomous Vehicle
+
+```python
+import realtwin as rt
+
+# Please refer to the official documentation for more details on RealTwin preparation before running the simulation
+
+if __name__ == '__main__':
+
+    # Step 1: Prepare/generate configuration file (in YAML format)
+    rt.prepare_av_configs()
+    CONFIG_FILE = "path-to-generated-config-file"
+
+    # Step 2: Update the configuration file
+    # Manually update the configuration file from User.
+
+    # Step 3: initialize the SimAV object
+    sim = rt.SimAV(input_config_file=CONFIG_FILE, verbose=True)
+
+    # Step 4: Simulation generation
+    sim.run_simulation()
+
+```
+
 ## Call for Contributions
 
 The realtwin project welcomes your expertise and enthusiasm!
@@ -103,15 +127,14 @@ For more information about the ways you can contribute to realtwin, visit our Gi
 
 ## Funding
 
-This work is supported by the US Department of Energy, Vehicle
-Technologies Office, Energy Efficient Mobility Systems (EEMS)
-program, under project Real-Twin (EEMS114).
+This work is supported by the US Department of Energy, Vehicle Technologies Office, Energy Efficient Mobility Systems (EEMS) program, under project Real-Twin (EEMS114).
 
 ## Citation
 
 To cite usage of Real-Twin, please use the folowing bibtex:
 
 ```bibtex
+
 @article{xu2025automated,
   title        = {Developing An Automated Microscopic Traffic Simulation Scenario Generation Tool},
   author       = {Xu, Guanhao and Saroj, Abhilasha and Wang, Chieh (Ross) and Shao, Yunli},
@@ -119,6 +142,25 @@ To cite usage of Real-Twin, please use the folowing bibtex:
   year         = {2025},
   doi          = {https://doi.org/10.1177/03611981251349433},
   publisher    = {SAGE for the National Academy of Sciences: Transportation Research Board},
-  note         = {In Press}
+}
+
+@misc{ doecode_147051,
+title = {Real-Twin},
+author = {Wang, Chieh (Ross) and Xu, Guanhao and Saroj, Abhilasha and Luo, Xiangyong (Roy) and Yuan, Jinghui and Shao, Yunli},
+doi = {10.11578/dc.20250602.3},
+url = {https://doi.org/10.11578/dc.20250602.3},
+howpublished = {[Computer Software] \url{https://doi.org/10.11578/dc.20250602.3}},
+year = {2025},
+month = {jun}
+}
+
+@software{luo2025realtwin,
+author = {Luo, Xiangyong and Xu, Guanhao and Saroj, Abhilasha and Yuan, Jinghui and Shao, Yunli and Wang, Chieh (Ross)},
+doi = {https://doi.org/10.11578/dc.20250602.3},
+month = jun,
+title = {realtwin: A Unified Simulation Scenario Generation Tool for Mobility Research},
+url = {https://github.com/ORNL-Real-Sim/Real-Twin},
+version = {0.1.0},
+year = {2025}
 }
 ```

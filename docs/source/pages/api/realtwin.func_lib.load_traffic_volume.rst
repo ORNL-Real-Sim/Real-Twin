@@ -1,12 +1,6 @@
-load\_traffic\_volume
-=====================
+realtwin.func\_lib.load\_traffic\_volume
+========================================
 
-.. automodule:: realtwin.func_lib
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. currentmodule:: realtwin.func_lib
 
 .. autofunction:: load_traffic_volume
-
-.. autoclass:: load_traffic_volume
-

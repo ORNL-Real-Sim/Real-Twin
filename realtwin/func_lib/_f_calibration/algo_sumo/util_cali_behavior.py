@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -9,6 +9,9 @@
 # Contributors: ORNL Real-Twin Team                                          #
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
+
+""" Utility functions for SUMO calibration and behavior modeling. """
+
 import os
 import sys
 import xml.etree.ElementTree as ET
@@ -40,8 +43,8 @@ def update_turn_flow_from_solution(path_turn: str,
     """assign the new turn ratios and inflow counts to the given dataframes
 
     Args:
-        df_turn (pd.DataFrame): the turn dataframe from turn.xlsx
-        df_inflow (pd.DataFrame): the inflow dataframe from inflow.xlsx
+        path_turn (str): the turn file path from turn.xlsx
+        path_inflow (str): the inflow file path from inflow.xlsx
         initial_solution (np.array): the initial solution from the genetic algorithm
         cali_interval (int): the calibration interval
         demand_interval (int): the demand interval
@@ -225,7 +228,16 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str, path_flow:
     #     # "--seed","101",
     #     "--ignore-errors",  # Continue on errors; remove if not desired
     # ]
-    cmd = f'cmd /c "jtrrouter -r {path_flow} -t {path_turn} -n {path_net} --accept-all-destinations --remove-loops True --randomize-flows -o {path_rou}"'
+    # cmd = f'jtrrouter -r "{path_flow}" -t "{path_turn}" -n "{path_net}" --accept-all-destinations --remove-loops True --randomize-flows -o "{path_rou}"'
+    cmd = (
+        f'jtrrouter -r "{path_flow}" '
+        f'-t "{path_turn}" '
+        f'-n "{path_net}" '
+        f'--accept-all-destinations '
+        f'--remove-loops True '
+        f'--randomize-flows '
+        f'-o "{path_rou}"'
+    )
 
     # Execute the command
     try:
@@ -442,14 +454,14 @@ def estimate_travel_time(route_coords: list[tuple[float, float]], api_key: str =
             "waypoints": waypts,
             "departure_time": "now",
             "key": api_key
-        }
+        },
+        timeout=200
     )
     j = resp.json()
     if j.get("status") == "OK":
         return sum(leg["duration"]["value"] for leg in j["routes"][0]["legs"])
-    else:
-        print("API error:", j.get("status"), j.get("error_message"))
-        return None
+    print("API error:", j.get("status"), j.get("error_message"))
+    return None
 
 
 def plot_and_report(route_coords_list: list[list[tuple[float, float]]],
@@ -510,7 +522,7 @@ def auto_select_two_routes(path_rou: str, path_net: str, api_key: str = "",
     Args:
         path_rou (str): sumo .rou.xml file
         path_net (str): sumo .net.xml file
-        path_output (_type_): save the map to this path
+        path_report (str): save the map to this path
         api_key (str, optional): Google Api key. Defaults to "".
 
     Returns:

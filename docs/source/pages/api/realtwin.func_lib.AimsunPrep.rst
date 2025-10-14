@@ -1,12 +1,24 @@
-AimsunPrep
-==========
+realtwin.func\_lib.AimsunPrep
+=============================
 
-.. automodule:: realtwin.func_lib
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autofunction:: AimsunPrep
+.. currentmodule:: realtwin.func_lib
 
 .. autoclass:: AimsunPrep
 
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~AimsunPrep.__init__
+      ~AimsunPrep.importDemand
+      ~AimsunPrep.is_empty
+   
+   
+
+   
+   
+   

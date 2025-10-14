@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -9,6 +9,8 @@
 # Contributors: ORNL Real-Twin Team                                          #
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
+
+""" Sphinx configuration file for the RealTwin documentation build process. """
 
 from __future__ import absolute_import
 import logging
@@ -26,8 +28,6 @@ sys.path.insert(1, os.path.abspath('../../realtwin'))
 
 root = Path(__file__).resolve().parents[2]
 sys.path = [str(root)] + sys.path
-
-import realtwin
 
 logger = logging.getLogger(__name__)
 

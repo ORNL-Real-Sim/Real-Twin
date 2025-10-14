@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -10,6 +10,8 @@
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
+""" Behavior Calibration class for SUMO """
+
 import os
 import sys
 from functools import partial
@@ -17,7 +19,6 @@ import random
 from pathlib import Path
 import subprocess
 import warnings
-import pandas as pd
 import pyufunc as pf
 
 from mealpy import FloatVar, SA, GA, TS
@@ -26,14 +27,14 @@ try:
         get_travel_time_from_EdgeData_xml,
         update_flow_xml_from_solution,
         run_jtrrouter_to_create_rou_xml,
-        result_analysis_on_EdgeData,
+        # result_analysis_on_EdgeData,
     )
 except ImportError:
     from util_cali_behavior import (
         get_travel_time_from_EdgeData_xml,
         update_flow_xml_from_solution,
         run_jtrrouter_to_create_rou_xml,
-        result_analysis_on_EdgeData,
+        # result_analysis_on_EdgeData,
     )
 import numpy as np
 
@@ -46,7 +47,6 @@ else:
     warnings.warn("Environment variable 'SUMO_HOME' is not set. "
                   "please declare environment variable 'SUMO_HOME'")
     # sys.exit("please declare environment variable 'SUMO_HOME'")
-import traci
 
 rng = np.random.default_rng(seed=812)
 
@@ -74,7 +74,7 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
     path_EdgeData = pf.path2linux(sim_input_dir / "EdgeData.xml")
 
     sim_name = scenario_config.get("sim_name")
-    sim_end_time = scenario_config.get("sim_end_time")
+    # sim_end_time = scenario_config.get("sim_end_time")
 
     # change the working directory to the input directory for SUMO
     os.chdir(sim_input_dir)
@@ -141,7 +141,7 @@ class BehaviorCali:
         termination_dict: https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination
 
     Examples:
-        >>> from realtwin import BehaviorOpt
+        >>> from realtwin import BehaviorCali
         >>> prob_dict = {"obj_func": partial(fitness_func, scenario_config=scenario_config, error_func="rmse"),
                         "bounds": FloatVar(lb=[1.0, 2.5, 4, 0.0, 0.25, 5.0], ub=[3.0, 3.0, 5.3, 1.0, 1.25, 9.3],),
                         "minmax": "max",  # maximize or minimize
@@ -149,7 +149,7 @@ class BehaviorCali:
                         "save_population": True}
         >>> init_solution = [2.5, 2.6, 4.5, 0.5, 1.0, 9.0]
         >>> term_dict = {"max_epoch": 500, "max_fe": 10000, "max_time": 3600, "max_early_stop": 20}
-        >>> opt = BehaviorOpt(problem_dict=prob_dict, init_solution=init_solution, term_dict=term_dict)
+        >>> opt = BehaviorCali(problem_dict=prob_dict, init_solution=init_solution, term_dict=term_dict)
         >>> g_best, model_opt = opt.run_GA(epoch=1000, pop_size=30, pc=0.95, pm=0.1, sel_model="BaseGA")
 
         Save result figures to output_dir
@@ -226,7 +226,7 @@ class BehaviorCali:
         return None
 
     def run_vis(self, output_dir: str, model) -> bool:
-        """Save the results of the optimization.
+        """ Save the results of the optimization.
 
         See Also:
             https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.utils.html#module-mealpy.utils.history
@@ -267,13 +267,16 @@ class BehaviorCali:
         See Also:
             https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
 
+        Notes:
+            GA parameters:
+                epoch (int): the iterations. Defaults to 1000.
+                pop_size (int): population size. Defaults to 50.
+                pc (float): crossover probability. Defaults to 0.95.
+                pm (float): mutation probability. Defaults to 0.025.
+                model_selection (str): the type of GA model to use. Defaults to "BaseGA".
+                    options: "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA".
+
         Args:
-            epoch (int): the iterations. Defaults to 1000.
-            pop_size (int): population size. Defaults to 50.
-            pc (float): crossover probability. Defaults to 0.95.
-            pm (float): mutation probability. Defaults to 0.025.
-            model_selection (str): the type of GA model to use. Defaults to "BaseGA".
-                options: "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA".
             kwargs: additional keyword arguments for specific GA models (Navigate to See Also).
         """
         if (ga_config := self.behavior_cfg.get("ga_config")) is None:
@@ -281,8 +284,7 @@ class BehaviorCali:
 
         epoch = ga_config.get("epoch", 1000)  # max iterations
         pop_size = ga_config.get("pop_size", 50)  # population size
-        if pop_size < 10:  # minimum population size for GA in mealpy is 10
-            pop_size = 10
+        pop_size = max(pop_size, 10)  # ensure population size is at least 10
         pc = ga_config.get("pc", 0.75)  # crossover probability
         pm = ga_config.get("pm", 0.1)  # mutation probability
 
@@ -355,6 +357,14 @@ class BehaviorCali:
             1. The `model_selection` parameter allows you to choose different types of SA models. Default is "OriginalSA".
                 Options include "OriginalSA", "GaussianSA", "SwarmSA".
 
+            SA parameters:
+                epoch (int): iterations. Defaults to 1000.
+                pop_size (int): population size. Defaults to 2.
+                temp_init (float): initial temperature. Defaults to 100.
+                cooling_rate (float): Defaults to 0.99.
+                scale (float): the change scale of initialization. Defaults to 0.1.
+                model_selection (str): select diff. Defaults to "OriginalSA". Options: "OriginalSA", "GaussianSA", "SwarmSA".
+
         See Also:
             https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.physics_based.html#module-mealpy.physics_based.SA
 
@@ -362,14 +372,9 @@ class BehaviorCali:
             You can change the input parameters only from input_config.yaml file.
 
         Args:
-            epoch (int): iterations. Defaults to 1000.
-            pop_size (int): population size. Defaults to 2.
-            temp_init (float): initial temperature. Defaults to 100.
-            cooling_rate (float): Defaults to 0.99.
-            scale (float): the change scale of initialization. Defaults to 0.1.
-            model_selection (str): select diff. Defaults to "OriginalSA". Options: "OriginalSA", "GaussianSA", "SwarmSA".
             kwargs: additional keyword arguments for specific SA models (Navigate to See Also).
         """
+
         if (sa_config := self.behavior_cfg.get("sa_config")) is None:
             raise ValueError("sa_config is not provided in Calibration/turn_inflow setting in yaml file.")
 
@@ -431,12 +436,15 @@ class BehaviorCali:
         Warning:
             You can change the input parameters only from input_config.yaml file.
 
+        Notes:
+            TS parameters:
+                epoch (int): max iterations. Defaults to 1000.
+                pop_size (int): population size. Defaults to 2.
+                tabu_size (int): maximum size of tabu list. Defaults to 10.
+                neighbour_size (int): size of the neighborhood for generating candidate solutions. Defaults to 10.
+                perturbation_scale (float): scale of perturbation for generating candidate solutions. Defaults to 0.05.
+
         Args:
-            epoch (int): max iterations. Defaults to 1000.
-            pop_size (int): population size. Defaults to 2.
-            tabu_size (int): maximum size of tabu list. Defaults to 10.
-            neighbour_size (int): size of the neighborhood for generating candidate solutions. Defaults to 10.
-            perturbation_scale (float): scale of perturbation for generating candidate solutions. Defaults to 0.05.
             kwargs: additional keyword arguments for specific TS models (Navigate to See Also).
         """
         if (ts_config := self.behavior_cfg.get("ts_config")) is None:

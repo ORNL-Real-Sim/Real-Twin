@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -12,22 +12,24 @@
 """The module to handle the SUMO simulation for the real-twin developed by ORNL ARMS group."""
 
 import os
+import subprocess
 import shutil
 import warnings
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString
-import xml.dom.minidom as minidom
+from xml.dom import minidom
 import pandas as pd
 import io
+import numpy as np
 import pyufunc as pf
 pd.options.mode.chained_assignment = None
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (read_MatchupTable,
-                                                                               generate_turn_demand_cali,
-                                                                               generate_inflow,
-                                                                               generate_turn_summary)
+                                                                              generate_turn_demand_cali,
+                                                                              generate_inflow,
+                                                                              generate_turn_summary)
 
 
 class SUMOPrep:
@@ -111,15 +113,13 @@ class SUMOPrep:
         path_net_SUMO = pf.path2linux(Path(ConcreteScn.input_config["input_dir"]) / f"output/SUMO/{NetworkName}.net.xml")
         MatchupTable_UserInput = read_MatchupTable(path_matchup_table=path_matchup_table)
         TurnDf, IDRef = generate_turn_demand_cali(path_matchup_table=path_matchup_table, traffic_dir=traffic_dir)
-        InflowDf_Calibration, InflowEdgeToCalibrate, N_InflowVariable = generate_inflow(path_net_SUMO,
-                                                                                        MatchupTable_UserInput,
-                                                                                        TurnDf,
-                                                                                        IDRef)
-        (TurnToCalibrate, TurnDf_Calibration,
-        RealSummary_Calibration,
-        N_Variable, N_TurnVariable) = generate_turn_summary(TurnDf,
-                                                            MatchupTable_UserInput,
-                                                            N_InflowVariable)
+        InflowDf_Calibration, _, N_InflowVariable = generate_inflow(path_net_SUMO,
+                                                                    MatchupTable_UserInput,
+                                                                    TurnDf,
+                                                                    IDRef)
+        (_, TurnDf_Calibration, _, _, _) = generate_turn_summary(TurnDf,
+                                                                 MatchupTable_UserInput,
+                                                                 N_InflowVariable)
         InflowDf = InflowDf_Calibration.copy()
         TurnDf = TurnDf_Calibration.copy()
         TurnDf = TurnDf[TurnDf['IntersectionName'].notna()]
@@ -143,7 +143,7 @@ class SUMOPrep:
             flow.set('id', str(FlowID))
             flow.set('begin', str(InflowData['IntervalStart']))
             flow.set('end', str(InflowData['IntervalEnd']))
-            flow.set('from', str(-int(InflowData['OpenDriveFromID'])))
+            flow.set('from', f"-{InflowData['OpenDriveFromID']}")
 
             # may need to change
             flow.set('number', str(InflowData['Count']))
@@ -176,10 +176,10 @@ class SUMOPrep:
             for TurnData in TurnDictSubset:
                 edge_relation = ET.SubElement(Interval, 'edgeRelation')
                 edge_relation.set(
-                    'from', str(-int(TurnData['OpenDriveFromID'])))
+                    'from', f"-{TurnData['OpenDriveFromID']}")
 
                 # may need to change
-                edge_relation.set('to', str(-int(TurnData['OpenDriveToID'])))
+                edge_relation.set('to', f"-{TurnData['OpenDriveToID']}")
 
                 # may need to change
                 edge_relation.set('probability', str(TurnData['TurnRatio']))
@@ -194,11 +194,43 @@ class SUMOPrep:
             path_sumo_demand = pf.path2linux(
                 os.path.join(self.SUMOPath, f'{NetworkName}.rou.xml'))
 
-            os.system(f'cmd/c "jtrrouter -r {path_sumo_flow}'
-                      f' -t {path_sumo_turn}'
-                      f' -n {self.Network} --accept-all-destinations'
-                      f' --remove-loops True --randomize-flows --seed {Seed}'
-                      f' -o {path_sumo_demand}"')
+            cmd = (
+                f'jtrrouter -r "{path_sumo_flow}" '
+                f'-t "{path_sumo_turn}" '
+                f'-n "{self.Network}" --accept-all-destinations '
+                f'--remove-loops True --randomize-flows --seed {Seed} '
+                f'-o "{path_sumo_demand}"'
+            )
+
+            try:
+                # subprocess.run(cmd, capture_output=True, text=True)
+                process = subprocess.Popen(cmd, shell=True)
+                process.wait()
+
+                # # check if path_sumo_demand exists
+                # if not Path(path_sumo_demand).exists():
+                #     # create rou.xml using randomTrips
+                #     # get the path of the randomTrips.py file under the func_lib directory
+                #     print("  :Generating SUMO .rou.xml file with random trips...")
+                #     sumo_home_dir = os.environ.get('SUMO_HOME', '')
+                #     sumo_tool_dir = Path(sumo_home_dir) / 'tools'
+                #     if sumo_tool_dir.exists():
+                #         path_random_trips = sumo_tool_dir / "randomTrips.py"
+                #         path_random_trips = pf.path2linux(path_random_trips)
+                #         # run randomTrips.py to generate .rou.xml file
+                #         subprocess.run(["python",
+                #                         path_random_trips,
+                #                         "-n", path_net_SUMO,
+                #                         "-r", path_sumo_demand],
+                #                        capture_output=True,
+                #                        text=True)
+
+                if not Path(path_sumo_demand).exists():
+                    print(f"  :Failed to generate route file: {path_sumo_demand}")
+                else:
+                    print(f"  :Route file generated successfully: {path_sumo_demand}")
+            except subprocess.CalledProcessError as e:
+                print(f"  :An error occurred while running jtrrouter: {e}")
 
             # add element to the set object
             self.Demand.add(path_sumo_demand)
@@ -280,18 +312,26 @@ class SUMOPrep:
 
         FixedTime = self.kwargs.get('FixedTime', False)
 
+        # update net file from matchup table before importing signal
+        try:
+            update_net_before_signal(path_net=path_net, path_MatchupTable=path_MatchupTable)
+        except Exception as e:
+            print(f"  :Error in updating SUMO net before importing signal: {e}")
+
+        # import signal
         try:
             signal_flag = sumo_signal_import(path_net=path_net, path_MatchupTable=path_MatchupTable,
                                              FixedTime=FixedTime, control_dir=control_dir)
             if signal_flag:
                 print(f"  :SUMO signal updated at: {path_net}")
         except Exception as e:
-            raise Exception(f"Error in importing SUMO signal: {e}")
+            raise Exception(f"Error in importing SUMO signal: {e}") from e
 
 
 def process_signal_data(path_signal: str) -> dict:
+    """ Process the signal data from the given file path and return a dictionary of DataFrames."""
 
-    with open(path_signal, 'r') as file:
+    with open(path_signal, 'r', encoding="utf-8") as file:
         SignalData = file.readlines()
 
     SignalDict = {}
@@ -326,17 +366,19 @@ def process_signal_data(path_signal: str) -> dict:
 
 
 def generate_complete_state_string(protected_mov, permitted_mov, rtor_mov, nm):
+    """ Generate a complete state string for traffic signals. """
     state = ['r'] * nm
     if rtor_mov:
-        for idx in map(int, rtor_mov.split(',')):
+        # for idx in map(int, rtor_mov.split(',')):
+        for idx in [int(i) for i in rtor_mov.split(',')]:
             if idx < nm and state[idx] == 'r':
                 state[idx] = 's'
     if protected_mov:
-        for idx in map(int, protected_mov.split(',')):
+        for idx in [int(i) for i in protected_mov.split(',')]:
             if idx < nm:
                 state[idx] = 'G'
     if permitted_mov:
-        for idx in map(int, permitted_mov.split(',')):
+        for idx in [int(i) for i in permitted_mov.split(',')]:
             if idx < nm and (state[idx] == 'r' or state[idx] == 's'):
                 state[idx] = 'g'
     return ''.join(state)
@@ -344,12 +386,13 @@ def generate_complete_state_string(protected_mov, permitted_mov, rtor_mov, nm):
 
 # format the XML file to make it more readable
 def prettify_xml(file_path):
-    with open(file_path, 'r') as file:
+    """ Prettify the XML file at the given file path. """
+    with open(file_path, 'r', encoding="utf-8") as file:
         xml_content = file.read()
     parsed_xml = minidom.parseString(xml_content)
     pretty_xml_as_string = parsed_xml.toprettyxml(indent="    ")
 
-    with open(file_path, 'w') as file:
+    with open(file_path, 'w', encoding="utf-8") as file:
         file.write("\n".join([line for line in pretty_xml_as_string.splitlines() if line.strip()]))
 
 
@@ -361,6 +404,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
         path_net (str): SUMO network file path.
         path_MatchupTable (str): Path to the MatchupTable file.
         FixedTime (bool): If True, the signal is fixed time, otherwise it is actuated. Default is False.
+        control_dir (str): Directory where the signal control files are located. Default is "Control".
 
     Returns:
         bool: True if the import was successful, False otherwise.
@@ -387,18 +431,31 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             MatchupTable_UserInput['IntersectionID_Synchro'] == intid, 'JunctionID_OpenDrive'
         ].dropna().iloc[0]
     )
+    # lookup_df['StartingBound'] = lookup_df['INTID'].apply(
+    #     lambda intid: MatchupTable_UserInput.loc[
+    #         (MatchupTable_UserInput['IntersectionID_Synchro'] == intid) &
+    #         (MatchupTable_UserInput['Bearing'].astype(float) >= 180),
+    #         'Turn_Synchro'
+    #     ].dropna().iloc[0]
+    # )
+
     lookup_df['StartingBound'] = lookup_df['INTID'].apply(
         lambda intid: MatchupTable_UserInput.loc[
-            (MatchupTable_UserInput['IntersectionID_Synchro'] == intid) &
-            (MatchupTable_UserInput['Bearing'].astype(float) >= 180),
-            'Turn_Synchro'
-        ].dropna().iloc[0]
-    )
+            (MatchupTable_UserInput['IntersectionID_Synchro'] == intid)]['Turn_Synchro'].dropna().iloc[0])
+
     lookup_df = lookup_df.astype(str)
 
     synchro_file = MatchupTable_UserInput['File_Synchro'].dropna().iloc[0].strip()
     signal_path = pf.path2linux(Path(control_dir) / synchro_file)
     SignalDict = process_signal_data(signal_path)
+
+    df_lanes = SignalDict['Lanes']
+    target_rows = df_lanes["RECORDNAME"].isin(["Lanes", "Shared","Phase1","PermPhase1","Allow RTOR"])
+    for idx in df_lanes[target_rows].index:
+        for col in df_lanes.columns:
+            if col != "RECORDNAME" and col != "INTID" and pd.notna(df_lanes.at[idx, col]):
+                df_lanes.at[idx, col] = int(float(df_lanes.at[idx, col]))
+    SignalDict['Lanes'] = df_lanes
 
     SignalInfo = {}
     unique_INTIDs = SignalDict['Lanes']['INTID'].dropna().unique()
@@ -454,6 +511,48 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
     for intid in Synchro.keys():
         lanes_df = SignalDict['Lanes'][SignalDict['Lanes']['INTID'] == intid]
         timeplans_df = SignalDict['Timeplans'][SignalDict['Timeplans']['INTID'] == intid]
+
+        for col in lanes_df.columns:
+            if not col.endswith('T'):
+                continue
+
+            base = col[:-1]  # Extract base like 'XY' from 'XYT'
+            try:
+                phaseid = lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', col].values[0]
+                shareid_val = lanes_df.loc[lanes_df['RECORDNAME'] == 'Shared', col].values[0]
+            except IndexError:
+                continue  # Skip if 'Phase1' or 'Shared' row not found
+            except KeyError:
+                continue  # Skip if col not in
+
+            if pd.isna(phaseid) or pd.isna(shareid_val):
+                continue  # Skip if any value is missing
+
+            try:
+                shareid = int(float(shareid_val))
+
+            except ValueError:
+                continue
+
+            if shareid == 0:
+                continue
+
+            if shareid in [1, 3] and base + 'L' in lanes_df.columns:
+                # Left turn logic
+                l_col = base + 'L'
+                l_phase = lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', l_col].values[0] if not lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', l_col].empty else np.nan
+                l_perm = lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', l_col].values[0] if not lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', l_col].empty else np.nan
+                if pd.isna(l_phase) and pd.isna(l_perm):
+                    lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', l_col] = phaseid
+
+            if shareid in [2, 3] and base + 'R' in lanes_df.columns:
+                # Right turn logic
+                r_col = base + 'R'
+                r_phase = lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', r_col].values[0] if not lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', r_col].empty else np.nan
+                r_perm = lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', r_col].values[0] if not lanes_df.loc[lanes_df['RECORDNAME'] == 'PermPhase1', r_col].empty else np.nan
+                if pd.isna(r_phase) and pd.isna(r_perm):
+                    lanes_df.loc[lanes_df['RECORDNAME'] == 'Phase1', r_col] = phaseid
+
         Synchro[intid]["Lanes"] = lanes_df
         Synchro[intid]["Timeplans"] = timeplans_df
 
@@ -493,7 +592,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
         allow_rtor_row = lanes_df[lanes_df['RECORDNAME'] == 'Allow RTOR']
 
         for phase_idx, phase_row in phases_df.iterrows():
-            P = phase_row['Phase']
+            P = int(phase_row['Phase'])
             protected_columns = []
             for _, protected_row in existing_protected_rows.iterrows():
                 columns_with_P = protected_row[protected_row == P].index.tolist()
@@ -517,7 +616,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             RTOR_columns = []
             if not allow_rtor_row.empty:
                 for _, rtor_row in allow_rtor_row.iterrows():
-                    rtor_columns = rtor_row[rtor_row == "1"].index.tolist()
+                    rtor_columns = rtor_row[rtor_row.isin(["1", 1])].index.tolist()
                     if 'INTID' in rtor_columns:
                         rtor_columns.remove('INTID')
                     RTOR_columns.extend(rtor_columns)
@@ -563,7 +662,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                             Synchro[intid]["Phases"]["Protected"].at[idx] = ",".join(movements + turns_to_add)
                     Synchro[intid]["Phases"]["RTOR"].at[idx] = Synchro[intid]["Phases"]["RTOR"].at[idx].replace(",,", ",").strip(",")
 
-    with open(path_net, 'r') as file:
+    with open(path_net, 'r', encoding="utf-8") as file:
         NetworkData = file.read()
 
     tree = ET.ElementTree(ET.fromstring(NetworkData))
@@ -599,8 +698,8 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
         if tl in TLLogic:
             current_tllogic = TLLogic[tl]
             movement_values = []
-            current_dir = None
-            dir_sequence = []
+            # current_dir = None
+            # dir_sequence = []
             column_index = 0
             for index, values in current_tllogic.items():
                 movement_values = []
@@ -920,10 +1019,101 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
     return True
 
 
-if __name__ == "__main__":
-    # Example usage
-    path_net = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\chatt.net.xml"
-    path_matchup_table = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\MatchupTable.xlsx"
-    control_dir = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\Control"
+def update_net_before_signal(path_net: str, path_MatchupTable: str) -> bool:
+    """Update the SUMO network file with signal information from the MatchupTable_UserInput.
 
-    sumo_signal_import(path_net=path_net, path_MatchupTable=path_matchup_table, control_dir=control_dir, FixedTime=False)
+    Args:
+        path_net (str): Path to the input SUMO network file (.net.xml).
+        path_MatchupTable (str): Path to the MatchupTable Excel file.
+
+    Returns:
+        bool: True if the operation was successful, False otherwise.
+    """
+
+    MatchupTable_UserInput = pd.read_excel(
+        path_MatchupTable, skiprows=1, dtype=str)
+    merged_columns = ["JunctionID_OpenDrive",
+                      "File_GridSmart",
+                      "Date_GridSmart",
+                      "IntersectionName_GridSmart",
+                      "File_Synchro",
+                      "IntersectionID_Synchro",
+                      "Need calibration?",
+                      ]
+    for col in merged_columns:
+        if col not in MatchupTable_UserInput.columns:
+            MatchupTable_UserInput[col] = pd.NA
+
+    MatchupTable_UserInput[merged_columns] = MatchupTable_UserInput[merged_columns].ffill(
+    )
+
+    required_cols = ["JunctionID_OpenDrive",
+                     "Turn_Synchro",
+                     "FromRoadID_OpenDrive",
+                     "ToRoadID_OpenDrive",
+                     ]
+    missing = [c for c in required_cols if c not in MatchupTable_UserInput.columns]
+    if missing:
+        raise ValueError(f"Missing required columns in Excel: {missing}")
+
+    # load network file
+    tree = ET.parse(path_net)
+    root = tree.getroot()
+
+    from_to_index = {}
+    for conn in root.findall(".//connection"):
+        f = conn.get("from")
+        t = conn.get("to")
+        if not f or not t:
+            continue
+        from_to_index.setdefault((f, t), []).append(conn)
+
+    total_groups = 0
+    total_rows = 0
+    total_updated = 0
+    total_skipped_groups = 0
+    total_missing_matches = 0
+
+    for _, group in MatchupTable_UserInput.groupby("JunctionID_OpenDrive", dropna=False):
+        first_turn = group["Turn_Synchro"].iloc[0]
+        if pd.isna(first_turn) or (isinstance(first_turn, str) and first_turn.strip() == ""):
+            total_skipped_groups += 1
+            continue
+
+        total_groups += 1
+        link_idx = 0  # reset per group
+
+        for _, row in group.iterrows():
+            total_rows += 1
+            from_id = str(row.get("FromRoadID_OpenDrive", "") or "").strip()
+            to_id = str(row.get("ToRoadID_OpenDrive", "") or "").strip()
+
+            if not from_id or not to_id:
+                total_missing_matches += 1
+                continue
+
+            key = (f"-{from_id}", f"-{to_id}")
+            conns = from_to_index.get(key, [])
+
+            if not conns:
+                total_missing_matches += 1
+                continue
+
+            for conn in conns:
+                conn.set("linkIndex", str(link_idx))
+                link_idx += 1
+                total_updated += 1
+
+    # OUTPUT
+    tree.write(path_net, encoding="UTF-8", xml_declaration=True)
+
+    return True
+
+if __name__ == "__main__":
+    pass
+#     # Example usage
+#     path_net = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\chatt.net.xml"
+#     path_matchup_table = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\New folder\MatchupTable.xlsx"
+#     control_dir = r"C:\Users\xh8\ornl_work\github_workspace\Real-Twin-Dev\datasets\tss\Control"
+#
+#     sumo_signal_import(path_net=path_net, path_MatchupTable=path_matchup_table, control_dir=control_dir, FixedTime=False)

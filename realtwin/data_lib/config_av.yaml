@@ -1,0 +1,98 @@
+input:
+  input_dir: ""  # Input directory including SUMO network, route, flow, and turn files.
+  net_file: ""  # SUMO network file name (.net.xml)
+  flow_file: ""  # SUMO flow file name (.flow.xml)
+  turn_file: ""  # SUMO turn file name(.turn.xml)
+
+technology: AV # Could be: 'AV', 'CAV', 'EV' etc.
+veh_types: ['Human', 'AVnormal']  # Could be AVsafe, AVaggressive, CAV, EV etc.
+pct_penetration: [70, 30] # Total of 100% penetration rate, e.g. [70, 30] means 70% Human and 30% AV
+
+
+# Car-following and lane changing: https://sumo.dlr.de/docs/Definition_of_Vehicles%2C_Vehicle_Types%2C_and_Routes.html
+car_follow_model: 'Krauss'  # Car-following model can be 'Krauss', 'IDM', 'W99', 'IDMM', 'ACC'
+lane_change_model: 'LC2013'  # Lane change model can be 'LC2013', 'SL2015', 'DK2008'
+
+# SUMO Simulation parameters
+sim_name: "chatt"  # Simulation name, used for naming of .sumocfg and output files
+sim_start: 0  # Simulation start time in seconds, default is 0 seconds
+sim_time: 3600  # Simulation time in seconds, default is 3600 seconds (1 hour)
+
+# Default values are following the veh_types order,
+# e.g. if veh_types = ['Human', 'AVnormal'], then the first value in each list corresponds to Human and the second value corresponds to AVnormal.
+
+Wied99Parameters:
+  cc0: [4.92, 3.28]
+  cc1: [2, 1]
+  cc2: [13.12, 5.44]
+  cc3: [-8, -8]
+  cc4: [-0.35, -0.35]
+  cc5: [0.35, 0.35]
+  cc6: [11.44, 0]
+  cc7: [0.82, 1.08]
+  cc8: [11.48, 12.46]
+  cc9: [4.92, 5.9]
+
+KraussParameters:
+  minGap: [2.5, 0.5]
+  accel: [2.6, 3.8]
+  decel: [4.5, 4.5]
+  sigma: [0.5, 0]
+  tau: [1, 0.4]
+  emergencyDecel: [9, 9]
+
+IDMParameters:
+  minGap: [2.5, 1.2]
+  accel: [2.6, 1.2]
+  decel: [4.5, 4.5]
+  tau: [1, 1]
+  emergencyDecel: [9, 9]
+  delta: [4, 4]
+
+CoopVisWied99Parameters:
+  minLookAheadDist: [0, 0]
+  maxLookAheadDist: [820.21, 984.25]
+  minLookBackDist: [0, 0]
+  maxLookBackDist: [492.13, 656.16]
+  noOfInteractObjects: [2, 10]
+
+LCVisWied99Parameters:
+  safetyDistRedFact: [0.6, 0.45]
+  coopLaneChange: [False, True]
+  minClearance: [1.64, 1.64]
+
+LCSumoKraussParameters:
+  LcStrategic: [1, 1]
+  LcCooperative: [1, 1]
+  LcAccelLat: [1, 1]
+
+LCSumoIDMParameters:
+  LcStrategic: [1, 1]
+  LcCooperative: [1, 1]
+
+# # Desired Speed Distribution Range for AVs
+# desSpeedParameters:
+#   desiredSpeedDistRange: -1
+
+# Parameters(Unit): Description
+
+# CC0(m):
+#  Standstill distance: The desired gap between two vehicles in a stopped condition.
+# CC1(s):
+#  Time headway/gap. The time headway(gap) a following driver maintains for safety when moving.
+# CC2(m):
+#  Car-following distance/following variation. The variation in following distance.
+# CC3(s):
+#  Threshold for entering following. The point at which a driver begins decelerating after perceiving a slower-moving leader and initiates an unconscious following behavior.
+# CC4(m/s):
+#  Defines negative speed difference during the following process. Low values result in a more sensitive driver reaction to the acceleration or deceleration of the preceding vehicle.
+# CC5(m/s):
+#  Defines positive speed difference during the following process. Enter a positive value for CC5 which corresponds to the negative value of CC4. Low values result in a more sensitive driver reaction to the acceleration or deceleration of the preceding vehicle.
+# CC6(1/(m • s)):
+#  Speed dependency of oscillation. The influence of distance on speed oscillation during following.
+# CC7(m/s2):
+#  Oscillation during acceleration. Actual acceleration during oscillation in unconscious following.
+# CC8(m/s2):
+#  Standstill acceleration. Desired acceleration when starting from a standstill.
+# CC9(m/s2):
+#  Desired acceleration at 80 km/h (limited by maximum acceleration defined within the acceleration curves)

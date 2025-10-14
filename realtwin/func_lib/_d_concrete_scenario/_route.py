@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -41,7 +41,7 @@ class Route:
             path_lookup_abs = pf.path2linux(os.path.join(AbsScn.input_config.get("input_dir"), path_lookup))
             IDRef = pd.read_csv(path_lookup_abs)
         IDRef = IDRef.dropna(subset=['OpenDriveFromID', 'OpenDriveToID'])
-        IDRef = IDRef.astype({'OpenDriveFromID': int, 'OpenDriveToID': int})
+        # IDRef = IDRef.astype({'OpenDriveFromID': int, 'OpenDriveToID': int})
         IDRef = IDRef.astype(str)
 
         MergedDf2 = pd.merge(Turn, IDRef, on=['IntersectionName', 'Turn'], how='left')

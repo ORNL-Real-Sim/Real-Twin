@@ -85,6 +85,9 @@
 <li class="toctree-l1"><a class="reference internal" href="realtwin_generation.html">Scenario Generation</a></li>
 </ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="autonomous_vehicles_simulation.html">Autonomous Vehicle Simulation</a></li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 <ul>
@@ -161,7 +164,7 @@
 <span class="linenos">2</span>
 <span class="linenos">3</span><span class="c1"># prepare the configuration file</span>
 <span class="linenos">4</span><span class="c1"># This will create a sample configuration file in the current working directory: `realtwin_config.yaml`</span>
-<span class="hll"><span class="linenos">5</span><span class="n">rt</span><span class="o">.</span><span class="n">prepare_config_file</span><span class="p">()</span>
+<span class="hll"><span class="linenos">5</span><span class="n">rt</span><span class="o">.</span><span class="n">prepare_realtwin_configs</span><span class="p">()</span>
 </span></pre></div>
 </div>
 <p>User can also specify the output directory for the configuration file.</p>
@@ -169,7 +172,7 @@
 <span class="linenos">2</span>
 <span class="linenos">3</span><span class="c1"># This will create a sample configuration file in the specified directory: `realtwin_config.yaml`</span>
 <span class="hll"><span class="linenos">4</span><span class="n">output_dir</span> <span class="o">=</span> <span class="s2">&quot;Directory/where/you/want/to/save/the/config/file&quot;</span>
-</span><span class="hll"><span class="linenos">5</span><span class="n">rt</span><span class="o">.</span><span class="n">prepare_config_file</span><span class="p">(</span><span class="n">dest_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">)</span>
+</span><span class="hll"><span class="linenos">5</span><span class="n">rt</span><span class="o">.</span><span class="n">prepare_realtwin_configs</span><span class="p">(</span><span class="n">dest_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>If the configuration file generated, user can modify the file according to their needs. For details on how to modify the configuration file, please refer to the section: <a class="reference internal" href="#update-configuration-file"><span class="std std-ref">Update Configuration File</span></a>.</p>

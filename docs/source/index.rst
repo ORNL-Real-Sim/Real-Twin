@@ -50,6 +50,10 @@ Welcome to realtwin documentation!
 
    pages/realtwin_generation.rst
 
+.. toctree::
+   :maxdepth: 3
+
+   pages/autonomous_vehicles_simulation.rst
 
 .. toctree::
    :maxdepth: 2

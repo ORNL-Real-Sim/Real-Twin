@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -11,9 +11,9 @@
 ##############################################################################
 
 
-from .loader_config import load_input_config
+from .loader_config import load_input_configs
 
 
 __all__ = [
-    "load_input_config",
+    "load_input_configs",
 ]

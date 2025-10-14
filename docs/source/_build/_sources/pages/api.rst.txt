@@ -25,7 +25,8 @@ Utility Functions
     util_lib.download_elevation_tif_by_bbox
     util_lib.download_single_file_from_web
     util_lib.find_executable_from_PATH_on_win
-    util_lib.prepare_config_file
+    util_lib.prepare_realtwin_configs
+    util_lib.get_bbox_from_vertices
 
 
 Installation and Environment
@@ -50,7 +51,6 @@ Load Inputs
     :toctree: api/
 
     func_lib.load_input_config
-    func_lib.get_bounding_box_from
 
 Abstract Scenario Generation
 ============================

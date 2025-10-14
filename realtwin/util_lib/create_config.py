@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -14,7 +14,7 @@ from pathlib import Path
 import shutil
 
 
-def prepare_config_file(dest_dir: str = "") -> bool:
+def prepare_realtwin_configs(dest_dir: str = "") -> bool:
     """ Create a default/demo configuration file for the RealTwin package.
 
     Args:
@@ -31,7 +31,7 @@ def prepare_config_file(dest_dir: str = "") -> bool:
     """
     # TDD
 
-    path_config = Path(__file__).parent.parent / "data_lib/public_configs.yaml"
+    path_config = Path(__file__).parent.parent / "data_lib/realtwin_config.yaml"
 
     if not dest_dir:
         dest_dir = Path.cwd()
@@ -41,7 +41,7 @@ def prepare_config_file(dest_dir: str = "") -> bool:
         raise FileNotFoundError(f"Destination directory does not exist: {dest_dir}")
 
     # copy the configuration file to the destination directory
-    dest_config = Path(dest_dir) / "public_configs.yaml"
+    dest_config = Path(dest_dir) / "realtwin_config.yaml"
     shutil.copy(path_config, dest_config)
     print(f"  :Configuration file created at {dest_config}")
     return True

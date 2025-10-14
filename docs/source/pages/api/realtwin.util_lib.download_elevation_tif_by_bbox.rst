@@ -1,12 +1,6 @@
-download\_elevation\_tif\_by\_bbox
-==================================
+realtwin.util\_lib.download\_elevation\_tif\_by\_bbox
+=====================================================
 
-.. automodule:: realtwin.util_lib
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. currentmodule:: realtwin.util_lib
 
 .. autofunction:: download_elevation_tif_by_bbox
-
-.. autoclass:: download_elevation_tif_by_bbox
-

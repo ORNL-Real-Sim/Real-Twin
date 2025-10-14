@@ -1,15 +1,19 @@
-'''
-##############################################################
-# Created Date: Friday, July 11th 2025
-# Contact Info: luoxiangyong01@gmail.com
-# Author/Copyright: Mr. Xiangyong Luo
-##############################################################
-'''
+##############################################################################
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
+# All rights reserved.                                                       #
+#                                                                            #
+# This file is part of RealTwin and is distributed under a GPL               #
+# license. For the licensing terms see the LICENSE file in the top-level     #
+# directory.                                                                 #
+#                                                                            #
+# Contributors: ORNL Real-Twin Team                                          #
+# Contact: realtwin@ornl.gov                                                 #
+##############################################################################
 
 import re
 
 
-def get_bounding_box_from_vertices(vertices: str | list) -> tuple:
+def get_bbox_from_vertices(vertices: str | list) -> tuple:
     """get the bounding box from the vertices string
 
     Args:

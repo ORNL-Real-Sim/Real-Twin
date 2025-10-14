@@ -1,12 +1,24 @@
-ConcreteScenario
-================
+realtwin.func\_lib.ConcreteScenario
+===================================
 
-.. automodule:: realtwin.func_lib
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autofunction:: ConcreteScenario
+.. currentmodule:: realtwin.func_lib
 
 .. autoclass:: ConcreteScenario
 
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~ConcreteScenario.__init__
+      ~ConcreteScenario.get_unified_scenario
+      ~ConcreteScenario.is_empty
+   
+   
+
+   
+   
+   

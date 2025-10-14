@@ -1,12 +1,6 @@
-cali\_aimsun
-============
+realtwin.func\_lib.cali\_aimsun
+===============================
 
-.. automodule:: realtwin.func_lib
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. currentmodule:: realtwin.func_lib
 
 .. autofunction:: cali_aimsun
-
-.. autoclass:: cali_aimsun
-

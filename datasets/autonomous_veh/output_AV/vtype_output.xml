@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2025-08-05 14:34:55 by Eclipse SUMO jtrrouter Version 1.21.0
+<jtrrouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/jtrrouterConfiguration.xsd">
+
+    <input>
+        <net-file value="C:\Users\xh8\ORNL_work\github_workspace\Real-Twin\datasets\autonomous_veh\output_AV\chatt.net.xml"/>
+        <route-files value="C:\Users\xh8\ORNL_work\github_workspace\Real-Twin\datasets\autonomous_veh\output_AV\chatt.flow.xml"/>
+        <turn-ratio-files value="C:\Users\xh8\ORNL_work\github_workspace\Real-Twin\datasets\autonomous_veh\output_AV\chatt.turn.xml"/>
+    </input>
+
+    <output>
+        <output-file value="C:\Users\xh8\ORNL_work\github_workspace\Real-Twin\datasets\autonomous_veh\output_AV\chatt.rou.xml"/>
+        <vtype-output value="C:\Users\xh8\ORNL_work\github_workspace\Real-Twin\datasets\autonomous_veh\output_AV\vtype_output.xml"/>
+    </output>
+
+    <processing>
+        <accept-all-destinations value="1"/>
+    </processing>
+
+</jtrrouterConfiguration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vType id="CAV" minGap="0.50" probability="0.30" vClass="passenger" color="blue" laneChangeModel="LC2013" carFollowModel="Krauss" accel="3.8" decel="4.5" emergencyDecel="9" sigma="0" tau="0.4"/>
+    <vType id="Human" minGap="2.50" probability="0.40" vClass="passenger" color="red" laneChangeModel="LC2013" carFollowModel="Krauss" accel="2.6" decel="4.5" emergencyDecel="9" sigma="0.5" tau="1"/>
+    <vType id="AVnormal" minGap="0.50" probability="0.30" vClass="passenger" color="green" laneChangeModel="LC2013" carFollowModel="Krauss" accel="3.8" decel="4.5" emergencyDecel="9" sigma="0" tau="0.4"/>
+</routes>

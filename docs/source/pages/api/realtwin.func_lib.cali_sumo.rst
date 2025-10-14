@@ -1,12 +1,6 @@
-cali\_sumo
-==========
+realtwin.func\_lib.cali\_sumo
+=============================
 
-.. automodule:: realtwin.func_lib
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. currentmodule:: realtwin.func_lib
 
 .. autofunction:: cali_sumo
-
-.. autoclass:: cali_sumo
-

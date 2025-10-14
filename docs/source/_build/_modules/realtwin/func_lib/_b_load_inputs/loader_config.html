@@ -14,7 +14,7 @@
 
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../../_static/documentation_options.js?v=c7632d00"></script>
       <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,6 +60,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/realtwin_generation.html">Scenario Generation</a></li>
 </ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/autonomous_vehicles_simulation.html">Autonomous Vehicle Simulation</a></li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../pages/api.html">API Reference</a></li>
 </ul>
 <ul>
@@ -96,7 +99,7 @@
 
   <h1>Source code for realtwin.func_lib._b_load_inputs.loader_config</h1><div class="highlight"><pre>
 <span></span><span class="c1">##############################################################################</span>
-<span class="c1"># Copyright (c) 2024, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># Copyright (c) 2024-, Oak Ridge National Laboratory                          #</span>
 <span class="c1"># All rights reserved.                                                       #</span>
 <span class="c1">#                                                                            #</span>
 <span class="c1"># This file is part of RealTwin and is distributed under a GPL               #</span>
@@ -118,41 +121,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
 <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
 
-
-<div class="viewcode-block" id="get_bounding_box_from">
-<a class="viewcode-back" href="../../../../pages/api/realtwin.func_lib.get_bounding_box_from.html#realtwin.func_lib.get_bounding_box_from">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_bounding_box_from</span><span class="p">(</span><span class="n">vertices</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;get the bounding box from the vertices string</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        vertices (str): the vertices of the network in string format</span>
-<span class="sd">            &quot;(lon, lat),(lon, lat),...&quot;</span>
-
-<span class="sd">    Notes:</span>
-<span class="sd">        The vertices format can be found in configuration file</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: the bounding box of the network: (min_lon, min_lat, max_lon, max_lat)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="c1"># Regular expression to extract the coordinate pairs</span>
-        <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)&quot;</span>
-        <span class="n">matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
-
-        <span class="n">lon_lst</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">]</span>
-        <span class="n">lat_lst</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="c1"># Check if the list contains tuples</span>
-        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">):</span>
-            <span class="n">lon_lst</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">]</span>
-            <span class="n">lat_lst</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid format: List must contain list of [lon, lat].&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid format: vertices must be a string or list.&quot;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">lon_lst</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">lat_lst</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">lon_lst</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">lat_lst</span><span class="p">))</span></div>
-
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.util_lib.check_lon_lat_from_list_of_coords</span><span class="w"> </span><span class="kn">import</span> <span class="n">detect_coord_order</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.util_lib.get_bbox_from_list_of_coords</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_bbox_from_vertices</span>
 
 
 <div class="viewcode-block" id="load_input_config">
@@ -171,6 +141,9 @@
 <span class="sd">        dict: the dictionary of the configuration data</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path_config</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+        <span class="n">path_config</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path_config</span><span class="p">)</span>
+
     <span class="c1"># TDD check whether the file exists and is a yaml file</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_config</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :File not found: </span><span class="si">{</span><span class="n">path_config</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -187,42 +160,13 @@
         <span class="c1"># set input_dir to current working directory if not specified</span>
         <span class="n">config</span><span class="p">[</span><span class="s1">&#39;input_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
     <span class="k">else</span><span class="p">:</span>
+
+        <span class="c1"># check if the input_dir is a valid path</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;input_dir&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">config</span><span class="p">[</span><span class="s1">&#39;input_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+
         <span class="c1"># convert input_dir to linux format</span>
         <span class="n">config</span><span class="p">[</span><span class="s1">&#39;input_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;input_dir&#39;</span><span class="p">])</span>
-
-    <span class="c1"># check whether demo mode is enabled</span>
-    <span class="n">available_demo_data</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;chattanooga&quot;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">demo_data</span> <span class="o">:=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;demo_data&#39;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">demo_data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">config</span><span class="p">[</span><span class="s1">&#39;demo_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;  :Demo data is not a string. Demo mode is disabled.&quot;</span><span class="p">)</span>
-
-        <span class="k">elif</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">available_demo_data</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># copy demo data to the input directory</span>
-                <span class="n">demo_data_path</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span>
-                    <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;data_lib&quot;</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">demo_data</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">.zip&quot;</span><span class="p">)</span>
-
-                <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">demo_data_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_ref</span><span class="p">:</span>
-                    <span class="n">extract_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">demo_data_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">extract_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                    <span class="n">zip_ref</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;input_dir&#39;</span><span class="p">])</span>
-                <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Demo data </span><span class="si">{</span><span class="n">demo_data</span><span class="si">}</span><span class="s2"> extracted to </span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;input_dir&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-                <span class="c1"># update input directory to the extracted demo data</span>
-                <span class="n">config</span><span class="p">[</span><span class="s2">&quot;input_dir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;input_dir&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">demo_data</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">config</span><span class="p">[</span><span class="s2">&quot;Network&quot;</span><span class="p">][</span><span class="s2">&quot;NetworkName&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">demo_data</span>
-                <span class="c1"># use dummy coordinates to make sure program works (in generate_inputs)</span>
-                <span class="n">config</span><span class="p">[</span><span class="s2">&quot;Network&quot;</span><span class="p">][</span><span class="s2">&quot;NetworkVertices&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mf">85.14977588011192</span><span class="p">,</span> <span class="mf">35.040346288414916</span><span class="p">],</span>
-                                                        <span class="p">[</span><span class="o">-</span><span class="mf">85.15823020212477</span><span class="p">,</span> <span class="mf">35.04345144844759</span><span class="p">],</span>
-                                                        <span class="p">[</span><span class="o">-</span><span class="mf">85.15829457513502</span><span class="p">,</span> <span class="mf">35.043293338482925</span><span class="p">],</span>
-                                                        <span class="p">[</span><span class="o">-</span><span class="mf">85.14986171079225</span><span class="p">,</span> <span class="mf">35.04018378032611</span><span class="p">]]</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Demo data </span><span class="si">{</span><span class="n">demo_data</span><span class="si">}</span><span class="s2"> extraction failed for </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. Demo mode is disabled.&quot;</span><span class="p">)</span>
-                <span class="n">config</span><span class="p">[</span><span class="s1">&#39;demo_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">config</span><span class="p">[</span><span class="s1">&#39;demo_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Demo data </span><span class="si">{</span><span class="n">demo_data</span><span class="si">}</span><span class="s2"> currently not available. Available demo data: </span><span class="si">{</span><span class="n">available_demo_data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Demo mode is disabled.&quot;</span><span class="p">)</span>
 
     <span class="c1"># check output_dir from input configuration file</span>
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_dir&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -239,14 +183,94 @@
 
     <span class="c1"># update network bbox if vertices are provided in the input configuration file</span>
     <span class="k">if</span> <span class="n">vertices</span> <span class="o">:=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Network&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NetworkVertices&#39;</span><span class="p">):</span>
-        <span class="n">bbox</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Network&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Net_BBox&#39;</span><span class="p">)</span>
+
+        <span class="c1"># update vertices to a list of tuples in (lon, lat) format</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># Regular expression to extract the coordinate pairs</span>
+            <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)&quot;</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
+            <span class="n">vertices</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">float</span><span class="p">(</span><span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="c1"># Check if the list contains tuples</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">):</span>
+                <span class="n">vertices</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid format: List must contain list/tuple of [lon, lat] or (lat, lon) pairs.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid format: vertices must be a string or list/tuple.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># detect the coordinate order</span>
+        <span class="n">coord_order</span> <span class="o">=</span> <span class="n">detect_coord_order</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">coord_order</span> <span class="o">==</span> <span class="s2">&quot;lat, lon&quot;</span><span class="p">:</span>
+            <span class="n">vertices</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="n">lon</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">lat</span><span class="p">)]</span> <span class="k">for</span> <span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">coord_order</span> <span class="o">==</span> <span class="s2">&quot;ambiguous&quot;</span><span class="p">:</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;  :Coordinate order is ambiguous. Assuming (lon, lat) format.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># update the vertices in the configuration file</span>
+        <span class="n">config</span><span class="p">[</span><span class="s1">&#39;Network&#39;</span><span class="p">][</span><span class="s1">&#39;NetworkVertices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vertices</span>
 
         <span class="c1"># update the bounding box if it is not provided</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Network&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Net_BBox&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">bbox</span><span class="p">:</span>
-            <span class="n">config</span><span class="p">[</span><span class="s1">&#39;Network&#39;</span><span class="p">][</span><span class="s1">&#39;Net_BBox&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_bounding_box_from</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
+            <span class="n">config</span><span class="p">[</span><span class="s1">&#39;Network&#39;</span><span class="p">][</span><span class="s1">&#39;Net_BBox&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_bbox_from_vertices</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
+
+    <span class="c1"># check whether demo mode is enabled</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">check_demo_data_enabled</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">config</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_demo_data_enabled</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if demo data is enabled in the configuration.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (dict): The configuration dictionary.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The configuration dictionary with demo data check.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check whether demo mode is enabled</span>
+    <span class="n">AVAILABLE_DEMO_DATA</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;chattanooga&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">demo_data</span> <span class="o">:=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;demo_data&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">demo_data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">config</span><span class="p">[</span><span class="s1">&#39;demo_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;  :Demo data is not a string. Demo mode is disabled.&quot;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">AVAILABLE_DEMO_DATA</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># copy demo data to the input directory</span>
+                <span class="n">demo_data_path</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span>
+                    <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;data_lib&quot;</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">demo_data</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">.zip&quot;</span><span class="p">)</span>
+
+                <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">demo_data_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_ref</span><span class="p">:</span>
+                    <span class="n">extract_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">demo_data_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">extract_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">zip_ref</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;input_dir&#39;</span><span class="p">])</span>
+                <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;  :Demo data </span><span class="si">{</span><span class="n">demo_data</span><span class="si">}</span><span class="s2"> extracted to </span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;input_dir&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="c1"># update input directory to the extracted demo data</span>
+                <span class="n">config</span><span class="p">[</span><span class="s2">&quot;input_dir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span>
+                    <span class="n">Path</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;input_dir&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">demo_data</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">config</span><span class="p">[</span><span class="s2">&quot;Network&quot;</span><span class="p">][</span><span class="s2">&quot;NetworkName&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">demo_data</span>
+                <span class="c1"># use dummy coordinates to make sure program works (in generate_inputs)</span>
+                <span class="n">config</span><span class="p">[</span><span class="s2">&quot;Network&quot;</span><span class="p">][</span><span class="s2">&quot;NetworkVertices&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mf">85.14977588011192</span><span class="p">,</span> <span class="mf">35.040346288414916</span><span class="p">],</span>
+                                                        <span class="p">[</span><span class="o">-</span><span class="mf">85.15823020212477</span><span class="p">,</span>
+                                                            <span class="mf">35.04345144844759</span><span class="p">],</span>
+                                                        <span class="p">[</span><span class="o">-</span><span class="mf">85.15829457513502</span><span class="p">,</span>
+                                                            <span class="mf">35.043293338482925</span><span class="p">],</span>
+                                                        <span class="p">[</span><span class="o">-</span><span class="mf">85.14986171079225</span><span class="p">,</span> <span class="mf">35.04018378032611</span><span class="p">]]</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;  :Demo data </span><span class="si">{</span><span class="n">demo_data</span><span class="si">}</span><span class="s2"> extraction failed for </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. Demo mode is disabled.&quot;</span><span class="p">)</span>
+                <span class="n">config</span><span class="p">[</span><span class="s1">&#39;demo_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">config</span><span class="p">[</span><span class="s1">&#39;demo_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Demo data </span><span class="si">{</span><span class="n">demo_data</span><span class="si">}</span><span class="s2"> currently not available. Available demo data: </span><span class="si">{</span><span class="n">AVAILABLE_DEMO_DATA</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Demo mode is disabled.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">config</span>
 </pre></div>
 
            </div>

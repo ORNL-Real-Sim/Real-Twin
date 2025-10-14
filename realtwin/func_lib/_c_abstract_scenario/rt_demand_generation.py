@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -33,7 +33,7 @@ def process_signal_from_utdf(file_utdf: object) -> dict[str, pd.DataFrame]:
     current_table = None
     current_table_data = []
 
-    with open(file_utdf, 'r') as f:
+    with open(file_utdf, 'r', encoding='utf-8') as f:
         file_lines = f.readlines()
 
     removal_flag = 0
@@ -105,7 +105,7 @@ def is_missing_or_zero(val) -> bool:
     if pd.isna(val):
         return True
     val_str = str(val).strip()
-    if val_str in ("", "0"):
+    if val_str in {"", "0"}:
         return True
 
     try:
@@ -176,7 +176,7 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
             # Identify movement columns outside loop
             movement_columns = {}
             for col in gs_data.columns[1:]:
-                for movement in ["Right", "Through", "Left"]:
+                for movement in ("Right", "Through", "Left"):
                     if gs_data.iloc[:, col].eq(movement).any():
                         movement_columns[movement] = col
 
@@ -250,6 +250,47 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
             (lanes_df['INTID'].astype(str) == str(intersection_id_synchro)) & (
                 lanes_df['RECORDNAME'].astype(str).isin(allowed_recordnames))
         ]
+
+        for col in subset_lanes.columns:
+            if not col.endswith('T'):
+                continue
+
+            base = col[:-1]  # Extract base like 'XY' from 'XYT'
+            try:
+                phaseid = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', col].values[0]
+                shareid_val = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Shared', col].values[0]
+            except IndexError:
+                continue  # Skip if 'Phase1' or 'Shared' row not found
+            except KeyError:
+                continue  # Skip if col not in subset_lanes
+
+            if pd.isna(phaseid) or pd.isna(shareid_val):
+                continue  # Skip if any value is missing
+
+            try:
+                shareid = int(float(shareid_val))
+                # print(shareid)
+            except ValueError:
+                continue
+
+            if shareid == 0:
+                continue
+
+            if shareid in [1, 3] and base + 'L' in subset_lanes.columns:
+                # Left turn logic
+                l_col = base + 'L'
+                l_phase = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', l_col].values[0] if not subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', l_col].empty else np.nan
+                l_perm = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', l_col].values[0] if not subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', l_col].empty else np.nan
+                if pd.isna(l_phase) and pd.isna(l_perm):
+                    subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', l_col] = phaseid
+
+            if shareid in [2, 3] and base + 'R' in subset_lanes.columns:
+                # Right turn logic
+                r_col = base + 'R'
+                r_phase = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', r_col].values[0] if not subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', r_col].empty else np.nan
+                r_perm = subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', r_col].values[0] if not subset_lanes.loc[subset_lanes['RECORDNAME'] == 'PermPhase1', r_col].empty else np.nan
+                if pd.isna(r_phase) and pd.isna(r_perm):
+                    subset_lanes.loc[subset_lanes['RECORDNAME'] == 'Phase1', r_col] = phaseid
 
         if subset_lanes.empty:
             print(f'No matching records in Lanes for IntersectionID_Synchro '

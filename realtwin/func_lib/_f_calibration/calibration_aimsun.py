@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2024, Oak Ridge National Laboratory                          #
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
 # All rights reserved.                                                       #
 #                                                                            #
 # This file is part of RealTwin and is distributed under a GPL               #
@@ -12,7 +12,7 @@
 
 
 def cali_aimsun(*, sel_algo: dict = None, input_config: dict = None, verbose: bool = True) -> bool:
-    """Run SUMO calibration based on the selected algorithm and input configuration.
+    """Run AimSUN calibration based on the selected algorithm and input configuration.
 
     Note:
         This function is currently a placeholder and does not perform any actual calibration.
@@ -26,4 +26,6 @@ def cali_aimsun(*, sel_algo: dict = None, input_config: dict = None, verbose: bo
     Returns:
         bool: True if calibration is successful, False otherwise.
     """
+
+    print("  :Aimsun calibration is not implemented yet. Please check from future releases.")
     return False
