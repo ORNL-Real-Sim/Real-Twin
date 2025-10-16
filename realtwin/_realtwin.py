@@ -354,8 +354,11 @@ class RealTwin:
 
         self.abstract_scenario.update_AbstractScenario_from_input(df_volume=df_volume)
 
+        # UPDATE: delete original TLLogic in the net.xml file and assign new TLS logic from the matchup table
+        net_name = self.input_config["Network"]["NetworkName"]
+        path_sumo_net = pf.path2linux(Path(self.input_config.get("output_dir")) / f"OpenDrive/{net_name}.net.xml")
         parse_SUMO_TLS_ID(path_matchup_table=path_matchup,
-                          path_net_file=self.abstract_scenario.Network.OpenDriveNetwork.OpenDrive_network[0])
+                          path_net_file=path_sumo_net)
 
         console.print("\n[bold green]Abstract Scenario successfully generated.")
 
