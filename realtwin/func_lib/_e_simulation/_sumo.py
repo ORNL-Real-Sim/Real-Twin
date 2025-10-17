@@ -60,15 +60,19 @@ class SUMOPrep:
         os.mkdir(self.SUMOPath)
 
         # Sumo combine the OpenDrive file to sumo network file
-        path_open_drive = pf.path2linux(os.path.join(path_output, f'OpenDrive/{NetworkName}.xodr'))
+        # path_open_drive = pf.path2linux(os.path.join(path_output, f'OpenDrive/{NetworkName}.xodr'))
+        path_open_drive_net = pf.path2linux(os.path.join(path_output, f'OpenDrive/{NetworkName}.net.xml'))
         path_sumo_net = pf.path2linux(os.path.join(path_output, f'SUMO/{NetworkName}.net.xml'))
 
-        os.system(f'cmd/c "netconvert --opendrive {path_open_drive}'
-                  f' -o {path_sumo_net} --no-internal-links"')
+        # os.system(f'cmd/c "netconvert --opendrive {path_open_drive}'
+        #           f' -o {path_sumo_net} --no-internal-links"')
         self.Network = path_sumo_net
 
-        if ConcreteScn.input_config.get('incl_sumo_net'):
-            shutil.copy(ConcreteScn.input_config["incl_sumo_net"], self.Network)
+        # if ConcreteScn.input_config.get('incl_sumo_net'):
+        #     shutil.copy(ConcreteScn.input_config["incl_sumo_net"], self.Network)
+
+        # copy converted net file from opendrive to sumo folder
+        shutil.copy(path_open_drive_net, path_sumo_net)
 
         # Load the XML file
         tree = ET.parse(self.Network)
