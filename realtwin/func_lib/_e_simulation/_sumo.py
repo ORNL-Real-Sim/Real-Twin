@@ -443,9 +443,18 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
     #     ].dropna().iloc[0]
     # )
 
-    lookup_df['StartingBound'] = lookup_df['INTID'].apply(
-        lambda intid: MatchupTable_UserInput.loc[
-            (MatchupTable_UserInput['IntersectionID_Synchro'] == intid)]['Turn_Synchro'].dropna().iloc[0])
+    # lookup_df['StartingBound'] = lookup_df['INTID'].apply(
+    #     lambda intid: MatchupTable_UserInput.loc[
+    #         (MatchupTable_UserInput['IntersectionID_Synchro'] == intid)]['Turn_Synchro'].dropna().iloc[0])
+
+    def get_starting_bound(intid):
+        subset = MatchupTable_UserInput.loc[
+            MatchupTable_UserInput['IntersectionID_Synchro'] == intid, 'Turn_Synchro'
+        ].dropna()
+        return subset.iloc[0] if not subset.empty else None  # or some default value
+
+    lookup_df['StartingBound'] = lookup_df['INTID'].apply(get_starting_bound)
+    lookup_df = lookup_df[lookup_df['StartingBound'].isna() == False]
 
     lookup_df = lookup_df.astype(str)
 
@@ -713,7 +722,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                 from_groups = {}
                 for index, values in current_tllogic.items():
                     from_edge = values['from']
-                    direction = values['dir']
+                    direction = values['dir'].lower()
                     from_groups.setdefault(from_edge, {'r': [], 's': [], 'l': []})  # no separate 't' key now
                     if direction == 't':
                         from_groups[from_edge]['l'].append(str(index))  # treat 't' as 'l'
@@ -804,217 +813,222 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
 
     for tlLogic_elem in root.findall('tlLogic'):
         tl_id = tlLogic_elem.attrib['id']
-        intid_row = lookup_df[lookup_df['SumoJunctionID'] == tl_id]
-        if intid_row.empty:
-            continue
+        print(tl_id)
 
-        intid = intid_row['INTID'].values[0]
-        synchro_data = Synchro[intid]
-        offset = synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Offset', 'DATA'].values[0]
-        detect_lengths = synchro_data["Lanes"].loc[synchro_data["Lanes"]['RECORDNAME'] == 'DetectSize1']
-        detect_lengths_float = detect_lengths.iloc[:, 2:].apply(pd.to_numeric, errors='coerce')
-        detector_length = detect_lengths_float.max(axis=1, skipna=True).max(skipna=True) * 0.3048 if not detect_lengths.empty else ''
-        detector_length_left_turn = detect_lengths_float.min(axis=1, skipna=True).min(skipna=True) * 0.3048 if not detect_lengths.empty else ''
+        try:
+            intid_row = lookup_df[lookup_df['SumoJunctionID'] == tl_id]
+            if intid_row.empty:
+                continue
 
-        total_cycle_length = synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Cycle Length', 'DATA'].values[0]
-        new_tlLogic = ET.Element('tlLogic', id=tl_id, offset=str(offset), programID="NEMA", type="NEMA")
+            intid = intid_row['INTID'].values[0]
+            synchro_data = Synchro[intid]
+            offset = synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Offset', 'DATA'].values[0]
+            detect_lengths = synchro_data["Lanes"].loc[synchro_data["Lanes"]['RECORDNAME'] == 'DetectSize1']
+            detect_lengths_float = detect_lengths.iloc[:, 2:].apply(pd.to_numeric, errors='coerce')
+            detector_length = detect_lengths_float.max(axis=1, skipna=True).max(skipna=True) * 0.3048 if not detect_lengths.empty else ''
+            detector_length_left_turn = detect_lengths_float.min(axis=1, skipna=True).min(skipna=True) * 0.3048 if not detect_lengths.empty else ''
 
-        # Add the param elements based on gathered data
-        params = {
-            "detector-length": str(detector_length),
-            "detector-length-leftTurnLane": str(detector_length_left_turn),
-            "total-cycle-length": str(total_cycle_length),
-            "coordinate-mode": "true" if synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Control Type', 'DATA'].values[0] == '3' else "false",
-            "whetherOutputState": "true",
-            "show-detectors": "true",
-            "controllerType": "Type 170" if synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Referenced To', 'DATA'].values[0] in ['1', '4'] else "TS2",
-            "fixForceOff": "true" if synchro_data["Phases"]["InhibitMax"].astype(str).str.contains('1').any() else "false"
-        }
+            total_cycle_length = synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Cycle Length', 'DATA'].values[0]
+            new_tlLogic = ET.Element('tlLogic', id=tl_id, offset=str(offset), programID="NEMA", type="NEMA")
 
-        # Add the 'coordinatePhases' parameter conditionally
-        if params["coordinate-mode"] == "true":
-            reference_phase = synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Reference Phase', 'DATA'].values[0]
-            RP = int(reference_phase)
-            if RP <= 99:
-                coordinate_phases_value = str(RP)
+            # Add the param elements based on gathered data
+            params = {
+                "detector-length": str(detector_length),
+                "detector-length-leftTurnLane": str(detector_length_left_turn),
+                "total-cycle-length": str(total_cycle_length),
+                "coordinate-mode": "true" if synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Control Type', 'DATA'].values[0] == '3' else "false",
+                "whetherOutputState": "true",
+                "show-detectors": "true",
+                "controllerType": "Type 170" if synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Referenced To', 'DATA'].values[0] in ['1', '4'] else "TS2",
+                "fixForceOff": "true" if synchro_data["Phases"]["InhibitMax"].astype(str).str.contains('1').any() else "false"
+            }
+
+            # Add the 'coordinatePhases' parameter conditionally
+            if params["coordinate-mode"] == "true":
+                reference_phase = synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Reference Phase', 'DATA'].values[0]
+                RP = int(reference_phase)
+                if RP <= 99:
+                    coordinate_phases_value = str(RP)
+                else:
+                    coordinate_phases_value = f"{RP // 100},{RP - (RP // 100) * 100}"
+                params["coordinatePhases"] = coordinate_phases_value
+
+            # Add the 'minRecall' parameter
+            min_recall_subset = synchro_data["Phases"][synchro_data["Phases"]["Recall"] == '1']
+            min_recall_value = ",".join(min_recall_subset["Phase"].astype(str)) if not min_recall_subset.empty else ""
+            params["minRecall"] = min_recall_value
+            if FixedTime == 1:
+                params["minRecall"] = ""
+
+            # Add the 'maxRecall' parameter
+            max_recall_subset = synchro_data["Phases"][synchro_data["Phases"]["Recall"] == '3']
+            max_recall_value = ",".join(max_recall_subset["Phase"].astype(str)) if not max_recall_subset.empty else ""
+            params["maxRecall"] = max_recall_value
+            if FixedTime == 1:
+                params["maxRecall"] = ",".join(synchro_data["Phases"]["Phase"])
+
+            for key, value in params.items():
+                ET.SubElement(new_tlLogic, 'param', key=key, value=value)
+
+            # Adding <param key="ringX" value=""/> with the updated logic
+            # max_ring = synchro_data["Phases"]["Ring"].astype(int).max()
+            # previous_phase = 1
+            # for ring_num in range(1, max_ring + 1):
+            #     phases_in_ring = synchro_data["Phases"][synchro_data["Phases"]["Ring"].astype(int) == ring_num]["Phase"].astype(int).tolist()
+            #     if not phases_in_ring:
+            #         continue
+            #     largest_phase = max(phases_in_ring)
+            #     complete_list = []
+            #     for i in range(previous_phase, largest_phase + 1):
+            #         if i in phases_in_ring:
+            #             complete_list.append(i)
+            #         else:
+            #             complete_list.append(0)
+            #     previous_phase = largest_phase + 1
+            #     ring_value = ",".join(map(str, complete_list))
+            #     ET.SubElement(new_tlLogic, 'param', key=f"ring{ring_num}", value=ring_value)
+
+            # Adding <param key="ring1" value=""/>  <param key="ring2" value=""/>
+            # R1B1
+            r1b1 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 1) & (synchro_data["Phases"]['Barrier'] == 1)]
+            if not r1b1.empty:
+                max_pos = r1b1['Position'].max()
+                R1B1 = [0] * max_pos
+                for _, row in r1b1.iterrows():
+                    R1B1[int(row['Position']) - 1] = int(row['Phase'])
             else:
-                coordinate_phases_value = f"{RP // 100},{RP - (RP // 100) * 100}"
-            params["coordinatePhases"] = coordinate_phases_value
+                R1B1 = None
 
-        # Add the 'minRecall' parameter
-        min_recall_subset = synchro_data["Phases"][synchro_data["Phases"]["Recall"] == '1']
-        min_recall_value = ",".join(min_recall_subset["Phase"].astype(str)) if not min_recall_subset.empty else ""
-        params["minRecall"] = min_recall_value
-        if FixedTime == 1:
-            params["minRecall"] = ""
+            # R1B2
+            r1b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 1) & (synchro_data["Phases"]['Barrier'] == 2)]
+            if not r1b2.empty:
+                max_pos = r1b2['Position'].max()
+                R1B2 = [0] * max_pos
+                for _, row in r1b2.iterrows():
+                    R1B2[int(row['Position']) - 1] = int(row['Phase'])
+            else:
+                R1B2 = None
 
-        # Add the 'maxRecall' parameter
-        max_recall_subset = synchro_data["Phases"][synchro_data["Phases"]["Recall"] == '3']
-        max_recall_value = ",".join(max_recall_subset["Phase"].astype(str)) if not max_recall_subset.empty else ""
-        params["maxRecall"] = max_recall_value
-        if FixedTime == 1:
-            params["maxRecall"] = ",".join(synchro_data["Phases"]["Phase"])
+            # R2B1
+            r2b1 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 1)]
+            if not r2b1.empty:
+                max_pos = r2b1['Position'].max()
+                R2B1 = [0] * max_pos
+                for _, row in r2b1.iterrows():
+                    R2B1[int(row['Position']) - 1] = int(row['Phase'])
+            else:
+                R2B1 = None
 
-        for key, value in params.items():
-            ET.SubElement(new_tlLogic, 'param', key=key, value=value)
+            # R2B2
+            r2b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 2)]
+            if not r2b2.empty:
+                max_pos = r2b2['Position'].max()
+                R2B2 = [0] * max_pos
+                for _, row in r2b2.iterrows():
+                    R2B2[int(row['Position']) - 1] = int(row['Phase'])
+            else:
+                R2B2 = None
 
-        # Adding <param key="ringX" value=""/> with the updated logic
-        # max_ring = synchro_data["Phases"]["Ring"].astype(int).max()
-        # previous_phase = 1
-        # for ring_num in range(1, max_ring + 1):
-        #     phases_in_ring = synchro_data["Phases"][synchro_data["Phases"]["Ring"].astype(int) == ring_num]["Phase"].astype(int).tolist()
-        #     if not phases_in_ring:
-        #         continue
-        #     largest_phase = max(phases_in_ring)
-        #     complete_list = []
-        #     for i in range(previous_phase, largest_phase + 1):
-        #         if i in phases_in_ring:
-        #             complete_list.append(i)
-        #         else:
-        #             complete_list.append(0)
-        #     previous_phase = largest_phase + 1
-        #     ring_value = ",".join(map(str, complete_list))
-        #     ET.SubElement(new_tlLogic, 'param', key=f"ring{ring_num}", value=ring_value)
+            # max_barrier = synchro_data["Phases"]["Barrier"].astype(int).max()
+            # for barrier_num in range(1, max_barrier + 1):
+            #     if barrier_num == 1:
+            #         # Find phases with the largest "Barrier" value
+            #         largest_barrier_row = synchro_data["Phases"][synchro_data["Phases"]["Barrier"].astype(int) == max_barrier]
+            #         largest_phases = largest_barrier_row[largest_barrier_row["Position"].astype(int) == largest_barrier_row["Position"].astype(int).max()]["Phase"].astype(int).tolist()
+            #         barrier_value = ",".join(map(str, sorted(largest_phases)))
+            #         ET.SubElement(new_tlLogic, 'param', key="barrierPhases", value=barrier_value)
+            #     else:
+            #         # Find the previous barrier phases
+            #         previous_barrier_row = synchro_data["Phases"][synchro_data["Phases"]["Barrier"].astype(int) == barrier_num - 1]
+            #         largest_phases = previous_barrier_row[previous_barrier_row["Position"].astype(int) == previous_barrier_row["Position"].astype(int).max()]["Phase"].astype(int).tolist()
+            #         barrier_value = ",".join(map(str, sorted(largest_phases)))
+            #         ET.SubElement(new_tlLogic, 'param', key=f"barrier{barrier_num}Phases", value=barrier_value)
 
-        # Adding <param key="ring1" value=""/>  <param key="ring2" value=""/>
-        # R1B1
-        r1b1 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 1) & (synchro_data["Phases"]['Barrier'] == 1)]
-        if not r1b1.empty:
-            max_pos = r1b1['Position'].max()
-            R1B1 = [0] * max_pos
-            for _, row in r1b1.iterrows():
-                R1B1[int(row['Position']) - 1] = int(row['Phase'])
-        else:
-            R1B1 = None
+            # Apply fallback
+            if R1B1 is None and R2B1 is not None:
+                R1B1 = R2B1
+            if R2B1 is None and R1B1 is not None:
+                R2B1 = R1B1
+            if R1B2 is None and R2B2 is not None:
+                R1B2 = R2B2
+            if R2B2 is None and R1B2 is not None:
+                R2B2 = R1B2
 
-        # R1B2
-        r1b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 1) & (synchro_data["Phases"]['Barrier'] == 2)]
-        if not r1b2.empty:
-            max_pos = r1b2['Position'].max()
-            R1B2 = [0] * max_pos
-            for _, row in r1b2.iterrows():
-                R1B2[int(row['Position']) - 1] = int(row['Phase'])
-        else:
-            R1B2 = None
+            ET.SubElement(new_tlLogic, 'param', key="ring1", value=",".join(map(str, R1B1 + R1B2)))
+            ET.SubElement(new_tlLogic, 'param', key="ring2", value=",".join(map(str, R2B1 + R2B2)))
 
-        # R2B1
-        r2b1 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 1)]
-        if not r2b1.empty:
-            max_pos = r2b1['Position'].max()
-            R2B1 = [0] * max_pos
-            for _, row in r2b1.iterrows():
-                R2B1[int(row['Position']) - 1] = int(row['Phase'])
-        else:
-            R2B1 = None
+            # Adding <param key="barrierPhases" value=""/>  <param key="barrier2Phases" value=""/>
+            barrier2Phases = [R1B1[-1], R2B1[-1]]
+            ET.SubElement(new_tlLogic, 'param', key="barrier2Phases", value=",".join(map(str, barrier2Phases)))
 
-        # R2B2
-        r2b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 2)]
-        if not r2b2.empty:
-            max_pos = r2b2['Position'].max()
-            R2B2 = [0] * max_pos
-            for _, row in r2b2.iterrows():
-                R2B2[int(row['Position']) - 1] = int(row['Phase'])
-        else:
-            R2B2 = None
+            # Add <param key="barrierPhases" value="R1B2_last,R2B2_last"/>
+            barrierPhases = [R1B2[-1], R2B2[-1]]
+            ET.SubElement(new_tlLogic, 'param', key="barrierPhases", value=",".join(map(str, barrierPhases)))
 
-        # max_barrier = synchro_data["Phases"]["Barrier"].astype(int).max()
-        # for barrier_num in range(1, max_barrier + 1):
-        #     if barrier_num == 1:
-        #         # Find phases with the largest "Barrier" value
-        #         largest_barrier_row = synchro_data["Phases"][synchro_data["Phases"]["Barrier"].astype(int) == max_barrier]
-        #         largest_phases = largest_barrier_row[largest_barrier_row["Position"].astype(int) == largest_barrier_row["Position"].astype(int).max()]["Phase"].astype(int).tolist()
-        #         barrier_value = ",".join(map(str, sorted(largest_phases)))
-        #         ET.SubElement(new_tlLogic, 'param', key="barrierPhases", value=barrier_value)
-        #     else:
-        #         # Find the previous barrier phases
-        #         previous_barrier_row = synchro_data["Phases"][synchro_data["Phases"]["Barrier"].astype(int) == barrier_num - 1]
-        #         largest_phases = previous_barrier_row[previous_barrier_row["Position"].astype(int) == previous_barrier_row["Position"].astype(int).max()]["Phase"].astype(int).tolist()
-        #         barrier_value = ",".join(map(str, sorted(largest_phases)))
-        #         ET.SubElement(new_tlLogic, 'param', key=f"barrier{barrier_num}Phases", value=barrier_value)
+            # Check and swap barrier phases if needed
+            if params["coordinate-mode"] == "true":
+                # Extract the values of 'coordinatePhases', 'barrierPhases', and 'barrier2Phases'
+                coordinate_phases_value = params.get("coordinatePhases", "")
+                barrier_phases_value = new_tlLogic.find("./param[@key='barrierPhases']").attrib['value']
+                barrier2_phases_element = new_tlLogic.find("./param[@key='barrier2Phases']")
 
-        # Apply fallback
-        if R1B1 is None and R2B1 is not None:
-            R1B1 = R2B1
-        if R2B1 is None and R1B1 is not None:
-            R2B1 = R1B1
-        if R1B2 is None and R2B2 is not None:
-            R1B2 = R2B2
-        if R2B2 is None and R1B2 is not None:
-            R2B2 = R1B2
+                if barrier2_phases_element is not None:
+                    barrier2_phases_value = barrier2_phases_element.attrib['value']
 
-        ET.SubElement(new_tlLogic, 'param', key="ring1", value=",".join(map(str, R1B1 + R1B2)))
-        ET.SubElement(new_tlLogic, 'param', key="ring2", value=",".join(map(str, R2B1 + R2B2)))
+                    # Check if 'barrier2Phases' is the same as 'coordinatePhases'
+                    if barrier2_phases_value != coordinate_phases_value:
+                        new_tlLogic.find("./param[@key='barrierPhases']").attrib['value'] = barrier2_phases_value
+                        barrier2_phases_element.attrib['value'] = barrier_phases_value
 
-        # Adding <param key="barrierPhases" value=""/>  <param key="barrier2Phases" value=""/>
-        barrier2Phases = [R1B1[-1], R2B1[-1]]
-        ET.SubElement(new_tlLogic, 'param', key="barrier2Phases", value=",".join(map(str, barrier2Phases)))
+                    # Recheck if 'barrier2Phases' is still not the same as 'coordinatePhases'
+                    if barrier2_phases_element.attrib['value'] != coordinate_phases_value:
+                        print("  :Error with barrier phases and coordinated phases at "
+                              f"intersection {intid_row['INTID'].values[0]}, please modify manually.")
 
-        # Add <param key="barrierPhases" value="R1B2_last,R2B2_last"/>
-        barrierPhases = [R1B2[-1], R2B2[-1]]
-        ET.SubElement(new_tlLogic, 'param', key="barrierPhases", value=",".join(map(str, barrierPhases)))
+            nm = len(TLLogic[tl_id])
+            for _, phase_row in synchro_data["Phases"].iterrows():
+                state = generate_complete_state_string(phase_row['ProtectedMovement'], phase_row['PermittedMovement'], phase_row['RTORMovement'], nm)
+                # maxDur = int(float(phase_row['MaxGreen'])) if pd.notna(phase_row['MaxGreen']) else int(int(total_cycle_length) / 3)
+                maxDur = float(phase_row["MaxGreen"]) if pd.notna(phase_row['MaxGreen']) else round(float(total_cycle_length) / 3, 1)
+                if pd.isna(phase_row['MaxGreen']):
+                    print(f"  :Maximum green('MaxGreen') is missing for phase {phase_row['Phase']} at "
+                          f"intersection {intid_row['INTID'].values[0]}, {int(int(total_cycle_length) / 3)} sec is used."
+                          " Manual change is probably needed to ensure the length of this ring equal to cycle length.")
 
-        # Check and swap barrier phases if needed
-        if params["coordinate-mode"] == "true":
-            # Extract the values of 'coordinatePhases', 'barrierPhases', and 'barrier2Phases'
-            coordinate_phases_value = params.get("coordinatePhases", "")
-            barrier_phases_value = new_tlLogic.find("./param[@key='barrierPhases']").attrib['value']
-            barrier2_phases_element = new_tlLogic.find("./param[@key='barrier2Phases']")
+                # minDur = phase_row['MinGreen'] if pd.notna(phase_row['MinGreen']) else min(6, int(maxDur))
+                minDur = phase_row['MinGreen'] if pd.notna(phase_row['MinGreen']) else min(6, float(maxDur))
+                if pd.isna(phase_row['MinGreen']):
+                    print(f"  :Minimum green('MinGreen') is missing for phase {phase_row['Phase']} at "
+                          f"intersection {intid_row['INTID'].values[0]}, {min(6, maxDur)} sec is used")
 
-            if barrier2_phases_element is not None:
-                barrier2_phases_value = barrier2_phases_element.attrib['value']
+                vehext = phase_row['VehExt'] if pd.notna(phase_row['VehExt']) else 2
+                if pd.isna(phase_row['VehExt']):
+                    print(f"  :Added green per actuation ('vehext') is missing for phase {phase_row['Phase']} at "
+                          f"intersection {intid_row['INTID'].values[0]}, 2 sec is used.")
 
-                # Check if 'barrier2Phases' is the same as 'coordinatePhases'
-                if barrier2_phases_value != coordinate_phases_value:
-                    new_tlLogic.find("./param[@key='barrierPhases']").attrib['value'] = barrier2_phases_value
-                    barrier2_phases_element.attrib['value'] = barrier_phases_value
+                yellow = phase_row['Yellow'] if pd.notna(phase_row['Yellow']) else 3
+                if pd.isna(phase_row['Yellow']):
+                    print(f"  :Yellow time('Yellow') is missing for phase {phase_row['Phase']} at "
+                          f"intersection {intid_row['INTID'].values[0]}, 3 sec is used.")
 
-                # Recheck if 'barrier2Phases' is still not the same as 'coordinatePhases'
-                if barrier2_phases_element.attrib['value'] != coordinate_phases_value:
-                    print("  :Error with barrier phases and coordinated phases at "
-                          f"intersection {intid_row['INTID'].values[0]}, please modify manually.")
+                red = phase_row['AllRed'] if pd.notna(phase_row['AllRed']) else 0
+                if pd.isna(phase_row['AllRed']):
+                    print(f"  :All red time ('AllRed') is missing for phase {phase_row['Phase']} at "
+                          f"intersection {intid_row['INTID'].values[0]}, 0 sec is used.")
 
-        nm = len(TLLogic[tl_id])
-        for _, phase_row in synchro_data["Phases"].iterrows():
-            state = generate_complete_state_string(phase_row['ProtectedMovement'], phase_row['PermittedMovement'], phase_row['RTORMovement'], nm)
-            # maxDur = int(float(phase_row['MaxGreen'])) if pd.notna(phase_row['MaxGreen']) else int(int(total_cycle_length) / 3)
-            maxDur = float(phase_row["MaxGreen"]) if pd.notna(phase_row['MaxGreen']) else round(float(total_cycle_length) / 3, 1)
-            if pd.isna(phase_row['MaxGreen']):
-                print(f"  :Maximum green('MaxGreen') is missing for phase {phase_row['Phase']} at "
-                      f"intersection {intid_row['INTID'].values[0]}, {int(int(total_cycle_length) / 3)} sec is used."
-                      " Manual change is probably needed to ensure the length of this ring equal to cycle length.")
+                # Add the phase element
+                ET.SubElement(new_tlLogic, 'phase', duration="99", minDur=str(minDur),
+                              maxDur=str(maxDur), vehext=str(vehext),
+                              yellow=str(yellow), red=str(red),
+                              name=str(phase_row['Phase']), state=state)
 
-            # minDur = phase_row['MinGreen'] if pd.notna(phase_row['MinGreen']) else min(6, int(maxDur))
-            minDur = phase_row['MinGreen'] if pd.notna(phase_row['MinGreen']) else min(6, float(maxDur))
-            if pd.isna(phase_row['MinGreen']):
-                print(f"  :Minimum green('MinGreen') is missing for phase {phase_row['Phase']} at "
-                      f"intersection {intid_row['INTID'].values[0]}, {min(6, maxDur)} sec is used")
-
-            vehext = phase_row['VehExt'] if pd.notna(phase_row['VehExt']) else 2
-            if pd.isna(phase_row['VehExt']):
-                print(f"  :Added green per actuation ('vehext') is missing for phase {phase_row['Phase']} at "
-                      f"intersection {intid_row['INTID'].values[0]}, 2 sec is used.")
-
-            yellow = phase_row['Yellow'] if pd.notna(phase_row['Yellow']) else 3
-            if pd.isna(phase_row['Yellow']):
-                print(f"  :Yellow time('Yellow') is missing for phase {phase_row['Phase']} at "
-                      f"intersection {intid_row['INTID'].values[0]}, 3 sec is used.")
-
-            red = phase_row['AllRed'] if pd.notna(phase_row['AllRed']) else 0
-            if pd.isna(phase_row['AllRed']):
-                print(f"  :All red time ('AllRed') is missing for phase {phase_row['Phase']} at "
-                      f"intersection {intid_row['INTID'].values[0]}, 0 sec is used.")
-
-            # Add the phase element
-            ET.SubElement(new_tlLogic, 'phase', duration="99", minDur=str(minDur),
-                          maxDur=str(maxDur), vehext=str(vehext),
-                          yellow=str(yellow), red=str(red),
-                          name=str(phase_row['Phase']), state=state)
-
-        # Replace the existing tlLogic element with the new one in the parent element
-        parent = root.find(".//tlLogic/..")
-        parent.remove(tlLogic_elem)
-        # Insert the new tlLogic element right after the last <edge> element
-        parent.insert(list(parent).index(last_edge) + 1, new_tlLogic)
+            # Replace the existing tlLogic element with the new one in the parent element
+            parent = root.find(".//tlLogic/..")
+            parent.remove(tlLogic_elem)
+            # Insert the new tlLogic element right after the last <edge> element
+            parent.insert(list(parent).index(last_edge) + 1, new_tlLogic)
+        except:
+            print(tl_id, "ERROR!!!")
 
     tree.write(path_net, encoding='UTF-8')
 
