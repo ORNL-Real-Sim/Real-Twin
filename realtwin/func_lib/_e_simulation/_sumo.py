@@ -905,7 +905,6 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
 
             # R1B1
             if not r1b1.empty:
-                # max_pos = pd.concat([r1b1['Position'], r2b1['Position']]).max()
                 R1B1 = [0] * max_pos_b1
                 for _, row in r1b1.iterrows():
                     R1B1[int(row['Position']) - 1] = int(row['Phase'])
@@ -917,7 +916,6 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
 
             # R1B2
             if not r1b2.empty:
-                # max_pos = pd.concat([r1b2['Position'], r2b2['Position']]).max()
                 R1B2 = [0] * max_pos_b2
                 for _, row in r1b2.iterrows():
                     R1B2[int(row['Position']) - 1] = int(row['Phase'])
@@ -929,7 +927,6 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
 
             # R2B1
             if not r2b1.empty:
-                # max_pos = pd.concat([r1b1['Position'], r2b1['Position']]).max()
                 R2B1 = [0] * max_pos_b1
                 for _, row in r2b1.iterrows():
                     R2B1[int(row['Position']) - 1] = int(row['Phase'])
@@ -941,7 +938,6 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
 
             # R2B2
             if not r2b2.empty:
-                # max_pos = pd.concat([r1b2['Position'], r2b2['Position']]).max()
                 R2B2 = [0] * max_pos_b2
                 for _, row in r2b2.iterrows():
                     R2B2[int(row['Position']) - 1] = int(row['Phase'])
