@@ -71,6 +71,12 @@ def main():
         elapsed_time = end_time - start_time
         run_times.append(elapsed_time)
 
+        print("\nResults:")
+        print(f"Best function value found: {f_best}")
+        print(f"Best point found: {x_best}")
+        print(f"Number of evaluations performed: {len(evaluated_values)}")
+        print(f"Elapsed time for run {run+1}: {elapsed_time:.2f} seconds")
+
         temp_evaluated_values.append(evaluated_values)
         temp_evaluated_points.append(evaluated_points)
 
@@ -82,12 +88,6 @@ def main():
         evaluated_points_np = np.array(evaluated_points)
         param_mins = np.minimum(param_mins, np.min(evaluated_points_np, axis=0))
         param_maxs = np.maximum(param_maxs, np.max(evaluated_points_np, axis=0))
-
-        print("\nResults:")
-        print(f"Best function value found: {f_best}")
-        print(f"Best point found: {x_best}")
-        print(f"Number of evaluations performed: {len(evaluated_values)}")
-        print(f"Elapsed time for run {run+1}: {elapsed_time:.2f} seconds")
 
         # Record fitness and iteration for this run
         for iteration, (fitness, point) in enumerate(zip(evaluated_values, evaluated_points)):

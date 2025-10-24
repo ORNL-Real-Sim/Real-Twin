@@ -473,6 +473,12 @@ class TurnInflowCali:
 
         return (g_best, model_ts)
 
+    def run_BO(self, **kwargs) -> tuple:
+        """Run Bayesian Optimization (BO) for behavior optimization."""
+
+
+        return (None, None)
+
     def _clean_up(self):
         """Clean up the temporary files generated during the calibration process."""
         network_name = self.scenario_config.get("network_name")

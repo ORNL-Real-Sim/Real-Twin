@@ -86,11 +86,6 @@ def main():
         print(f"Best point found: {x_best}")
         print(f"Number of evaluations performed: {len(evaluated_values)}")
         print(f"Elapsed time for run {run+1}: {elapsed_time:.2f} seconds")
-        run_success = (f_best - target) <= tolerance
-        if run_success:
-            print(f"Run {run+1}: Test PASSED! ✓ Found point {x_best} with value {f_best}")
-        else:
-            print(f"Run {run+1}: Test FAILED! ✗ Could not reach target within tolerance. Best value: {f_best}")
 
         for iteration, (fitness, point) in enumerate(zip(evaluated_values, evaluated_points)):
             row = {
@@ -113,6 +108,14 @@ def main():
         for i, v in enumerate(np.array(evaluated_points)[best_idx]):
             best_row[f'param_{i+1}'] = v
         best_rows.append(best_row)
+
+        run_success = (f_best - target) <= tolerance
+        if run_success:
+            print(
+                f"Run {run+1}: Test PASSED! ✓ Found point {x_best} with value {f_best}")
+        else:
+            print(
+                f"Run {run+1}: Test FAILED! ✗ Could not reach target within tolerance. Best value: {f_best}")
 
         plt.figure(figsize=(8, 5))
         plt.plot(range(1, len(evaluated_values) + 1), evaluated_values, marker='o')
