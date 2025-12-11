@@ -406,6 +406,8 @@ def generate_turn_demand_cali(*, path_matchup_table: str | pd.DataFrame,
 
         # Get the file path from File_GridSmart if available
         file_name = subset["File_GridSmart"].dropna().iloc[0] if not subset["File_GridSmart"].isna().all() else None
+        if '.' not in Path(file_name).name:
+            file_name = file_name + '.xls'
 
         if file_name:
             gs_file_path = os.path.join(traffic_dir, file_name)

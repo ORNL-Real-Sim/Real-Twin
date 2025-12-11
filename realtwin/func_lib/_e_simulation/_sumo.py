@@ -81,10 +81,16 @@ class SUMOPrep:
         junctions = root.findall('junction')
 
         # Function to extract road ids from incLanes attribute
+        # def get_road_ids_from_incLanes(incLanes):
+        #     lane_ids = incLanes.split()
+        #     road_ids = set(lane_id.split("_")[0] for lane_id in lane_ids)
+        #     return list(road_ids)
+
         def get_road_ids_from_incLanes(incLanes):
             lane_ids = incLanes.split()
-            road_ids = set(lane_id.split("_")[0] for lane_id in lane_ids)
+            road_ids = set(lane_id[:lane_id.rfind("_")] if "_" in lane_id else lane_id for lane_id in lane_ids)
             return list(road_ids)
+
 
         # Find all junctions with only one road connecting
         junctions_single_road = [
