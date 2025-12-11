@@ -85,7 +85,6 @@ class SUMOPrep:
         #     lane_ids = incLanes.split()
         #     road_ids = set(lane_id.split("_")[0] for lane_id in lane_ids)
         #     return list(road_ids)
-
         def get_road_ids_from_incLanes(incLanes):
             lane_ids = incLanes.split()
             road_ids = set(lane_id[:lane_id.rfind("_")] if "_" in lane_id else lane_id for lane_id in lane_ids)
@@ -901,7 +900,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             r1b1 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 1) & (synchro_data["Phases"]['Barrier'] == 1)]
             r1b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 1) & (synchro_data["Phases"]['Barrier'] == 2)]
             r2b1 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 1)]
-            r2b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 2)]  
+            r2b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 2)]
 
             max_pos_b1 = pd.concat([r1b1['Position'], r2b1['Position']]).max()
             max_pos_b2 = pd.concat([r1b2['Position'], r2b2['Position']]).max()
@@ -916,7 +915,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                     R1B1[int(row['Position']) - 1] = int(row['Phase'])
                 zeros = [x for x in R1B1 if x == 0]
                 nonzeros = [x for x in R1B1 if x != 0]
-                R1B1 = zeros + nonzeros                    
+                R1B1 = zeros + nonzeros
             else:
                 R1B1 = None
 
@@ -927,7 +926,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                     R1B2[int(row['Position']) - 1] = int(row['Phase'])
                 zeros = [x for x in R1B2 if x == 0]
                 nonzeros = [x for x in R1B2 if x != 0]
-                R1B2 = zeros + nonzeros                    
+                R1B2 = zeros + nonzeros
             else:
                 R1B2 = None
 
@@ -938,7 +937,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                     R2B1[int(row['Position']) - 1] = int(row['Phase'])
                 zeros = [x for x in R2B1 if x == 0]
                 nonzeros = [x for x in R2B1 if x != 0]
-                R2B1 = zeros + nonzeros                     
+                R2B1 = zeros + nonzeros
             else:
                 R2B1 = None
 
@@ -949,7 +948,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                     R2B2[int(row['Position']) - 1] = int(row['Phase'])
                 zeros = [x for x in R2B2 if x == 0]
                 nonzeros = [x for x in R2B2 if x != 0]
-                R2B2 = zeros + nonzeros                        
+                R2B2 = zeros + nonzeros
             else:
                 R2B2 = None
 
@@ -976,8 +975,8 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                 else:
                     if len(allphase) == 2:
                         allphase = [0] + allphase
-                    R1B1 = R2B1 = allphase[:-1]   
-                    R1B2 = R2B2 = [allphase[-1]]  
+                    R1B1 = R2B1 = allphase[:-1]
+                    R1B2 = R2B2 = [allphase[-1]]
             else:
                 if R1B1 is None and R2B1 is not None:
                     R1B1 = R2B1
@@ -992,11 +991,11 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             ring2temp = ",".join(map(str, R2B1 + R2B2))
             if len(ring1temp.split(',')) == 2 and len(ring2temp.split(',')) == 2:
                 ring1temp = "0," + ring1temp
-                ring2temp = "0," + ring2temp    
+                ring2temp = "0," + ring2temp
 
             ET.SubElement(new_tlLogic, 'param', key="ring1", value=ring1temp)
             ET.SubElement(new_tlLogic, 'param', key="ring2", value=ring2temp)
-            
+
             # Adding <param key="barrierPhases" value=""/>  <param key="barrier2Phases" value=""/>
             barrier2Phases = [R1B1[-1], R2B1[-1]]
             ET.SubElement(new_tlLogic, 'param', key="barrier2Phases", value=",".join(map(str, barrier2Phases)))
@@ -1012,7 +1011,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                 barrier_phases_value = new_tlLogic.find("./param[@key='barrierPhases']").attrib['value']
                 barrier2_phases_element = new_tlLogic.find("./param[@key='barrier2Phases']")
                 barrier2_phases_value = barrier2_phases_element.attrib['value']
-                
+
                 if new_tlLogic.find("./param[@key='barrierPhases']") is not None:
 
                     # Check if 'barrierPhases' contains coordinated phase(s)
