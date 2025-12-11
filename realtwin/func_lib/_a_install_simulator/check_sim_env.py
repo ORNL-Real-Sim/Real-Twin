@@ -78,7 +78,7 @@ def is_sumo_installed(*, ext: str = "exe", sel_dir: list = None, verbose: bool =
                 if version_check.returncode == 0:
 
                     # Define the pattern to match the version number
-                    pattern = r'Version (\d+\.\d+\.\d+)'
+                    pattern = r'(\d+\.\d+\.\d+)'
 
                     # Search for the pattern in the text
                     match = re.search(pattern, version_check.stdout)
