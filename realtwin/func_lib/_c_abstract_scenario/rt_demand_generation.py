@@ -146,10 +146,10 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
 
         # Get the file path from File_GridSmart if available
         file_name = subset["File_GridSmart"].dropna().iloc[0] if not subset["File_GridSmart"].isna().all() else None
-        if '.' not in Path(file_name).name:
-            file_name = file_name + '.xls'
 
         if file_name:
+            if '.' not in Path(file_name).name:
+                file_name = file_name + '.xls'
             # Set Need calibration? to "N"
             MatchupTable_UserInput.loc[MatchupTable_UserInput["JunctionID_OpenDrive"]
                                        == junction_id, "Need calibration?"] = "N"
@@ -430,10 +430,10 @@ def generate_turn_demand(*, path_matchup_table: str,
 
         # Get the file path from File_GridSmart if available
         file_name = subset["File_GridSmart"].dropna().iloc[0] if not subset["File_GridSmart"].isna().all() else None
-        if '.' not in Path(file_name).name:
-            file_name = file_name + '.xls'
 
         if file_name:
+            if '.' not in Path(file_name).name:
+                file_name = file_name + '.xls'            
             # Retrieve the IntersectionName_GridSmart
             intersection_name = subset["IntersectionName_GridSmart"].dropna().iloc[0] if not subset["IntersectionName_GridSmart"].isna().all() else "Unknown"
             # Create df_lookup with predefined Turn values
@@ -455,10 +455,10 @@ def generate_turn_demand(*, path_matchup_table: str,
 
         # Get the file path from File_GridSmart if available
         file_name = subset["File_GridSmart"].dropna().iloc[0] if not subset["File_GridSmart"].isna().all() else None
-        if '.' not in Path(file_name).name:
-            file_name = file_name + '.xls'
 
         if file_name:
+            if '.' not in Path(file_name).name:
+                file_name = file_name + '.xls'
             gs_file_path = os.path.join(traffic_dir, file_name)
             # gs_file_path = f"RealTwinDemand/{file_name}"
 
