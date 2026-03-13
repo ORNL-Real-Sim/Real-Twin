@@ -50,3 +50,10 @@ include = ["realtwin", "realtwin.*"]
 [tool.setuptools.package-data]
 "*" = ["*.txt", "*.rst", '*.yaml', '*.zip', '*.json']
 data_lib = ["*.txt", "*.rst", '*.yaml', '*.zip', '*.json']
+
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
