@@ -611,9 +611,9 @@ def generate_inflow(path_net: str,
         edge_to = edge.attrib.get('to')
         edge_id = edge.attrib.get('id')
         if edge_from in DeadEndJunction:
-            InflowRoad.append(edge_id.lstrip('-'))
+            InflowRoad.append(edge_id[1:] if edge_id.startswith('-') else edge_id)
         if edge_from in DeadEndJunction and edge_to in DeadEndJunction:
-            SingleRoad.append(edge_id.lstrip('-'))
+            SingleRoad.append(edge_id[1:] if edge_id.startswith('-') else edge_id)
     FromRoadID_Sumo = ["-" + str(x) for x in MatchupTable_UserInput["FromRoadID_OpenDrive"].dropna().unique()]
     Lookup_InflowEdge = pd.DataFrame(columns=["FromRoadID_Sumo", "InflowID_Sumo"])
     edges = {edge.get("id"): edge for edge in root.findall("edge")}
