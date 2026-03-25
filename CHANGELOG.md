@@ -6,11 +6,18 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 ## Change Log
 
+### 2026-02-19
+
+TODO:
+
+* [ ] Add citation to realthedocs - Contact page
+* [ ] Add Autonomous Vehicle simulation to -> readthedocs - Scenario Generation
+
 ### 2025-10-01
 
 * Add testing functions for the realtwion with coverage from 22% to 38%.  Will implement core-functionalities only in the future update.
 
-  ![1759330957669](image/CHANGELOG/1759330957669.png)
+  ![1759330957669](docs/image/CHANGELOG/1759330957669.png)
 
 ### 2025-09-30
 

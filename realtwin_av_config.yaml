@@ -1,5 +1,5 @@
 input:
-  input_dir: C:\Users\xh8\ORNL_work\github_workspace\Real-Twin\datasets\autonomous_veh  # Input directory including SUMO network, route, flow, and turn files.
+  input_dir: datasets\autonomous_veh  # Input directory including SUMO network, route, flow, and turn files.
   net_file: chatt.net.xml  # SUMO network file name (.net.xml)
   flow_file: chatt.flow.xml  # SUMO flow file name (.flow.xml)
   turn_file: chatt.turn.xml  # SUMO turn file name(.turn.xml)
