@@ -646,14 +646,14 @@ def generate_inflow(path_net: str,
                 break
             current_id = next_id
 
-    Lookup_InflowEdge["FromRoadID_Sumo_stripped"] = Lookup_InflowEdge["FromRoadID_Sumo"].str.lstrip("-")
+    Lookup_InflowEdge["FromRoadID_Sumo_stripped"] = Lookup_InflowEdge["FromRoadID_Sumo"].str.replace(r"^-", "", regex=True)
     Count = Count.merge(
         Lookup_InflowEdge,
         left_on="OpenDriveFromID",
         right_on="FromRoadID_Sumo_stripped",
         how="left"
     )
-    Count["InflowID_Sumo_stripped"] = Count["InflowID_Sumo"].str.lstrip("-")
+    Count["InflowID_Sumo_stripped"] = Count["InflowID_Sumo"].str.replace(r"^-", "", regex=True)
     InflowCount = Count[Count["InflowID_Sumo_stripped"].isin(InflowRoad)].copy()
     InflowCount.loc[InflowCount["InflowID_Sumo_stripped"].notna(),
                     "OpenDriveFromID"] = InflowCount["InflowID_Sumo_stripped"]
