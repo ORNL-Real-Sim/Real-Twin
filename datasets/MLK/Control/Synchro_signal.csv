@@ -3,8 +3,8 @@ Lane Group Data,,,,,,,,,,,,,
 RECORDNAME,INTID,NBL,NBT,NBR,SBL,SBT,SBR,EBL,EBT,EBR,WBL,WBT,WBR
 Up Node,1,,,,,,,,,,,,
 Dest Node,1,,,,,,,,,,,,
-Lanes,1,2,1,1,,,,1,2,0,0,2,1
-Shared,1,0,2,0,,,,0,0,,0,2,0
+Lanes,1,2,1,1,,,,1,2,,,2,1
+Shared,1,0,2,0,,,,0,0,,,2,0
 Width,1,,,,,,,,,,,,
 Storage,1,,,,,,,,,,,,
 Taper,1,,,,,,,,,,,,
@@ -18,7 +18,7 @@ Lost Time Adjust,1,,,,,,,,,,,,
 IdealFlow,1,,,,,,,,,,,,
 SatFlow,1,,,,,,,,,,,,
 SatFlowPerm,1,,,,,,,,,,,,
-Allow RTOR,1,,,1,,,,,,1,,,1
+Allow RTOR,1,,,1,,,,,,,,,1
 SatFlowRTOR,1,,,,,,,,,,,,
 Volume,1,,,,,,,,,,,,
 Peds,1,,,,,,,,,,,,
@@ -54,8 +54,8 @@ CBD,1,,,,,,,,,,,,
 Lane Group Flow,1,,,,,,,,,,,,
 Up Node,2,,,,,,,,,,,,
 Dest Node,2,,,,,,,,,,,,
-Lanes,2,1,1,1,0,1,1,1,2,1,1,3,0
-Shared,2,0,0,0,0,1,0,0,0,0,0,2,
+Lanes,2,1,1,1,,1,1,1,2,1,1,3,
+Shared,2,0,0,0,,1,0,0,0,0,0,2,
 Width,2,,,,,,,,,,,,
 Storage,2,,,,,,,,,,,,
 Taper,2,,,,,,,,,,,,
@@ -63,7 +63,7 @@ StLanes,2,,,,,,,,,,,,
 Grade,2,,,,,,,,,,,,
 Speed,2,,,,,,,,,,,,
 Phase1,2,,3,,,4,,1,2,,1,2,
-PermPhase1,2,3,,3,4,,4,2,,2,2,,
+PermPhase1,2,3,,3,,,4,2,,2,2,,
 LostTime,2,,,,,,,,,,,,
 Lost Time Adjust,2,,,,,,,,,,,,
 IdealFlow,2,,,,,,,,,,,,
@@ -105,7 +105,7 @@ CBD,2,,,,,,,,,,,,
 Lane Group Flow,2,,,,,,,,,,,,
 Up Node,3,,,,,,,,,,,,
 Dest Node,3,,,,,,,,,,,,
-Lanes,3,1,2,0,1,2,0,1,2,0,1,2,0
+Lanes,3,1,2,,1,2,,1,2,,1,2,
 Shared,3,0,2,,0,2,,0,2,,0,2,
 Width,3,,,,,,,,,,,,
 Storage,3,,,,,,,,,,,,
@@ -156,7 +156,7 @@ CBD,3,,,,,,,,,,,,
 Lane Group Flow,3,,,,,,,,,,,,
 Up Node,4,,,,,,,,,,,,
 Dest Node,4,,,,,,,,,,,,
-Lanes,4,1,2,0,1,2,0,1,2,0,1,2,0
+Lanes,4,1,2,,1,2,,1,2,,1,2,
 Shared,4,0,2,,0,2,,0,2,,0,2,
 Width,4,,,,,,,,,,,,
 Storage,4,,,,,,,,,,,,
@@ -207,8 +207,8 @@ CBD,4,,,,,,,,,,,,
 Lane Group Flow,4,,,,,,,,,,,,
 Up Node,5,,,,,,,,,,,,
 Dest Node,5,,,,,,,,,,,,
-Lanes,5,0,1,0,0,1,1,1,2,0,0,2,0
-Shared,5,0,3,,0,1,,0,2,,0,3,
+Lanes,5,,1,,,1,1,1,2,,,2,
+Shared,5,,3,,,1,,0,2,,,3,
 Width,5,,,,,,,,,,,,
 Storage,5,,,,,,,,,,,,
 Taper,5,,,,,,,,,,,,
@@ -216,7 +216,7 @@ StLanes,5,,,,,,,,,,,,
 Grade,5,,,,,,,,,,,,
 Speed,5,,,,,,,,,,,,
 Phase1,5,,4,,,4,,1,2,,,2,
-PermPhase1,5,4,,,4,,4,2,,,2,,
+PermPhase1,5,,,,,,4,2,,,,,
 LostTime,5,,,,,,,,,,,,
 Lost Time Adjust,5,,,,,,,,,,,,
 IdealFlow,5,,,,,,,,,,,,
@@ -258,8 +258,8 @@ CBD,5,,,,,,,,,,,,
 Lane Group Flow,5,,,,,,,,,,,,
 Up Node,6,,,,,,,,,,,,
 Dest Node,6,,,,,,,,,,,,
-Lanes,6,0,1,0,0,1,0,1,1,0,1,1,0
-Shared,6,0,3,,0,3,,0,2,,0,2,
+Lanes,6,,1,,,1,,1,1,,1,1,
+Shared,6,,3,,,3,,0,2,,0,2,
 Width,6,,,,,,,,,,,,
 Storage,6,,,,,,,,,,,,
 Taper,6,,,,,,,,,,,,
@@ -267,13 +267,13 @@ StLanes,6,,,,,,,,,,,,
 Grade,6,,,,,,,,,,,,
 Speed,6,,,,,,,,,,,,
 Phase1,6,,4,,,4,,,2,,,2,
-PermPhase1,6,4,,,4,,,2,,,2,,
+PermPhase1,6,,,,,,,2,,,2,,
 LostTime,6,,,,,,,,,,,,
 Lost Time Adjust,6,,,,,,,,,,,,
 IdealFlow,6,,,,,,,,,,,,
 SatFlow,6,,,,,,,,,,,,
 SatFlowPerm,6,,,,,,,,,,,,
-Allow RTOR,6,,,1,,,1,,,1,,,1
+Allow RTOR,6,,,,,,,,,,,,
 SatFlowRTOR,6,,,,,,,,,,,,
 Volume,6,,,,,,,,,,,,
 Peds,6,,,,,,,,,,,,
@@ -309,8 +309,8 @@ CBD,6,,,,,,,,,,,,
 Lane Group Flow,6,,,,,,,,,,,,
 Up Node,7,,,,,,,,,,,,
 Dest Node,7,,,,,,,,,,,,
-Lanes,7,0,1,0,0,1,0,1,1,0,1,1,0
-Shared,7,0,3,,0,3,,0,2,,0,2,
+Lanes,7,,1,,,1,,1,1,,1,1,
+Shared,7,,3,,,3,,0,2,,0,2,
 Width,7,,,,,,,,,,,,
 Storage,7,,,,,,,,,,,,
 Taper,7,,,,,,,,,,,,
@@ -318,13 +318,13 @@ StLanes,7,,,,,,,,,,,,
 Grade,7,,,,,,,,,,,,
 Speed,7,,,,,,,,,,,,
 Phase1,7,,4,,,4,,,2,,,2,
-PermPhase1,7,4,,,4,,,2,,,2,,
+PermPhase1,7,,,,,,,2,,,2,,
 LostTime,7,,,,,,,,,,,,
 Lost Time Adjust,7,,,,,,,,,,,,
 IdealFlow,7,,,,,,,,,,,,
 SatFlow,7,,,,,,,,,,,,
 SatFlowPerm,7,,,,,,,,,,,,
-Allow RTOR,7,,,1,,,1,,,1,,,1
+Allow RTOR,7,,,,,,,,,,,,
 SatFlowRTOR,7,,,,,,,,,,,,
 Volume,7,,,,,,,,,,,,
 Peds,7,,,,,,,,,,,,
@@ -360,22 +360,22 @@ CBD,7,,,,,,,,,,,,
 Lane Group Flow,7,,,,,,,,,,,,
 Up Node,8,,,,,,,,,,,,
 Dest Node,8,,,,,,,,,,,,
-Lanes,8,0,1,0,0,1,0,1,1,0,1,1,0
-Shared,8,0,3,,0,3,,0,2,,0,2,
+Lanes,8,,1,,,1,,1,1,,1,1,
+Shared,8,,3,,,3,,0,2,,0,2,
 Width,8,,,,,,,,,,,,
 Storage,8,,,,,,,,,,,,
 Taper,8,,,,,,,,,,,,
 StLanes,8,,,,,,,,,,,,
 Grade,8,,,,,,,,,,,,
 Speed,8,,,,,,,,,,,,
-Phase1,8,,4,,,4,,,1,,,2,
-PermPhase1,8,4,,,4,,,1,,,2,,
+Phase1,8,,4,,,4,,1,2,,,2,
+PermPhase1,8,,,,,,,,,,2,,
 LostTime,8,,,,,,,,,,,,
 Lost Time Adjust,8,,,,,,,,,,,,
 IdealFlow,8,,,,,,,,,,,,
 SatFlow,8,,,,,,,,,,,,
 SatFlowPerm,8,,,,,,,,,,,,
-Allow RTOR,8,,,1,,,1,,,1,,,1
+Allow RTOR,8,,,,,,,,,,,,
 SatFlowRTOR,8,,,,,,,,,,,,
 Volume,8,,,,,,,,,,,,
 Peds,8,,,,,,,,,,,,
@@ -411,8 +411,8 @@ CBD,8,,,,,,,,,,,,
 Lane Group Flow,8,,,,,,,,,,,,
 Up Node,9,,,,,,,,,,,,
 Dest Node,9,,,,,,,,,,,,
-Lanes,9,0,1,0,,,,1,1,0,1,1,0
-Shared,9,0,3,,,,,0,2,,0,2,
+Lanes,9,,1,,,,,1,1,,1,1,
+Shared,9,,3,,,,,0,2,,0,2,
 Width,9,,,,,,,,,,,,
 Storage,9,,,,,,,,,,,,
 Taper,9,,,,,,,,,,,,
@@ -420,13 +420,13 @@ StLanes,9,,,,,,,,,,,,
 Grade,9,,,,,,,,,,,,
 Speed,9,,,,,,,,,,,,
 Phase1,9,,4,,,,,,2,,,2,
-PermPhase1,9,4,,,,,,2,,,2,,
+PermPhase1,9,,,,,,,2,,,2,,
 LostTime,9,,,,,,,,,,,,
 Lost Time Adjust,9,,,,,,,,,,,,
 IdealFlow,9,,,,,,,,,,,,
 SatFlow,9,,,,,,,,,,,,
 SatFlowPerm,9,,,,,,,,,,,,
-Allow RTOR,9,,,1,,,,,,1,,,1
+Allow RTOR,9,,,,,,,,,,,,
 SatFlowRTOR,9,,,,,,,,,,,,
 Volume,9,,,,,,,,,,,,
 Peds,9,,,,,,,,,,,,
@@ -462,8 +462,8 @@ CBD,9,,,,,,,,,,,,
 Lane Group Flow,9,,,,,,,,,,,,
 Up Node,10,,,,,,,,,,,,
 Dest Node,10,,,,,,,,,,,,
-Lanes,10,0,1,0,0,1,0,1,1,0,1,1,0
-Shared,10,0,3,,0,3,,0,2,,0,2,
+Lanes,10,,1,,,1,,1,1,,1,1,
+Shared,10,,3,,,3,,0,2,,0,2,
 Width,10,,,,,,,,,,,,
 Storage,10,,,,,,,,,,,,
 Taper,10,,,,,,,,,,,,
@@ -471,13 +471,13 @@ StLanes,10,,,,,,,,,,,,
 Grade,10,,,,,,,,,,,,
 Speed,10,,,,,,,,,,,,
 Phase1,10,,4,,,4,,,2,,,2,
-PermPhase1,10,4,,,4,,,2,,,2,,
+PermPhase1,10,,,,,,,2,,,2,,
 LostTime,10,,,,,,,,,,,,
 Lost Time Adjust,10,,,,,,,,,,,,
 IdealFlow,10,,,,,,,,,,,,
 SatFlow,10,,,,,,,,,,,,
 SatFlowPerm,10,,,,,,,,,,,,
-Allow RTOR,10,,,1,,,1,,,1,,,1
+Allow RTOR,10,,,,,,,,,,,,
 SatFlowRTOR,10,,,,,,,,,,,,
 Volume,10,,,,,,,,,,,,
 Peds,10,,,,,,,,,,,,
@@ -513,7 +513,7 @@ CBD,10,,,,,,,,,,,,
 Lane Group Flow,10,,,,,,,,,,,,
 Up Node,11,,,,,,,,,,,,
 Dest Node,11,,,,,,,,,,,,
-Lanes,11,0,2,0,0,2,0,1,1,0,1,1,0
+Lanes,11,,2,,,2,,1,1,,1,1,
 Shared,11,,3,,,3,,,2,,,2,
 Width,11,,,,,,,,,,,,
 Storage,11,,,,,,,,,,,,
@@ -521,14 +521,14 @@ Taper,11,,,,,,,,,,,,
 StLanes,11,,,,,,,,,,,,
 Grade,11,,,,,,,,,,,,
 Speed,11,,,,,,,,,,,,
-Phase1,11,3,4,,3,4,,5,2,,1,6,
-PermPhase1,11,4,,,4,,,2,,,6,,
+Phase1,11,,4,,,3,,5,2,,1,6,
+PermPhase1,11,,,,,,,2,,,6,,
 LostTime,11,,,,,,,,,,,,
 Lost Time Adjust,11,,,,,,,,,,,,
 IdealFlow,11,,,,,,,,,,,,
 SatFlow,11,,,,,,,,,,,,
 SatFlowPerm,11,,,,,,,,,,,,
-Allow RTOR,11,,,1,,,1,,,1,,,1
+Allow RTOR,11,,,1,,,1,,,,,,
 SatFlowRTOR,11,,,,,,,,,,,,
 Volume,11,,,,,,,,,,,,
 Peds,11,,,,,,,,,,,,
@@ -562,385 +562,385 @@ DetectDelay1,11,,,,,,,,,,,,
 Exit Lanes,11,,,,,,,,,,,,
 CBD,11,,,,,,,,,,,,
 Lane Group Flow,11,,,,,,,,,,,,
-
-[Timeplans]
-Timing Plan Settings
-RECORDNAME,INTID,DATA
-Control Type,1,3
-Cycle Length,1,108
-Lock Timings,1,1
-Referenced To,1,3
-Reference Phase,1,206
-Offset,1,3
-Master,1,0
-Yield,1,0
-Node 0,1,1
-Node 1,1,0
-Control Type,2,3
-Cycle Length,2,108
-Lock Timings,2,1
-Referenced To,2,3
-Reference Phase,2,206
-Offset,2,19
-Master,2,0
-Yield,2,0
-Node 0,2,2
-Node 1,2,0
-Control Type,3,3
-Cycle Length,3,108
-Lock Timings,3,1
-Referenced To,3,3
-Reference Phase,3,206
-Offset,3,4
-Master,3,0
-Yield,3,0
-Node 0,3,3
-Node 1,3,0
-Control Type,4,3
-Cycle Length,4,108
-Lock Timings,4,1
-Referenced To,4,3
-Reference Phase,4,4
-Offset,4,0
-Master,4,0
-Yield,4,0
-Node 0,4,4
-Node 1,4,0
-Control Type,5,3
-Cycle Length,5,108
-Lock Timings,5,1
-Referenced To,5,3
-Reference Phase,5,206
-Offset,5,4
-Master,5,0
-Yield,5,0
-Node 0,5,5
-Node 1,5,0
-Control Type,6,3
-Cycle Length,6,108
-Lock Timings,6,1
-Referenced To,6,3
-Reference Phase,6,206
-Offset,6,78
-Master,6,0
-Yield,6,0
-Node 0,6,6
-Node 1,6,0
-Control Type,7,3
-Cycle Length,7,108
-Lock Timings,7,1
-Referenced To,7,3
-Reference Phase,7,206
-Offset,7,84
-Master,7,0
-Yield,7,0
-Node 0,7,7
-Node 1,7,0
-Control Type,8,3
-Cycle Length,8,108
-Lock Timings,8,1
-Referenced To,8,3
-Reference Phase,8,206
-Offset,8,64
-Master,8,0
-Yield,8,0
-Node 0,8,8
-Node 1,8,0
-Control Type,9,3
-Cycle Length,9,108
-Lock Timings,9,1
-Referenced To,9,3
-Reference Phase,9,206
-Offset,9,16
-Master,9,0
-Yield,9,0
-Node 0,9,9
-Node 1,9,0
-Control Type,10,3
-Cycle Length,10,108
-Lock Timings,10,1
-Referenced To,10,3
-Reference Phase,10,206
-Offset,10,1
-Master,10,0
-Yield,10,0
-Node 0,10,10
-Node 1,10,0
-Control Type,11,3
-Cycle Length,11,108
-Lock Timings,11,1
-Referenced To,11,3
-Reference Phase,11,206
-Offset,11,88
-Master,11,0
-Yield,11,0
-Node 0,11,11
-Node 1,11,0
-
-[Phases]
-Phasing Data
-RECORDNAME,INTID,D1,D2,D3,D4,D5,D6,D7,D8
-BRP,1,121,122,221,222,111,112,211,212
-MinGreen,1,5,15,0,8,0,15,8,0
-MaxGreen,1,8.6,35.400000000000006,0,0,0,50.5,46.400000000000006,0
-VehExt,1,1.5,3.0,0.0,3.0,0.0,3.0,1.0,1.0
-TimeBeforeReduce,1,0,0,0,0,0,0,0,0
-TimeToReduce,1,0,0,0,0,0,0,0,0
-MinGap,1,0,0,0,0,0,0,0,0
-Yellow,1,3.8,3.8,0.0,0.0,0.0,4.0,3.8,0.0
-AllRed,1,2.6,1.8,0.0,0.0,0.0,1.5,1.8,0.0
-Recall,1,0,0,0,0,0,0,0,0
-Walk,1,0,4,0,0,0,0,0,7
-DontWalk,1,0,19,0,0,0,0,0,30
-PedCalls,1,,0.0,,,,,,0.0
-MinSplit,1,,,,,,,,
-DualEntry,1,,,,,,,,
-InhibitMax,1,0,0,0,0,0,0,0,0
-Start,1,,,,,,,,
-End,1,,,,,,,,
-Yield,1,,,,,,,,
-Yield170,1,,,,,,,,
-LocalStart,1,,,,,,,,
-LocalYield,1,,,,,,,,
-LocalYield170,1,,,,,,,,
-ActGreen,1,,,,,,,,
-BRP,2,111,112,211,212,121,122,221,222
-MinGreen,2,4,8,4,8,0,0,0,0
-MaxGreen,2,5.999999999999999,27.9,12.0,37.900000000000006,0,0,0,0
-VehExt,2,1.0,2.0,1.0,2.0,0.0,0.0,0.0,0.0
-TimeBeforeReduce,2,0,0,0,0,0,0,0,0
-TimeToReduce,2,0,0,0,0,0,0,0,0
-MinGap,2,0,0,0,0,0,0,0,0
-Yellow,2,3.8,3.8,3.8,3.8,0.0,0.0,0.0,0.0
-AllRed,2,2.2,2.3,2.2,2.3,0.0,0.0,0.0,0.0
-Recall,2,0,0,0,0,0,0,0,0
-Walk,2,0,5,0,7,0,0,0,0
-DontWalk,2,0,21,0,29,0,0,0,9
-PedCalls,2,,0.0,,0.0,,,,
-MinSplit,2,,,,,,,,
-DualEntry,2,,,,,,,,
-InhibitMax,2,1,1,1,1,1,1,1,1
-Start,2,,,,,,,,
-End,2,,,,,,,,
-Yield,2,,,,,,,,
-Yield170,2,,,,,,,,
-LocalStart,2,,,,,,,,
-LocalYield,2,,,,,,,,
-LocalYield170,2,,,,,,,,
-ActGreen,2,,,,,,,,
-BRP,3,111,112,211,212,121,122,221,222
-MinGreen,3,4,8,4,8,0,0,0,0
-MaxGreen,3,6.8999999999999995,36.5,12.0,27.9,0,0,0,0
-VehExt,3,1.5,2.0,1.5,2.0,0.0,0.0,0.0,0.0
-TimeBeforeReduce,3,0,0,0,0,0,0,0,0
-TimeToReduce,3,0,0,0,0,0,0,0,0
-MinGap,3,0,0,0,0,0,0,0,0
-Yellow,3,3.8,3.8,3.8,3.8,0.0,0.0,0.0,0.0
-AllRed,3,2.3,2.7,2.2,2.3,0.0,0.0,0.0,0.0
-Recall,3,0,0,0,0,0,0,0,0
-Walk,3,0,5,0,7,0,0,0,0
-DontWalk,3,0,26,0,19,0,0,0,9
-PedCalls,3,,0.0,,0.0,,,,
-MinSplit,3,,,,,,,,
-DualEntry,3,,,,,,,,
-InhibitMax,3,1,1,1,1,1,1,1,1
-Start,3,,,,,,,,
-End,3,,,,,,,,
-Yield,3,,,,,,,,
-Yield170,3,,,,,,,,
-LocalStart,3,,,,,,,,
-LocalYield,3,,,,,,,,
-LocalYield170,3,,,,,,,,
-ActGreen,3,,,,,,,,
-BRP,4,111,112,211,212,121,122,221,222
-MinGreen,4,6,8,6,8,0,0,0,0
-MaxGreen,4,7.199999999999999,27.5,11.2,37.900000000000006,0,0,0,0
-VehExt,4,1.5,2.0,1.5,2.0,0.0,0.0,0.0,0.0
-TimeBeforeReduce,4,0,0,0,0,0,0,0,0
-TimeToReduce,4,0,0,0,0,0,0,0,0
-MinGap,4,0,0,0,0,0,0,0,0
-Yellow,4,3.8,3.8,3.8,3.8,0.0,0.0,0.0,0.0
-AllRed,4,2.0,2.7,2.0,2.3,0.0,0.0,0.0,0.0
-Recall,4,0,0,0,0,0,0,0,0
-Walk,4,0,7,0,5,0,0,0,0
-DontWalk,4,0,19,0,17,0,0,0,9
-PedCalls,4,,0.0,,0.0,,,,
-MinSplit,4,,,,,,,,
-DualEntry,4,,,,,,,,
-InhibitMax,4,1,1,1,1,1,1,1,1
-Start,4,,,,,,,,
-End,4,,,,,,,,
-Yield,4,,,,,,,,
-Yield170,4,,,,,,,,
-LocalStart,4,,,,,,,,
-LocalYield,4,,,,,,,,
-LocalYield170,4,,,,,,,,
-ActGreen,4,,,,,,,,
-BRP,5,111,112,211,212,121,122,221,222
-MinGreen,5,6,8,0,6,0,0,0,0
-MaxGreen,5,12.6,42.5,0,36.300000000000004,0,0,0,0
-VehExt,5,2.0,3.0,0.0,3.0,0.0,0.0,0.0,0.0
-TimeBeforeReduce,5,0,0,0,0,0,0,0,0
-TimeToReduce,5,0,0,0,0,0,0,0,0
-MinGap,5,0,0,0,0,0,0,0,0
-Yellow,5,3.8,3.8,0.0,3.8,0.0,0.0,0.0,0.0
-AllRed,5,1.6,1.7,0.0,1.9,0.0,0.0,0.0,0.0
-Recall,5,0,0,0,0,0,0,0,0
-Walk,5,0,5,0,7,0,0,0,0
-DontWalk,5,0,14,0,16,0,0,0,9
-PedCalls,5,,0.0,,0.0,,,,
-MinSplit,5,,,,,,,,
-DualEntry,5,,,,,,,,
-InhibitMax,5,1,1,1,1,1,1,1,1
-Start,5,,,,,,,,
-End,5,,,,,,,,
-Yield,5,,,,,,,,
-Yield170,5,,,,,,,,
-LocalStart,5,,,,,,,,
-LocalYield,5,,,,,,,,
-LocalYield170,5,,,,,,,,
-ActGreen,5,,,,,,,,
-BRP,6,111,112,211,212,121,122,221,222
-MinGreen,6,0,10,0,10,0,0,0,0
-MaxGreen,6,0,73.10000000000001,0,24.8,0,0,0,0
-VehExt,6,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0
-TimeBeforeReduce,6,0,0,0,0,0,0,0,0
-TimeToReduce,6,0,0,0,0,0,0,0,0
-MinGap,6,0,0,0,0,0,0,0,0
-Yellow,6,0.0,3.8,0.0,3.8,0.0,0.0,0.0,0.0
-AllRed,6,0.0,1.1,0.0,1.4,0.0,0.0,0.0,0.0
-Recall,6,0,0,0,0,0,0,0,0
-Walk,6,0,5,0,7,0,0,0,0
-DontWalk,6,0,10,0,13,13,0,0,9
-PedCalls,6,,0.0,,0.0,,,,
-MinSplit,6,,,,,,,,
-DualEntry,6,,,,,,,,
-InhibitMax,6,1,1,1,1,1,1,1,1
-Start,6,,,,,,,,
-End,6,,,,,,,,
-Yield,6,,,,,,,,
-Yield170,6,,,,,,,,
-LocalStart,6,,,,,,,,
-LocalYield,6,,,,,,,,
-LocalYield170,6,,,,,,,,
-ActGreen,6,,,,,,,,
-BRP,7,111,112,211,212,121,122,221,222
-MinGreen,7,0,10,0,15,0,0,0,0
-MaxGreen,7,0,73.10000000000001,0,24.7,0,0,0,0
-VehExt,7,0.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0
-TimeBeforeReduce,7,0,0,0,0,0,0,0,0
-TimeToReduce,7,0,0,0,0,0,0,0,0
-MinGap,7,0,0,0,0,0,0,0,0
-Yellow,7,0.0,3.8,0.0,3.8,0.0,0.0,0.0,0.0
-AllRed,7,0.0,1.1,0.0,1.5,0.0,0.0,0.0,0.0
-Recall,7,0,0,0,0,0,0,0,0
-Walk,7,0,7,0,7,0,0,0,0
-DontWalk,7,0,13,0,13,0,0,0,0
-PedCalls,7,,0.0,,0.0,,,,
-MinSplit,7,,,,,,,,
-DualEntry,7,,,,,,,,
-InhibitMax,7,1,1,1,1,1,1,1,1
-Start,7,,,,,,,,
-End,7,,,,,,,,
-Yield,7,,,,,,,,
-Yield170,7,,,,,,,,
-LocalStart,7,,,,,,,,
-LocalYield,7,,,,,,,,
-LocalYield170,7,,,,,,,,
-ActGreen,7,,,,,,,,
-BRP,8,111,112,211,212,121,122,221,222
-MinGreen,8,6,10,0,10,0,0,0,0
-MaxGreen,8,7.199999999999999,64.10000000000001,0,21.9,0,0,0,0
-VehExt,8,2.0,3.0,0.0,2.0,0.0,0.0,0.0,0.0
-TimeBeforeReduce,8,0,0,0,0,0,0,0,0
-TimeToReduce,8,0,0,0,0,0,0,0,0
-MinGap,8,0,0,0,0,0,0,0,0
-Yellow,8,3.8,3.8,0.0,3.8,0.0,0.0,0.0,0.0
-AllRed,8,1.0,1.1,0.0,1.3,0.0,0.0,0.0,0.0
-Recall,8,0,0,0,0,0,0,0,0
-Walk,8,0,5,0,7,0,0,0,0
-DontWalk,8,0,10,0,13,0,0,0,9
-PedCalls,8,,0.0,,0.0,,,,
-MinSplit,8,,,,,,,,
-DualEntry,8,,,,,,,,
-InhibitMax,8,1,1,1,1,1,1,1,1
-Start,8,,,,,,,,
-End,8,,,,,,,,
-Yield,8,,,,,,,,
-Yield170,8,,,,,,,,
-LocalStart,8,,,,,,,,
-LocalYield,8,,,,,,,,
-LocalYield170,8,,,,,,,,
-ActGreen,8,,,,,,,,
-BRP,9,111,112,211,212,121,122,221,222
-MinGreen,9,0,10,0,8,0,0,0,0
-MaxGreen,9,0,75.9,0,21.8,0,0,0,0
-VehExt,9,0.0,3.0,0.0,2.0,0.0,0.0,0.0,0.0
-TimeBeforeReduce,9,0,0,0,0,0,0,0,0
-TimeToReduce,9,0,0,0,0,0,0,0,0
-MinGap,9,0,0,0,0,0,0,0,0
-Yellow,9,0.0,3.8,0.0,3.8,0.0,0.0,0.0,0.0
-AllRed,9,0.0,1.3,0.0,1.4,0.0,0.0,0.0,0.0
-Recall,9,0,0,0,0,0,0,0,0
-Walk,9,0,5,0,7,0,0,0,0
-DontWalk,9,0,10,0,13,0,0,0,9
-PedCalls,9,,0.0,,0.0,,,,
-MinSplit,9,,,,,,,,
-DualEntry,9,,,,,,,,
-InhibitMax,9,1,1,1,1,1,1,1,1
-Start,9,,,,,,,,
-End,9,,,,,,,,
-Yield,9,,,,,,,,
-Yield170,9,,,,,,,,
-LocalStart,9,,,,,,,,
-LocalYield,9,,,,,,,,
-LocalYield170,9,,,,,,,,
-ActGreen,9,,,,,,,,
-BRP,10,111,112,211,212,121,122,221,222
-MinGreen,10,0,10,0,10,0,0,0,0
-MaxGreen,10,0,75.2,0,22.5,0,0,0,0
-VehExt,10,0.0,3.0,0.0,2.0,0.0,0.0,0.0,0.0
-TimeBeforeReduce,10,0,0,0,0,0,0,0,0
-TimeToReduce,10,0,0,0,0,0,0,0,0
-MinGap,10,0,0,0,0,0,0,0,0
-Yellow,10,0.0,3.8,0.0,3.8,0.0,0.0,0.0,0.0
-AllRed,10,0.0,1.0,0.0,1.7,0.0,0.0,0.0,0.0
-Recall,10,0,0,0,0,0,0,0,0
-Walk,10,0,5,0,7,0,0,0,0
-DontWalk,10,0,10,0,13,0,0,0,9
-PedCalls,10,,0.0,,0.0,,,,
-MinSplit,10,,,,,,,,
-DualEntry,10,,,,,,,,
-InhibitMax,10,1,1,1,1,1,1,1,1
-Start,10,,,,,,,,
-End,10,,,,,,,,
-Yield,10,,,,,,,,
-Yield170,10,,,,,,,,
-LocalStart,10,,,,,,,,
-LocalYield,10,,,,,,,,
-LocalYield170,10,,,,,,,,
-ActGreen,10,,,,,,,,
-BRP,11,111,112,211,212,121,122,221,222
-MinGreen,11,4,10,4,10,4,10,0,0
-MaxGreen,11,10.899999999999999,38.900000000000006,12.7,24.3,11.5,37.1,0,0
-VehExt,11,2.0,3.0,1.0,3.0,2.0,3.0,0.0,0.0
-TimeBeforeReduce,11,0,0,0,0,0,0,0,0
-TimeToReduce,11,0,0,0,0,0,0,0,0
-MinGap,11,0,0,0,0,0,0,0,0
-Yellow,11,3.8,3.8,3.8,3.8,3.5,4.5,0.0,0.0
-AllRed,11,1.3,1.3,1.5,1.9,2.0,1.4,0.0,0.0
-Recall,11,0,0,0,0,0,0,0,0
-Walk,11,0,5,0,7,0,5,0,0
-DontWalk,11,0,12,0,16,0,15,0,9
-PedCalls,11,,0.0,,0.0,,0.0,,
-MinSplit,11,,,,,,,,
-DualEntry,11,,,,,,,,
-InhibitMax,11,1,1,1,1,1,1,1,1
-Start,11,,,,,,,,
-End,11,,,,,,,,
-Yield,11,,,,,,,,
-Yield170,11,,,,,,,,
-LocalStart,11,,,,,,,,
-LocalYield,11,,,,,,,,
-LocalYield170,11,,,,,,,,
-ActGreen,11,,,,,,,,
+,,,,,,,,,,,,,
+[Timeplans],,,,,,,,,,,,,
+Timing Plan Settings,,,,,,,,,,,,,
+RECORDNAME,INTID,DATA,,,,,,,,,,,
+Control Type,1,3,,,,,,,,,,,
+Cycle Length,1,108,,,,,,,,,,,
+Lock Timings,1,1,,,,,,,,,,,
+Referenced To,1,3,,,,,,,,,,,
+Reference Phase,1,206,,,,,,,,,,,
+Offset,1,3,,,,,,,,,,,
+Master,1,0,,,,,,,,,,,
+Yield,1,0,,,,,,,,,,,
+Node 0,1,1,,,,,,,,,,,
+Node 1,1,0,,,,,,,,,,,
+Control Type,2,3,,,,,,,,,,,
+Cycle Length,2,108,,,,,,,,,,,
+Lock Timings,2,1,,,,,,,,,,,
+Referenced To,2,3,,,,,,,,,,,
+Reference Phase,2,2,,,,,,,,,,,
+Offset,2,19,,,,,,,,,,,
+Master,2,0,,,,,,,,,,,
+Yield,2,0,,,,,,,,,,,
+Node 0,2,2,,,,,,,,,,,
+Node 1,2,0,,,,,,,,,,,
+Control Type,3,3,,,,,,,,,,,
+Cycle Length,3,108,,,,,,,,,,,
+Lock Timings,3,1,,,,,,,,,,,
+Referenced To,3,3,,,,,,,,,,,
+Reference Phase,3,2,,,,,,,,,,,
+Offset,3,4,,,,,,,,,,,
+Master,3,0,,,,,,,,,,,
+Yield,3,0,,,,,,,,,,,
+Node 0,3,3,,,,,,,,,,,
+Node 1,3,0,,,,,,,,,,,
+Control Type,4,3,,,,,,,,,,,
+Cycle Length,4,108,,,,,,,,,,,
+Lock Timings,4,1,,,,,,,,,,,
+Referenced To,4,3,,,,,,,,,,,
+Reference Phase,4,2,,,,,,,,,,,
+Offset,4,0,,,,,,,,,,,
+Master,4,0,,,,,,,,,,,
+Yield,4,0,,,,,,,,,,,
+Node 0,4,4,,,,,,,,,,,
+Node 1,4,0,,,,,,,,,,,
+Control Type,5,3,,,,,,,,,,,
+Cycle Length,5,108,,,,,,,,,,,
+Lock Timings,5,1,,,,,,,,,,,
+Referenced To,5,3,,,,,,,,,,,
+Reference Phase,5,2,,,,,,,,,,,
+Offset,5,4,,,,,,,,,,,
+Master,5,0,,,,,,,,,,,
+Yield,5,0,,,,,,,,,,,
+Node 0,5,5,,,,,,,,,,,
+Node 1,5,0,,,,,,,,,,,
+Control Type,6,3,,,,,,,,,,,
+Cycle Length,6,108,,,,,,,,,,,
+Lock Timings,6,1,,,,,,,,,,,
+Referenced To,6,3,,,,,,,,,,,
+Reference Phase,6,2,,,,,,,,,,,
+Offset,6,78,,,,,,,,,,,
+Master,6,0,,,,,,,,,,,
+Yield,6,0,,,,,,,,,,,
+Node 0,6,6,,,,,,,,,,,
+Node 1,6,0,,,,,,,,,,,
+Control Type,7,3,,,,,,,,,,,
+Cycle Length,7,108,,,,,,,,,,,
+Lock Timings,7,1,,,,,,,,,,,
+Referenced To,7,3,,,,,,,,,,,
+Reference Phase,7,2,,,,,,,,,,,
+Offset,7,84,,,,,,,,,,,
+Master,7,0,,,,,,,,,,,
+Yield,7,0,,,,,,,,,,,
+Node 0,7,7,,,,,,,,,,,
+Node 1,7,0,,,,,,,,,,,
+Control Type,8,3,,,,,,,,,,,
+Cycle Length,8,108,,,,,,,,,,,
+Lock Timings,8,1,,,,,,,,,,,
+Referenced To,8,3,,,,,,,,,,,
+Reference Phase,8,2,,,,,,,,,,,
+Offset,8,64,,,,,,,,,,,
+Master,8,0,,,,,,,,,,,
+Yield,8,0,,,,,,,,,,,
+Node 0,8,8,,,,,,,,,,,
+Node 1,8,0,,,,,,,,,,,
+Control Type,9,3,,,,,,,,,,,
+Cycle Length,9,108,,,,,,,,,,,
+Lock Timings,9,1,,,,,,,,,,,
+Referenced To,9,3,,,,,,,,,,,
+Reference Phase,9,2,,,,,,,,,,,
+Offset,9,16,,,,,,,,,,,
+Master,9,0,,,,,,,,,,,
+Yield,9,0,,,,,,,,,,,
+Node 0,9,9,,,,,,,,,,,
+Node 1,9,0,,,,,,,,,,,
+Control Type,10,3,,,,,,,,,,,
+Cycle Length,10,108,,,,,,,,,,,
+Lock Timings,10,1,,,,,,,,,,,
+Referenced To,10,3,,,,,,,,,,,
+Reference Phase,10,2,,,,,,,,,,,
+Offset,10,1,,,,,,,,,,,
+Master,10,0,,,,,,,,,,,
+Yield,10,0,,,,,,,,,,,
+Node 0,10,10,,,,,,,,,,,
+Node 1,10,0,,,,,,,,,,,
+Control Type,11,3,,,,,,,,,,,
+Cycle Length,11,108,,,,,,,,,,,
+Lock Timings,11,1,,,,,,,,,,,
+Referenced To,11,3,,,,,,,,,,,
+Reference Phase,11,206,,,,,,,,,,,
+Offset,11,88,,,,,,,,,,,
+Master,11,0,,,,,,,,,,,
+Yield,11,0,,,,,,,,,,,
+Node 0,11,11,,,,,,,,,,,
+Node 1,11,0,,,,,,,,,,,
+,,,,,,,,,,,,,
+[Phases],,,,,,,,,,,,,
+Phasing Data,,,,,,,,,,,,,
+RECORDNAME,INTID,D1,D2,D3,D4,D5,D6,D7,D8,,,,
+BRP,1,111,112,211,212,121,122,221,222,,,,
+MinGreen,1,5,15,0,0,0,15,8,0,,,,
+MaxGreen,1,8.6,35.4,0,0,0,50.5,46.4,0,,,,
+VehExt,1,1.5,3,0,0,0,3,1,1,,,,
+TimeBeforeReduce,1,0,0,0,0,0,0,0,0,,,,
+TimeToReduce,1,0,0,0,0,0,0,0,0,,,,
+MinGap,1,0,0,0,0,0,0,0,0,,,,
+Yellow,1,3.8,3.8,0,0,0,4,3.8,0,,,,
+AllRed,1,2.6,1.8,0,0,0,1.5,1.8,0,,,,
+Recall,1,0,0,0,0,0,0,0,0,,,,
+Walk,1,0,4,0,0,0,0,0,7,,,,
+DontWalk,1,0,19,0,0,0,0,0,30,,,,
+PedCalls,1,,0,,,,,,0,,,,
+MinSplit,1,,,,,,,,,,,,
+DualEntry,1,,,,,,,,,,,,
+InhibitMax,1,0,0,0,0,0,0,0,0,,,,
+Start,1,,,,,,,,,,,,
+End,1,,,,,,,,,,,,
+Yield,1,,,,,,,,,,,,
+Yield170,1,,,,,,,,,,,,
+LocalStart,1,,,,,,,,,,,,
+LocalYield,1,,,,,,,,,,,,
+LocalYield170,1,,,,,,,,,,,,
+ActGreen,1,,,,,,,,,,,,
+BRP,2,111,112,211,212,121,122,221,222,,,,
+MinGreen,2,4,8,4,8,0,0,0,0,,,,
+MaxGreen,2,6,27.9,12,37.9,0,0,0,0,,,,
+VehExt,2,1,2,1,2,0,0,0,0,,,,
+TimeBeforeReduce,2,0,0,0,0,0,0,0,0,,,,
+TimeToReduce,2,0,0,0,0,0,0,0,0,,,,
+MinGap,2,0,0,0,0,0,0,0,0,,,,
+Yellow,2,3.8,3.8,3.8,3.8,0,0,0,0,,,,
+AllRed,2,2.2,2.3,2.2,2.3,0,0,0,0,,,,
+Recall,2,0,0,0,0,0,0,0,0,,,,
+Walk,2,0,5,0,7,0,0,0,0,,,,
+DontWalk,2,0,21,0,29,0,0,0,9,,,,
+PedCalls,2,,0,,0,,,,,,,,
+MinSplit,2,,,,,,,,,,,,
+DualEntry,2,,,,,,,,,,,,
+InhibitMax,2,1,1,1,1,1,1,1,1,,,,
+Start,2,,,,,,,,,,,,
+End,2,,,,,,,,,,,,
+Yield,2,,,,,,,,,,,,
+Yield170,2,,,,,,,,,,,,
+LocalStart,2,,,,,,,,,,,,
+LocalYield,2,,,,,,,,,,,,
+LocalYield170,2,,,,,,,,,,,,
+ActGreen,2,,,,,,,,,,,,
+BRP,3,111,112,211,212,121,122,221,222,,,,
+MinGreen,3,4,8,4,8,0,0,0,0,,,,
+MaxGreen,3,6.9,36.5,12,27.9,0,0,0,0,,,,
+VehExt,3,1.5,2,1.5,2,0,0,0,0,,,,
+TimeBeforeReduce,3,0,0,0,0,0,0,0,0,,,,
+TimeToReduce,3,0,0,0,0,0,0,0,0,,,,
+MinGap,3,0,0,0,0,0,0,0,0,,,,
+Yellow,3,3.8,3.8,3.8,3.8,0,0,0,0,,,,
+AllRed,3,2.3,2.7,2.2,2.3,0,0,0,0,,,,
+Recall,3,0,0,0,0,0,0,0,0,,,,
+Walk,3,0,5,0,7,0,0,0,0,,,,
+DontWalk,3,0,26,0,19,0,0,0,9,,,,
+PedCalls,3,,0,,0,,,,,,,,
+MinSplit,3,,,,,,,,,,,,
+DualEntry,3,,,,,,,,,,,,
+InhibitMax,3,1,1,1,1,1,1,1,1,,,,
+Start,3,,,,,,,,,,,,
+End,3,,,,,,,,,,,,
+Yield,3,,,,,,,,,,,,
+Yield170,3,,,,,,,,,,,,
+LocalStart,3,,,,,,,,,,,,
+LocalYield,3,,,,,,,,,,,,
+LocalYield170,3,,,,,,,,,,,,
+ActGreen,3,,,,,,,,,,,,
+BRP,4,111,112,211,212,121,122,221,222,,,,
+MinGreen,4,6,8,6,8,0,0,0,0,,,,
+MaxGreen,4,7.2,27.5,11.2,37.9,0,0,0,0,,,,
+VehExt,4,1.5,2,1.5,2,0,0,0,0,,,,
+TimeBeforeReduce,4,0,0,0,0,0,0,0,0,,,,
+TimeToReduce,4,0,0,0,0,0,0,0,0,,,,
+MinGap,4,0,0,0,0,0,0,0,0,,,,
+Yellow,4,3.8,3.8,3.8,3.8,0,0,0,0,,,,
+AllRed,4,2,2.7,2,2.3,0,0,0,0,,,,
+Recall,4,0,0,0,0,0,0,0,0,,,,
+Walk,4,0,7,0,5,0,0,0,0,,,,
+DontWalk,4,0,19,0,17,0,0,0,9,,,,
+PedCalls,4,,0,,0,,,,,,,,
+MinSplit,4,,,,,,,,,,,,
+DualEntry,4,,,,,,,,,,,,
+InhibitMax,4,1,1,1,1,1,1,1,1,,,,
+Start,4,,,,,,,,,,,,
+End,4,,,,,,,,,,,,
+Yield,4,,,,,,,,,,,,
+Yield170,4,,,,,,,,,,,,
+LocalStart,4,,,,,,,,,,,,
+LocalYield,4,,,,,,,,,,,,
+LocalYield170,4,,,,,,,,,,,,
+ActGreen,4,,,,,,,,,,,,
+BRP,5,111,112,211,212,121,122,221,222,,,,
+MinGreen,5,6,8,0,6,0,0,0,0,,,,
+MaxGreen,5,12.6,42.5,0,36.3,0,0,0,0,,,,
+VehExt,5,2,3,0,3,0,0,0,0,,,,
+TimeBeforeReduce,5,0,0,0,0,0,0,0,0,,,,
+TimeToReduce,5,0,0,0,0,0,0,0,0,,,,
+MinGap,5,0,0,0,0,0,0,0,0,,,,
+Yellow,5,3.8,3.8,0,3.8,0,0,0,0,,,,
+AllRed,5,1.6,1.7,0,1.9,0,0,0,0,,,,
+Recall,5,0,0,0,0,0,0,0,0,,,,
+Walk,5,0,5,0,7,0,0,0,0,,,,
+DontWalk,5,0,14,0,16,0,0,0,9,,,,
+PedCalls,5,,0,,0,,,,,,,,
+MinSplit,5,,,,,,,,,,,,
+DualEntry,5,,,,,,,,,,,,
+InhibitMax,5,1,1,1,1,1,1,1,1,,,,
+Start,5,,,,,,,,,,,,
+End,5,,,,,,,,,,,,
+Yield,5,,,,,,,,,,,,
+Yield170,5,,,,,,,,,,,,
+LocalStart,5,,,,,,,,,,,,
+LocalYield,5,,,,,,,,,,,,
+LocalYield170,5,,,,,,,,,,,,
+ActGreen,5,,,,,,,,,,,,
+BRP,6,111,112,211,212,121,122,221,222,,,,
+MinGreen,6,0,10,0,10,0,0,0,0,,,,
+MaxGreen,6,0,73.1,0,24.8,0,0,0,0,,,,
+VehExt,6,0,2,0,2,0,0,0,0,,,,
+TimeBeforeReduce,6,0,0,0,0,0,0,0,0,,,,
+TimeToReduce,6,0,0,0,0,0,0,0,0,,,,
+MinGap,6,0,0,0,0,0,0,0,0,,,,
+Yellow,6,0,3.8,0,3.8,0,0,0,0,,,,
+AllRed,6,0,1.1,0,1.4,0,0,0,0,,,,
+Recall,6,0,0,0,0,0,0,0,0,,,,
+Walk,6,0,5,0,7,0,0,0,0,,,,
+DontWalk,6,0,10,0,13,13,0,0,9,,,,
+PedCalls,6,,0,,0,,,,,,,,
+MinSplit,6,,,,,,,,,,,,
+DualEntry,6,,,,,,,,,,,,
+InhibitMax,6,1,1,1,1,1,1,1,1,,,,
+Start,6,,,,,,,,,,,,
+End,6,,,,,,,,,,,,
+Yield,6,,,,,,,,,,,,
+Yield170,6,,,,,,,,,,,,
+LocalStart,6,,,,,,,,,,,,
+LocalYield,6,,,,,,,,,,,,
+LocalYield170,6,,,,,,,,,,,,
+ActGreen,6,,,,,,,,,,,,
+BRP,7,111,112,211,212,121,122,221,222,,,,
+MinGreen,7,0,10,0,15,0,0,0,0,,,,
+MaxGreen,7,0,73.1,0,24.7,0,0,0,0,,,,
+VehExt,7,0,1,0,1,0,0,0,0,,,,
+TimeBeforeReduce,7,0,0,0,0,0,0,0,0,,,,
+TimeToReduce,7,0,0,0,0,0,0,0,0,,,,
+MinGap,7,0,0,0,0,0,0,0,0,,,,
+Yellow,7,0,3.8,0,3.8,0,0,0,0,,,,
+AllRed,7,0,1.1,0,1.5,0,0,0,0,,,,
+Recall,7,0,0,0,0,0,0,0,0,,,,
+Walk,7,0,7,0,7,0,0,0,0,,,,
+DontWalk,7,0,13,0,13,0,0,0,0,,,,
+PedCalls,7,,0,,0,,,,,,,,
+MinSplit,7,,,,,,,,,,,,
+DualEntry,7,,,,,,,,,,,,
+InhibitMax,7,1,1,1,1,1,1,1,1,,,,
+Start,7,,,,,,,,,,,,
+End,7,,,,,,,,,,,,
+Yield,7,,,,,,,,,,,,
+Yield170,7,,,,,,,,,,,,
+LocalStart,7,,,,,,,,,,,,
+LocalYield,7,,,,,,,,,,,,
+LocalYield170,7,,,,,,,,,,,,
+ActGreen,7,,,,,,,,,,,,
+BRP,8,111,112,211,212,121,122,221,222,,,,
+MinGreen,8,6,10,0,10,0,0,0,0,,,,
+MaxGreen,8,7.2,64.1,0,21.9,0,0,0,0,,,,
+VehExt,8,2,3,0,2,0,0,0,0,,,,
+TimeBeforeReduce,8,0,0,0,0,0,0,0,0,,,,
+TimeToReduce,8,0,0,0,0,0,0,0,0,,,,
+MinGap,8,0,0,0,0,0,0,0,0,,,,
+Yellow,8,3.8,3.8,0,3.8,0,0,0,0,,,,
+AllRed,8,1,1.1,0,1.3,0,0,0,0,,,,
+Recall,8,0,0,0,0,0,0,0,0,,,,
+Walk,8,0,5,0,7,0,0,0,0,,,,
+DontWalk,8,0,10,0,13,0,0,0,9,,,,
+PedCalls,8,,0,,0,,,,,,,,
+MinSplit,8,,,,,,,,,,,,
+DualEntry,8,,,,,,,,,,,,
+InhibitMax,8,1,1,1,1,1,1,1,1,,,,
+Start,8,,,,,,,,,,,,
+End,8,,,,,,,,,,,,
+Yield,8,,,,,,,,,,,,
+Yield170,8,,,,,,,,,,,,
+LocalStart,8,,,,,,,,,,,,
+LocalYield,8,,,,,,,,,,,,
+LocalYield170,8,,,,,,,,,,,,
+ActGreen,8,,,,,,,,,,,,
+BRP,9,111,112,211,212,121,122,221,222,,,,
+MinGreen,9,0,10,0,8,0,0,0,0,,,,
+MaxGreen,9,0,75.9,0,21.8,0,0,0,0,,,,
+VehExt,9,0,3,0,2,0,0,0,0,,,,
+TimeBeforeReduce,9,0,0,0,0,0,0,0,0,,,,
+TimeToReduce,9,0,0,0,0,0,0,0,0,,,,
+MinGap,9,0,0,0,0,0,0,0,0,,,,
+Yellow,9,0,3.8,0,3.8,0,0,0,0,,,,
+AllRed,9,0,1.3,0,1.4,0,0,0,0,,,,
+Recall,9,0,0,0,0,0,0,0,0,,,,
+Walk,9,0,5,0,7,0,0,0,0,,,,
+DontWalk,9,0,10,0,13,0,0,0,9,,,,
+PedCalls,9,,0,,0,,,,,,,,
+MinSplit,9,,,,,,,,,,,,
+DualEntry,9,,,,,,,,,,,,
+InhibitMax,9,1,1,1,1,1,1,1,1,,,,
+Start,9,,,,,,,,,,,,
+End,9,,,,,,,,,,,,
+Yield,9,,,,,,,,,,,,
+Yield170,9,,,,,,,,,,,,
+LocalStart,9,,,,,,,,,,,,
+LocalYield,9,,,,,,,,,,,,
+LocalYield170,9,,,,,,,,,,,,
+ActGreen,9,,,,,,,,,,,,
+BRP,10,111,112,211,212,121,122,221,222,,,,
+MinGreen,10,0,10,0,10,0,0,0,0,,,,
+MaxGreen,10,0,75.2,0,22.5,0,0,0,0,,,,
+VehExt,10,0,3,0,2,0,0,0,0,,,,
+TimeBeforeReduce,10,0,0,0,0,0,0,0,0,,,,
+TimeToReduce,10,0,0,0,0,0,0,0,0,,,,
+MinGap,10,0,0,0,0,0,0,0,0,,,,
+Yellow,10,0,3.8,0,3.8,0,0,0,0,,,,
+AllRed,10,0,1,0,1.7,0,0,0,0,,,,
+Recall,10,0,0,0,0,0,0,0,0,,,,
+Walk,10,0,5,0,7,0,0,0,0,,,,
+DontWalk,10,0,10,0,13,0,0,0,9,,,,
+PedCalls,10,,0,,0,,,,,,,,
+MinSplit,10,,,,,,,,,,,,
+DualEntry,10,,,,,,,,,,,,
+InhibitMax,10,1,1,1,1,1,1,1,1,,,,
+Start,10,,,,,,,,,,,,
+End,10,,,,,,,,,,,,
+Yield,10,,,,,,,,,,,,
+Yield170,10,,,,,,,,,,,,
+LocalStart,10,,,,,,,,,,,,
+LocalYield,10,,,,,,,,,,,,
+LocalYield170,10,,,,,,,,,,,,
+ActGreen,10,,,,,,,,,,,,
+BRP,11,111,112,211,212,121,122,221,222,,,,
+MinGreen,11,4,10,4,10,4,10,0,0,,,,
+MaxGreen,11,10.9,38.9,12.7,24.3,11.5,37.1,0,0,,,,
+VehExt,11,2,3,1,3,2,3,0,0,,,,
+TimeBeforeReduce,11,0,0,0,0,0,0,0,0,,,,
+TimeToReduce,11,0,0,0,0,0,0,0,0,,,,
+MinGap,11,0,0,0,0,0,0,0,0,,,,
+Yellow,11,3.8,3.8,3.8,3.8,3.5,4.5,0,0,,,,
+AllRed,11,1.3,1.3,1.5,1.9,2,1.4,0,0,,,,
+Recall,11,0,0,0,0,0,0,0,0,,,,
+Walk,11,0,5,0,7,0,5,0,0,,,,
+DontWalk,11,0,12,0,16,0,15,0,9,,,,
+PedCalls,11,,0,,0,,0,,,,,,
+MinSplit,11,,,,,,,,,,,,
+DualEntry,11,,,,,,,,,,,,
+InhibitMax,11,1,1,1,1,1,1,1,1,,,,
+Start,11,,,,,,,,,,,,
+End,11,,,,,,,,,,,,
+Yield,11,,,,,,,,,,,,
+Yield170,11,,,,,,,,,,,,
+LocalStart,11,,,,,,,,,,,,
+LocalYield,11,,,,,,,,,,,,
+LocalYield170,11,,,,,,,,,,,,
+ActGreen,11,,,,,,,,,,,,

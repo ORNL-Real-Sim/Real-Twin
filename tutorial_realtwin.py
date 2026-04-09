@@ -15,8 +15,11 @@
 
 import realtwin as rt
 
+
 # Please refer to the official documentation for more details on RealTwin preparation before running the simulation
 # # https://real-twin.readthedocs.io/en/latest/index.html
+# add a function to modify matchup_table by filling out the demand movement column
+
 
 if __name__ == '__main__':
 
@@ -32,7 +35,7 @@ if __name__ == '__main__':
     # Step 4: Create Matchup Table from SUMO network
     # twin.generate_inputs()
 
-    updated_sumo_net = r"./datasets/Nashville1/Nashville_full_1007.net.xml"
+    updated_sumo_net = r"./datasets/Atlanta/Atlanta0324.net.xml"
     twin.generate_inputs(incl_sumo_net=updated_sumo_net)
 
     # BEFORE step 5, there are three steps to be performed:

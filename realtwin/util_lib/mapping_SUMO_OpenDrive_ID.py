@@ -75,6 +75,7 @@ def parse_SUMO_ID(net_file: str) -> bool:
             original_text = re.sub(f'"{old_id}"', f'"{new_id}"', original_text)
             original_text = re.sub(f'lane id="{old_id}_', f'lane id="{new_id}_', original_text)
             original_text = re.sub(f' {old_id}_', f' {new_id}_', original_text)
+            original_text = re.sub(f'incLanes="{old_id}_', f'incLanes="{new_id}_', original_text)
 
         with open(net_file, "w", encoding="utf-8") as f:
             f.write(original_text)

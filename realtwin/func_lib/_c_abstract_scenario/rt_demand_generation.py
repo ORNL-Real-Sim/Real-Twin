@@ -151,9 +151,14 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
             MatchupTable_UserInput.loc[MatchupTable_UserInput["JunctionID_OpenDrive"]
                                        == junction_id, "Need calibration?"] = "N"
 
-            # Load the GridSmart file
-            gs_file_path = Path(traffic_dir) / file_name
-            gs_data = pd.read_excel(gs_file_path, header=None, dtype=str)
+            try:
+                # Load the GridSmart file
+                file_name = file_name + ".xls"
+                gs_file_path = Path(traffic_dir) / file_name
+                gs_data = pd.read_excel(gs_file_path, header=None, dtype=str)
+            except:
+                print('Traffic Data Missing or Error at junction: ', file_name)
+                continue
 
             # Extract IntersectionName_GridSmart
             intersection_row = gs_data[gs_data.iloc[:, 0] == "Intersection"].index
@@ -445,7 +450,7 @@ def generate_turn_demand(*, path_matchup_table: str,
         file_name = subset["File_GridSmart"].dropna().iloc[0] if not subset["File_GridSmart"].isna().all() else None
 
         if file_name:
-            gs_file_path = os.path.join(traffic_dir, file_name)
+            gs_file_path = os.path.join(traffic_dir, file_name + '.xls')
             # gs_file_path = f"RealTwinDemand/{file_name}"
 
             # Check if the file exists before processing
