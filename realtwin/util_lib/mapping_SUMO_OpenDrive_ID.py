@@ -72,8 +72,10 @@ def parse_SUMO_ID(net_file: str) -> bool:
         for _, row in edgeID_replacement.iterrows():
             old_id = row["oldedgeID"]
             new_id = row["newedgeID"]
-            original_text = re.sub(f'"{old_id}"', f'"{new_id}"', original_text)
+            original_text = re.sub(rf'(?<!index=)"{old_id}"', f'"{new_id}"', original_text)
             original_text = re.sub(f'lane id="{old_id}_', f'lane id="{new_id}_', original_text)
+            original_text = re.sub(f'incLanes="{old_id}_', f'incLanes="{new_id}_', original_text)
+            original_text = re.sub(f'intLanes="{old_id}_', f'intLanes="{new_id}_', original_text)
             original_text = re.sub(f' {old_id}_', f' {new_id}_', original_text)
 
         with open(net_file, "w", encoding="utf-8") as f:

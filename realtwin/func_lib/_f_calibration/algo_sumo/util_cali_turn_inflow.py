@@ -57,34 +57,65 @@ def update_turn_flow_from_solution(initial_solution: np.array,
     """
 
     i = 0  # index into initial_solution
-
     # Loop through each group of (JunctionID_OpenDrive, Numbering)
     grouped = TurnToCalibrate.groupby(["JunctionID_OpenDrive", "Numbering"])
     for _, group in grouped:
-        assigned_turns = []
+        # indices of calibrated / non-calibrated rows in this group
+        cal_idx = group.index[group["Calibration variable?"] == 1].tolist()
+        ncal_idx = group.index[group["Calibration variable?"] == 0].tolist()
 
-        for _, row in group.iterrows():
-            x = row["OpenDriveFromID"]
-            y = row["OpenDriveToID"]
-            if row["Calibration variable?"] == 1:
-                # Assign the given initial_solution[i]
+        # take values for calibrated ones from the solution vector
+        n_cal = len(cal_idx)
+        if n_cal > 0:
+            vals = np.array(initial_solution[i:i+n_cal], dtype=float)
+            vals = np.clip(vals, 0, None)                # ensure >= 0
+            s = vals.sum()
+
+            if s > 1.0:                                  # cap at 1 (preserve ratios)
+                vals = vals / s                          # sum becomes 1
+                s = 1.0
+
+            # assign calibrated ratios
+            for k, idx in enumerate(cal_idx):
+                x = group.loc[idx, "OpenDriveFromID"]
+                y = group.loc[idx, "OpenDriveToID"]
                 TurnDf.loc[
                     (TurnDf["OpenDriveFromID"] == x) & (TurnDf["OpenDriveToID"] == y),
                     "TurnRatio"
-                ] = initial_solution[i]
-                assigned_turns.append((x, y, initial_solution[i]))
-                i += 1
+                ] = vals[k]
 
-        # After all Calibration variable?==1 turns in the group, assign 1 - sum to the rest
-        for _, row in group.iterrows():
-            if row["Calibration variable?"] == 0:
-                x = row["OpenDriveFromID"]
-                y = row["OpenDriveToID"]
-                total_assigned = sum(val for a, b, val in assigned_turns if a == x)
+            i += n_cal
+        else:
+            s = 0.0  # no calibrated vars in this group
+
+        # distribute remainder to non-calibrated based on existing weights (fallback = equal)
+        remainder = max(1.0 - s, 0.0)
+
+        if len(ncal_idx) > 0 and remainder > 0:
+            # read current TurnRatio as weights
+            weights = TurnDf.loc[ncal_idx, "TurnRatio"].astype(float).to_numpy()
+            wsum = weights.sum()
+            if wsum > 0:
+                weights = weights / wsum
+            else:
+                weights = np.ones(len(ncal_idx)) / len(ncal_idx)
+
+            # assign weighted remainder
+            for k, idx in enumerate(ncal_idx):
+                x = group.loc[idx, "OpenDriveFromID"]
+                y = group.loc[idx, "OpenDriveToID"]
                 TurnDf.loc[
                     (TurnDf["OpenDriveFromID"] == x) & (TurnDf["OpenDriveToID"] == y),
                     "TurnRatio"
-                ] = 1 - total_assigned
+                ] = remainder * weights[k]
+        elif len(ncal_idx) > 0 and remainder == 0:
+            for idx in ncal_idx:
+                x = group.loc[idx, "OpenDriveFromID"]
+                y = group.loc[idx, "OpenDriveToID"]
+                TurnDf.loc[
+                    (TurnDf["OpenDriveFromID"] == x) & (TurnDf["OpenDriveToID"] == y),
+                    "TurnRatio"
+                ] = 0.0
 
     # Inflow calibration assignments based on InflowEdgeToCalibrate
     for edge in InflowEdgeToCalibrate:
@@ -132,8 +163,10 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
         TurnDictSubset = TurnDfSubset.to_dict(orient='records')
         for TurnData in TurnDictSubset:
             edge_relation = ET.SubElement(Interval, 'edgeRelation')
-            edge_relation.set('from', f"-{TurnData['OpenDriveFromID']}")
-            edge_relation.set('to', f"-{TurnData['OpenDriveToID']}")
+            # edge_relation.set('from', f"-{TurnData['OpenDriveFromID']}")
+            # edge_relation.set('to', f"-{TurnData['OpenDriveToID']}")
+            edge_relation.set('from', "-" + str(TurnData['OpenDriveFromID']))
+            edge_relation.set('to',   "-" + str(TurnData['OpenDriveToID']))  
             edge_relation.set('probability', str(TurnData['TurnRatio']))
     # <edgeRelation from="" probability="" to=""/>
     TreeTurn = ET.ElementTree(turns)
@@ -156,7 +189,8 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
         flow.set('id', str(FlowID))
         flow.set('begin', str(InflowData['IntervalStart']))
         flow.set('end', str(InflowData['IntervalEnd']))
-        flow.set('from', f"-{InflowData['OpenDriveFromID']}")
+        # flow.set('from', f"-{InflowData['OpenDriveFromID']}")
+        flow.set('from', "-" + str(InflowData['OpenDriveFromID']))
         flow.set('number', str(int(InflowData['Count'])))
         # flow.set('number', str(int(int(InflowData['Count'])/CablibrationInterval*DemandInterval)))
         flow.set('type', 'car')
@@ -246,6 +280,9 @@ def result_analysis_on_EdgeData(Summary_data: pd.DataFrame,
         tuple: (flag, mean GEH, geh percent)
     """
     RealSummary = Summary_data[Summary_data["realcount"].notna()]
+    RealSummary['IntervalStart'] = pd.to_numeric(RealSummary['IntervalStart'], errors='coerce')
+    RealSummary['IntervalEnd']   = pd.to_numeric(RealSummary['IntervalEnd'], errors='coerce')    
+    Interval =   (RealSummary['IntervalEnd'].max()-RealSummary['IntervalStart'].min())/3600
 
     ApproachSummary = RealSummary.groupby(['IntersectionName',
                                            'entrance_sumo',
@@ -254,7 +291,7 @@ def result_analysis_on_EdgeData(Summary_data: pd.DataFrame,
     root = tree.getroot()
     edge_data = [
         {
-            'id': int(edge.get('id')) if edge.get('id') else None,
+            'id': str(edge.get('id')) if edge.get('id') else None,
             'travel_time': float(edge.get('traveltime')) if edge.get('traveltime') else None,
             'arrived': int(edge.get('arrived')) if edge.get('arrived') else None,
             'departed': int(edge.get('departed')) if edge.get('departed') else None,
@@ -267,23 +304,23 @@ def result_analysis_on_EdgeData(Summary_data: pd.DataFrame,
     ]
     EdgeData = pd.DataFrame(edge_data)
 
-    EdgeData = EdgeData.astype({'id': int,
+    EdgeData = EdgeData.astype({'id': str,
                                 'travel_time': float,
                                 'arrived': int,
                                 'departed': int,
                                 "left": int,
                                 'density': float,
                                 'speed': float})
-    ApproachSummary['entrance_sumo'] = ApproachSummary['entrance_sumo'].astype(int)
-    EdgeData['id'] = EdgeData['id'].astype(int)
+    ApproachSummary['entrance_sumo'] = ApproachSummary['entrance_sumo'].astype(str)
+    EdgeData['id'] = EdgeData['id'].astype(str)
     ApproachSummary = pd.merge(ApproachSummary, EdgeData, left_on='entrance_sumo', right_on='id')
     ApproachSummary.rename(columns={'left': 'count'}, inplace=True)
     ApproachSummary.drop(columns=['id'], inplace=True)
-    ApproachSummary['flow'] = ApproachSummary['count'] / (sim_end_time - sim_start_time) * 3600
-    ApproachSummary['realflow'] = ApproachSummary['realcount'] / (sim_end_time - sim_start_time) * 3600
+    ApproachSummary['flow'] = ApproachSummary['count'] /Interval
+    ApproachSummary['realflow'] = ApproachSummary['realcount'] /Interval
 
-    ApproachSummary['GEH'] = np.sqrt(2 * (ApproachSummary['count'] - ApproachSummary['realcount'])
-                                     ** 2 / (ApproachSummary['count'] + ApproachSummary['realcount']))
+    ApproachSummary['GEH'] = np.sqrt(2 * (ApproachSummary['flow'] - ApproachSummary['realflow'])
+                                     ** 2 / (ApproachSummary['flow'] + ApproachSummary['realflow']))
     MeanGEH = ApproachSummary['GEH'].mean()
     GEHPercent = (ApproachSummary['GEH'] < calibration_target['GEH']).mean()
     flag = 1
@@ -309,7 +346,7 @@ def result_analysis_on_EdgeData(Summary_data: pd.DataFrame,
     if sum((df3['realflow'] - df3['flow']).abs() > 400) > 0:
         flag = 0
         BadVolume = pd.concat([BadVolume, (df3[(df3['realflow'] - df3['flow']).abs() > 400])])
-
+    # ApproachSummary.to_excel("ApproachSummary.xlsx", sheet_name="Summary", index=False)
     return (flag, MeanGEH, GEHPercent)
 
 
@@ -408,6 +445,8 @@ def generate_turn_demand_cali(*, path_matchup_table: str | pd.DataFrame,
         file_name = subset["File_GridSmart"].dropna().iloc[0] if not subset["File_GridSmart"].isna().all() else None
 
         if file_name:
+            if '.' not in Path(file_name).name:
+                file_name = file_name + '.xls'
             gs_file_path = os.path.join(traffic_dir, file_name)
             # gs_file_path = f"GridSmart/{file_name}"
 
@@ -491,7 +530,6 @@ def generate_inflow(path_net: str,
                     sim_begin: int = 28800,
                     sim_end: int = 32400,):
     """ Generate inflow data for calibration."""
-
     # Apply the conversion function to the 'Time' column and create a new 'Seconds' column
     TurnDf['IntervalStart'] = TurnDf['Time'].apply(time_to_seconds)
     TurnDf['IntervalEnd'] = TurnDf['IntervalStart'] + 15 * 60
@@ -573,10 +611,9 @@ def generate_inflow(path_net: str,
         edge_to = edge.attrib.get('to')
         edge_id = edge.attrib.get('id')
         if edge_from in DeadEndJunction:
-            InflowRoad.append(edge_id.lstrip('-'))
+            InflowRoad.append(edge_id[1:] if edge_id.startswith('-') else edge_id)
         if edge_from in DeadEndJunction and edge_to in DeadEndJunction:
-            SingleRoad.append(edge_id.lstrip('-'))
-
+            SingleRoad.append(edge_id[1:] if edge_id.startswith('-') else edge_id)
     FromRoadID_Sumo = ["-" + str(x) for x in MatchupTable_UserInput["FromRoadID_OpenDrive"].dropna().unique()]
     Lookup_InflowEdge = pd.DataFrame(columns=["FromRoadID_Sumo", "InflowID_Sumo"])
     edges = {edge.get("id"): edge for edge in root.findall("edge")}
@@ -609,14 +646,14 @@ def generate_inflow(path_net: str,
                 break
             current_id = next_id
 
-    Lookup_InflowEdge["FromRoadID_Sumo_stripped"] = Lookup_InflowEdge["FromRoadID_Sumo"].str.lstrip("-")
+    Lookup_InflowEdge["FromRoadID_Sumo_stripped"] = Lookup_InflowEdge["FromRoadID_Sumo"].str.replace(r"^-", "", regex=True)
     Count = Count.merge(
         Lookup_InflowEdge,
         left_on="OpenDriveFromID",
         right_on="FromRoadID_Sumo_stripped",
         how="left"
     )
-    Count["InflowID_Sumo_stripped"] = Count["InflowID_Sumo"].str.lstrip("-")
+    Count["InflowID_Sumo_stripped"] = Count["InflowID_Sumo"].str.replace(r"^-", "", regex=True)
     InflowCount = Count[Count["InflowID_Sumo_stripped"].isin(InflowRoad)].copy()
     InflowCount.loc[InflowCount["InflowID_Sumo_stripped"].notna(),
                     "OpenDriveFromID"] = InflowCount["InflowID_Sumo_stripped"]
@@ -630,11 +667,10 @@ def generate_inflow(path_net: str,
                         "FromRoadID_Sumo",
                         "FromRoadID_Sumo_stripped"],
                inplace=True)
-
+    
     # create InflowDf_Calibration for turn and inflow purpose
     InflowDf_Calibration = InflowCount[(InflowCount["IntervalStart"] >= sim_begin) &
                                        (InflowCount["IntervalEnd"] <= sim_end)].copy()
-
     InflowDf_Calibration["OpenDriveFromID"] = InflowDf_Calibration["OpenDriveFromID"].astype(str)
     InflowDf_Calibration["Count"] = InflowDf_Calibration["Count"].astype(int)
     intervals = InflowDf_Calibration[["IntervalStart", "IntervalEnd"]].drop_duplicates()

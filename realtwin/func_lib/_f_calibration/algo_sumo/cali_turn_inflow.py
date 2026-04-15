@@ -87,6 +87,8 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
 
     # TODO will remove in the future iteration - change current working dir at beginning of the calibration
     os.chdir(scenario_config.get("dir_turn_inflow"))
+    solution = np.asarray(solution)
+    solution = np.clip(solution, 0, None)
 
     # update turn and flow
     df_turn, df_inflow = update_turn_flow_from_solution(solution,
@@ -115,7 +117,7 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
                                                            calibration_target,
                                                            sim_start_time,
                                                            sim_end_time)
-    print(f"  :GEH: Mean Percentage: {mean_GEH}, {GEH_percent}")
+    print(f"  GEH: {mean_GEH}, Percentage of GEH<5: {GEH_percent*100:.2f}%")
 
     # minimize the negative percentage of GEH and the mean GEH
     # return [mean_GEH, -GEH_percent]

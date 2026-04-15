@@ -1,0 +1,47 @@
+name: "Task"
+description: "Track an actionable unit of work"
+title: "[Task]: "
+labels: ["task"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What outcome should be achieved?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope / acceptance criteria
+      description: Define what 'done' looks like.
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Implementation notes
+      description: Constraints, references, related code, etc.
+    validations:
+      required: false
+  - type: input
+    id: deps
+    attributes:
+      label: Dependencies (optional)
+      description: Link issues/PRs that block this task.
+      placeholder: "#123, #456"
+    validations:
+      required: false
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - low
+        - medium
+        - high
+    validations:
+      required: true

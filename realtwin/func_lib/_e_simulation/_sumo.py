@@ -81,10 +81,15 @@ class SUMOPrep:
         junctions = root.findall('junction')
 
         # Function to extract road ids from incLanes attribute
+        # def get_road_ids_from_incLanes(incLanes):
+        #     lane_ids = incLanes.split()
+        #     road_ids = set(lane_id.split("_")[0] for lane_id in lane_ids)
+        #     return list(road_ids)
         def get_road_ids_from_incLanes(incLanes):
             lane_ids = incLanes.split()
-            road_ids = set(lane_id.split("_")[0] for lane_id in lane_ids)
+            road_ids = set(lane_id[:lane_id.rfind("_")] if "_" in lane_id else lane_id for lane_id in lane_ids)
             return list(road_ids)
+
 
         # Find all junctions with only one road connecting
         junctions_single_road = [
@@ -847,7 +852,9 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             if params["coordinate-mode"] == "true":
                 reference_phase = synchro_data["Timeplans"].loc[synchro_data["Timeplans"]['RECORDNAME'] == 'Reference Phase', 'DATA'].values[0]
                 RP = int(reference_phase)
-                if RP <= 99:
+                if RP <= 9:
+                    coordinate_phases_value = f"{RP},{RP}"
+                elif RP <= 99:
                     coordinate_phases_value = str(RP)
                 else:
                     coordinate_phases_value = f"{RP // 100},{RP - (RP // 100) * 100}"
@@ -860,6 +867,12 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             if FixedTime == 1:
                 params["minRecall"] = ""
 
+            # Add the 'maxRecall' parameter
+            max_recall_subset = synchro_data["Phases"][synchro_data["Phases"]["Recall"] == '3']
+            max_recall_value = ",".join(max_recall_subset["Phase"].astype(str)) if not max_recall_subset.empty else ""
+            params["maxRecall"] = max_recall_value
+            if FixedTime == 1:
+                params["maxRecall"] = ",".join(synchro_data["Phases"]["Phase"])
             # Add the 'maxRecall' parameter
             max_recall_subset = synchro_data["Phases"][synchro_data["Phases"]["Recall"] == '3']
             max_recall_value = ",".join(max_recall_subset["Phase"].astype(str)) if not max_recall_subset.empty else ""
@@ -889,43 +902,59 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             #     ET.SubElement(new_tlLogic, 'param', key=f"ring{ring_num}", value=ring_value)
 
             # Adding <param key="ring1" value=""/>  <param key="ring2" value=""/>
-            # R1B1
+
             r1b1 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 1) & (synchro_data["Phases"]['Barrier'] == 1)]
+            r1b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 1) & (synchro_data["Phases"]['Barrier'] == 2)]
+            r2b1 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 1)]
+            r2b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 2)]
+
+            max_pos_b1 = pd.concat([r1b1['Position'], r2b1['Position']]).max()
+            max_pos_b2 = pd.concat([r1b2['Position'], r2b2['Position']]).max()
+            if max_pos_b1 <= 2 and max_pos_b2 <= 2:
+                max_pos_b1 = 2
+                max_pos_b2 = 2
+
+            # R1B1
             if not r1b1.empty:
-                max_pos = r1b1['Position'].max()
-                R1B1 = [0] * max_pos
+                R1B1 = [0] * max_pos_b1
                 for _, row in r1b1.iterrows():
                     R1B1[int(row['Position']) - 1] = int(row['Phase'])
+                zeros = [x for x in R1B1 if x == 0]
+                nonzeros = [x for x in R1B1 if x != 0]
+                R1B1 = zeros + nonzeros
             else:
                 R1B1 = None
 
             # R1B2
-            r1b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 1) & (synchro_data["Phases"]['Barrier'] == 2)]
             if not r1b2.empty:
-                max_pos = r1b2['Position'].max()
-                R1B2 = [0] * max_pos
+                R1B2 = [0] * max_pos_b2
                 for _, row in r1b2.iterrows():
                     R1B2[int(row['Position']) - 1] = int(row['Phase'])
+                zeros = [x for x in R1B2 if x == 0]
+                nonzeros = [x for x in R1B2 if x != 0]
+                R1B2 = zeros + nonzeros
             else:
                 R1B2 = None
 
             # R2B1
-            r2b1 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 1)]
             if not r2b1.empty:
-                max_pos = r2b1['Position'].max()
-                R2B1 = [0] * max_pos
+                R2B1 = [0] * max_pos_b1
                 for _, row in r2b1.iterrows():
                     R2B1[int(row['Position']) - 1] = int(row['Phase'])
+                zeros = [x for x in R2B1 if x == 0]
+                nonzeros = [x for x in R2B1 if x != 0]
+                R2B1 = zeros + nonzeros
             else:
                 R2B1 = None
 
             # R2B2
-            r2b2 = synchro_data["Phases"][(synchro_data["Phases"]['Ring'] == 2) & (synchro_data["Phases"]['Barrier'] == 2)]
             if not r2b2.empty:
-                max_pos = r2b2['Position'].max()
-                R2B2 = [0] * max_pos
+                R2B2 = [0] * max_pos_b2
                 for _, row in r2b2.iterrows():
                     R2B2[int(row['Position']) - 1] = int(row['Phase'])
+                zeros = [x for x in R2B2 if x == 0]
+                nonzeros = [x for x in R2B2 if x != 0]
+                R2B2 = zeros + nonzeros
             else:
                 R2B2 = None
 
@@ -945,17 +974,33 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             #         ET.SubElement(new_tlLogic, 'param', key=f"barrier{barrier_num}Phases", value=barrier_value)
 
             # Apply fallback
-            if R1B1 is None and R2B1 is not None:
-                R1B1 = R2B1
-            if R2B1 is None and R1B1 is not None:
-                R2B1 = R1B1
-            if R1B2 is None and R2B2 is not None:
-                R1B2 = R2B2
-            if R2B2 is None and R1B2 is not None:
-                R2B2 = R1B2
+            if [R1B1, R1B2, R2B1, R2B2].count(None) == 3: # special case for 1 ring 1 barrier
+                allphase = next((v for v in [R1B1, R1B2, R2B1, R2B2] if v is not None), None)
+                if len(allphase) == 1:
+                    print("There is only 1 phase for Synchro intersection (id = {intid}). Please check")
+                else:
+                    if len(allphase) == 2:
+                        allphase = [0] + allphase
+                    R1B1 = R2B1 = allphase[:-1]
+                    R1B2 = R2B2 = [allphase[-1]]
+            else:
+                if R1B1 is None and R2B1 is not None:
+                    R1B1 = R2B1
+                if R2B1 is None and R1B1 is not None:
+                    R2B1 = R1B1
+                if R1B2 is None and R2B2 is not None:
+                    R1B2 = R2B2
+                if R2B2 is None and R1B2 is not None:
+                    R2B2 = R1B2
 
-            ET.SubElement(new_tlLogic, 'param', key="ring1", value=",".join(map(str, R1B1 + R1B2)))
-            ET.SubElement(new_tlLogic, 'param', key="ring2", value=",".join(map(str, R2B1 + R2B2)))
+            ring1temp = ",".join(map(str, R1B1 + R1B2))
+            ring2temp = ",".join(map(str, R2B1 + R2B2))
+            if len(ring1temp.split(',')) == 2 and len(ring2temp.split(',')) == 2:
+                ring1temp = "0," + ring1temp
+                ring2temp = "0," + ring2temp
+
+            ET.SubElement(new_tlLogic, 'param', key="ring1", value=ring1temp)
+            ET.SubElement(new_tlLogic, 'param', key="ring2", value=ring2temp)
 
             # Adding <param key="barrierPhases" value=""/>  <param key="barrier2Phases" value=""/>
             barrier2Phases = [R1B1[-1], R2B1[-1]]
@@ -975,15 +1020,18 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                 if barrier2_phases_element is not None:
                     barrier2_phases_value = barrier2_phases_element.attrib['value']
 
-                    # Check if 'barrier2Phases' is the same as 'coordinatePhases'
-                    if barrier2_phases_value != coordinate_phases_value:
+                if new_tlLogic.find("./param[@key='barrierPhases']") is not None:
+
+                    # Check if 'barrierPhases' contains coordinated phase(s)
+                    if any(cord_phase in barrier_phases_value.split(',') for cord_phase in coordinate_phases_value.split(',')):
+                        # Swap 'barrierPhases' and 'barrier2Phases' values
                         new_tlLogic.find("./param[@key='barrierPhases']").attrib['value'] = barrier2_phases_value
                         barrier2_phases_element.attrib['value'] = barrier_phases_value
+                        barrier_phases_value_new = new_tlLogic.find("./param[@key='barrierPhases']").attrib['value']
 
-                    # Recheck if 'barrier2Phases' is still not the same as 'coordinatePhases'
-                    if barrier2_phases_element.attrib['value'] != coordinate_phases_value:
-                        print("  :Error with barrier phases and coordinated phases at "
-                              f"intersection {intid_row['INTID'].values[0]}, please modify manually.")
+                        # Recheck if 'barrierPhases' contains coordinated phase(s)
+                        if any(cord_phase in barrier_phases_value_new.split(',') for cord_phase in coordinate_phases_value.split(',')):
+                            print(f"Error with barrier phases and coordinated phases at intersection {intid_row['INTID'].values[0]}, please modify manually.")
 
             nm = len(TLLogic[tl_id])
             for _, phase_row in synchro_data["Phases"].iterrows():
@@ -1017,7 +1065,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                           f"intersection {intid_row['INTID'].values[0]}, 0 sec is used.")
 
                 # Add the phase element
-                ET.SubElement(new_tlLogic, 'phase', duration="99", minDur=str(minDur),
+                ET.SubElement(new_tlLogic, 'phase', duration=str(maxDur), minDur=str(minDur),
                               maxDur=str(maxDur), vehext=str(vehext),
                               yellow=str(yellow), red=str(red),
                               name=str(phase_row['Phase']), state=state)
@@ -1027,7 +1075,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
             parent.remove(tlLogic_elem)
             # Insert the new tlLogic element right after the last <edge> element
             parent.insert(list(parent).index(last_edge) + 1, new_tlLogic)
-        except:
+        except Exception:
             print(tl_id, "ERROR!!!")
 
     tree.write(path_net, encoding='UTF-8')

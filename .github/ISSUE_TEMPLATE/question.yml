@@ -1,0 +1,25 @@
+name: "Question"
+description: "Ask a question about usage, behavior, or design"
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What are you trying to do? Include relevant details.
+    validations:
+      required: false
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you've tried
+      description: Commands, configs, links, etc.
+    validations:
+      required: false
