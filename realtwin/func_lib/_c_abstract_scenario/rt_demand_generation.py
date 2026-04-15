@@ -146,7 +146,10 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
 
         # Get the file path from File_GridSmart if available
         file_name = subset["File_GridSmart"].dropna().iloc[0] if not subset["File_GridSmart"].isna().all() else None
+
         if file_name:
+            if '.' not in Path(file_name).name:
+                file_name = file_name + '.xls'
             # Set Need calibration? to "N"
             MatchupTable_UserInput.loc[MatchupTable_UserInput["JunctionID_OpenDrive"]
                                        == junction_id, "Need calibration?"] = "N"
@@ -158,6 +161,16 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
                 gs_data = pd.read_excel(gs_file_path, header=None, dtype=str)
             except:
                 print('Traffic Data Missing or Error at junction: ', file_name)
+                continue
+            # Load the GridSmart file
+            gs_file_path = Path(traffic_dir) / file_name
+
+            if not gs_file_path.suffix:   # suffix is empty if no extension
+                gs_file_path = gs_file_path.with_suffix(".xls")   
+                
+            try:
+                gs_data = pd.read_excel(gs_file_path, header=None, dtype=str)
+            except FileNotFoundError:
                 continue
 
             # Extract IntersectionName_GridSmart
@@ -427,6 +440,8 @@ def generate_turn_demand(*, path_matchup_table: str,
         file_name = subset["File_GridSmart"].dropna().iloc[0] if not subset["File_GridSmart"].isna().all() else None
 
         if file_name:
+            if '.' not in Path(file_name).name:
+                file_name = file_name + '.xls'            
             # Retrieve the IntersectionName_GridSmart
             intersection_name = subset["IntersectionName_GridSmart"].dropna().iloc[0] if not subset["IntersectionName_GridSmart"].isna().all() else "Unknown"
             # Create df_lookup with predefined Turn values
@@ -450,7 +465,9 @@ def generate_turn_demand(*, path_matchup_table: str,
         file_name = subset["File_GridSmart"].dropna().iloc[0] if not subset["File_GridSmart"].isna().all() else None
 
         if file_name:
-            gs_file_path = os.path.join(traffic_dir, file_name + '.xls')
+            if '.' not in Path(file_name).name:
+                file_name = file_name + '.xls'
+            gs_file_path = os.path.join(traffic_dir, file_name)
             # gs_file_path = f"RealTwinDemand/{file_name}"
 
             # Check if the file exists before processing
