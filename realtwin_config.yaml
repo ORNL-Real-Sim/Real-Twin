@@ -2,10 +2,10 @@
 # or string of the name of the demo data, we provide a list of demo data ["chattanooga",]
 demo_data:
 
-input_dir: datasets/Atlanta
+input_dir: datasets/Irvine
 output_dir:  # optional
 Network:
-    NetworkName: Atlanta0324  # the name of the network should not have space between words
+    NetworkName: IrvineNetwork  # the name of the network should not have space between words
     # polygon points for the network in the format of [lon, lat]
     NetworkVertices: [[-85.14977588011192, 35.040346288414916], [-85.15823020212477, 35.04345144844759], [-85.15829457513502, 35.043293338482925], [-85.14986171079225, 35.04018378032611]]
 Traffic: GridSmart
