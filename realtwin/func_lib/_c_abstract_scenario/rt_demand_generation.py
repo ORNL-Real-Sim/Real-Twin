@@ -154,14 +154,7 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
             MatchupTable_UserInput.loc[MatchupTable_UserInput["JunctionID_OpenDrive"]
                                        == junction_id, "Need calibration?"] = "N"
 
-            try:
-                # Load the GridSmart file
-                file_name = file_name + ".xls"
-                gs_file_path = Path(traffic_dir) / file_name
-                gs_data = pd.read_excel(gs_file_path, header=None, dtype=str)
-            except:
-                print('Traffic Data Missing or Error at junction: ', file_name)
-                continue
+
             # Load the GridSmart file
             gs_file_path = Path(traffic_dir) / file_name
 

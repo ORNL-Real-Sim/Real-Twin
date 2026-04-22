@@ -22,7 +22,7 @@ Calibration:
         allow_u_turn: false  # if true, the u-turns are allowed in the simulation
 
     turn_inflow:
-        max_inflow: 200  # max inflow for the turning ratio
+        max_inflow: 500  # max inflow for the turning ratio
 
     behavior:
         initial_params:
@@ -35,8 +35,8 @@ Calibration:
 
     ga_config:  # generic algorithm configuration
         model_selection: "BaseGA"  #  BaseGA, EliteSingleGA, EliteMultiGA, MultiGA, SingleGA
-        epoch: 10  # number of generations [1, 100000]
-        pop_size: 10  # population size [10, 10000]
+        epoch: 30  # number of generations [1, 100000]
+        pop_size: 200  # population size [10, 10000]
         pc: 0.75  # crossover probability [0.7, 0.95]
         pm: 0.1  # mutation probability [0.01, 0.2]
 

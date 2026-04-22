@@ -687,6 +687,8 @@ def generate_inflow(path_net: str,
     InflowEdgeToCalibrate = filtered_missing_inflow['FromRoadID_OpenDrive'].dropna().unique().tolist()
     N_InflowVariable = len(InflowEdgeToCalibrate)
 
+    print(f"  :Inflow edges to calibrate: {InflowEdgeToCalibrate}")
+
     calibration_rows = []
     for _, row in intervals.iterrows():
         for edge in InflowEdgeToCalibrate:
