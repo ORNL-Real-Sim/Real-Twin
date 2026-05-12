@@ -5,7 +5,7 @@ openpyxl
 folium
 matplotlib
 pyufunc
-pandas
+pandas<3.0.0
 networkx
 osmnx
 sumolib

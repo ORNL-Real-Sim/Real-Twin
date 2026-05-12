@@ -35,7 +35,7 @@ from realtwin.util_lib import get_bbox_from_vertices
 from realtwin.autonomous_veh import SimAV, prepare_av_configs, load_av_configs
 
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 "The minimum required Python version for RealTwin is 3.10"
 
