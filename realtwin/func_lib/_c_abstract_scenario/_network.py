@@ -122,7 +122,7 @@ class OpenDriveNetwork:
         if not os.path.exists(Path(self._output_dir) / 'OpenDrive'):
             os.makedirs(Path(self._output_dir) / 'OpenDrive', exist_ok=True)
 
-        command2 = f'cmd/c "netconvert -s {path_net} --opendrive-output={path_open_drive_output}"'
+        command2 = f'cmd/c "netconvert -s "{path_net}" --opendrive-output="{path_open_drive_output}""'
         os.system(command2)
         self.OpenDrive_network = [path_open_drive_output]
 
@@ -172,9 +172,8 @@ class OpenDriveNetwork:
             os.makedirs(Path(self._output_dir) / 'OpenDrive', exist_ok=True)
 
         # without elevation data
-        command1 = f'cmd/c "netconvert --node-files={path_node} --edge-files={path_edge}\
-        --output-file={path_net} --roundabouts.guess --ramps.guess\
-        --tls.discard-simple --tls.join --proj.utm --ignore-errors.edge-type"'
+        command1 = f'cmd/c "netconvert --node-files="{path_node}" --edge-files="{path_edge}" \
+        --output-file="{path_net}" --roundabouts.guess --ramps.guess --tls.discard-simple --tls.join --proj.utm --ignore-errors.edge-type"'
 
         # command2 = f'cmd/c "netconvert -s {path_net} --opendrive-output={path_open_drive_output}"'
 
