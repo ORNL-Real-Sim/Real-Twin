@@ -118,8 +118,8 @@ vissim/
     com.py          COM session, OpenDRIVE import, collection reads
     network.py      links -> junctions, bearings, turn movements
     ir.py           simulator-agnostic scenario IR (vehicle inputs, routes, signals)
-    matchup.py      generate / read the Vissim MatchupTable      [in progress]
-    demand.py       GridSmart turn counts -> IR                  [todo]
+    matchup.py      generate / read the Vissim MatchupTable      [done]
+    demand.py       GridSmart turn counts -> IR                  [done]
     signal.py       Synchro UTDF -> IR                           [todo]
     rbc.py          IR -> .prbc Ring Barrier Controller files    [todo]
     writer.py       IR -> Vissim, over COM                       [todo]
@@ -206,9 +206,13 @@ A Vissim instance started over COM terminates when Python releases it, so
 **Working:** OpenDRIVE conversion with correct georeferencing, COM import into
 Vissim 2026, link/connector extraction, junction derivation, approach bearings,
 turn classification — validated against the SUMO MatchupTable on Chattanooga.
+MatchupTable generation and read-back, laid out so columns A–N match the SUMO
+table position for position. GridSmart ingestion into vehicle inputs and static
+routing decisions — all six Chattanooga exports parse to 96 quarter-hour bins.
 
-**Next:** MatchupTable generation/read-back, then demand and signal ingestion,
-then the COM writer.
+**Next:** the COM writer. Nothing reaches a `.inpx` until it exists, so demand
+cannot yet be inspected in Vissim. Then Synchro UTDF → `.prbc`, then RTOR and
+stop control.
 
 ## Open questions
 
@@ -221,3 +225,10 @@ then the COM writer.
 - **Turn threshold.** The 20° thru/turn boundary mislabels two skewed movements
   in Chattanooga relative to SUMO. Worth checking against another network before
   tuning.
+- **Right turn on red.** Not a port of the SUMO path. SUMO has no RTOR concept,
+  so RealTwin folds Synchro's `Allow RTOR` into the `tlLogic` state string as a
+  permissive `s`. Vissim models it structurally instead — a conflict area or
+  priority rule on the right-turn connector, with the signal head omitted or set
+  to allow red-on-right — so this stage has to be designed against Vissim
+  semantics rather than translated. Same for stop/yield control on unsignalised
+  approaches.
