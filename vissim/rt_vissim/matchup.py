@@ -208,6 +208,55 @@ def _merge_junction_blocks(ws, df: pd.DataFrame) -> None:
 #: RealTwin turn label -> movement-code suffix.
 TURN_LETTERS = {"right": "R", "thru": "T", "left": "L", "Uturn": "U"}
 
+#: Bound codes in the order RealTwin walks a junction's legs.
+BOUND_ORDER = ["NB", "EB", "SB", "WB"]
+
+#: RealTwin orders a junction's legs clockwise from NNW rather than from north,
+#: so a leg just west of north sorts first.  See ``format_junction_bearing``.
+BEARING_ORIGIN = 337.5
+
+
+def assign_movement_codes(group: pd.DataFrame, available: set[str]) -> pd.Series:
+    """Map each row of one junction to a ``NBR``-style movement code.
+
+    A bound cannot be read off a single approach's bearing.  Junction 8 in
+    Chattanooga has legs at 52 deg and 114 deg, both inside any absolute
+    "eastbound" sector, yet the count file calls them northbound and eastbound;
+    its third leg at 297 deg is westbound with no southbound leg at all.  What
+    fixes the bound is the leg's *rank* around the junction paired with the
+    bounds the source file actually reports.
+
+    So the legs are ordered the way RealTwin orders them -- clockwise from
+    :data:`BEARING_ORIGIN` -- and the n-th leg takes the n-th bound present in
+    ``available``.
+
+    Args:
+        group: The rows of one junction, carrying ``Bearing``,
+            ``FromLinkNo_Vissim`` and ``Turn``.
+        available: Movement codes the source file reports for this junction.
+
+    Returns:
+        Codes aligned to ``group.index``; ``None`` where the row's movement is
+        not one the source reports.
+    """
+    bounds = [b for b in BOUND_ORDER if any(c.startswith(b) for c in available)]
+
+    legs = group.copy()
+    legs["_shift"] = (pd.to_numeric(legs["Bearing"], errors="coerce")
+                      - BEARING_ORIGIN) % 360
+    ordered = (legs.dropna(subset=["_shift"])
+               .drop_duplicates(subset=["FromLinkNo_Vissim"])
+               .sort_values("_shift")["FromLinkNo_Vissim"].tolist())
+    leg_bound = dict(zip(ordered, bounds))
+
+    codes = []
+    for _, row in group.iterrows():
+        bound = leg_bound.get(row["FromLinkNo_Vissim"])
+        letter = TURN_LETTERS.get(str(row["Turn"]))
+        code = f"{bound}{letter}" if bound and letter else None
+        codes.append(code if code in available else None)
+    return pd.Series(codes, index=group.index)
+
 
 def _gridsmart_info(path: Path) -> tuple[str | None, str | None, set[str]]:
     """Read a GridSmart export's header block.
@@ -373,8 +422,6 @@ def update_matchup_table(path_matchup_table: str | Path, *,
     Raises:
         FileNotFoundError: If ``path_matchup_table`` does not exist.
     """
-    from .network import bearing_to_bound  # local: avoids a circular import
-
     path_matchup_table = Path(path_matchup_table)
     if not path_matchup_table.exists():
         raise FileNotFoundError(f"MatchupTable not found: {path_matchup_table}")
@@ -384,18 +431,6 @@ def update_matchup_table(path_matchup_table: str | Path, *,
     df[["JunctionID_Vissim", "File_Synchro"]] = (
         df[["JunctionID_Vissim", "File_Synchro"]].ffill().infer_objects(copy=False))
     df["Need calibration?"] = "Y"
-
-    # The movement code this row represents, from the network geometry alone.
-    def _row_code(row) -> str | None:
-        letter = TURN_LETTERS.get(str(row["Turn"]))
-        if letter is None or pd.isna(row["Bearing"]):
-            return None
-        try:
-            return f"{bearing_to_bound(float(row['Bearing']))}{letter}"
-        except (TypeError, ValueError):
-            return None
-
-    df["_code"] = df.apply(_row_code, axis=1)
 
     # -- demand ------------------------------------------------------- #
     for junction_id, group in df.groupby("JunctionID_Vissim", sort=False):
@@ -422,7 +457,7 @@ def update_matchup_table(path_matchup_table: str | Path, *,
             df.loc[rows, "IntersectionName_GridSmart"] = intersection
         if date:
             df.loc[rows, "Date_GridSmart"] = date
-        df.loc[rows, "Turn_GridSmart"] = group["_code"].where(group["_code"].isin(codes))
+        df.loc[rows, "Turn_GridSmart"] = assign_movement_codes(group, codes)
 
     # -- signal ------------------------------------------------------- #
     cache: dict[str, dict] = {}
@@ -445,7 +480,7 @@ def update_matchup_table(path_matchup_table: str | Path, *,
         if not codes:
             continue
         rows = df["JunctionID_Vissim"] == junction_id
-        df.loc[rows, "Turn_Synchro"] = group["_code"].where(group["_code"].isin(codes))
+        df.loc[rows, "Turn_Synchro"] = assign_movement_codes(group, codes)
 
     # A movement code must be unique within a junction: two rows claiming the
     # same code would join the same turn count twice.  Duplicates mean the
@@ -461,7 +496,6 @@ def update_matchup_table(path_matchup_table: str | Path, *,
                       "Marked for calibration.")
                 df.loc[df["JunctionID_Vissim"] == junction_id, "Need calibration?"] = "Y"
 
-    df = df.drop(columns=["_code"])
     write_matchup_table(df, path_matchup_table)
     return df
 
@@ -497,8 +531,18 @@ class MatchupTable:
         for col in FILLED_COLUMNS:
             if col not in df.columns:
                 df[col] = pd.NA
+
+        # A merged cell stores its value only in the top-left cell, so the rest
+        # of the block reads back empty and has to be filled.  JunctionID and
+        # File_Synchro span the sheet; the others are merged per junction, so
+        # filling them globally would leak one junction's count file onto the
+        # next junction, which has none.
         # infer_objects avoids pandas' deprecated silent downcast on object ffill.
-        df[FILLED_COLUMNS] = df[FILLED_COLUMNS].ffill().infer_objects(copy=False)
+        sheet_wide = ["JunctionID_Vissim", "File_Synchro"]
+        df[sheet_wide] = df[sheet_wide].ffill().infer_objects(copy=False)
+        per_junction = [c for c in FILLED_COLUMNS if c not in sheet_wide]
+        df[per_junction] = (df.groupby("JunctionID_Vissim")[per_junction]
+                            .ffill().infer_objects(copy=False))
 
         # Hand-edited spreadsheets are full of stray whitespace.
         for col in df.columns:
