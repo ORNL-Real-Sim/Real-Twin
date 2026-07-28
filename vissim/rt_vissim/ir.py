@@ -18,10 +18,12 @@ from the (Windows/VISSIM-only) COM calls, every ingestion module in this package
 produces the dataclasses below, and :mod:`rt_vissim.com` is the only module that
 knows how to push them into VISSIM.
 
-Everything here is keyed on **OpenDRIVE road IDs**, which is the common currency
-of the MatchupTable (``FromRoadID_OpenDrive`` / ``ToRoadID_OpenDrive``).  The
-translation from OpenDRIVE road ID to VISSIM link number happens once, in
-:mod:`rt_vissim.netmap`.
+Everything here is keyed on **VISSIM link numbers**, which is the common currency
+of the MatchupTable (``FromLinkNo_Vissim`` / ``ToLinkNo_Vissim``).  OpenDRIVE road
+IDs are deliberately *not* used: they do not survive regeneration of the ``.xodr``
+(SUMO renumbers every road between netconvert versions) and VISSIM renumbers again
+on import, so the link numbers read back out of the imported network in
+:mod:`rt_vissim.network` are the only durable identifiers.
 """
 
 from __future__ import annotations
@@ -36,7 +38,7 @@ class VehicleInput:
     """One VISSIM vehicle input (a demand injection on an origin link).
 
     Attributes:
-        road_id: OpenDRIVE road ID of the origin road.
+        link_no: VISSIM link number of the origin link.
         interval_start: Start of the demand interval, in simulation seconds.
         interval_end: End of the demand interval, in simulation seconds.
         volume: Demand in vehicles per hour (VISSIM vehicle inputs are hourly).
@@ -44,7 +46,7 @@ class VehicleInput:
         name: Human readable label, usually the intersection name.
     """
 
-    road_id: str
+    link_no: int
     interval_start: float
     interval_end: float
     volume: float
@@ -56,24 +58,24 @@ class VehicleInput:
 class RoutingDecision:
     """One VISSIM static vehicle routing decision (all turns from one approach).
 
-    A routing decision sits on the approach road and has one route per
-    downstream road.  Relative flows are the turning ratios from the counts.
+    A routing decision sits on the approach link and has one route per
+    downstream link.  Relative flows are the turning ratios from the counts.
 
     Attributes:
-        junction_id: OpenDRIVE junction ID (matches ``JunctionID_OpenDrive``).
-        from_road_id: OpenDRIVE road ID of the approach.
+        junction_id: Derived junction ID (matches ``JunctionID_Vissim``).
+        from_link_no: VISSIM link number of the approach.
         interval_start: Start of the demand interval, in simulation seconds.
         interval_end: End of the demand interval, in simulation seconds.
-        routes: ``{to_road_id: relative_flow}``.  Relative flows are the raw
-            turning ratios; VISSIM normalises them internally.
+        routes: ``{to_link_no: relative_flow}``.  Relative flows are the raw
+            movement counts; VISSIM normalises them internally.
         name: Human readable label, usually ``"<intersection> <bound>"``.
     """
 
-    junction_id: str
-    from_road_id: str
+    junction_id: str | int
+    from_link_no: int
     interval_start: float
     interval_end: float
-    routes: dict[str, float] = field(default_factory=dict)
+    routes: dict[int, float] = field(default_factory=dict)
     name: str = ""
 
 
@@ -126,7 +128,8 @@ class SignalPlan:
 
     Attributes:
         sc_no: VISSIM signal controller number.
-        junction_id: OpenDRIVE junction ID this controller belongs to.
+        junction_id: Derived junction ID this controller belongs to
+            (matches ``JunctionID_Vissim``).
         synchro_intid: Synchro ``INTID`` this plan was built from.
         name: Human readable intersection name.
         cycle_time: Cycle length in seconds.
@@ -140,7 +143,7 @@ class SignalPlan:
     """
 
     sc_no: int
-    junction_id: str
+    junction_id: str | int
     synchro_intid: str
     name: str = ""
     cycle_time: float = 90.0
@@ -158,18 +161,18 @@ class SignalHead:
     Attributes:
         sc_no: Signal controller number.
         sg_no: Signal group number.
-        junction_id: OpenDRIVE junction ID.
-        from_road_id: OpenDRIVE road ID of the approach the head sits on.
-        to_road_id: OpenDRIVE road ID of the receiving road (identifies the turn).
+        junction_id: Derived junction ID (matches ``JunctionID_Vissim``).
+        from_link_no: VISSIM link number of the approach the head sits on.
+        to_link_no: VISSIM link number of the receiving link (identifies the turn).
         movement: Synchro movement code, e.g. ``"NBL"``.
         turn: RealTwin turn label: ``left`` / ``thru`` / ``right`` / ``Uturn``.
     """
 
     sc_no: int
     sg_no: int
-    junction_id: str
-    from_road_id: str
-    to_road_id: str
+    junction_id: str | int
+    from_link_no: int
+    to_link_no: int
     movement: str = ""
     turn: str = ""
 
