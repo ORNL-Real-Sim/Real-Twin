@@ -43,8 +43,10 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment
 
 #: Network columns, sourced from :func:`rt_vissim.network.build_movement_table`.
+#: Positionally identical to the SUMO table's network block, with link numbers
+#: substituted for road IDs.
 NETWORK_COLUMNS = ["JunctionID_Vissim", "Bearing", "Numbering", "FromLinkNo_Vissim",
-                   "ToLinkNo_Vissim", "InternalLinks_Vissim", "Turn"]
+                   "ToLinkNo_Vissim", "Turn"]
 
 #: Demand columns, filled in by the user.
 DEMAND_COLUMNS = ["File_GridSmart", "Date_GridSmart", "IntersectionName_GridSmart",
@@ -56,18 +58,34 @@ SIGNAL_COLUMNS = ["File_Synchro", "IntersectionID_Synchro", "Turn_Synchro"]
 #: Trailing columns that belong to no group.
 OTHER_COLUMNS = ["Need calibration?"]
 
-ALL_COLUMNS = NETWORK_COLUMNS + DEMAND_COLUMNS + SIGNAL_COLUMNS + OTHER_COLUMNS
+#: Vissim-only columns, parked past the end of the SUMO layout so that columns
+#: A..N stay positionally identical to the SUMO MatchupTable.  Signal-head
+#: placement needs the junction-internal links a movement traverses.
+EXTRA_COLUMNS = ["InternalLinks_Vissim"]
+
+#: Columns 1..14 mirror the SUMO table exactly; column 15 is the Vissim extra.
+ALL_COLUMNS = (NETWORK_COLUMNS + DEMAND_COLUMNS + SIGNAL_COLUMNS
+               + OTHER_COLUMNS + EXTRA_COLUMNS)
+
+#: The movement-table columns this module consumes.
+REQUIRED_COLUMNS = NETWORK_COLUMNS + EXTRA_COLUMNS
 
 #: Columns merged vertically across the rows of one junction, and therefore
-#: forward-filled on read.
+#: forward-filled on read.  ``File_Synchro`` is absent by design: as in the SUMO
+#: table it is merged across the whole sheet, since one UTDF export covers the
+#: entire network.
 MERGED_COLUMNS = ["JunctionID_Vissim", "File_GridSmart", "Date_GridSmart",
-                  "IntersectionName_GridSmart", "File_Synchro",
-                  "IntersectionID_Synchro", "Need calibration?"]
+                  "IntersectionName_GridSmart", "IntersectionID_Synchro",
+                  "Need calibration?"]
+
+#: Columns forward-filled on read: the per-junction merges plus the sheet-wide
+#: ``File_Synchro``.
+FILLED_COLUMNS = MERGED_COLUMNS + ["File_Synchro"]
 
 #: Column widths, keyed by letter, matching the SUMO table's readability.
-COLUMN_WIDTHS = {"A": 20, "B": 12, "C": 12, "D": 20, "E": 20, "F": 24, "G": 12,
-                 "H": 22, "I": 16, "J": 32, "K": 16, "L": 20, "M": 24, "N": 14,
-                 "O": 18}
+COLUMN_WIDTHS = {"A": 20, "B": 12, "C": 12, "D": 20, "E": 20, "F": 12, "G": 22,
+                 "H": 16, "I": 28, "J": 16, "K": 22, "L": 22, "M": 14, "N": 18,
+                 "O": 32}
 
 
 def generate_matchup_table(movements: pd.DataFrame,
@@ -88,14 +106,14 @@ def generate_matchup_table(movements: pd.DataFrame,
     """
     if movements is None or movements.empty:
         raise ValueError("No movements to write; check the network extraction stage.")
-    missing = [c for c in NETWORK_COLUMNS if c not in movements.columns]
+    missing = [c for c in REQUIRED_COLUMNS if c not in movements.columns]
     if missing:
         raise ValueError(f"Movement table is missing columns: {missing}")
 
     path_output = Path(path_output)
     path_output.parent.mkdir(parents=True, exist_ok=True)
 
-    df = movements[NETWORK_COLUMNS].copy()
+    df = movements[REQUIRED_COLUMNS].copy()
     for col in DEMAND_COLUMNS + SIGNAL_COLUMNS + OTHER_COLUMNS:
         df[col] = None
     df = df[ALL_COLUMNS]
@@ -108,7 +126,8 @@ def generate_matchup_table(movements: pd.DataFrame,
     ws.append(["Network"] * len(NETWORK_COLUMNS)
               + ["Demand"] * len(DEMAND_COLUMNS)
               + ["Signal"] * len(SIGNAL_COLUMNS)
-              + [""] * len(OTHER_COLUMNS))
+              + [""] * len(OTHER_COLUMNS)
+              + [""] * len(EXTRA_COLUMNS))
     n_net, n_dem, n_sig = len(NETWORK_COLUMNS), len(DEMAND_COLUMNS), len(SIGNAL_COLUMNS)
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=n_net)
     ws.merge_cells(start_row=1, start_column=n_net + 1, end_row=1,
@@ -122,6 +141,12 @@ def generate_matchup_table(movements: pd.DataFrame,
         ws.append([None if pd.isna(v) else v for v in row])
 
     _merge_junction_blocks(ws, df)
+
+    # One UTDF export covers the network, so File_Synchro spans every data row.
+    if len(df) > 1:
+        col = ALL_COLUMNS.index("File_Synchro") + 1
+        ws.merge_cells(start_row=3, start_column=col, end_row=len(df) + 2,
+                       end_column=col)
 
     for row in ws.iter_rows():
         for cell in row:
@@ -185,10 +210,11 @@ class MatchupTable:
         if missing:
             raise ValueError(f"MatchupTable {self.path.name} is missing columns: {missing}")
 
-        for col in MERGED_COLUMNS:
+        for col in FILLED_COLUMNS:
             if col not in df.columns:
                 df[col] = pd.NA
-        df[MERGED_COLUMNS] = df[MERGED_COLUMNS].ffill()
+        # infer_objects avoids pandas' deprecated silent downcast on object ffill.
+        df[FILLED_COLUMNS] = df[FILLED_COLUMNS].ffill().infer_objects(copy=False)
 
         # Hand-edited spreadsheets are full of stray whitespace.
         for col in df.columns:
