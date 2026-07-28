@@ -1,0 +1,222 @@
+{
+  "Controller": {
+    "ExecutionFrequency": 1,
+    "OffsetReference": "LeadingStartOfGreen",
+    "PatternSchedule": {
+      "PatternScheduleItems": [
+        {
+          "Pattern": null,
+          "StartTime": 0
+        }
+      ]
+    },
+    "Patterns": [],
+    "PedestrianDetectors": [],
+    "PedestrianSignalGroups": [],
+    "Sequence": {
+      "BarrierGroups": [
+        {
+          "RingGroups": [
+            {
+              "VehicleSignalGroups": [
+                1,
+                2
+              ]
+            },
+            {
+              "VehicleSignalGroups": [
+                5,
+                6
+              ]
+            }
+          ]
+        },
+        {
+          "RingGroups": [
+            {
+              "VehicleSignalGroups": [
+                3,
+                4
+              ]
+            },
+            {
+              "VehicleSignalGroups": [
+                7,
+                8
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "VehicleDetectors": [],
+    "VehicleOverlapSignalGroups": [],
+    "VehicleSignalGroups": [
+      {
+        "DualEntry": false,
+        "ID": 1,
+        "MaxGreen1": 280,
+        "MaxGreen2": 0,
+        "MaxGreen3": 0,
+        "MaxRecall": true,
+        "MinGreen": 280,
+        "MinRecall": false,
+        "Name": "1",
+        "RedClearance": 10,
+        "StartUp": false,
+        "VehExtension": 0,
+        "Yellow": 10
+      },
+      {
+        "DualEntry": false,
+        "ID": 2,
+        "MaxGreen1": 240,
+        "MaxGreen2": 0,
+        "MaxGreen3": 0,
+        "MaxRecall": true,
+        "MinGreen": 240,
+        "MinRecall": false,
+        "Name": "2",
+        "RedClearance": 20,
+        "StartUp": true,
+        "VehExtension": 0,
+        "Yellow": 40
+      },
+      {
+        "DualEntry": false,
+        "ID": 3,
+        "MaxGreen1": 240,
+        "MaxGreen2": 0,
+        "MaxGreen3": 0,
+        "MaxRecall": true,
+        "MinGreen": 240,
+        "MinRecall": false,
+        "Name": "3",
+        "RedClearance": 20,
+        "StartUp": false,
+        "VehExtension": 0,
+        "Yellow": 40
+      },
+      {
+        "DualEntry": false,
+        "ID": 4,
+        "MaxGreen1": 240,
+        "MaxGreen2": 0,
+        "MaxGreen3": 0,
+        "MaxRecall": true,
+        "MinGreen": 240,
+        "MinRecall": false,
+        "Name": "4",
+        "RedClearance": 20,
+        "StartUp": false,
+        "VehExtension": 0,
+        "Yellow": 40
+      },
+      {
+        "DualEntry": false,
+        "ID": 5,
+        "MaxGreen1": 240,
+        "MaxGreen2": 0,
+        "MaxGreen3": 0,
+        "MaxRecall": true,
+        "MinGreen": 240,
+        "MinRecall": false,
+        "Name": "5",
+        "RedClearance": 20,
+        "StartUp": false,
+        "VehExtension": 0,
+        "Yellow": 40
+      },
+      {
+        "DualEntry": false,
+        "ID": 6,
+        "MaxGreen1": 240,
+        "MaxGreen2": 0,
+        "MaxGreen3": 0,
+        "MaxRecall": true,
+        "MinGreen": 240,
+        "MinRecall": false,
+        "Name": "6",
+        "RedClearance": 20,
+        "StartUp": true,
+        "VehExtension": 0,
+        "Yellow": 40
+      },
+      {
+        "DualEntry": false,
+        "ID": 7,
+        "MaxGreen1": 240,
+        "MaxGreen2": 0,
+        "MaxGreen3": 0,
+        "MaxRecall": true,
+        "MinGreen": 240,
+        "MinRecall": false,
+        "Name": "7",
+        "RedClearance": 20,
+        "StartUp": false,
+        "VehExtension": 0,
+        "Yellow": 40
+      },
+      {
+        "DualEntry": false,
+        "ID": 8,
+        "MaxGreen1": 240,
+        "MaxGreen2": 0,
+        "MaxGreen3": 0,
+        "MaxRecall": true,
+        "MinGreen": 240,
+        "MinRecall": false,
+        "Name": "8 ",
+        "RedClearance": 20,
+        "StartUp": false,
+        "VehExtension": 0,
+        "Yellow": 40
+      }
+    ]
+  },
+  "FormatVersion": [
+    1,
+    1
+  ],
+  "GUI": {
+    "Notes": "",
+    "SequencePresentation": {
+      "BarrierGroupPresentations": [
+        {
+          "RightMargin": 0,
+          "RingGroupPresentations": [
+            {
+              "SignalGroupOffsets": [
+                0,
+                0
+              ]
+            },
+            {
+              "SignalGroupOffsets": [
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "RightMargin": 0,
+          "RingGroupPresentations": [
+            {
+              "SignalGroupOffsets": [
+                0,
+                0
+              ]
+            },
+            {
+              "SignalGroupOffsets": [
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

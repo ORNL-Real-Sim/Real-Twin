@@ -1,0 +1,33 @@
+{
+  "Controller": {
+    "ExecutionFrequency": 1,
+    "OffsetReference": "LeadingStartOfGreen",
+    "PatternSchedule": {
+      "PatternScheduleItems": [
+        {
+          "Pattern": null,
+          "StartTime": 0
+        }
+      ]
+    },
+    "Patterns": [],
+    "PedestrianDetectors": [],
+    "PedestrianSignalGroups": [],
+    "Sequence": {
+      "BarrierGroups": []
+    },
+    "VehicleDetectors": [],
+    "VehicleOverlapSignalGroups": [],
+    "VehicleSignalGroups": []
+  },
+  "FormatVersion": [
+    1,
+    1
+  ],
+  "GUI": {
+    "Notes": "",
+    "SequencePresentation": {
+      "BarrierGroupPresentations": []
+    }
+  }
+}
