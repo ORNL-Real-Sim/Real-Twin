@@ -117,6 +117,26 @@ def generate_matchup_table(movements: pd.DataFrame,
     for col in DEMAND_COLUMNS + SIGNAL_COLUMNS + OTHER_COLUMNS:
         df[col] = None
     df = df[ALL_COLUMNS]
+    return write_matchup_table(df, path_output)
+
+
+def write_matchup_table(df: pd.DataFrame,
+                        path_output: str | Path = "MatchupTable.xlsx") -> Path:
+    """Write a full MatchupTable frame to ``.xlsx`` with the standard formatting.
+
+    Used both for the blank table and for re-writing it after
+    :func:`update_matchup_table` has filled the derivable columns.
+
+    Args:
+        df: A frame carrying exactly :data:`ALL_COLUMNS`.
+        path_output: Destination ``.xlsx`` path.
+
+    Returns:
+        The written path.
+    """
+    path_output = Path(path_output)
+    path_output.parent.mkdir(parents=True, exist_ok=True)
+    df = df.reindex(columns=ALL_COLUMNS)
 
     wb = Workbook()
     ws = wb.active
@@ -180,6 +200,270 @@ def _merge_junction_blocks(ws, df: pd.DataFrame) -> None:
                     ws.merge_cells(start_row=start, start_column=col,
                                    end_row=row, end_column=col)
             start = row + 1
+
+
+# ---------------------------------------------------------------------- #
+# Filling it in
+# ---------------------------------------------------------------------- #
+#: RealTwin turn label -> movement-code suffix.
+TURN_LETTERS = {"right": "R", "thru": "T", "left": "L", "Uturn": "U"}
+
+
+def _gridsmart_info(path: Path) -> tuple[str | None, str | None, set[str]]:
+    """Read a GridSmart export's header block.
+
+    Args:
+        path: Path to the ``.xls`` / ``.xlsx`` export.
+
+    Returns:
+        ``(intersection_name, date, movement_codes)``.  Movement codes are the
+        ``NBR``-style codes the file actually reports; as in RealTwin, a
+        reported left implies the matching U-turn.
+    """
+    raw = pd.read_excel(path, header=None, dtype=str)
+
+    def _header_value(label: str) -> str | None:
+        rows = raw[raw.iloc[:, 0] == label].index
+        if rows.empty:
+            return None
+        col = raw.iloc[rows[0], 1:].first_valid_index()
+        return None if col is None else raw.iloc[rows[0], col]
+
+    # Locate the columns that carry each movement, then see which directions
+    # actually report a value under them.
+    movement_columns: dict[str, int] = {}
+    for col in raw.columns[1:]:
+        for movement in ("Right", "Through", "Left"):
+            if raw.iloc[:, col].eq(movement).any():
+                movement_columns[movement] = col
+
+    codes: set[str] = set()
+    for direction, prefix in (("Northbound", "NB"), ("Eastbound", "EB"),
+                              ("Southbound", "SB"), ("Westbound", "WB")):
+        rows = raw[raw.iloc[:, 0] == direction].index
+        if rows.empty:
+            continue
+        row = rows[0]
+        for movement, suffix in (("Right", "R"), ("Through", "T"), ("Left", "L")):
+            col = movement_columns.get(movement)
+            if col is not None and pd.notna(raw.iloc[row, col]):
+                codes.add(f"{prefix}{suffix}")
+                if suffix == "L":
+                    codes.add(f"{prefix}U")
+    return _header_value("Intersection"), _header_value("Date"), codes
+
+
+def _synchro_movements(signal_dict: dict, intid: str) -> set[str]:
+    """Return the movement codes one Synchro intersection serves.
+
+    Mirrors the column-pruning rule in RealTwin's ``update_matchup_table``: a
+    movement column survives when the ``Lanes`` row is non-zero, or a later
+    phase row carries a value, and a reported left implies the U-turn.
+
+    Args:
+        signal_dict: Output of RealTwin's ``process_signal_from_utdf``.
+        intid: The Synchro ``INTID`` to select.
+
+    Returns:
+        The movement codes, e.g. ``{"NBL", "NBT", "NBU", ...}``.
+    """
+    lanes = signal_dict.get("Lanes")
+    if lanes is None:
+        return set()
+
+    allowed = ["Lanes", "Shared", "Phase1", "PermPhase1", "Phase2",
+               "PermPhase2", "Phase3", "PermPhase3"]
+    subset = lanes[(lanes["INTID"].astype(str) == str(intid))
+                   & (lanes["RECORDNAME"].astype(str).isin(allowed))]
+    if subset.empty:
+        return set()
+    subset = subset.reset_index(drop=True)
+
+    def _blank(val) -> bool:
+        if val is None or (isinstance(val, float) and pd.isna(val)):
+            return True
+        text = str(val).strip()
+        if text in ("", "nan", "None"):
+            return True
+        try:
+            return float(text) == 0
+        except ValueError:
+            return False
+
+    def _row(name: str) -> pd.Series | None:
+        hit = subset[subset["RECORDNAME"] == name]
+        return None if hit.empty else hit.iloc[0]
+
+    lanes_row, shared_row = _row("Lanes"), _row("Shared")
+    phase_row, perm_row = _row("Phase1"), _row("PermPhase1")
+
+    # A shared lane serves a turn that has no phase of its own: Synchro records
+    # the through phase and a Shared code (1 left, 2 right, 3 both).  Without
+    # this the turn looks unserved and its column is pruned below.
+    shared_turns: set[str] = set()
+    if shared_row is not None and phase_row is not None:
+        for col in subset.columns:
+            if not col.endswith("T"):
+                continue
+            if _blank(phase_row.get(col)) or _blank(shared_row.get(col)):
+                continue
+            try:
+                share = int(float(shared_row[col]))
+            except (TypeError, ValueError):
+                continue
+            base = col[:-1]
+            if share in (1, 3) and f"{base}L" in subset.columns:
+                shared_turns.add(f"{base}L")
+            if share in (2, 3) and f"{base}R" in subset.columns:
+                shared_turns.add(f"{base}R")
+
+    codes: set[str] = set()
+    for col in subset.columns:
+        if col in ("RECORDNAME", "INTID", "PED", "HOLD") or len(col) < 3:
+            continue
+        if col[-1] not in ("R", "T", "L", "U"):
+            continue
+
+        keep = not _blank(subset.at[0, col])
+        if not keep and len(subset) > 2:
+            keep = any(not _blank(v) for v in subset[col].iloc[2:])
+        if not keep:
+            keep = col in shared_turns
+        # A right turn off a multi-lane through movement is served even when it
+        # has no lane count of its own.
+        if not keep and col.endswith("R") and lanes_row is not None:
+            through = f"{col[:-1]}T"
+            if through in subset.columns and shared_row is not None:
+                try:
+                    keep = (float(lanes_row[through]) > 0
+                            and float(shared_row[through]) > 1)
+                except (TypeError, ValueError):
+                    pass
+        if keep:
+            codes.add(col)
+            if col.endswith("L"):
+                codes.add(col[:-1] + "U")
+    return codes
+
+
+def update_matchup_table(path_matchup_table: str | Path, *,
+                         traffic_dir: str | Path = "",
+                         control_dir: str | Path = "") -> pd.DataFrame:
+    """Fill every derivable MatchupTable column in place.
+
+    The user supplies only the per-junction seeds -- which GridSmart file and
+    which Synchro ``INTID`` belong to each junction, plus the one ``File_Synchro``
+    -- exactly as in RealTwin's ``update_matchup_table``.  Everything else is
+    derived here: the intersection name and date from the GridSmart header, and
+    the per-movement ``Turn_GridSmart`` / ``Turn_Synchro`` codes.
+
+    Unlike the SUMO version, which assigns turn codes to rows *positionally* and
+    so depends on the row order matching the file's movement order, this derives
+    each row's code from its own ``Bearing`` and ``Turn`` and keeps it only if
+    the source actually reports that movement.
+
+    Args:
+        path_matchup_table: The table to update, rewritten in place.
+        traffic_dir: Directory holding the GridSmart files.
+        control_dir: Directory holding the Synchro UTDF file.
+
+    Returns:
+        The filled frame.
+
+    Raises:
+        FileNotFoundError: If ``path_matchup_table`` does not exist.
+    """
+    from .network import bearing_to_bound  # local: avoids a circular import
+
+    path_matchup_table = Path(path_matchup_table)
+    if not path_matchup_table.exists():
+        raise FileNotFoundError(f"MatchupTable not found: {path_matchup_table}")
+
+    df = pd.read_excel(path_matchup_table, skiprows=1, dtype=str)
+    df = df.reindex(columns=ALL_COLUMNS)
+    df[["JunctionID_Vissim", "File_Synchro"]] = (
+        df[["JunctionID_Vissim", "File_Synchro"]].ffill().infer_objects(copy=False))
+    df["Need calibration?"] = "Y"
+
+    # The movement code this row represents, from the network geometry alone.
+    def _row_code(row) -> str | None:
+        letter = TURN_LETTERS.get(str(row["Turn"]))
+        if letter is None or pd.isna(row["Bearing"]):
+            return None
+        try:
+            return f"{bearing_to_bound(float(row['Bearing']))}{letter}"
+        except (TypeError, ValueError):
+            return None
+
+    df["_code"] = df.apply(_row_code, axis=1)
+
+    # -- demand ------------------------------------------------------- #
+    for junction_id, group in df.groupby("JunctionID_Vissim", sort=False):
+        files = group["File_GridSmart"].dropna()
+        if files.empty:
+            continue
+        name = str(files.iloc[0])
+        if "." not in Path(name).name:
+            name += ".xls"
+        path = Path(traffic_dir) / name
+        if not path.exists():
+            print(f"  :WARNING: GridSmart file missing for junction {junction_id}: {name}")
+            continue
+
+        try:
+            intersection, date, codes = _gridsmart_info(path)
+        except (ValueError, KeyError) as exc:
+            print(f"  :WARNING: could not read {path.name}: {exc}")
+            continue
+
+        rows = df["JunctionID_Vissim"] == junction_id
+        df.loc[rows, "Need calibration?"] = "N"
+        if intersection:
+            df.loc[rows, "IntersectionName_GridSmart"] = intersection
+        if date:
+            df.loc[rows, "Date_GridSmart"] = date
+        df.loc[rows, "Turn_GridSmart"] = group["_code"].where(group["_code"].isin(codes))
+
+    # -- signal ------------------------------------------------------- #
+    cache: dict[str, dict] = {}
+    for junction_id, group in df.groupby("JunctionID_Vissim", sort=False):
+        intids = group["IntersectionID_Synchro"].dropna()
+        files = group["File_Synchro"].dropna()
+        if intids.empty or files.empty:
+            continue
+
+        utdf = str(files.iloc[0])
+        if utdf not in cache:
+            try:
+                from realtwin.func_lib._c_abstract_scenario.rt_demand_generation import (
+                    process_signal_from_utdf)
+                cache[utdf] = process_signal_from_utdf(str(Path(control_dir) / utdf))
+            except (ImportError, FileNotFoundError, ValueError, KeyError) as exc:
+                print(f"  :WARNING: could not read Synchro file {utdf}: {exc}")
+                cache[utdf] = {}
+        codes = _synchro_movements(cache[utdf], str(intids.iloc[0]))
+        if not codes:
+            continue
+        rows = df["JunctionID_Vissim"] == junction_id
+        df.loc[rows, "Turn_Synchro"] = group["_code"].where(group["_code"].isin(codes))
+
+    # A movement code must be unique within a junction: two rows claiming the
+    # same code would join the same turn count twice.  Duplicates mean the
+    # bearing or turn classification disagrees with the count file, so flag the
+    # junction for review rather than emitting a table that quietly double counts.
+    for col in ("Turn_GridSmart", "Turn_Synchro"):
+        for junction_id, group in df.groupby("JunctionID_Vissim", sort=False):
+            filled = group[col].dropna()
+            dupes = sorted(set(filled[filled.duplicated()]))
+            if dupes:
+                print(f"  :WARNING: junction {junction_id} derives {col} "
+                      f"{dupes} more than once; check the approach bearings. "
+                      "Marked for calibration.")
+                df.loc[df["JunctionID_Vissim"] == junction_id, "Need calibration?"] = "Y"
+
+    df = df.drop(columns=["_code"])
+    write_matchup_table(df, path_matchup_table)
+    return df
 
 
 # ---------------------------------------------------------------------- #
