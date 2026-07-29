@@ -33,11 +33,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(1, str(Path(__file__).resolve().parents[2]))
 
+import pandas as pd  # noqa: E402
+
 from rt_vissim.com import VissimSession  # noqa: E402
-from rt_vissim.demand import build_demand  # noqa: E402
+from rt_vissim.demand import build_demand, build_turn_counts  # noqa: E402
 from rt_vissim.matchup import MatchupTable  # noqa: E402
 from rt_vissim.network import read_links_csv  # noqa: E402
-from rt_vissim.writer import write_vehicle_inputs  # noqa: E402
+from rt_vissim.routes import build_integrated_decisions, summarise  # noqa: E402
+from rt_vissim.writer import write_routing_decisions, write_vehicle_inputs  # noqa: E402
 
 
 def clock_to_seconds(text: str) -> float:
@@ -76,6 +79,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--visible", action="store_true", help="Show the Vissim GUI")
     parser.add_argument("--open-gui", action="store_true",
                         help="Open the saved network in a standalone GUI")
+    parser.add_argument("--movements", default="vissim/work/chattanooga/chatt_movements.csv",
+                        help="Movement table written by stage 1, for the routing decisions")
+    parser.add_argument("--no-routes", action="store_true",
+                        help="Write vehicle inputs only, skip routing decisions")
     args = parser.parse_args(argv)
 
     inpx_path = Path(args.inpx).resolve()
@@ -110,6 +117,17 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  :{total} vehicles across {len({vi.link_no for vi in inputs})} origin links, "
           f"{len({(vi.interval_start, vi.interval_end) for vi in inputs})} time intervals")
 
+    integrated: list = []
+    if not args.no_routes:
+        movements = pd.read_csv(args.movements)
+        turn_counts = build_turn_counts(matchup, args.traffic_dir)
+        turn_counts = turn_counts[(turn_counts["IntervalStart"] >= start_time)
+                                  & (turn_counts["IntervalEnd"] <= end_time)]
+        integrated, route_warnings = build_integrated_decisions(movements, turn_counts)
+        for warning in route_warnings:
+            print(f"  :WARNING: {warning}")
+        print(f"  :Routing: {summarise(integrated)}")
+
     with VissimSession(args.progid, visible=args.visible) as session:
         print(f"  :Loading {inpx_path.name} ...")
         session.load_net(inpx_path)
@@ -119,6 +137,13 @@ def main(argv: list[str] | None = None) -> int:
         for warning in write_warnings:
             print(f"  :WARNING: {warning}")
         print(f"  :Created {created} vehicle inputs")
+
+        if integrated:
+            n_dec, n_routes, route_warnings = write_routing_decisions(
+                session, integrated, start_time, links)
+            for warning in route_warnings:
+                print(f"  :{warning}")
+            print(f"  :Created {n_dec} routing decisions, {n_routes} routes")
 
         session.save_net_as(out_path)
         print(f"  :Wrote {out_path}")
