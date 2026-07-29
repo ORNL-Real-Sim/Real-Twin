@@ -255,7 +255,67 @@ def assign_movement_codes(group: pd.DataFrame, available: set[str]) -> pd.Series
         letter = TURN_LETTERS.get(str(row["Turn"]))
         code = f"{bound}{letter}" if bound and letter else None
         codes.append(code if code in available else None)
-    return pd.Series(codes, index=group.index)
+    series = pd.Series(codes, index=group.index)
+
+    # Turn classification near the thru/turn threshold can label two movements
+    # off one approach identically, which would join a single turn count onto
+    # both and overstate the approach.  Movements are ordered by turn angle, so
+    # their codes must be strictly increasing in R, T, L, U order; re-assign any
+    # approach where that fails.
+    for from_link, rows in group.groupby("FromLinkNo_Vissim", sort=False):
+        filled = series.loc[rows.index].dropna()
+        if filled.empty or not filled.duplicated().any():
+            continue
+        bound = leg_bound.get(from_link)
+        if bound is None:
+            continue
+        options = [f"{bound}{letter}" for letter in "RTLU"
+                   if f"{bound}{letter}" in available]
+        resolved = _monotone_codes([series.get(i) for i in rows.index], options)
+        for index, code in zip(rows.index, resolved):
+            series.at[index] = code
+    return series
+
+
+def _monotone_codes(current: list, options: list[str]) -> list:
+    """Re-assign one approach's codes so they increase through R, T, L, U.
+
+    Picks the strictly increasing choice from ``options`` that departs least from
+    the geometric labels, so a movement is only relabelled when the ordering
+    forces it.
+
+    Args:
+        current: The geometric codes, in turn-angle order; may contain ``None``.
+        options: The bound's available codes, in ``R``, ``T``, ``L``, ``U`` order.
+
+    Returns:
+        A list the same length as ``current``.
+    """
+    if not options or len(current) > len(options):
+        return current
+
+    rank = {code: i for i, code in enumerate(options)}
+    best: tuple[int, list] | None = None
+
+    def search(position: int, start: int, cost: int, chosen: list) -> None:
+        nonlocal best
+        if best is not None and cost >= best[0]:
+            return
+        if position == len(current):
+            best = (cost, list(chosen))
+            return
+        for index in range(start, len(options)):
+            # Enough options must remain for the movements still to be placed.
+            if len(options) - index < len(current) - position:
+                break
+            want = rank.get(current[position])
+            penalty = 0 if want is None else abs(index - want)
+            chosen.append(options[index])
+            search(position + 1, index + 1, cost + penalty, chosen)
+            chosen.pop()
+
+    search(0, 0, 0, [])
+    return best[1] if best else current
 
 
 def _gridsmart_info(path: Path) -> tuple[str | None, str | None, set[str]]:

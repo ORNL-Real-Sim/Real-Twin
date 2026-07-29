@@ -197,12 +197,60 @@ def find_origin_links(links: dict) -> set[int]:
             if not ln.is_connector and no not in fed and no in feeds}
 
 
+def road_predecessors(links: dict) -> dict[int, set[int]]:
+    """Map each road link to the road links feeding it, hopping over junctions.
+
+    Vissim turns every OpenDRIVE road into a link, so one junction becomes
+    several junction-internal links.  Walking raw connectors therefore sees an
+    approach as having as many predecessors as the upstream junction has internal
+    paths, which looks like a merge even when every one of them comes from the
+    same road.  SUMO collapses its internal edges, which is why the same walk
+    succeeds there.
+
+    Stepping over the internal links restores that view: Chattanooga's 186
+    non-connector links are 59 road links -- matching SUMO's 59 edges exactly --
+    and 127 junction-internal ones.
+
+    Args:
+        links: Output of :func:`rt_vissim.network.read_links`.
+
+    Returns:
+        ``{road link: {road links feeding it}}``.
+    """
+    direct: dict[int, list[int]] = {}
+    for ln in links.values():
+        if ln.is_connector and ln.from_link is not None and ln.to_link is not None:
+            direct.setdefault(ln.to_link, []).append(ln.from_link)
+
+    def is_internal(no: int) -> bool:
+        link = links.get(no)
+        return link is not None and not link.is_connector and bool(link.junction_key)
+
+    roads: dict[int, set[int]] = {}
+    for no, link in links.items():
+        if link.is_connector or is_internal(no):
+            continue
+        found: set[int] = set()
+        queue, seen = list(direct.get(no, [])), set()
+        while queue:
+            candidate = queue.pop()
+            if candidate in seen:
+                continue
+            seen.add(candidate)
+            if is_internal(candidate):
+                queue.extend(direct.get(candidate, []))
+            else:
+                found.add(candidate)
+        roads[no] = found
+    return roads
+
+
 def trace_to_origin(links: dict, approach: int, max_hops: int = 50) -> int | None:
     """Walk upstream from an approach link to the network entry that feeds it.
 
-    Follows predecessors while each step is unambiguous.  A link with several
-    upstream links is a junction where traffic mixes, so the walk stops -- the
-    demand for that approach is already accounted for by an upstream input.
+    Follows road predecessors while each step is unambiguous.  A link fed by
+    several *different roads* is a genuine merge, so the walk stops -- the demand
+    for that approach is already accounted for by an upstream input.
 
     Args:
         links: Output of :func:`rt_vissim.network.read_links`.
@@ -212,20 +260,17 @@ def trace_to_origin(links: dict, approach: int, max_hops: int = 50) -> int | Non
     Returns:
         The origin link number, or ``None`` when the walk stopped at a merge.
     """
-    predecessors: dict[int, list[int]] = {}
-    for ln in links.values():
-        if ln.is_connector and ln.from_link is not None and ln.to_link is not None:
-            predecessors.setdefault(ln.to_link, []).append(ln.from_link)
+    predecessors = road_predecessors(links)
 
     current = approach
     seen = {current}
     for _ in range(max_hops):
-        preds = predecessors.get(current, [])
+        preds = predecessors.get(current, set())
         if not preds:
             return current  # nothing upstream: this is an entry link
         if len(preds) > 1:
             return None  # traffic mixes here; an upstream input covers it
-        nxt = preds[0]
+        nxt = next(iter(preds))
         if nxt in seen:
             return None  # loop
         seen.add(nxt)
