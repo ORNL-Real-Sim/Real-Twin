@@ -35,6 +35,7 @@ bearings and turns from the Vissim network itself.
 | junction = `<junction>` element | junction = SUMO internal edge name in the Vissim link name |
 | turn from `connection dir` attribute | turn classified from bearing change |
 | `generate_matchup_table` → `MatchupTable.xlsx` | same layout, `*_Vissim` link-number columns |
+| `update_matchup_table` fills the derivable columns | same, but codes derived per row rather than positionally |
 | GridSmart → `.flow.xml` / `.turn.xml` → `jtrrouter` | GridSmart → vehicle inputs + static routing decisions |
 | Synchro UTDF → NEMA `tlLogic` | Synchro UTDF → `.prbc` Ring Barrier Controller files |
 
@@ -210,6 +211,13 @@ MatchupTable generation and read-back, laid out so columns A–N match the SUMO
 table position for position. GridSmart ingestion into vehicle inputs and static
 routing decisions — all six Chattanooga exports parse to 96 quarter-hour bins.
 
+MatchupTable auto-fill. As in the SUMO flow, the only hand input is a
+per-junction seed — which GridSmart file and which Synchro `INTID` belong to each
+junction, plus the one `File_Synchro`; 13 of Chattanooga's 104 rows. The
+intersection name, date, `Need calibration?` and all 80 `Turn_GridSmart` /
+`Turn_Synchro` codes are derived. Seeded from the SUMO table's own user input,
+102 of 104 codes in each column match it exactly.
+
 **Next:** the COM writer. Nothing reaches a `.inpx` until it exists, so demand
 cannot yet be inspected in Vissim. Then Synchro UTDF → `.prbc`, then RTOR and
 stop control.
@@ -223,8 +231,12 @@ stop control.
   `DetectSize1`/`FirstDetect`; `.prbc` has an empty `VehicleDetectors` list to
   populate, and detectors also have to be created on the Vissim links.
 - **Turn threshold.** The 20° thru/turn boundary mislabels two skewed movements
-  in Chattanooga relative to SUMO. Worth checking against another network before
-  tuning.
+  in Chattanooga relative to SUMO — one each at junctions 8 and 9, both a `left`
+  where SUMO says `thru`. Because the code is derived per row, each duplicates
+  another code on its approach, so `update_matchup_table` flags those junctions
+  `Need calibration? = Y`. This is the only gap left in the auto-fill: 102 of 104
+  `Turn_GridSmart` and `Turn_Synchro` codes match SUMO exactly. Worth checking
+  against another network before tuning the threshold.
 - **Right turn on red.** Not a port of the SUMO path. SUMO has no RTOR concept,
   so RealTwin folds Synchro's `Allow RTOR` into the `tlLogic` state string as a
   permissive `s`. Vissim models it structurally instead — a conflict area or
