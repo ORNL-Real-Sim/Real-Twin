@@ -335,6 +335,25 @@ def build_vehicle_inputs(turn_counts: pd.DataFrame, links: dict) -> tuple[list[V
             count=int(row.Count),
             name=str(row.IntersectionName),
         ))
+
+    # Every entry gets an input, at zero where no counted approach traced back to
+    # it.  Omitting it instead would leave the entry silently unmodelled and
+    # impossible to calibrate later; the SUMO flow file does the same, carrying
+    # 16 of the network's 18 source edges.
+    intervals = sorted({(float(s), float(e)) for s, e
+                        in zip(approach_totals["IntervalStart"],
+                               approach_totals["IntervalEnd"])})
+    covered = {vi.link_no for vi in inputs}
+    uncovered = sorted(set(origins) - covered)
+    for link_no in uncovered:
+        for start, end in intervals:
+            inputs.append(VehicleInput(
+                link_no=int(link_no), interval_start=start, interval_end=end,
+                volume=0.0, count=0, name="no counts"))
+    if uncovered:
+        warnings.append(f"{len(uncovered)} of {len(origins)} entry links have no "
+                        f"counted approach tracing to them: {uncovered}. "
+                        "Written at volume 0 for calibration.")
     return inputs, warnings
 
 
