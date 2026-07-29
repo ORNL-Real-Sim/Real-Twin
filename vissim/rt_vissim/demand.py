@@ -174,14 +174,27 @@ def build_turn_counts(matchup, traffic_dir: str | Path) -> pd.DataFrame:
 def find_origin_links(links: dict) -> set[int]:
     """Return the links with no upstream connector -- the network's entry points.
 
+    A link nothing feeds into is an entry, with one exception: a link that also
+    feeds nothing is a disconnected stub, not an entry, and demand injected there
+    would never reach the network.  Chattanooga's OpenDRIVE import leaves two of
+    them, and SUMO's flow file omits the same two of the network's 18 sources.
+
     Args:
         links: Output of :func:`rt_vissim.network.read_links`.
 
     Returns:
-        Link numbers that nothing feeds into.
+        Link numbers that nothing feeds into and that lead somewhere.
     """
-    fed = {ln.to_link for ln in links.values() if ln.is_connector and ln.to_link is not None}
-    return {no for no, ln in links.items() if not ln.is_connector and no not in fed}
+    fed, feeds = set(), set()
+    for ln in links.values():
+        if not ln.is_connector:
+            continue
+        if ln.to_link is not None:
+            fed.add(ln.to_link)
+        if ln.from_link is not None:
+            feeds.add(ln.from_link)
+    return {no for no, ln in links.items()
+            if not ln.is_connector and no not in fed and no in feeds}
 
 
 def trace_to_origin(links: dict, approach: int, max_hops: int = 50) -> int | None:
