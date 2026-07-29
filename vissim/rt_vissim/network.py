@@ -51,6 +51,7 @@ import math
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import pandas as pd
 
@@ -231,6 +232,48 @@ def read_links(session) -> dict[int, VissimLink]:
             link.from_link = _opt_int(_safe_attr(obj, "FromLink\\No"))
             link.to_link = _opt_int(_safe_attr(obj, "ToLink\\No"))
 
+    return links
+
+
+def read_links_csv(path: str | Path) -> dict[int, VissimLink]:
+    """Rebuild the link table from the CSV stage 1 wrote.
+
+    The connectivity the demand stage needs -- which connector joins which pair
+    of links -- is all in that file, so vehicle inputs and routing decisions can
+    be built and checked without a Vissim licence in the loop.  Geometry is not
+    restored: ``points`` stays empty, so this is not enough for
+    :func:`extract_network`, which needs bearings.
+
+    Args:
+        path: Path to ``<name>_links.csv``.
+
+    Returns:
+        ``{link number: VissimLink}``.
+
+    Raises:
+        FileNotFoundError: If ``path`` does not exist.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"Links CSV not found: {path}")
+
+    df = pd.read_csv(path)
+    links: dict[int, VissimLink] = {}
+    for row in df.itertuples(index=False):
+        name = "" if pd.isna(row.Name) else str(row.Name)
+        road_id, orig_name = parse_link_name(name)
+        links[int(row.LinkNo)] = VissimLink(
+            no=int(row.LinkNo),
+            name=name,
+            is_connector=bool(row.IsConnector),
+            num_lanes=_opt_int(row.NumLanes) or 0,
+            length=0.0 if pd.isna(row.Length2D) else float(row.Length2D),
+            from_link=_opt_int(row.FromLink),
+            to_link=_opt_int(row.ToLink),
+            road_id=road_id,
+            orig_name=orig_name,
+            junction_key=junction_key_from_name(orig_name),
+        )
     return links
 
 
