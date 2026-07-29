@@ -131,7 +131,11 @@ class VissimSession:
         errors: list[str] = []
         for progid in candidates:
             try:
-                self.vissim = win32com.client.Dispatch(progid)
+                # DispatchEx, not Dispatch: Dispatch attaches to an already
+                # running Vissim, so a script would take over a GUI the user has
+                # open and then close it on exit.  DispatchEx always starts a
+                # private instance.
+                self.vissim = win32com.client.DispatchEx(progid)
                 self.progid = progid
                 break
             except Exception as exc:  # noqa: BLE001 - COM raises many types
