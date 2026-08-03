@@ -455,6 +455,43 @@ def _synchro_movements(signal_dict: dict, intid: str) -> set[str]:
     return codes
 
 
+def report_coverage(junction_id, column: str, group: pd.DataFrame,
+                    available: set[str], assigned: pd.Series) -> None:
+    """Warn when a junction's legs and the source's directions do not line up.
+
+    The rank rule pairs the n-th leg with the n-th direction the source reports,
+    which is only sound when there are as many of one as the other.  Two things
+    can go wrong quietly:
+
+    * more legs than directions, so the surplus legs silently take no code and
+      their movements are never given a count;
+    * a direction the source reports that no movement claims, which means the
+      pairing is rotated -- every leg has taken its neighbour's name.
+
+    Neither is recoverable here; the MatchupTable is the place to correct them,
+    exactly as in the SUMO flow.  This makes them visible.
+
+    Args:
+        junction_id: The junction being filled.
+        column: Which column is being filled, for the message.
+        group: The junction's rows.
+        available: Movement codes the source reports.
+        assigned: The codes just assigned, aligned to ``group``.
+    """
+    bounds = [b for b in BOUND_ORDER if any(c.startswith(b) for c in available)]
+    legs = group["FromLinkNo_Vissim"].nunique()
+    if legs != len(bounds):
+        print(f"  :WARNING: junction {junction_id} has {legs} approaches but the "
+              f"source reports {len(bounds)} directions {bounds} for {column}; "
+              f"{'surplus approaches get no code' if legs > len(bounds) else 'a direction is unused'}.")
+
+    unused = sorted(available - set(assigned.dropna()))
+    if unused:
+        print(f"  :WARNING: junction {junction_id}: {column} codes {unused} are "
+              "reported by the source but matched no movement, so those counts are "
+              "dropped. Check the approach bearings, or set the codes by hand.")
+
+
 def update_matchup_table(path_matchup_table: str | Path, *,
                          traffic_dir: str | Path = "",
                          control_dir: str | Path = "") -> pd.DataFrame:
@@ -517,7 +554,9 @@ def update_matchup_table(path_matchup_table: str | Path, *,
             df.loc[rows, "IntersectionName_GridSmart"] = intersection
         if date:
             df.loc[rows, "Date_GridSmart"] = date
-        df.loc[rows, "Turn_GridSmart"] = assign_movement_codes(group, codes)
+        assigned = assign_movement_codes(group, codes)
+        df.loc[rows, "Turn_GridSmart"] = assigned
+        report_coverage(junction_id, "Turn_GridSmart", group, codes, assigned)
 
     # -- signal ------------------------------------------------------- #
     cache: dict[str, dict] = {}
@@ -540,7 +579,9 @@ def update_matchup_table(path_matchup_table: str | Path, *,
         if not codes:
             continue
         rows = df["JunctionID_Vissim"] == junction_id
-        df.loc[rows, "Turn_Synchro"] = assign_movement_codes(group, codes)
+        assigned = assign_movement_codes(group, codes)
+        df.loc[rows, "Turn_Synchro"] = assigned
+        report_coverage(junction_id, "Turn_Synchro", group, codes, assigned)
 
     # A movement code must be unique within a junction: two rows claiming the
     # same code would join the same turn count twice.  Duplicates mean the
