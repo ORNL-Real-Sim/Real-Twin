@@ -525,6 +525,11 @@ def build_movement_table(links: dict[int, VissimLink],
 
     # Same ordering as RealTwin's SUMO table: approaches start at 337.5 deg so a
     # northbound approach is listed first.
+    # Junction ids are strings, but sorting them as strings puts 10 before 2.
+    # RealTwin's SUMO table is in numeric order, and the two are meant to be
+    # readable side by side, so sort numerically where the id is a number.
+    df["_junction"] = pd.to_numeric(df["JunctionID_Vissim"], errors="coerce")
+    df["_junction_text"] = df["JunctionID_Vissim"].astype(str)
     df["_shifted"] = (df["Bearing"] - 337.5) % 360
     df["_turn_order"] = df["Turn"].map(TURN_ORDER)
     # Turn label first, then the signed change of heading, largest first.  The
@@ -533,10 +538,11 @@ def build_movement_table(links: dict[int, VissimLink],
     # label by relabelling the second of the pair -- would correct whichever
     # happened to come first.  Ordering by angle makes that the milder turn,
     # which is the one that is really the through movement.
-    df = df.sort_values(by=["JunctionID_Vissim", "_shifted", "_turn_order", "_delta"],
-                        ascending=[True, True, True, False],
-                        na_position="last").drop(
-                            columns=["_shifted", "_turn_order", "_delta"])
+    df = df.sort_values(
+        by=["_junction", "_junction_text", "_shifted", "_turn_order", "_delta"],
+        ascending=[True, True, True, True, False],
+        na_position="last").drop(
+            columns=["_junction", "_junction_text", "_shifted", "_turn_order", "_delta"])
     return df.reset_index(drop=True)
 
 
