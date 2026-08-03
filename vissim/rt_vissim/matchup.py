@@ -455,6 +455,46 @@ def _synchro_movements(signal_dict: dict, intid: str) -> set[str]:
     return codes
 
 
+#: Movement-code suffix back to the RealTwin turn label.
+LETTER_TURNS = {letter: turn for turn, letter in TURN_LETTERS.items()}
+
+
+def _reconcile_turns(df: pd.DataFrame, group: pd.DataFrame,
+                     assigned: pd.Series) -> int:
+    """Write an ordering-derived turn back into the ``Turn`` column.
+
+    ``assign_movement_codes`` relabels a movement when the geometric turn breaks
+    the R, T, L, U ordering along an approach.  Correcting only the code leaves
+    the table contradicting itself -- ``Turn`` saying ``left`` beside a code of
+    ``NBT`` -- and leaves the wrong label in the column the routing stage reads.
+
+    The ordering is the better evidence.  Two movements off one approach cannot
+    both be lefts when they are sorted by turning angle, whereas the 20 degree
+    thru/turn threshold is a single fixed cut that skewed approaches sit right on
+    top of.
+
+    Args:
+        df: The full table, updated in place.
+        group: The junction's rows.
+        assigned: The codes just assigned, aligned to ``group``.
+
+    Returns:
+        How many turn labels were corrected.
+    """
+    corrected = 0
+    for index, code in assigned.dropna().items():
+        turn = LETTER_TURNS.get(str(code)[-1])
+        current = str(group.at[index, "Turn"])
+        if turn and turn != current:
+            print(f"  :NOTE: movement {group.at[index, 'FromLinkNo_Vissim']}"
+                  f"->{group.at[index, 'ToLinkNo_Vissim']} classified '{current}' by "
+                  f"bearing, but the turn order at this approach makes it '{turn}'; "
+                  "corrected.")
+            df.at[index, "Turn"] = turn
+            corrected += 1
+    return corrected
+
+
 def report_coverage(junction_id, column: str, group: pd.DataFrame,
                     available: set[str], assigned: pd.Series) -> None:
     """Warn when a junction's legs and the source's directions do not line up.
@@ -528,6 +568,7 @@ def update_matchup_table(path_matchup_table: str | Path, *,
     df[["JunctionID_Vissim", "File_Synchro"]] = (
         df[["JunctionID_Vissim", "File_Synchro"]].ffill().infer_objects(copy=False))
     df["Need calibration?"] = "Y"
+    corrected = 0
 
     # -- demand ------------------------------------------------------- #
     for junction_id, group in df.groupby("JunctionID_Vissim", sort=False):
@@ -557,6 +598,7 @@ def update_matchup_table(path_matchup_table: str | Path, *,
         assigned = assign_movement_codes(group, codes)
         df.loc[rows, "Turn_GridSmart"] = assigned
         report_coverage(junction_id, "Turn_GridSmart", group, codes, assigned)
+        corrected += _reconcile_turns(df, group, assigned)
 
     # -- signal ------------------------------------------------------- #
     cache: dict[str, dict] = {}
@@ -596,6 +638,10 @@ def update_matchup_table(path_matchup_table: str | Path, *,
                       f"{dupes} more than once; check the approach bearings. "
                       "Marked for calibration.")
                 df.loc[df["JunctionID_Vissim"] == junction_id, "Need calibration?"] = "Y"
+
+    if corrected:
+        print(f"  :{corrected} turn labels corrected from the approach's turn order; "
+              "the movement table from stage 1 still holds the bearing-derived value.")
 
     write_matchup_table(df, path_matchup_table)
     return df
