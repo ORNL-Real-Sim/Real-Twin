@@ -496,7 +496,15 @@ def build_movement_table(links: dict[int, VissimLink],
                     continue
 
                 turn = classify_turn(bearing_in, bearing_out)
+                # Signed change of heading: positive clockwise (right), negative
+                # anticlockwise (left).  Ordering an approach's movements by this
+                # puts them in true R, T, L, U order, which the MatchupTable
+                # stage relies on.  Ordering by the turn *label* instead leaves
+                # movements sharing a label in arbitrary order.
+                delta = (bearing_out - bearing_in) % 360
+                signed = delta if delta <= 180 else delta - 360
                 rows.append({
+                    "_delta": round(signed, 2),
                     "JunctionID_Vissim": junction_id,
                     "Bearing": round(bearing_in, 2),
                     "Numbering": int(round(bearing_in / 10.0)),
@@ -510,7 +518,7 @@ def build_movement_table(links: dict[int, VissimLink],
 
     columns = ["JunctionID_Vissim", "Bearing", "Numbering", "Bound",
                "FromLinkNo_Vissim", "ToLinkNo_Vissim", "InternalLinks_Vissim",
-               "Turn", "Movement"]
+               "Turn", "Movement", "_delta"]
     df = pd.DataFrame(rows, columns=columns)
     if df.empty:
         return df
@@ -519,8 +527,16 @@ def build_movement_table(links: dict[int, VissimLink],
     # northbound approach is listed first.
     df["_shifted"] = (df["Bearing"] - 337.5) % 360
     df["_turn_order"] = df["Turn"].map(TURN_ORDER)
-    df = df.sort_values(by=["JunctionID_Vissim", "_shifted", "_turn_order"],
-                        na_position="last").drop(columns=["_shifted", "_turn_order"])
+    # Turn label first, then the signed change of heading, largest first.  The
+    # tie-break matters: two movements sharing a label would otherwise sit in
+    # arbitrary order, and the MatchupTable stage -- which resolves a duplicated
+    # label by relabelling the second of the pair -- would correct whichever
+    # happened to come first.  Ordering by angle makes that the milder turn,
+    # which is the one that is really the through movement.
+    df = df.sort_values(by=["JunctionID_Vissim", "_shifted", "_turn_order", "_delta"],
+                        ascending=[True, True, True, False],
+                        na_position="last").drop(
+                            columns=["_shifted", "_turn_order", "_delta"])
     return df.reset_index(drop=True)
 
 
