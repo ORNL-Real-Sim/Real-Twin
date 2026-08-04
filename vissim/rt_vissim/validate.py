@@ -157,8 +157,10 @@ def check_flow_continuity(turn_counts: pd.DataFrame,
                 "flow-continuity", "warning",
                 f"junctions {upstream} -> {downstream} via link {link}",
                 f"{leaving:.0f} vehicles counted leaving but {arriving:.0f} "
-                f"arriving ({diff:+.0%}); check the count files are matched to "
-                "the right junctions"))
+                f"arriving ({diff:+.0%}). Traffic using driveways between the two "
+                "explains a shortfall; a surplus, or a mismatch this large on a "
+                "block with no access, points at the count files being paired "
+                "with the wrong junctions"))
     return findings
 
 

@@ -42,8 +42,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 # The repository root, so the Synchro UTDF parser in realtwin is importable.
 sys.path.insert(1, str(Path(__file__).resolve().parents[2]))
 
+from rt_vissim.demand import build_turn_counts  # noqa: E402
 from rt_vissim.matchup import (  # noqa: E402
     ALL_COLUMNS, MatchupTable, generate_matchup_table, update_matchup_table)
+from rt_vissim.validate import validate  # noqa: E402
 
 #: Columns a user seeds by hand, and where they live in the sheet.
 SEED_COLUMNS = {"File_GridSmart": ALL_COLUMNS.index("File_GridSmart") + 1,
@@ -114,6 +116,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="A SUMO MatchupTable to copy the per-junction seeds from")
     parser.add_argument("--no-update", action="store_true",
                         help="Write the blank table only, skip the auto-fill")
+    parser.add_argument("--regenerate", action="store_true",
+                        help="Rebuild the filled columns, discarding hand edits "
+                             "(use after changing the derivation itself)")
     args = parser.parse_args(argv)
 
     movements_path = Path(args.movements)
@@ -139,7 +144,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     df = update_matchup_table(out_path, traffic_dir=args.traffic_dir,
-                              control_dir=args.control_dir)
+                              control_dir=args.control_dir,
+                              preserve_edits=not args.regenerate)
     for col in ("IntersectionName_GridSmart", "Turn_GridSmart", "Turn_Synchro"):
         print(f"  :{col:<28} filled {df[col].notna().sum():>3}/{len(df)}")
 
@@ -147,6 +153,19 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  :{len(table.gridsmart_files())} junctions with counts, "
           f"{len(table.signalized_junctions())} signalised, "
           f"{len(table.turn_lookup())} movements joined to a turn count")
+
+    # Reference-free checks, so the table can be trusted on a corridor that has
+    # no SUMO MatchupTable to compare against.
+    turn_counts = build_turn_counts(table, args.traffic_dir)
+    findings = validate(movements, table.df, turn_counts)
+    print(f"  :Validation: {len(findings)} findings"
+          + (f" ({sum(1 for f in findings if f.severity == 'error')} errors)"
+             if findings else " - nothing to report"))
+    for finding in findings:
+        print(finding)
+    if findings:
+        print("  :Correct these in the MatchupTable itself; a re-run keeps what you "
+              "enter unless --regenerate is given.")
     return 0
 
 

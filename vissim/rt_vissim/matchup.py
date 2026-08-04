@@ -458,6 +458,12 @@ def _synchro_movements(signal_dict: dict, intid: str) -> set[str]:
 #: Movement-code suffix back to the RealTwin turn label.
 LETTER_TURNS = {letter: turn for turn, letter in TURN_LETTERS.items()}
 
+#: Columns written blank for the user to fill, so anything already in them was
+#: put there by a person and is not ours to overwrite.  ``Turn`` is absent by
+#: design: it is derived from the geometry every time, and preserving it would
+#: block the correction that turn ordering applies.
+PRESERVED_COLUMNS = ["Turn_GridSmart", "Turn_Synchro", "Need calibration?"]
+
 
 def _reconcile_turns(df: pd.DataFrame, group: pd.DataFrame,
                      assigned: pd.Series) -> int:
@@ -526,15 +532,25 @@ def report_coverage(junction_id, column: str, group: pd.DataFrame,
               f"{'surplus approaches get no code' if legs > len(bounds) else 'a direction is unused'}.")
 
     unused = sorted(available - set(assigned.dropna()))
-    if unused:
-        print(f"  :WARNING: junction {junction_id}: {column} codes {unused} are "
+    # A U-turn the source reports but the network has no road for is ordinary --
+    # a three-leg junction simply cannot serve one - and saying so every run
+    # buries the cases that do matter.
+    turns = [c for c in unused if not c.endswith("U")]
+    uturns = [c for c in unused if c.endswith("U")]
+    if turns:
+        print(f"  :WARNING: junction {junction_id}: {column} codes {turns} are "
               "reported by the source but matched no movement, so those counts are "
-              "dropped. Check the approach bearings, or set the codes by hand.")
+              "dropped. The network may be missing that movement, or the approach "
+              "bearings may be wrong; set the codes by hand if not.")
+    if uturns:
+        print(f"  :NOTE: junction {junction_id}: {column} U-turn codes {uturns} "
+              "have no movement in the network and are not modelled.")
 
 
 def update_matchup_table(path_matchup_table: str | Path, *,
                          traffic_dir: str | Path = "",
-                         control_dir: str | Path = "") -> pd.DataFrame:
+                         control_dir: str | Path = "",
+                         preserve_edits: bool = True) -> pd.DataFrame:
     """Fill every derivable MatchupTable column in place.
 
     The user supplies only the per-junction seeds -- which GridSmart file and
@@ -552,6 +568,12 @@ def update_matchup_table(path_matchup_table: str | Path, *,
         path_matchup_table: The table to update, rewritten in place.
         traffic_dir: Directory holding the GridSmart files.
         control_dir: Directory holding the Synchro UTDF file.
+        preserve_edits: Keep anything already present in
+            :data:`PRESERVED_COLUMNS`.  Those columns are written blank for the
+            user to fill, so a value in one came from a person -- often
+            correcting something a warning pointed at -- and regenerating over it
+            would quietly undo the correction.  Pass ``False`` to rebuild them,
+            which is what you want after fixing the derivation itself.
 
     Returns:
         The filled frame.
@@ -567,6 +589,8 @@ def update_matchup_table(path_matchup_table: str | Path, *,
     df = df.reindex(columns=ALL_COLUMNS)
     df[["JunctionID_Vissim", "File_Synchro"]] = (
         df[["JunctionID_Vissim", "File_Synchro"]].ffill().infer_objects(copy=False))
+    # Snapshot before anything is derived, so hand edits can be restored.
+    existing = df[PRESERVED_COLUMNS].copy()
     df["Need calibration?"] = "Y"
     corrected = 0
 
@@ -642,6 +666,17 @@ def update_matchup_table(path_matchup_table: str | Path, *,
     if corrected:
         print(f"  :{corrected} turn labels corrected from the approach's turn order; "
               "the movement table from stage 1 still holds the bearing-derived value.")
+
+    if preserve_edits:
+        kept = 0
+        for col in PRESERVED_COLUMNS:
+            held = existing[col].notna() & (existing[col].astype(str).str.strip() != "")
+            changed = held & (df[col].astype(str) != existing[col].astype(str))
+            df.loc[held, col] = existing.loc[held, col]
+            kept += int(changed.sum())
+        if kept:
+            print(f"  :{kept} hand-entered values kept; the derivation would have "
+                  "changed them. Re-run with preserve_edits=False to rebuild.")
 
     write_matchup_table(df, path_matchup_table)
     return df
