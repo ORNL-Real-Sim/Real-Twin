@@ -83,6 +83,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="Movement table written by stage 1, for the routing decisions")
     parser.add_argument("--no-routes", action="store_true",
                         help="Write vehicle inputs only, skip routing decisions")
+    parser.add_argument("--combine-routes", action="store_true",
+                        help="Combine consecutive routing decisions so vehicles "
+                             "change lanes for the turn after next (opt-in: it "
+                             "changes driving behaviour, not just the network)")
     args = parser.parse_args(argv)
 
     inpx_path = Path(args.inpx).resolve()
@@ -140,7 +144,8 @@ def main(argv: list[str] | None = None) -> int:
 
         if integrated:
             n_dec, n_routes, route_warnings = write_routing_decisions(
-                session, integrated, start_time, links)
+                session, integrated, start_time, links,
+                combine=args.combine_routes)
             for warning in route_warnings:
                 print(f"  :{warning}")
             print(f"  :Created {n_dec} routing decisions, {n_routes} routes")

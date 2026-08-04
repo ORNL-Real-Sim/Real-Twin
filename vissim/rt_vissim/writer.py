@@ -28,8 +28,8 @@ midnight, so every interval is shifted by the scenario's start time.
 from __future__ import annotations
 
 from .ir import RoutingDecision, VehicleInput
-from .routes import (FALLBACK_MAX_SPEED_KMH, ROUTE_END_OFFSET, decision_position,
-                     minimum_gap)
+from .routes import (FALLBACK_MAX_SPEED_KMH, ROUTE_END_OFFSET, minimum_gap,
+                     plan_decision_positions)
 
 #: Vissim's time-interval set for vehicle inputs.
 VEHICLE_INPUT_TIS = 1
@@ -141,9 +141,35 @@ def network_max_speed(session) -> float:
     return FALLBACK_MAX_SPEED_KMH
 
 
+def enable_route_lookahead(session) -> int:
+    """Let vehicles see the route they will take at the *next* decision.
+
+    Combining routing decisions only changes behaviour if the driving behaviour
+    has ``VehRoutDecLookAhead`` set: the manual notes the vehicle considers the
+    subsequent route for lane changes "if the vehicle uses a driving behavior in
+    which the attribute Vehicle routing decisions look ahead is selected".
+
+    Args:
+        session: A started :class:`~rt_vissim.com.VissimSession`.
+
+    Returns:
+        How many driving behaviour sets were changed.
+    """
+    changed = 0
+    try:
+        for behaviour in session.net.DrivingBehaviors.GetAll():
+            if not behaviour.AttValue("VehRoutDecLookAhead"):
+                behaviour.SetAttValue("VehRoutDecLookAhead", True)
+                changed += 1
+    except Exception:  # noqa: BLE001 - attribute absent on older builds
+        return 0
+    return changed
+
+
 def write_routing_decisions(session, decisions: list[RoutingDecision],
                             sim_start_time: float, links: dict,
-                            sim_resolution: int = 10) -> tuple[int, int, list[str]]:
+                            sim_resolution: int = 10,
+                            combine: bool = False) -> tuple[int, int, list[str]]:
     """Create one static routing decision per approach, with a route per exit.
 
     All of an approach's intervals share one decision object: Vissim indexes the
@@ -157,6 +183,10 @@ def write_routing_decisions(session, decisions: list[RoutingDecision],
         sim_start_time: Scenario start in seconds after midnight.
         links: Output of :func:`rt_vissim.network.read_links_csv`, for lengths.
         sim_resolution: Simulation steps per second, for the minimum gap.
+        combine: Set ``CombineStaRoutDec`` on every decision, so a vehicle
+            passing one already knows the route it will take at the next and can
+            start changing lanes for it.  Off by default: it changes how vehicles
+            behave, not just what is written, so it is the modeller's choice.
 
     Returns:
         ``(decisions created, routes created, warnings)``.
@@ -177,24 +207,31 @@ def write_routing_decisions(session, decisions: list[RoutingDecision],
         by_approach.setdefault((decision.junction_id, decision.from_link_no),
                                []).append(decision)
 
+    destinations = {e for d in decisions for e in d.routes}
+    placements, place_warnings = plan_decision_positions(
+        list(by_approach), links, destinations, gap)
+    warnings.extend(place_warnings)
+
     made_decisions = made_routes = 0
-    short = []
     for (junction_id, from_link), group in sorted(
             by_approach.items(), key=lambda kv: (str(kv[0][0]), kv[0][1])):
+        anchor, position = placements.get((junction_id, from_link), (from_link, gap))
         try:
-            link = session.net.Links.ItemByKey(from_link)
+            link = session.net.Links.ItemByKey(anchor)
         except Exception:  # noqa: BLE001 - COM raises generically for a bad key
-            warnings.append(f"Approach link {from_link} not found; skipped.")
+            warnings.append(f"Decision link {anchor} not found; skipped.")
             continue
-
-        length = links[from_link].length if from_link in links else 0.0
-        position, notes = decision_position(length, gap)
-        if notes:
-            short.append(f"link {from_link} ({junction_id})")
 
         vrd = session.net.VehicleRoutingDecisionsStatic.AddVehicleRoutingDecisionStatic(
             0, link, position)
         vrd.SetAttValue("Name", f"{group[0].name} (J{junction_id})".strip())
+        if combine:
+            try:
+                vrd.SetAttValue("CombineStaRoutDec", True)
+            except Exception:  # noqa: BLE001 - not present on older builds
+                combine = False
+                warnings.append("CombineStaRoutDec is not available in this "
+                                "Vissim version; decisions left uncombined.")
         made_decisions += 1
 
         exits = sorted({e for d in group for e in d.routes})
@@ -211,9 +248,14 @@ def write_routing_decisions(session, decisions: list[RoutingDecision],
                 route.SetAttValue(f"RelFlow({number})",
                                   float(decision.routes.get(exit_link, 0.0)))
 
-    if short:
-        warnings.append(f"{len(short)} approaches are too short to hold a route end "
-                        f"and a decision gap; decision placed mid-link: "
-                        f"{', '.join(short[:6])}"
-                        + (" ..." if len(short) > 6 else ""))
+    if combine:
+        changed = enable_route_lookahead(session)
+        detail = (f"{changed} driving behaviour sets were given "
+                  "VehRoutDecLookAhead" if changed
+                  else "every driving behaviour already had VehRoutDecLookAhead set")
+        warnings.append(
+            f"{made_decisions} decisions combined and {detail}. Vissim joins a "
+            "route to the next decision on the same link at simulation start, so "
+            "vehicles change lanes for the turn after next instead of discovering "
+            "it at the stop bar.")
     return made_decisions, made_routes, warnings
