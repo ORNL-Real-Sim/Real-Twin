@@ -41,7 +41,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import pandas as pd  # noqa: E402
 
 from rt_vissim.com import VissimSession, available_progids  # noqa: E402
-from rt_vissim.network import extract_network, DEFAULT_JUNCTION_RADIUS  # noqa: E402
+from rt_vissim.network import (  # noqa: E402
+    DEFAULT_JUNCTION_RADIUS, extract_network, read_opendrive_junction_names)
 
 
 def read_net_offset(net_path: Path) -> tuple[float, float]:
@@ -192,6 +193,23 @@ def main(argv: list[str] | None = None) -> int:
     movements_csv = outdir / f"{args.name}_movements.csv"
     movements.to_csv(movements_csv, index=False)
 
+    # The junction's OpenDRIVE name is never used to group or label -- it is
+    # optional and holds whatever the producer chose -- but netconvert puts the
+    # SUMO junction id there, and that is the only way to line this table up
+    # against a SUMO MatchupTable once junctions carry OpenDRIVE ids.  Record it
+    # rather than depending on it.
+    junction_names = read_opendrive_junction_names(xodr_path)
+    junction_rows = [{
+        "JunctionID_OpenDrive": jid,
+        "Name_OpenDrive": junction_names.get(jid, ""),
+        "InternalLinks": len(members),
+        "InMovementTable": int(jid in set(movements["JunctionID_Vissim"]))
+        if not movements.empty else 0,
+    } for jid, members in sorted(junctions.items(),
+                                 key=lambda kv: (len(kv[0]), kv[0]))]
+    junctions_csv = outdir / f"{args.name}_junctions.csv"
+    pd.DataFrame(junction_rows).to_csv(junctions_csv, index=False)
+
     n_links = sum(not ln.is_connector for ln in links.values())
     n_conns = sum(ln.is_connector for ln in links.values())
     print()
@@ -207,6 +225,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  :Turn mix: {movements['Turn'].value_counts().to_dict()}")
     print(f"  :Wrote {links_csv}")
     print(f"  :Wrote {movements_csv}")
+    print(f"  :Wrote {junctions_csv}")
 
     if args.open_gui:
         open_in_gui(inpx_path)

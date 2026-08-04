@@ -211,6 +211,38 @@ def read_opendrive_junctions(path: str | Path) -> dict[str, str]:
     return mapping
 
 
+def read_opendrive_junction_names(path: str | Path) -> dict[str, str]:
+    """Return ``{junction id: junction name}`` from an OpenDRIVE file.
+
+    The ``name`` attribute is optional and holds whatever the producer chose, so
+    the pipeline never groups or labels by it.  It is worth recording, though:
+    ``netconvert`` writes the SUMO junction id there, which is the only way to
+    line a Vissim MatchupTable up against a SUMO one once junctions are numbered
+    by OpenDRIVE id.
+
+    Args:
+        path: Path to the ``.xodr`` file.
+
+    Returns:
+        ``{junction id: name}``, skipping junctions with no name.
+
+    Raises:
+        FileNotFoundError: If ``path`` does not exist.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"OpenDRIVE file not found: {path}")
+
+    root = ET.parse(path).getroot()
+    names: dict[str, str] = {}
+    for junction in root.findall("junction"):
+        jid = (junction.get("id") or "").strip()
+        name = (junction.get("name") or "").strip()
+        if jid and name:
+            names[jid] = name
+    return names
+
+
 def _junction_key(road_id: str | None, orig_name: str,
                   road_junction: dict[str, str] | None) -> str | None:
     """Return the junction a link belongs to, preferring the OpenDRIVE file.
@@ -423,10 +455,22 @@ def check_nodes_against_junctions(session, junctions: dict[str, list[int]],
                                   ) -> list[str]:
     """Compare the junctions derived here with the nodes Vissim built on import.
 
-    Vissim creates one node per OpenDRIVE ``<junction>``, named
-    ``"<id>: <name>"``.  The node polygons cover whole intersections, so their
-    link segments include the approaches and cannot be used for grouping, but
-    the ids are a free check that the two readings of the file agree.
+    The Vissim manual states that on OpenDRIVE import it "generates segment
+    nodes from the OpenDRIVE junctions in the *.xodr file, if this file contains
+    junctions with the corresponding connecting roads", and that it "adopts the
+    name and ID" of each.  So a node should exist for every junction this module
+    finds -- the two readings share the same precondition -- and the ids are a
+    free check that they agree.
+
+    The nodes cannot replace the grouping.  A node holds link *segments*, and an
+    approach contributes the stretch of itself that lies inside the node polygon,
+    so its members are the junction's internal links plus every approach: 25
+    against 17 at Chattanooga's largest junction.
+
+    The manual also warns that merging overlapping segment nodes "disrupts the
+    direct mapping between the junctions from OpenDRIVE and the generated segment
+    nodes", so a disagreement here may mean the network was edited rather than
+    that the grouping is wrong.
 
     Args:
         session: A started :class:`~rt_vissim.com.VissimSession`.
