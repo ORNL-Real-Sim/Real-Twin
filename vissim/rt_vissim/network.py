@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import math
 import re
+import xml.etree.ElementTree as ET
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -174,6 +175,59 @@ def parse_link_name(name: str) -> tuple[str | None, str]:
     return match.group("road"), (match.group("orig") or "").strip()
 
 
+def read_opendrive_junctions(path: str | Path) -> dict[str, str]:
+    """Return ``{road id: junction id}`` for the roads inside a junction.
+
+    Every ``<road>`` in an OpenDRIVE file carries a ``junction`` attribute: the
+    id of the junction it belongs to, or ``-1`` when it is an ordinary road.
+    Both the attribute and the junction's ``id`` are mandatory in the standard,
+    so this works for any conforming file whatever produced it -- unlike reading
+    the junction out of a link's name, which only works for a network SUMO
+    exported with original names preserved.
+
+    The junction's ``name`` is deliberately ignored.  It is optional in the
+    standard and holds whatever the producer chose to put there.
+
+    Args:
+        path: Path to the ``.xodr`` file.
+
+    Returns:
+        ``{road id: junction id}``, containing only roads inside a junction.
+
+    Raises:
+        FileNotFoundError: If ``path`` does not exist.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"OpenDRIVE file not found: {path}")
+
+    root = ET.parse(path).getroot()
+    mapping: dict[str, str] = {}
+    for road in root.findall("road"):
+        junction = (road.get("junction") or "-1").strip()
+        road_id = (road.get("id") or "").strip()
+        if road_id and junction and junction != "-1":
+            mapping[road_id] = junction
+    return mapping
+
+
+def _junction_key(road_id: str | None, orig_name: str,
+                  road_junction: dict[str, str] | None) -> str | None:
+    """Return the junction a link belongs to, preferring the OpenDRIVE file.
+
+    Args:
+        road_id: OpenDRIVE road id parsed from the Vissim link name.
+        orig_name: The road's original name, if the importer kept one.
+        road_junction: Output of :func:`read_opendrive_junctions`, or ``None``.
+
+    Returns:
+        The junction id, or ``None`` when the link is not inside a junction.
+    """
+    if road_junction is not None:
+        return road_junction.get(str(road_id)) if road_id else None
+    return junction_key_from_name(orig_name)
+
+
 def junction_key_from_name(orig_name: str) -> str | None:
     """Return the junction label encoded in a SUMO internal edge name.
 
@@ -191,11 +245,16 @@ def junction_key_from_name(orig_name: str) -> str | None:
 # ---------------------------------------------------------------------- #
 # Reading the network over COM
 # ---------------------------------------------------------------------- #
-def read_links(session) -> dict[int, VissimLink]:
+def read_links(session, road_junction: dict[str, str] | None = None,
+               ) -> dict[int, VissimLink]:
     """Read every link and connector from a live Vissim session.
 
     Args:
         session: A started :class:`~rt_vissim.com.VissimSession`.
+        road_junction: Output of :func:`read_opendrive_junctions`.  Supply it
+            whenever the ``.xodr`` is available: junction membership then comes
+            from the OpenDRIVE file rather than from link names, which only
+            carry it for a network SUMO exported with original names.
 
     Returns:
         ``{link number: VissimLink}``, geometry and parsed names included.
@@ -216,7 +275,7 @@ def read_links(session) -> dict[int, VissimLink]:
             length=float(rec.get("Length2D") or 0.0),
             road_id=road_id,
             orig_name=orig_name,
-            junction_key=junction_key_from_name(orig_name),
+            junction_key=_junction_key(road_id, orig_name, road_junction),
         )
 
     # Geometry and connector endpoints need per-object reads: connectors carry
@@ -235,7 +294,9 @@ def read_links(session) -> dict[int, VissimLink]:
     return links
 
 
-def read_links_csv(path: str | Path) -> dict[int, VissimLink]:
+def read_links_csv(path: str | Path,
+                   road_junction: dict[str, str] | None = None,
+                   ) -> dict[int, VissimLink]:
     """Rebuild the link table from the CSV stage 1 wrote.
 
     The connectivity the demand stage needs -- which connector joins which pair
@@ -246,6 +307,7 @@ def read_links_csv(path: str | Path) -> dict[int, VissimLink]:
 
     Args:
         path: Path to ``<name>_links.csv``.
+        road_junction: Output of :func:`read_opendrive_junctions`.
 
     Returns:
         ``{link number: VissimLink}``.
@@ -272,7 +334,7 @@ def read_links_csv(path: str | Path) -> dict[int, VissimLink]:
             to_link=_opt_int(row.ToLink),
             road_id=road_id,
             orig_name=orig_name,
-            junction_key=junction_key_from_name(orig_name),
+            junction_key=_junction_key(road_id, orig_name, road_junction),
         )
     return links
 
@@ -355,6 +417,48 @@ def derive_junctions(links: dict[int, VissimLink],
         return {jid: sorted(nos) for jid, nos in sorted(named.items())}
 
     return _cluster_internal_links(links, radius=radius)
+
+
+def check_nodes_against_junctions(session, junctions: dict[str, list[int]],
+                                  ) -> list[str]:
+    """Compare the junctions derived here with the nodes Vissim built on import.
+
+    Vissim creates one node per OpenDRIVE ``<junction>``, named
+    ``"<id>: <name>"``.  The node polygons cover whole intersections, so their
+    link segments include the approaches and cannot be used for grouping, but
+    the ids are a free check that the two readings of the file agree.
+
+    Args:
+        session: A started :class:`~rt_vissim.com.VissimSession`.
+        junctions: Output of :func:`derive_junctions`.
+
+    Returns:
+        Warnings; empty when the ids agree or the network has no nodes.
+    """
+    try:
+        node_ids = set()
+        for node in session.net.Nodes.GetAll():
+            label = str(node.AttValue("Name") or "").strip()
+            if label:
+                node_ids.add(label.split(":")[0].strip())
+    except Exception:  # noqa: BLE001 - older builds may not expose Nodes
+        return []
+
+    if not node_ids:
+        return ["Vissim created no nodes for this network, so the junction "
+                "grouping could not be cross-checked against the importer."]
+
+    derived = set(junctions)
+    warnings = []
+    missing = sorted(node_ids - derived)
+    extra = sorted(derived - node_ids)
+    if missing:
+        warnings.append(f"Vissim has nodes for junctions {missing} that the "
+                        "OpenDRIVE grouping did not produce.")
+    if extra:
+        warnings.append(f"Junctions {extra} were derived but Vissim built no "
+                        "node for them.")
+    return warnings
 
 
 def _cluster_internal_links(links: dict[int, VissimLink],
@@ -547,19 +651,30 @@ def build_movement_table(links: dict[int, VissimLink],
 
 
 def extract_network(session, *, radius: float = DEFAULT_JUNCTION_RADIUS,
-                    min_legs: int = 3) -> tuple[pd.DataFrame, dict[int, VissimLink], dict[str, list[int]]]:
+                    min_legs: int = 3, xodr_path: str | Path | None = None,
+                    ) -> tuple[pd.DataFrame, dict[int, VissimLink], dict[str, list[int]]]:
     """Read a Vissim session and derive its movement table in one call.
 
     Args:
         session: A started :class:`~rt_vissim.com.VissimSession`.
         radius: Clustering radius in metres, used only by the fallback grouping.
         min_legs: Minimum approaches for a group to count as a junction.
+        xodr_path: The OpenDRIVE file the network was imported from.  Supply it
+            whenever possible: junction membership then comes from the file's
+            own ``junction`` attributes rather than from link names.
 
     Returns:
         ``(movement_table, links, junctions)``.
     """
-    links = read_links(session)
+    road_junction = None
+    if xodr_path is not None:
+        road_junction = read_opendrive_junctions(xodr_path)
+        print(f"  :OpenDRIVE: {len(set(road_junction.values()))} junctions, "
+              f"{len(road_junction)} roads inside one")
+    links = read_links(session, road_junction)
     junctions = derive_junctions(links, radius=radius)
+    for warning in check_nodes_against_junctions(session, junctions):
+        print(f"  :WARNING: {warning}")
     return build_movement_table(links, junctions, min_legs=min_legs), links, junctions
 
 

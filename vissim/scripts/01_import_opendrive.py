@@ -170,7 +170,8 @@ def main(argv: list[str] | None = None) -> int:
         sess.save_net_as(inpx_path)
         print(f"  :Saved Vissim network -> {inpx_path}")
 
-        movements, links, junctions = extract_network(sess, radius=args.radius)
+        movements, links, junctions = extract_network(
+            sess, radius=args.radius, xodr_path=xodr_path)
 
     # ------------------------------------------------------------------ #
     # Reports

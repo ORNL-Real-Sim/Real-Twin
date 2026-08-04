@@ -103,10 +103,12 @@ class VissimSession:
     """
 
     def __init__(self, progid: str | None = None, *, visible: bool = True,
-                 quit_on_exit: bool = True):
+                 quit_on_exit: bool = True, attach: bool = False):
         self.progid = progid
         self.visible = visible
         self.quit_on_exit = quit_on_exit
+        #: Share an already-running Vissim instead of refusing to start.
+        self.attach = attach
         self.vissim = None
 
     # ------------------------------------------------------------------ #
@@ -128,6 +130,24 @@ class VissimSession:
             ) from exc
 
         candidates = [self.progid] if self.progid else list(DEFAULT_PROGIDS)
+
+        # Vissim serves COM from a single instance, so a session started here
+        # attaches to whatever the user already has open, loads its own network
+        # into it and closes it on exit.  Refuse instead of destroying their work.
+        if not self.attach:
+            for progid in candidates:
+                try:
+                    import win32com.client as _c
+                    _c.GetActiveObject(progid)
+                except Exception:  # noqa: BLE001 - not running, which is what we want
+                    continue
+                raise VissimComError(
+                    f"Vissim is already running ({progid}). A COM session would take "
+                    "over that window and close it when the script finishes.\n"
+                    "  Close Vissim and re-run, or pass attach=True to share it "
+                    "deliberately (the open network will be replaced)."
+                )
+
         errors: list[str] = []
         for progid in candidates:
             try:
