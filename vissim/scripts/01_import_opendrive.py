@@ -210,7 +210,7 @@ def main(argv: list[str] | None = None) -> int:
         "JunctionID_OpenDrive": jid,
         "Name_OpenDrive": junction_names.get(jid, ""),
         "InternalLinks": len(members),
-        "InMovementTable": int(jid in set(movements["JunctionID_Vissim"]))
+        "InMovementTable": int(jid in set(movements["JunctionID_OpenDrive"]))
         if not movements.empty else 0,
     } for jid, members in sorted(junctions.items(),
                                  key=lambda kv: (len(kv[0]), kv[0]))]
@@ -228,7 +228,7 @@ def main(argv: list[str] | None = None) -> int:
               "that link geometry could be read (NumPoints in the links CSV).")
     else:
         print(f"  :Derived {len(movements)} movements across "
-              f"{movements['JunctionID_Vissim'].nunique()} junctions")
+              f"{movements['JunctionID_OpenDrive'].nunique()} junctions")
         print(f"  :Turn mix: {movements['Turn'].value_counts().to_dict()}")
     print(f"  :Wrote {links_csv}")
     print(f"  :Wrote {movements_csv}")

@@ -205,13 +205,13 @@ def build_integrated_decisions(movements: pd.DataFrame, turn_counts: pd.DataFram
     names = {}
     if "IntersectionName" in turn_counts.columns:
         for row in turn_counts.itertuples(index=False):
-            names.setdefault(str(row.JunctionID_Vissim), str(row.IntersectionName))
+            names.setdefault(str(row.JunctionID_OpenDrive), str(row.IntersectionName))
 
     decisions: list[RoutingDecision] = []
     uncounted_approaches = 0
 
     for (junction_id, from_link), group in movements.groupby(
-            ["JunctionID_Vissim", "FromLinkNo_Vissim"], sort=True):
+            ["JunctionID_OpenDrive", "FromLinkNo_Vissim"], sort=True):
         exits = sorted({int(x) for x in group["ToLinkNo_Vissim"]})
         if not exits:
             continue

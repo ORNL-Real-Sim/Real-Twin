@@ -74,7 +74,7 @@ def check_leg_separation(movements: pd.DataFrame,
         One finding per too-close pair.
     """
     findings: list[Finding] = []
-    for junction_id, group in movements.groupby("JunctionID_Vissim", sort=True):
+    for junction_id, group in movements.groupby("JunctionID_OpenDrive", sort=True):
         legs = (group.drop_duplicates("FromLinkNo_Vissim")
                 .sort_values("Bearing")[["FromLinkNo_Vissim", "Bearing"]])
         rows = list(legs.itertuples(index=False))
@@ -106,7 +106,7 @@ def check_turn_order(matchup: pd.DataFrame) -> list[Finding]:
     order = {"R": 0, "T": 1, "L": 2, "U": 3}
     findings: list[Finding] = []
     for (junction_id, approach), group in matchup.groupby(
-            ["JunctionID_Vissim", "FromLinkNo_Vissim"], sort=True):
+            ["JunctionID_OpenDrive", "FromLinkNo_Vissim"], sort=True):
         codes = [str(c) for c in group["Turn_GridSmart"].dropna()]
         ranks = [order.get(c[-1]) for c in codes if c[-1] in order]
         if any(b <= a for a, b in zip(ranks, ranks[1:])):
@@ -140,9 +140,9 @@ def check_flow_continuity(turn_counts: pd.DataFrame,
         return []
 
     outflow = turn_counts.groupby(
-        ["JunctionID_Vissim", "ToLinkNo_Vissim"])["Count"].sum()
+        ["JunctionID_OpenDrive", "ToLinkNo_Vissim"])["Count"].sum()
     inflow = turn_counts.groupby(
-        ["JunctionID_Vissim", "FromLinkNo_Vissim"])["Count"].sum()
+        ["JunctionID_OpenDrive", "FromLinkNo_Vissim"])["Count"].sum()
     approach_of = {int(link): junction for junction, link in inflow.index}
 
     findings: list[Finding] = []

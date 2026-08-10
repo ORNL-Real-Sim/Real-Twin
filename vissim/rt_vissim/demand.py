@@ -124,7 +124,7 @@ def build_turn_counts(matchup, traffic_dir: str | Path) -> pd.DataFrame:
 
     Returns:
         One row per (interval, movement) that maps to a network turn.  Columns:
-        ``IntersectionName``, ``JunctionID_Vissim``, ``Turn``, ``IntervalStart``,
+        ``IntersectionName``, ``JunctionID_OpenDrive``, ``Turn``, ``IntervalStart``,
         ``IntervalEnd``, ``Count``, ``FromLinkNo_Vissim``, ``ToLinkNo_Vissim``.
     """
     traffic_dir = Path(traffic_dir)
@@ -139,7 +139,7 @@ def build_turn_counts(matchup, traffic_dir: str | Path) -> pd.DataFrame:
             print(f"  :WARNING: GridSmart file missing for junction {junction_id}: {path.name}")
             continue
 
-        junction_rows = matchup.df[matchup.df["JunctionID_Vissim"] == junction_id]
+        junction_rows = matchup.df[matchup.df["JunctionID_OpenDrive"] == junction_id]
         names = [v for v in junction_rows["IntersectionName_GridSmart"].dropna().unique()]
         intersection = str(names[0]) if names else f"Junction {junction_id}"
 
@@ -151,18 +151,18 @@ def build_turn_counts(matchup, traffic_dir: str | Path) -> pd.DataFrame:
 
         long = counts.melt(id_vars=["Time"], var_name="Turn", value_name="Count")
         long["IntersectionName"] = intersection
-        long["JunctionID_Vissim"] = junction_id
+        long["JunctionID_OpenDrive"] = junction_id
         long["IntervalStart"] = long["Time"].apply(time_to_seconds)
         long["IntervalEnd"] = long["IntervalStart"] + DEMAND_INTERVAL
         frames.append(long.drop(columns=["Time"]))
 
     if not frames:
-        return pd.DataFrame(columns=["IntersectionName", "JunctionID_Vissim", "Turn",
+        return pd.DataFrame(columns=["IntersectionName", "JunctionID_OpenDrive", "Turn",
                                      "IntervalStart", "IntervalEnd", "Count",
                                      "FromLinkNo_Vissim", "ToLinkNo_Vissim"])
 
     counts = pd.concat(frames, ignore_index=True)
-    merged = counts.merge(lookup, on=["IntersectionName", "Turn", "JunctionID_Vissim"],
+    merged = counts.merge(lookup, on=["IntersectionName", "Turn", "JunctionID_OpenDrive"],
                           how="inner")
     merged["Count"] = pd.to_numeric(merged["Count"], errors="coerce").fillna(0).astype(int)
     return merged.reset_index(drop=True)
@@ -299,7 +299,7 @@ def build_routing_decisions(turn_counts: pd.DataFrame) -> list[RoutingDecision]:
         return []
 
     decisions: list[RoutingDecision] = []
-    grouped = turn_counts.groupby(["JunctionID_Vissim", "FromLinkNo_Vissim",
+    grouped = turn_counts.groupby(["JunctionID_OpenDrive", "FromLinkNo_Vissim",
                                    "IntervalStart", "IntervalEnd"], sort=True)
     for (junction_id, from_link, start, end), group in grouped:
         routes = (group.groupby("ToLinkNo_Vissim")["Count"].sum()

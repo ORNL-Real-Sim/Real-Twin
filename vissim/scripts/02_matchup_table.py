@@ -163,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
     out_path = Path(args.outdir) / "MatchupTable.xlsx"
     generate_matchup_table(movements, out_path)
     print(f"  :Wrote {out_path} -- {len(movements)} movements, "
-          f"{movements['JunctionID_Vissim'].nunique()} junctions")
+          f"{movements['JunctionID_OpenDrive'].nunique()} junctions")
 
     if args.seed_from:
         # Stage 1 writes the junction mapping beside the movement table.  Seeding

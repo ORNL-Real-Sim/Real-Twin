@@ -62,7 +62,7 @@ class RoutingDecision:
     downstream link.  Relative flows are the turning ratios from the counts.
 
     Attributes:
-        junction_id: Derived junction ID (matches ``JunctionID_Vissim``).
+        junction_id: Derived junction ID (matches ``JunctionID_OpenDrive``).
         from_link_no: VISSIM link number of the approach.
         interval_start: Start of the demand interval, in simulation seconds.
         interval_end: End of the demand interval, in simulation seconds.
@@ -129,7 +129,7 @@ class SignalPlan:
     Attributes:
         sc_no: VISSIM signal controller number.
         junction_id: Derived junction ID this controller belongs to
-            (matches ``JunctionID_Vissim``).
+            (matches ``JunctionID_OpenDrive``).
         synchro_intid: Synchro ``INTID`` this plan was built from.
         name: Human readable intersection name.
         cycle_time: Cycle length in seconds.
@@ -161,7 +161,7 @@ class SignalHead:
     Attributes:
         sc_no: Signal controller number.
         sg_no: Signal group number.
-        junction_id: Derived junction ID (matches ``JunctionID_Vissim``).
+        junction_id: Derived junction ID (matches ``JunctionID_OpenDrive``).
         from_link_no: VISSIM link number of the approach the head sits on.
         to_link_no: VISSIM link number of the receiving link (identifies the turn).
         movement: Synchro movement code, e.g. ``"NBL"``.

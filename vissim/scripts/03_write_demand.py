@@ -113,7 +113,7 @@ def main(argv: list[str] | None = None) -> int:
         matchup, links, args.traffic_dir,
         sim_start_time=start_time, sim_end_time=end_time)
 
-    print(f"  :{len(links)} links, {matchup.df['JunctionID_Vissim'].nunique()} junctions")
+    print(f"  :{len(links)} links, {matchup.df['JunctionID_OpenDrive'].nunique()} junctions")
     print(f"  :Demand {args.start}-{args.end}: {len(inputs)} vehicle inputs, "
           f"{len(decisions)} routing decisions")
     for warning in warnings:

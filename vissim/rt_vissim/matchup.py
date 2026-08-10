@@ -17,10 +17,22 @@ The MatchupTable is RealTwin's single hand-curated artefact: one row per
 ===========================  ==============================================
 Column group                 What it identifies
 ===========================  ==============================================
-``*_Vissim``                 The network: junction, from/to link numbers
+``JunctionID_OpenDrive``     The junction, by its **OpenDRIVE** id
+``*_Vissim``                 The network: from/to **Vissim link** numbers
 ``*_GridSmart``              The demand: turn-count file, intersection, turn
 ``*_Synchro``                The control: UTDF file, INTID, turn
 ===========================  ==============================================
+
+The junction column is deliberately *not* ``_Vissim``: Vissim has no junction
+object at all, only links and connectors.  It does build a segment node per
+junction on import, but those carry their own numbering -- OpenDRIVE junction 11
+is Vissim node 1 -- and a node is a polygon that swallows part of each approach,
+so it cannot say which links are the interior.  The id here is the OpenDRIVE
+one, which is what the grouping is actually derived from.
+
+Note the SUMO table names its equivalent column ``JunctionID_OpenDrive`` too,
+but holds a SUMO junction id in it.  The two are not interchangeable; the
+mapping between them is written to ``<name>_junctions.csv`` by stage 1.
 
 The layout mirrors
 :func:`~realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation.generate_matchup_table`
@@ -45,7 +57,7 @@ from openpyxl.styles import Alignment
 #: Network columns, sourced from :func:`rt_vissim.network.build_movement_table`.
 #: Positionally identical to the SUMO table's network block, with link numbers
 #: substituted for road IDs.
-NETWORK_COLUMNS = ["JunctionID_Vissim", "Bearing", "Numbering", "FromLinkNo_Vissim",
+NETWORK_COLUMNS = ["JunctionID_OpenDrive", "Bearing", "Numbering", "FromLinkNo_Vissim",
                    "ToLinkNo_Vissim", "Turn"]
 
 #: Demand columns, filled in by the user.
@@ -74,7 +86,7 @@ REQUIRED_COLUMNS = NETWORK_COLUMNS + EXTRA_COLUMNS
 #: forward-filled on read.  ``File_Synchro`` is absent by design: as in the SUMO
 #: table it is merged across the whole sheet, since one UTDF export covers the
 #: entire network.
-MERGED_COLUMNS = ["JunctionID_Vissim", "File_GridSmart", "Date_GridSmart",
+MERGED_COLUMNS = ["JunctionID_OpenDrive", "File_GridSmart", "Date_GridSmart",
                   "IntersectionName_GridSmart", "IntersectionID_Synchro",
                   "Need calibration?"]
 
@@ -187,7 +199,7 @@ def _merge_junction_blocks(ws, df: pd.DataFrame) -> None:
         df: The dataframe that was written, used for the junction boundaries.
     """
     merge_cols = [ALL_COLUMNS.index(c) + 1 for c in MERGED_COLUMNS]
-    junction_ids = df["JunctionID_Vissim"].tolist()
+    junction_ids = df["JunctionID_OpenDrive"].tolist()
 
     start = 3  # data starts at row 3
     for i, junction_id in enumerate(junction_ids):
@@ -587,15 +599,15 @@ def update_matchup_table(path_matchup_table: str | Path, *,
 
     df = pd.read_excel(path_matchup_table, skiprows=1, dtype=str)
     df = df.reindex(columns=ALL_COLUMNS)
-    df[["JunctionID_Vissim", "File_Synchro"]] = (
-        df[["JunctionID_Vissim", "File_Synchro"]].ffill().infer_objects(copy=False))
+    df[["JunctionID_OpenDrive", "File_Synchro"]] = (
+        df[["JunctionID_OpenDrive", "File_Synchro"]].ffill().infer_objects(copy=False))
     # Snapshot before anything is derived, so hand edits can be restored.
     existing = df[PRESERVED_COLUMNS].copy()
     df["Need calibration?"] = "Y"
     corrected = 0
 
     # -- demand ------------------------------------------------------- #
-    for junction_id, group in df.groupby("JunctionID_Vissim", sort=False):
+    for junction_id, group in df.groupby("JunctionID_OpenDrive", sort=False):
         files = group["File_GridSmart"].dropna()
         if files.empty:
             continue
@@ -613,7 +625,7 @@ def update_matchup_table(path_matchup_table: str | Path, *,
             print(f"  :WARNING: could not read {path.name}: {exc}")
             continue
 
-        rows = df["JunctionID_Vissim"] == junction_id
+        rows = df["JunctionID_OpenDrive"] == junction_id
         df.loc[rows, "Need calibration?"] = "N"
         if intersection:
             df.loc[rows, "IntersectionName_GridSmart"] = intersection
@@ -626,7 +638,7 @@ def update_matchup_table(path_matchup_table: str | Path, *,
 
     # -- signal ------------------------------------------------------- #
     cache: dict[str, dict] = {}
-    for junction_id, group in df.groupby("JunctionID_Vissim", sort=False):
+    for junction_id, group in df.groupby("JunctionID_OpenDrive", sort=False):
         intids = group["IntersectionID_Synchro"].dropna()
         files = group["File_Synchro"].dropna()
         if intids.empty or files.empty:
@@ -644,7 +656,7 @@ def update_matchup_table(path_matchup_table: str | Path, *,
         codes = _synchro_movements(cache[utdf], str(intids.iloc[0]))
         if not codes:
             continue
-        rows = df["JunctionID_Vissim"] == junction_id
+        rows = df["JunctionID_OpenDrive"] == junction_id
         assigned = assign_movement_codes(group, codes)
         df.loc[rows, "Turn_Synchro"] = assigned
         report_coverage(junction_id, "Turn_Synchro", group, codes, assigned)
@@ -654,14 +666,14 @@ def update_matchup_table(path_matchup_table: str | Path, *,
     # bearing or turn classification disagrees with the count file, so flag the
     # junction for review rather than emitting a table that quietly double counts.
     for col in ("Turn_GridSmart", "Turn_Synchro"):
-        for junction_id, group in df.groupby("JunctionID_Vissim", sort=False):
+        for junction_id, group in df.groupby("JunctionID_OpenDrive", sort=False):
             filled = group[col].dropna()
             dupes = sorted(set(filled[filled.duplicated()]))
             if dupes:
                 print(f"  :WARNING: junction {junction_id} derives {col} "
                       f"{dupes} more than once; check the approach bearings. "
                       "Marked for calibration.")
-                df.loc[df["JunctionID_Vissim"] == junction_id, "Need calibration?"] = "Y"
+                df.loc[df["JunctionID_OpenDrive"] == junction_id, "Need calibration?"] = "Y"
 
     if corrected:
         print(f"  :{corrected} turn labels corrected from the approach's turn order; "
@@ -720,10 +732,10 @@ class MatchupTable:
         # filling them globally would leak one junction's count file onto the
         # next junction, which has none.
         # infer_objects avoids pandas' deprecated silent downcast on object ffill.
-        sheet_wide = ["JunctionID_Vissim", "File_Synchro"]
+        sheet_wide = ["JunctionID_OpenDrive", "File_Synchro"]
         df[sheet_wide] = df[sheet_wide].ffill().infer_objects(copy=False)
         per_junction = [c for c in FILLED_COLUMNS if c not in sheet_wide]
-        df[per_junction] = (df.groupby("JunctionID_Vissim")[per_junction]
+        df[per_junction] = (df.groupby("JunctionID_OpenDrive")[per_junction]
                             .ffill().infer_objects(copy=False))
 
         # Hand-edited spreadsheets are full of stray whitespace.
@@ -756,7 +768,7 @@ class MatchupTable:
         """
         rows = self.df[self.df["Turn_Synchro"].notna()]
         out: dict[str, str] = {}
-        for junction_id, group in rows.groupby("JunctionID_Vissim"):
+        for junction_id, group in rows.groupby("JunctionID_OpenDrive"):
             intids = [v for v in group["IntersectionID_Synchro"].dropna().unique() if str(v).strip()]
             if not intids:
                 print(f"  :WARNING: junction {junction_id} has Turn_Synchro codes but no "
@@ -769,7 +781,7 @@ class MatchupTable:
     def gridsmart_files(self) -> dict[str, str]:
         """Return ``{Vissim junction ID: GridSmart turn-count filename}``."""
         out: dict[str, str] = {}
-        for junction_id, group in self.df.groupby("JunctionID_Vissim"):
+        for junction_id, group in self.df.groupby("JunctionID_OpenDrive"):
             files = [v for v in group["File_GridSmart"].dropna().unique() if str(v).strip()]
             if files:
                 out[str(junction_id)] = str(files[0])
@@ -779,15 +791,15 @@ class MatchupTable:
         """Return the demand join table: GridSmart turn code to Vissim links.
 
         Returns:
-            Columns ``IntersectionName``, ``Turn``, ``JunctionID_Vissim``,
+            Columns ``IntersectionName``, ``Turn``, ``JunctionID_OpenDrive``,
             ``FromLinkNo_Vissim``, ``ToLinkNo_Vissim`` -- one row per movement
             that carries a GridSmart turn code.  This is the Vissim analogue of
             the ``IDRef`` frame RealTwin builds in ``generate_turn_demand_cali``.
         """
         rows = self.df[self.df["Turn_GridSmart"].notna()].copy()
-        out = rows[["IntersectionName_GridSmart", "Turn_GridSmart", "JunctionID_Vissim",
+        out = rows[["IntersectionName_GridSmart", "Turn_GridSmart", "JunctionID_OpenDrive",
                     "FromLinkNo_Vissim", "ToLinkNo_Vissim"]].copy()
-        out.columns = ["IntersectionName", "Turn", "JunctionID_Vissim",
+        out.columns = ["IntersectionName", "Turn", "JunctionID_OpenDrive",
                        "FromLinkNo_Vissim", "ToLinkNo_Vissim"]
         out = out.dropna(subset=["FromLinkNo_Vissim", "ToLinkNo_Vissim"])
         for col in ("FromLinkNo_Vissim", "ToLinkNo_Vissim"):
@@ -807,4 +819,4 @@ class MatchupTable:
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return (f"MatchupTable(path={self.path.name!r}, rows={len(self.df)}, "
-                f"junctions={self.df['JunctionID_Vissim'].nunique()})")
+                f"junctions={self.df['JunctionID_OpenDrive'].nunique()})")

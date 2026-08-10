@@ -850,7 +850,7 @@ def build_movement_table(links: dict[int, VissimLink],
     Returns:
         One row per movement, sorted the way RealTwin sorts its SUMO matchup
         table: by junction, then approach bearing measured from 337.5 deg, then
-        turn.  Columns: ``JunctionID_Vissim``, ``Bearing``, ``Numbering``,
+        turn.  Columns: ``JunctionID_OpenDrive``, ``Bearing``, ``Numbering``,
         ``Bound``, ``FromLinkNo_Vissim``, ``ToLinkNo_Vissim``,
         ``InternalLinks_Vissim``, ``Turn``, ``Movement``.
     """
@@ -901,7 +901,7 @@ def build_movement_table(links: dict[int, VissimLink],
                     found, classify_turns([f[2] for f in found])):
                 rows.append({
                     "_delta": round(signed, 2),
-                    "JunctionID_Vissim": junction_id,
+                    "JunctionID_OpenDrive": junction_id,
                     "Bearing": round(bearing_in, 2),
                     "Numbering": int(round(bearing_in / 10.0)),
                     "Bound": bound,
@@ -912,7 +912,7 @@ def build_movement_table(links: dict[int, VissimLink],
                     "Movement": f"{bound}{TURN_SUFFIX.get(turn, '')}",
                 })
 
-    columns = ["JunctionID_Vissim", "Bearing", "Numbering", "Bound",
+    columns = ["JunctionID_OpenDrive", "Bearing", "Numbering", "Bound",
                "FromLinkNo_Vissim", "ToLinkNo_Vissim", "InternalLinks_Vissim",
                "Turn", "Movement", "_delta"]
     df = pd.DataFrame(rows, columns=columns)
@@ -924,8 +924,8 @@ def build_movement_table(links: dict[int, VissimLink],
     # Junction ids are strings, but sorting them as strings puts 10 before 2.
     # RealTwin's SUMO table is in numeric order, and the two are meant to be
     # readable side by side, so sort numerically where the id is a number.
-    df["_junction"] = pd.to_numeric(df["JunctionID_Vissim"], errors="coerce")
-    df["_junction_text"] = df["JunctionID_Vissim"].astype(str)
+    df["_junction"] = pd.to_numeric(df["JunctionID_OpenDrive"], errors="coerce")
+    df["_junction_text"] = df["JunctionID_OpenDrive"].astype(str)
     df["_shifted"] = (df["Bearing"] - 337.5) % 360
     df["_turn_order"] = df["Turn"].map(TURN_ORDER)
     # Turn label first, then the signed change of heading, largest first.  The
