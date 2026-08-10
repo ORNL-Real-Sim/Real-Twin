@@ -52,15 +52,26 @@ SEED_COLUMNS = {"File_GridSmart": ALL_COLUMNS.index("File_GridSmart") + 1,
                 "IntersectionID_Synchro": ALL_COLUMNS.index("IntersectionID_Synchro") + 1}
 
 
-def seed_from_sumo(path_table: Path, path_sumo: Path) -> int:
+def seed_from_sumo(path_table: Path, path_sumo: Path,
+                   path_junctions: Path | None = None) -> int:
     """Copy the per-junction seeds out of a SUMO MatchupTable.
 
-    The two tables share junction IDs -- that is the point of deriving junctions
-    from the SUMO internal edge names -- so the seeds transfer directly.
+    The two tables do **not** share junction IDs.  The Vissim table is keyed on
+    OpenDRIVE junction IDs, the SUMO one on SUMO's own, and on Chattanooga they
+    overlap enough to look right while being wrong: OpenDRIVE 10 is SUMO 8, so
+    seeding by the bare number hands junction 10 the count file for a different
+    intersection and says nothing.
+
+    So the seeds are translated through the mapping stage 1 recorded in
+    ``<name>_junctions.csv``, whose ``Name_OpenDrive`` column holds the SUMO
+    junction ID that ``netconvert`` wrote into the OpenDRIVE junction's name.
 
     Args:
         path_table: The Vissim table to seed, edited in place.
         path_sumo: A filled SUMO ``MatchupTable.xlsx``.
+        path_junctions: ``<name>_junctions.csv`` from stage 1.  Without it the
+            IDs are assumed to coincide, which is only safe when the SUMO table
+            was itself keyed on OpenDRIVE IDs.
 
     Returns:
         How many junctions were seeded.
@@ -71,6 +82,19 @@ def seed_from_sumo(path_table: Path, path_sumo: Path) -> int:
         File_GridSmart=("File_GridSmart", "first"),
         IntersectionID_Synchro=("IntersectionID_Synchro", "first"))
     utdf = sumo["File_Synchro"].dropna()
+
+    # OpenDRIVE junction ID -> the key the SUMO table is written against.
+    translate: dict[float, float] = {}
+    if path_junctions is not None and Path(path_junctions).exists():
+        mapping = pd.read_csv(path_junctions)
+        for row in mapping.itertuples(index=False):
+            try:
+                translate[float(row.JunctionID_OpenDrive)] = float(row.Name_OpenDrive)
+            except (TypeError, ValueError):
+                continue  # a "J"-prefixed SUMO node, never a real intersection
+        if translate:
+            print(f"  :Translating {len(translate)} junction IDs through "
+                  f"{Path(path_junctions).name}")
 
     wb = load_workbook(path_table)
     ws = wb.active
@@ -83,18 +107,26 @@ def seed_from_sumo(path_table: Path, path_sumo: Path) -> int:
             first_row.setdefault(float(junction), row)
 
     seeded = 0
+    missing = []
     for junction, row in first_row.items():
-        if junction not in seeds.index:
+        key = translate.get(junction, junction)
+        if key not in seeds.index:
+            missing.append(junction)
             continue
         used = False
         for col_name, col in SEED_COLUMNS.items():
-            value = seeds.loc[junction, col_name]
+            value = seeds.loc[key, col_name]
             if pd.isna(value):
                 continue
             ws.cell(row, col).value = (str(int(value))
                                        if col_name.endswith("_Synchro") else str(value))
             used = True
         seeded += used
+
+    if missing:
+        print(f"  :WARNING: {len(missing)} junctions found no seed in "
+              f"{Path(path_sumo).name}: {sorted(missing)}. Their demand and "
+              "signal columns stay blank for you to fill in.")
 
     if not utdf.empty:
         ws.cell(3, ALL_COLUMNS.index("File_Synchro") + 1).value = str(utdf.iloc[0])
@@ -134,7 +166,12 @@ def main(argv: list[str] | None = None) -> int:
           f"{movements['JunctionID_Vissim'].nunique()} junctions")
 
     if args.seed_from:
-        seeded = seed_from_sumo(out_path, Path(args.seed_from))
+        # Stage 1 writes the junction mapping beside the movement table.  Seeding
+        # without it matches junction IDs across two different numbering spaces,
+        # which hands a junction another intersection's count file.
+        junctions_csv = movements_path.with_name(
+            movements_path.name.replace("_movements.csv", "_junctions.csv"))
+        seeded = seed_from_sumo(out_path, Path(args.seed_from), junctions_csv)
         print(f"  :Seeded {seeded} junctions from {Path(args.seed_from).name}")
     elif not args.no_update:
         print("  :No --seed-from given; fill File_GridSmart, IntersectionID_Synchro "

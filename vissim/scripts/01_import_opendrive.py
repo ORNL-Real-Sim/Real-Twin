@@ -42,7 +42,8 @@ import pandas as pd  # noqa: E402
 
 from rt_vissim.com import VissimSession, available_progids  # noqa: E402
 from rt_vissim.network import (  # noqa: E402
-    DEFAULT_JUNCTION_RADIUS, extract_network, read_opendrive_junction_names)
+    DEFAULT_JUNCTION_RADIUS, JUNCTION_SOURCES, extract_network,
+    read_opendrive_junction_names)
 
 
 def read_net_offset(net_path: Path) -> tuple[float, float]:
@@ -141,6 +142,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="Vissim COM ProgID (default: newest installed)")
     parser.add_argument("--radius", type=float, default=DEFAULT_JUNCTION_RADIUS,
                         help="Junction clustering radius in metres")
+    parser.add_argument("--junction-source", choices=JUNCTION_SOURCES,
+                        default="geometry",
+                        help="How links are tied to OpenDRIVE junctions: match "
+                             "their geometry against the file's roads (default), "
+                             "or parse the road ID out of the Vissim link name")
     parser.add_argument("--skip-netconvert", action="store_true",
                         help="Reuse the existing .xodr instead of regenerating it")
     parser.add_argument("--visible", action="store_true", help="Show the Vissim GUI")
@@ -172,7 +178,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  :Saved Vissim network -> {inpx_path}")
 
         movements, links, junctions = extract_network(
-            sess, radius=args.radius, xodr_path=xodr_path)
+            sess, radius=args.radius, xodr_path=xodr_path,
+            junction_source=args.junction_source)
 
     # ------------------------------------------------------------------ #
     # Reports
