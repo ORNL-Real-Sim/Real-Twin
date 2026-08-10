@@ -97,6 +97,82 @@ def decision_position(link_length: float, gap: float) -> tuple[float, list[str]]
         f"{gap:.1f} m one time step needs, so some vehicles may miss it"]
 
 
+def plan_decision_positions(approaches: list[tuple], links: dict,
+                            destinations: set[int], gap: float,
+                            ) -> tuple[dict[tuple, tuple[int, float]], list[str]]:
+    """Choose where each approach's decision sits, as far upstream as is legal.
+
+    Placing a decision on its own approach link wastes every metre between the
+    previous junction and that link.  On Chattanooga the decision for junction 4
+    sat on link 48 even though the routes feeding it ended several links
+    upstream, so vehicles learnt their turn far later than they could have.
+
+    So the walk goes back from the approach through the corridor until it reaches
+    the link where the upstream routes end, and the decision goes just after that
+    end.  The walk only crosses a link when the connection is unambiguous in both
+    directions -- one way in and one way out -- because at a fork some vehicles
+    would not be heading for this junction at all, and assigning them a route
+    through it would be wrong.
+
+    Args:
+        approaches: ``(junction_id, from_link)`` pairs.
+        links: Output of :func:`rt_vissim.network.read_links_csv`.
+        destinations: Links that routes end on.
+        gap: Minimum gap from :func:`minimum_gap`.
+
+    Returns:
+        ``({(junction_id, from_link): (link, position)}, warnings)``.
+    """
+    from .demand import road_predecessors  # local: avoids a circular import
+
+    preds = road_predecessors(links)
+    succs: dict[int, set[int]] = {}
+    for target, sources in preds.items():
+        for source in sources:
+            succs.setdefault(source, set()).add(target)
+
+    placements: dict[tuple, tuple[int, float]] = {}
+    taken: dict[int, tuple] = {}
+    moved = 0
+    warnings: list[str] = []
+
+    for junction_id, from_link in sorted(approaches, key=lambda a: (str(a[0]), a[1])):
+        # Walk upstream through the unambiguous corridor, nearest first.
+        chain, current = [from_link], from_link
+        while current not in destinations:
+            upstream = preds.get(current, set())
+            if len(upstream) != 1:
+                break                      # a merge, or the network entry
+            nxt = next(iter(upstream))
+            if nxt in chain or succs.get(nxt, set()) != {current}:
+                break                      # a loop, or a fork: not all traffic
+                                           # here is bound for this junction
+            chain.append(nxt)
+            current = nxt
+
+        # Prefer the furthest upstream link that no other approach has claimed.
+        anchor = next((c for c in reversed(chain) if c not in taken), from_link)
+        length = links[anchor].length if anchor in links else 0.0
+        if anchor in destinations:
+            position, notes = decision_position(length, gap)
+        else:
+            # A network entry: nothing ends here, so sit one gap in.
+            position = round(min(gap, max(0.5, length / 2.0)), 2)
+            notes = []
+        for note in notes:
+            warnings.append(f"junction {junction_id}: {note}")
+
+        placements[(junction_id, from_link)] = (anchor, position)
+        taken[anchor] = (junction_id, from_link)
+        if anchor != from_link:
+            moved += 1
+
+    if moved:
+        warnings.append(f"{moved} of {len(approaches)} decisions moved upstream of "
+                        "their approach, so vehicles are told of the turn earlier.")
+    return placements, warnings
+
+
 def build_integrated_decisions(movements: pd.DataFrame, turn_counts: pd.DataFrame,
                                ) -> tuple[list[RoutingDecision], list[str]]:
     """Build one decision per (approach, interval), covering every movement.
