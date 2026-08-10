@@ -72,7 +72,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--traffic-dir", default="datasets/chattanooga/Traffic",
                         help="Directory holding the GridSmart files")
     parser.add_argument("--out", default=None,
-                        help="Output .inpx (default: <inpx stem>_demand.inpx)")
+                        help="Output .inpx (default: <name>_demand.inpx, or "
+                             "<name>_demand_combined.inpx with --combine-routes)")
     parser.add_argument("--start", default="07:00", help="Scenario start, HH:MM")
     parser.add_argument("--end", default="09:00", help="Scenario end, HH:MM")
     parser.add_argument("--progid", default=None, help="Pin a Vissim COM ProgID")
@@ -97,8 +98,12 @@ def main(argv: list[str] | None = None) -> int:
             return 1
 
     start_time, end_time = clock_to_seconds(args.start), clock_to_seconds(args.end)
+    # Combined and uncombined routing are different models, so they get different
+    # files by default.  Sharing one name would mean the second run silently
+    # replaced the first and the two could never be compared.
+    suffix = "_demand_combined" if args.combine_routes else "_demand"
     out_path = (Path(args.out).resolve() if args.out
-                else inpx_path.with_name(f"{inpx_path.stem}_demand.inpx"))
+                else inpx_path.with_name(f"{inpx_path.stem}{suffix}.inpx"))
 
     # Build the demand before starting Vissim: it needs no licence, so a bad
     # MatchupTable fails fast instead of after a slow COM start and network load.
