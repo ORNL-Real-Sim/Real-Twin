@@ -72,9 +72,16 @@ INTERNAL_EDGE_RE = re.compile(r"^:(?P<junction>[^_]+)_(?P<index>\d+)$")
 #: junctions when link names carry no original SUMO names.
 DEFAULT_JUNCTION_RADIUS = 30.0
 
-#: Turn classification thresholds, in degrees of bearing change.
-THRU_TOLERANCE = 20.0
-UTURN_TOLERANCE = 20.0
+#: Turn classification thresholds, ported from SUMO's ``NBNode::getDirection``
+#: so that both pipelines label a movement the same way.  A movement inside
+#: :data:`STRAIGHT_MAX` is through *unless* another movement off the same
+#: approach is straighter, in which case it is a part-turn -- which RealTwin
+#: maps to plain left/right.  Below :data:`PART_MIN` that demotion never
+#: applies.  U-turns are structural in SUMO (the reverse edge), which is a
+#: near-180 degree movement here.
+STRAIGHT_MAX = 44.0
+PART_MIN = 6.0
+UTURN_MIN = 170.0
 
 #: Compass sector boundaries for the 4-way bound codes GridSmart and Synchro
 #: use.  Quadrant edges at 45/135/225/315 reproduce the bound assignment in the
@@ -272,6 +279,244 @@ def junction_key_from_name(orig_name: str) -> str | None:
     """
     match = INTERNAL_EDGE_RE.match((orig_name or "").strip())
     return match.group("junction") if match else None
+
+
+# ---------------------------------------------------------------------- #
+# Junctions from OpenDRIVE geometry
+# ---------------------------------------------------------------------- #
+#: Points sampled along each ``<geometry>`` record.  Enough to pin a short
+#: junction road's curvature without making the cost matrix expensive.
+GEOMETRY_SAMPLES = 12
+
+#: Points each road and link is resampled to before they are compared.
+SHAPE_POINTS = 6
+
+#: Rows of the cost matrix built at once, to bound peak memory on large networks.
+MATCH_BLOCK = 256
+
+
+def sample_geometry(geo) -> list[tuple[float, float]]:
+    """Return points along one OpenDRIVE ``<geometry>`` record.
+
+    Every primitive is evaluated in closed form.  Approximating them as straight
+    chords is not good enough here: ``netconvert`` writes almost every junction
+    road as ``paramPoly3`` (1278 of 1407 records on Chattanooga, with no arcs at
+    all), so a chord misplaces precisely the short curved roads being matched.
+
+    Args:
+        geo: A ``<geometry>`` element.
+
+    Returns:
+        ``[(x, y), ...]`` in the file's coordinate system.
+    """
+    x0, y0 = float(geo.get("x")), float(geo.get("y"))
+    hdg, length = float(geo.get("hdg")), float(geo.get("length"))
+    cos_h, sin_h = math.cos(hdg), math.sin(hdg)
+
+    def to_global(u: float, v: float) -> tuple[float, float]:
+        return (x0 + u * cos_h - v * sin_h, y0 + u * sin_h + v * cos_h)
+
+    arc, poly, cubic = geo.find("arc"), geo.find("paramPoly3"), geo.find("poly3")
+    spiral = geo.find("spiral")
+
+    points = []
+    for step in range(GEOMETRY_SAMPLES + 1):
+        t = step / GEOMETRY_SAMPLES
+        s = length * t
+
+        if poly is not None:
+            def coeff(name: str) -> float:
+                return float(poly.get(name, 0.0))
+            p = t if poly.get("pRange", "normalized") == "normalized" else s
+            u = coeff("aU") + coeff("bU") * p + coeff("cU") * p**2 + coeff("dU") * p**3
+            v = coeff("aV") + coeff("bV") * p + coeff("cV") * p**2 + coeff("dV") * p**3
+            points.append(to_global(u, v))
+        elif arc is not None and abs(float(arc.get("curvature", 0.0))) > 1e-12:
+            k = float(arc.get("curvature"))
+            points.append((x0 + (math.sin(hdg + k * s) - math.sin(hdg)) / k,
+                           y0 - (math.cos(hdg + k * s) - math.cos(hdg)) / k))
+        elif cubic is not None:
+            def coeff3(name: str) -> float:
+                return float(cubic.get(name, 0.0))
+            v = coeff3("a") + coeff3("b") * s + coeff3("c") * s**2 + coeff3("d") * s**3
+            points.append(to_global(s, v))
+        elif spiral is not None:
+            # A Fresnel integral would be exact; the mean-curvature arc is within
+            # a few centimetres over the short records netconvert emits.
+            start = float(spiral.get("curvStart", 0.0))
+            end = float(spiral.get("curvEnd", 0.0))
+            k = start + (end - start) * t / 2.0
+            if abs(k) > 1e-12:
+                points.append((x0 + (math.sin(hdg + k * s) - math.sin(hdg)) / k,
+                               y0 - (math.cos(hdg + k * s) - math.cos(hdg)) / k))
+            else:
+                points.append(to_global(s, 0.0))
+        else:
+            points.append(to_global(s, 0.0))
+    return points
+
+
+def read_opendrive_roads(path: str | Path) -> dict[str, dict]:
+    """Return the drivable roads of an OpenDRIVE file, with shape and lanes.
+
+    Roads with no driving lane are left out because Vissim does not import them:
+    measured on an OSM extract, 516 of 1032 roads carried a driving lane and
+    Vissim created exactly 516 links, the other 516 being sidewalk and
+    restricted ways.
+
+    Args:
+        path: Path to the ``.xodr`` file.
+
+    Returns:
+        ``{road id: {"points", "length", "lanes"}}``.
+
+    Raises:
+        FileNotFoundError: If ``path`` does not exist.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"OpenDRIVE file not found: {path}")
+
+    root = ET.parse(path).getroot()
+    roads: dict[str, dict] = {}
+    for road in root.findall("road"):
+        points: list[tuple[float, float]] = []
+        for geo in road.findall("./planView/geometry"):
+            try:
+                points.extend(sample_geometry(geo))
+            except (TypeError, ValueError):
+                continue
+        if not points:
+            continue
+        lanes = len([lane for lane in road.findall(".//lane")
+                     if lane.get("type") == "driving"])
+        if lanes == 0:
+            continue
+        roads[road.get("id")] = {
+            "points": points,
+            "length": float(road.get("length") or 0.0),
+            "lanes": lanes,
+        }
+    return roads
+
+
+def resample(points: list[tuple[float, float]], count: int) -> list[tuple[float, float]]:
+    """Resample a polyline to ``count`` points evenly spaced along its length."""
+    if not points:
+        return []
+    if len(points) == 1:
+        return [points[0]] * count
+
+    cumulative = [0.0]
+    for a, b in zip(points, points[1:]):
+        cumulative.append(cumulative[-1] + math.dist(a, b))
+    total = cumulative[-1]
+    if total <= 0:
+        return [points[0]] * count
+
+    out, segment = [], 0
+    for i in range(count):
+        target = total * i / (count - 1)
+        while segment < len(cumulative) - 2 and cumulative[segment + 1] < target:
+            segment += 1
+        span = cumulative[segment + 1] - cumulative[segment]
+        f = 0.0 if span <= 0 else (target - cumulative[segment]) / span
+        a, b = points[segment], points[segment + 1]
+        out.append((a[0] + f * (b[0] - a[0]), a[1] + f * (b[1] - a[1])))
+    return out
+
+
+def assign_junctions_by_geometry(links: dict[int, VissimLink], xodr_path: str | Path,
+                                 ) -> tuple[dict[int, str | None], list[str]]:
+    """Map each Vissim link to an OpenDRIVE junction by where it physically is.
+
+    The alternative to reading the OpenDRIVE road ID out of the Vissim link
+    name.  The name carries it today, but no standard requires that, whereas a
+    link's geometry *is* the road's geometry and cannot drift.
+
+    Vissim imports one link per drivable road, so the two sets are in bijection
+    and this is an assignment problem, not a nearest-neighbour search -- solving
+    it as the latter lets several links claim one road and collapses.  The cost
+    combines shape, length and lane count, which no two distinct roads share.
+
+    Vissim also shifts the network on import, so the translation is recovered
+    first by aligning centroids.  No link name is read anywhere in here.
+
+    Args:
+        links: Output of :func:`read_links`.
+        xodr_path: The OpenDRIVE file the network was imported from.
+
+    Returns:
+        ``({link number: junction id or None}, warnings)``.
+
+    Raises:
+        ImportError: If numpy or scipy is unavailable.
+    """
+    try:
+        import numpy as np
+        from scipy.optimize import linear_sum_assignment
+    except ImportError as exc:  # pragma: no cover - environment dependent
+        raise ImportError(
+            "Geometric junction identification needs numpy and scipy. "
+            "Install them, or pass junction_source='name'.") from exc
+
+    warnings: list[str] = []
+    road_junction = read_opendrive_junctions(xodr_path)
+    roads = read_opendrive_roads(xodr_path)
+
+    candidates = [ln for ln in links.values()
+                  if not ln.is_connector and len(ln.points) >= 2]
+    if not candidates or not roads:
+        return {}, ["No geometry to match; junctions could not be derived "
+                    "from the OpenDRIVE file."]
+
+    road_ids = list(roads)
+    road_shape = np.array([resample(roads[r]["points"], SHAPE_POINTS) for r in road_ids])
+    road_length = np.array([roads[r]["length"] for r in road_ids])
+    road_lanes = np.array([roads[r]["lanes"] for r in road_ids], dtype=float)
+
+    link_shape = np.array([resample(ln.points, SHAPE_POINTS) for ln in candidates])
+    link_length = np.array([ln.length for ln in candidates])
+    link_lanes = np.array([ln.num_lanes for ln in candidates], dtype=float)
+
+    if len(candidates) != len(road_ids):
+        warnings.append(
+            f"{len(candidates)} Vissim links against {len(road_ids)} drivable "
+            "OpenDRIVE roads: not a one-to-one import, so some links will take "
+            "no junction.")
+
+    shift = (road_shape.reshape(-1, 2).mean(axis=0)
+             - link_shape.reshape(-1, 2).mean(axis=0))
+    moved = link_shape + shift
+
+    # Blocked so the n x m x SHAPE_POINTS array never materialises whole.
+    cost = np.empty((len(candidates), len(road_ids)))
+    for start in range(0, len(candidates), MATCH_BLOCK):
+        stop = min(start + MATCH_BLOCK, len(candidates))
+        diff = moved[start:stop, None, :, :] - road_shape[None, :, :, :]
+        cost[start:stop] = (np.sqrt((diff ** 2).sum(axis=3)).mean(axis=2)
+                            + 2.0 * np.abs(link_length[start:stop, None] - road_length[None, :])
+                            + 5.0 * np.abs(link_lanes[start:stop, None] - road_lanes[None, :]))
+
+    rows, cols = linear_sum_assignment(cost)
+    assigned: dict[int, str | None] = {ln.no: None for ln in candidates}
+    residuals = []
+    for row, col in zip(rows, cols):
+        assigned[candidates[row].no] = road_junction.get(road_ids[col])
+        residuals.append(cost[row, col])
+
+    if residuals:
+        worst = max(residuals)
+        median = float(np.median(residuals))
+        # The residual is dominated by a constant lateral offset -- Vissim link
+        # geometry is the lane centreline, the OpenDRIVE planView is the road
+        # reference line -- so it is roughly half a carriageway even when every
+        # match is right.  Only a residual far above that median is suspicious.
+        if worst > max(20.0, 5 * median):
+            warnings.append(
+                f"Worst geometry match residual {worst:.1f} m against a median of "
+                f"{median:.1f} m; check the junctions derived near it.")
+    return assigned, warnings
 
 
 # ---------------------------------------------------------------------- #
@@ -633,6 +878,14 @@ def build_movement_table(links: dict[int, VissimLink],
                 continue
             bound = bearing_to_bound(bearing_in)
 
+            # Gather the approach's movements before labelling any of them:
+            # SUMO's rule asks whether another movement off this same approach
+            # is straighter, so no movement can be classified in isolation.
+            # Signed change of heading is positive clockwise (right).  Ordering
+            # an approach's movements by it puts them in true R, T, L, U order,
+            # which the MatchupTable stage relies on; ordering by the turn
+            # *label* leaves movements sharing a label in arbitrary order.
+            found = []
             for exit_no, path in trace_movements(links, internal, successors, approach):
                 to_link = links.get(exit_no)
                 if to_link is None:
@@ -642,15 +895,10 @@ def build_movement_table(links: dict[int, VissimLink],
                 bearing_out = to_link.outbound_bearing()
                 if bearing_out is None:
                     continue
+                found.append((exit_no, path, signed_delta(bearing_in, bearing_out)))
 
-                turn = classify_turn(bearing_in, bearing_out)
-                # Signed change of heading: positive clockwise (right), negative
-                # anticlockwise (left).  Ordering an approach's movements by this
-                # puts them in true R, T, L, U order, which the MatchupTable
-                # stage relies on.  Ordering by the turn *label* instead leaves
-                # movements sharing a label in arbitrary order.
-                delta = (bearing_out - bearing_in) % 360
-                signed = delta if delta <= 180 else delta - 360
+            for (exit_no, path, signed), turn in zip(
+                    found, classify_turns([f[2] for f in found])):
                 rows.append({
                     "_delta": round(signed, 2),
                     "JunctionID_Vissim": junction_id,
@@ -694,8 +942,15 @@ def build_movement_table(links: dict[int, VissimLink],
     return df.reset_index(drop=True)
 
 
+#: How a link is tied back to an OpenDRIVE junction.  ``geometry`` matches the
+#: link's shape against the file's roads and reads the junction from there;
+#: ``name`` parses the OpenDRIVE road ID out of the Vissim link name.
+JUNCTION_SOURCES = ("geometry", "name")
+
+
 def extract_network(session, *, radius: float = DEFAULT_JUNCTION_RADIUS,
                     min_legs: int = 3, xodr_path: str | Path | None = None,
+                    junction_source: str = "geometry",
                     ) -> tuple[pd.DataFrame, dict[int, VissimLink], dict[str, list[int]]]:
     """Read a Vissim session and derive its movement table in one call.
 
@@ -704,18 +959,49 @@ def extract_network(session, *, radius: float = DEFAULT_JUNCTION_RADIUS,
         radius: Clustering radius in metres, used only by the fallback grouping.
         min_legs: Minimum approaches for a group to count as a junction.
         xodr_path: The OpenDRIVE file the network was imported from.  Supply it
-            whenever possible: junction membership then comes from the file's
-            own ``junction`` attributes rather than from link names.
+            whenever possible: junction membership then comes from the file
+            rather than from a naming convention.
+        junction_source: ``"geometry"`` (default) matches each link's shape to
+            an OpenDRIVE road and takes that road's junction; ``"name"`` parses
+            the road ID out of the Vissim link name.  Geometry is the default
+            because the naming convention is PTV's, not the standard's, so
+            nothing guarantees it survives; the two were measured to agree on
+            every link of three networks.  Falls back to ``"name"`` when no
+            OpenDRIVE file is given.
 
     Returns:
         ``(movement_table, links, junctions)``.
+
+    Raises:
+        ValueError: If ``junction_source`` is not one of :data:`JUNCTION_SOURCES`.
     """
+    if junction_source not in JUNCTION_SOURCES:
+        raise ValueError(f"junction_source must be one of {JUNCTION_SOURCES}, "
+                         f"got {junction_source!r}")
+
     road_junction = None
     if xodr_path is not None:
         road_junction = read_opendrive_junctions(xodr_path)
         print(f"  :OpenDRIVE: {len(set(road_junction.values()))} junctions, "
               f"{len(road_junction)} roads inside one")
+    elif junction_source == "geometry":
+        junction_source = "name"
+        print("  :No OpenDRIVE file given; falling back to name-based junctions.")
+
     links = read_links(session, road_junction)
+
+    if junction_source == "geometry":
+        assigned, warnings = assign_junctions_by_geometry(links, xodr_path)
+        for warning in warnings:
+            print(f"  :WARNING: {warning}")
+        if assigned:
+            agreed = sum(1 for no, key in assigned.items()
+                         if links[no].junction_key == key)
+            print(f"  :Junctions from geometry; the link names would have given "
+                  f"the same answer for {agreed} of {len(assigned)} links.")
+            for no, key in assigned.items():
+                links[no].junction_key = key
+
     junctions = derive_junctions(links, radius=radius)
     for warning in check_nodes_against_junctions(session, junctions):
         print(f"  :WARNING: {warning}")
@@ -742,23 +1028,78 @@ def _bearing_between(p1: tuple[float, float], p2: tuple[float, float]) -> float 
     return math.degrees(math.atan2(dx, dy)) % 360
 
 
-def classify_turn(bearing_in: float, bearing_out: float) -> str:
-    """Classify a movement from its bearing change.
+def signed_delta(bearing_in: float, bearing_out: float) -> float:
+    """Return the change of heading, positive clockwise (right).
 
     Args:
         bearing_in: Bearing the vehicle arrives on, in degrees.
         bearing_out: Bearing the vehicle leaves on, in degrees.
 
     Returns:
-        ``"thru"``, ``"right"``, ``"left"`` or ``"Uturn"`` -- the labels
-        RealTwin's SUMO matchup table uses.
+        Degrees in ``[-180, 180)``.  An exact reversal comes back as ``-180``,
+        which classifies as a U-turn either way.
     """
-    delta = (bearing_out - bearing_in) % 360
-    if delta <= THRU_TOLERANCE or delta >= 360 - THRU_TOLERANCE:
-        return "thru"
-    if abs(delta - 180) <= UTURN_TOLERANCE:
-        return "Uturn"
-    return "right" if delta < 180 else "left"
+    return ((bearing_out - bearing_in + 180) % 360) - 180
+
+
+def classify_turns(deltas: list[float]) -> list[str]:
+    """Classify every movement off one approach, the way SUMO does.
+
+    A single movement cannot be classified on its own.  SUMO's
+    ``NBNode::getDirection`` calls a movement straight when it is inside
+    :data:`STRAIGHT_MAX` *and* no other movement off that approach is
+    straighter; where one is, this becomes a part-turn, which RealTwin's
+    ``direction_mapping`` folds into plain ``left`` / ``right``.
+
+    A fixed threshold cannot express that.  Chattanooga has two skewed
+    approaches whose through movement sits at -21.3 and -28.4 degrees: both are
+    well inside SUMO's 44 degree band with nothing straighter beside them, so
+    SUMO calls them through, while a symmetric 20 degree cut called them left
+    and put two lefts on one approach.
+
+    Args:
+        deltas: Signed heading changes for the approach's movements, in the
+            order the labels are wanted back.
+
+    Returns:
+        One of ``"thru"``, ``"right"``, ``"left"``, ``"Uturn"`` per movement.
+    """
+    turning = [abs(d) for d in deltas if abs(d) <= UTURN_MIN]
+    straightest = min(turning) if turning else None
+
+    labels: list[str] = []
+    for delta in deltas:
+        magnitude = abs(delta)
+        if magnitude > UTURN_MIN:
+            labels.append("Uturn")
+        elif magnitude < STRAIGHT_MAX:
+            # Demoted to a part-turn only when something else is straighter.
+            if (magnitude > PART_MIN and straightest is not None
+                    and magnitude > straightest):
+                labels.append("right" if delta > 0 else "left")
+            else:
+                labels.append("thru")
+        else:
+            labels.append("right" if delta > 0 else "left")
+    return labels
+
+
+def classify_turn(bearing_in: float, bearing_out: float) -> str:
+    """Classify one movement with no knowledge of its neighbours.
+
+    Kept for callers that have a single movement in hand.  Prefer
+    :func:`classify_turns`: without the approach's other movements this cannot
+    apply SUMO's "is anything straighter?" test, so it will call a skewed
+    part-turn a through movement.
+
+    Args:
+        bearing_in: Bearing the vehicle arrives on, in degrees.
+        bearing_out: Bearing the vehicle leaves on, in degrees.
+
+    Returns:
+        ``"thru"``, ``"right"``, ``"left"`` or ``"Uturn"``.
+    """
+    return classify_turns([signed_delta(bearing_in, bearing_out)])[0]
 
 
 def bearing_to_bound(bearing: float) -> str:
