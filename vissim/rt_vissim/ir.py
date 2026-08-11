@@ -100,6 +100,18 @@ class SignalGroupTiming:
         veh_ext: Vehicle extension in seconds (unused by fixed time, kept for RBC).
         ring: Synchro ring number.
         barrier: Synchro barrier number.
+        position: Position within the ring, from Synchro's ``BRP`` code.  The
+            barrier/ring/position triple is what orders the RBC sequence.
+        split: Split in seconds -- ``max_green + yellow + all_red``.  Synchro
+            does not store it; it is the sum, and the rings of a barrier must
+            agree on it for the plan to be valid.
+        coordinated: Whether this phase is a coordinated phase, i.e. named in
+            Synchro's ``Reference Phase``.
+        min_recall: Phase is served every cycle even with no call.
+        max_recall: Phase is held to its maximum green every cycle.
+        dual_entry: Phase may come up when only its ring partner is called.
+        inhibit_max: Maximum green is inhibited while coordinated.
+        start_up: Phase is green at controller start-up.
         protected_movements: Synchro movement codes served protected, e.g.
             ``["NBL", "SBL"]``.
         permitted_movements: Synchro movement codes served permitted.
@@ -108,8 +120,8 @@ class SignalGroupTiming:
 
     sg_no: int
     phase: str
-    green_start: float
-    green_end: float
+    green_start: float = 0.0
+    green_end: float = 0.0
     yellow: float = 3.0
     all_red: float = 0.0
     min_green: float = 0.0
@@ -117,6 +129,14 @@ class SignalGroupTiming:
     veh_ext: float = 2.0
     ring: int = 1
     barrier: int = 1
+    position: int = 1
+    split: float = 0.0
+    coordinated: bool = False
+    min_recall: bool = False
+    max_recall: bool = False
+    dual_entry: bool = False
+    inhibit_max: bool = False
+    start_up: bool = False
     protected_movements: list[str] = field(default_factory=list)
     permitted_movements: list[str] = field(default_factory=list)
     rtor_movements: list[str] = field(default_factory=list)
