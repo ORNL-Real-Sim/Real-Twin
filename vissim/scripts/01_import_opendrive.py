@@ -193,6 +193,10 @@ def main(argv: list[str] | None = None) -> int:
         "FromLink": ln.from_link,
         "ToLink": ln.to_link,
         "NumPoints": len(ln.points),
+        # Which lanes of the upstream link a connector leaves from, so later
+        # stages can put a detector on the lanes that serve a movement without
+        # a live session.
+        "FromLanes": " ".join(str(x) for x in ln.from_lanes),
     } for ln in sorted(links.values(), key=lambda x: x.no)]
     links_csv = outdir / f"{args.name}_links.csv"
     pd.DataFrame(link_rows).to_csv(links_csv, index=False)

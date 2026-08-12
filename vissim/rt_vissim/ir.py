@@ -176,16 +176,30 @@ class SignalPlan:
 
 @dataclass
 class SignalHead:
-    """A signal head to place on one lane of one approach.
+    """A signal head governing one movement.
+
+    Placed on the movement's **connector** rather than on a lane of the
+    approach.  A connector carries exactly one movement, so the signal group is
+    unambiguous and no assumption is needed about which end VISSIM numbers lanes
+    from; the manual uses the same technique to give a turn its own signal
+    group.  Connectors here are short -- a median of 1.6 m on Chattanooga -- so
+    a head at the connector's start sits at the stop line.
 
     Attributes:
         sc_no: Signal controller number.
-        sg_no: Signal group number.
+        sg_no: Signal group number (the protected phase where there is one).
         junction_id: Derived junction ID (matches ``JunctionID_OpenDrive``).
-        from_link_no: VISSIM link number of the approach the head sits on.
+        from_link_no: VISSIM link number of the approach.
         to_link_no: VISSIM link number of the receiving link (identifies the turn).
+        connector_no: VISSIM link number of the connector the head sits on.
+        pos: Distance in metres from the start of the connector.
+        scnd_sg_no: "Or signal group": a second group that also turns this head
+            green.  Set for a protected-permissive turn, where Synchro gives
+            both a ``Phase1`` and a ``PermPhase1``.
         movement: Synchro movement code, e.g. ``"NBL"``.
         turn: RealTwin turn label: ``left`` / ``thru`` / ``right`` / ``Uturn``.
+        permissive_only: The turn is permitted but never protected, so it runs
+            on the opposing through phase and has to yield.
     """
 
     sc_no: int
@@ -193,8 +207,49 @@ class SignalHead:
     junction_id: str | int
     from_link_no: int
     to_link_no: int
+    connector_no: int = 0
+    pos: float = 0.0
+    scnd_sg_no: int | None = None
     movement: str = ""
     turn: str = ""
+    permissive_only: bool = False
+
+
+@dataclass
+class Detector:
+    """A vehicle detector calling and extending one signal group.
+
+    Unlike a signal head, a detector has to sit **upstream of the stop line**,
+    on the approach lanes that serve the movement -- a connector is past the
+    point where a call would be useful.  Those lanes come from the connector's
+    ``FromLanes``, so they are read from the network rather than assumed.
+
+    Attributes:
+        sc_no: Signal controller number.
+        sg_no: Signal group this detector calls and extends.
+        junction_id: Derived junction ID (matches ``JunctionID_OpenDrive``).
+        link_no: VISSIM link number of the approach.
+        lane: Lane number on that link.
+        pos: Distance in metres from the start of the link to the detector's
+            upstream edge.
+        length: Detector length in metres.
+        port_no: Detector port number, which is what the ``.prbc`` refers to.
+        movement: Synchro movement code, e.g. ``"NBL"``.
+        shortened: The approach was too short for Synchro's layout, so the
+            detector was shrunk to fit.  Worth surfacing: a shorter presence
+            zone changes how long a call is held.
+    """
+
+    sc_no: int
+    sg_no: int
+    junction_id: str | int
+    link_no: int
+    lane: int
+    pos: float
+    length: float
+    port_no: int = 0
+    movement: str = ""
+    shortened: bool = False
 
 
 @dataclass

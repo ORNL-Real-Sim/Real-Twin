@@ -116,6 +116,13 @@ class VissimLink:
         orig_name: OpenDRIVE road name parsed from the name, e.g. ``":12_0"``.
         junction_key: Junction label parsed from ``orig_name``; ``None`` for
             links that are not inside a junction.
+        from_lanes: For connectors, the lane numbers on the upstream link that
+            this connector leaves from.  A movement's connector therefore names
+            the approach lanes that serve it, which is what a detector has to
+            sit on.  Reading it beats assuming a numbering convention: on
+            Chattanooga the two-lane left bay at link 33 comes back as lanes
+            2 and 3 while the shared through/right uses lane 1, and nothing had
+            to be guessed about which end Vissim counts from.
     """
 
     no: int
@@ -129,6 +136,7 @@ class VissimLink:
     road_id: str | None = None
     orig_name: str = ""
     junction_key: str | None = None
+    from_lanes: list[int] = field(default_factory=list)
 
     @property
     def is_internal(self) -> bool:
@@ -567,8 +575,35 @@ def read_links(session, road_junction: dict[str, str] | None = None,
         if link.is_connector:
             link.from_link = _opt_int(_safe_attr(obj, "FromLink\\No"))
             link.to_link = _opt_int(_safe_attr(obj, "ToLink\\No"))
+            link.from_lanes = read_connector_from_lanes(obj)
 
     return links
+
+
+def read_connector_from_lanes(connector_obj) -> list[int]:
+    """Return the upstream lane numbers a connector leaves from.
+
+    A connector carries its own lanes, and each of those points back at the lane
+    it comes from through ``Lane.FromLanes``.  Following that says which lanes
+    of the approach serve the movement, without needing to know which side
+    Vissim numbers lanes from.
+
+    Args:
+        connector_obj: A Vissim ``ILink`` COM object that is a connector.
+
+    Returns:
+        Sorted upstream lane numbers; empty when they could not be read.
+    """
+    found: set[int] = set()
+    try:
+        for lane in connector_obj.Lanes:
+            for upstream in lane.FromLanes:
+                index = _opt_int(_safe_attr(upstream, "Index"))
+                if index is not None:
+                    found.add(index)
+    except Exception:  # noqa: BLE001 - lane collections vary between builds
+        return []
+    return sorted(found)
 
 
 def read_links_csv(path: str | Path,
@@ -612,6 +647,8 @@ def read_links_csv(path: str | Path,
             road_id=road_id,
             orig_name=orig_name,
             junction_key=_junction_key(road_id, orig_name, road_junction),
+            from_lanes=[int(x) for x in str(getattr(row, "FromLanes", "")).split()
+                        if x.isdigit()],
         )
     return links
 
