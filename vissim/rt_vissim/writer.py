@@ -259,3 +259,236 @@ def write_routing_decisions(session, decisions: list[RoutingDecision],
             "vehicles change lanes for the turn after next instead of discovering "
             "it at the stop bar.")
     return made_decisions, made_routes, warnings
+
+
+# ---------------------------------------------------------------------- #
+# Signal control
+# ---------------------------------------------------------------------- #
+#: The value ``SignalController.Type`` takes for a Ring Barrier Controller.
+#: Vissim reports it back as ``RINGBARRIERCONTROLLER``.
+RBC_TYPE = "RingBarrierController"
+
+#: ``SignalHead.ScndSGTyp`` for an "Or" signal group -- the head is green when
+#: either group is, which is how a protected-permissive turn is modelled.
+OR_SIGNAL_GROUP = "ORSG"
+
+
+def signal_group_ref(sc_no: int, sg_no: int) -> str:
+    """Return the ``"<controller>-<group>"`` string Vissim wants for a group.
+
+    A signal head's ``SG`` will not take a bare group number -- the group is only
+    unique within its controller, so the reference carries both.
+    """
+    return f"{sc_no}-{sg_no}"
+
+
+def clear_signal_control(session) -> tuple[int, int, list[str]]:
+    """Remove the signal control Vissim built from the OpenDRIVE file.
+
+    ``netconvert`` writes signal data into the ``.xodr``, and Vissim's importer
+    turns it into one ``FIXEDTIMESIMPLE`` controller per junction carrying a
+    single signal group, plus a signal head per movement it found.  On
+    Chattanooga that is 6 controllers and 38 heads.
+
+    A controller with one signal group cannot express NEMA phasing, so those
+    controllers are placeholders rather than a plan.  Worse, leaving them in
+    place means the network ends up with two overlapping sets of heads, and the
+    imported controller numbers collide with the Synchro ``INTID`` numbering
+    this pipeline uses -- Chattanooga's imported controller 4 blocks the
+    controller for Synchro INTID 4.
+
+    So when Synchro timings are available the imported control is cleared first.
+    Where there is no Synchro file, the imported control is the only control
+    there is and should be kept.
+
+    Args:
+        session: A started :class:`~rt_vissim.com.VissimSession`.
+
+    Returns:
+        ``(heads removed, controllers removed, warnings)``.
+    """
+    warnings: list[str] = []
+    heads = controllers = 0
+
+    try:
+        # Heads first: a head refers to a controller, so removing the controller
+        # underneath one would leave it dangling.
+        for head in list(session.net.SignalHeads.GetAll()):
+            session.net.SignalHeads.RemoveSignalHead(head)
+            heads += 1
+        for controller in list(session.net.SignalControllers.GetAll()):
+            session.net.SignalControllers.RemoveSignalController(controller)
+            controllers += 1
+    except Exception as exc:  # noqa: BLE001 - report what was reached
+        warnings.append(f"Clearing the imported signal control stopped early: "
+                        f"{str(exc)[:80]}")
+
+    if heads or controllers:
+        warnings.append(f"Removed {controllers} signal controllers and {heads} "
+                        "signal heads that came from the OpenDRIVE import; the "
+                        "Synchro timings replace them.")
+    return heads, controllers, warnings
+
+
+def write_signal_controllers(session, plans, prbc_dir) -> tuple[int, list[str]]:
+    """Create a Ring Barrier Controller per plan and point it at its ``.prbc``.
+
+    The timings themselves live in the ``.prbc``; what is created here is the
+    controller and its signal groups.  The group numbers must match the ones in
+    the file, which the manual is emphatic about: "When you add, delete, or
+    change signal group numbers, save your Vissim file.  Otherwise your Vissim
+    file may become incompatible with your controller files."  Both come from
+    the Synchro phase number, so they agree by construction.
+
+    Args:
+        session: A started :class:`~rt_vissim.com.VissimSession`.
+        plans: Controllers from :func:`rt_vissim.signal.build_signal_plans`.
+        prbc_dir: Directory holding the ``.prbc`` files.  The manual notes some
+            control procedures expect the supply file beside the ``.inpx``, so
+            an absolute path is written.
+
+    Returns:
+        ``(controllers created, warnings)``.
+    """
+    from pathlib import Path
+
+    warnings: list[str] = []
+    created = 0
+    prbc_dir = Path(prbc_dir).resolve()
+
+    for plan in plans:
+        try:
+            controller = session.net.SignalControllers.AddSignalController(plan.sc_no)
+        except Exception as exc:  # noqa: BLE001 - COM reports a generic failure
+            warnings.append(f"Signal controller {plan.sc_no} could not be created: "
+                            f"{str(exc)[:80]}")
+            continue
+
+        controller.SetAttValue("Name", plan.name or f"INTID {plan.synchro_intid}")
+        try:
+            controller.SetAttValue("Type", RBC_TYPE)
+        except Exception:  # noqa: BLE001 - older builds may not offer RBC
+            warnings.append(f"Signal controller {plan.sc_no}: this Vissim has no "
+                            "Ring Barrier Controller; left as fixed time.")
+
+        supply = prbc_dir / f"rbc_timings_{plan.synchro_intid}.prbc"
+        if supply.exists():
+            controller.SetAttValue("SupplyFile1", str(supply))
+        else:
+            warnings.append(f"Signal controller {plan.sc_no}: {supply.name} does not "
+                            "exist yet, so the controller has no timings.")
+
+        for group in sorted(plan.signal_groups, key=lambda g: g.sg_no):
+            try:
+                signal_group = controller.SGs.AddSignalGroup(group.sg_no)
+                signal_group.SetAttValue("Name", str(group.sg_no))
+            except Exception as exc:  # noqa: BLE001
+                warnings.append(f"Signal controller {plan.sc_no}: signal group "
+                                f"{group.sg_no} could not be created: {str(exc)[:60]}")
+        created += 1
+
+    return created, warnings
+
+
+def write_signal_heads(session, heads) -> tuple[int, list[str]]:
+    """Place the signal heads, each on its movement's connector.
+
+    Args:
+        session: A started :class:`~rt_vissim.com.VissimSession`.
+        heads: Output of :func:`rt_vissim.heads.build_signal_heads`.
+
+    Returns:
+        ``(heads created, warnings)``.
+    """
+    warnings: list[str] = []
+    created = both = 0
+
+    for head in heads:
+        try:
+            connector = session.net.Links.ItemByKey(head.connector_no)
+            lanes = list(connector.Lanes)
+        except Exception:  # noqa: BLE001 - the connector went missing
+            warnings.append(f"Connector {head.connector_no} not found; no signal "
+                            f"head for {head.movement}.")
+            continue
+
+        # A connector carries one movement but may carry it on several lanes,
+        # and a head governs a single lane, so each lane needs its own.
+        for lane in lanes:
+            try:
+                obj = session.net.SignalHeads.AddSignalHead(0, lane, head.pos)
+            except Exception as exc:  # noqa: BLE001
+                warnings.append(f"Signal head on connector {head.connector_no} "
+                                f"failed: {str(exc)[:70]}")
+                continue
+            obj.SetAttValue("Name", f"{head.movement} (J{head.junction_id})")
+            try:
+                obj.SetAttValue("SG", signal_group_ref(head.sc_no, head.sg_no))
+            except Exception as exc:  # noqa: BLE001
+                warnings.append(f"Signal head {head.movement}: signal group "
+                                f"{head.sc_no}-{head.sg_no} not accepted: "
+                                f"{str(exc)[:60]}")
+                continue
+            if head.scnd_sg_no is not None:
+                try:
+                    obj.SetAttValue("ScndSG",
+                                    signal_group_ref(head.sc_no, head.scnd_sg_no))
+                    obj.SetAttValue("ScndSGTyp", OR_SIGNAL_GROUP)
+                    both += 1
+                except Exception as exc:  # noqa: BLE001
+                    warnings.append(f"Signal head {head.movement}: Or signal group "
+                                    f"could not be set: {str(exc)[:60]}")
+            created += 1
+
+    if both:
+        warnings.append(f"{both} heads carry an Or signal group, so a "
+                        "protected-permissive turn shows green on either phase. "
+                        "They do not yield until conflict areas exist.")
+    return created, warnings
+
+
+def write_detectors(session, detectors) -> tuple[int, list[str]]:
+    """Place the vehicle detectors on the approach lanes that serve each movement.
+
+    Args:
+        session: A started :class:`~rt_vissim.com.VissimSession`.
+        detectors: Output of :func:`rt_vissim.heads.build_detectors`.
+
+    Returns:
+        ``(detectors created, warnings)``.
+    """
+    warnings: list[str] = []
+    created = 0
+    shortened = 0
+
+    for detector in detectors:
+        try:
+            link = session.net.Links.ItemByKey(detector.link_no)
+            lane = link.Lanes.ItemByKey(detector.lane)
+        except Exception:  # noqa: BLE001 - link or lane absent
+            warnings.append(f"Link {detector.link_no} lane {detector.lane} not "
+                            f"found; no detector for {detector.movement}.")
+            continue
+
+        try:
+            obj = session.net.Detectors.AddDetector(0, lane, detector.pos)
+        except Exception as exc:  # noqa: BLE001
+            warnings.append(f"Detector on link {detector.link_no} lane "
+                            f"{detector.lane} failed: {str(exc)[:70]}")
+            continue
+
+        obj.SetAttValue("Name", f"{detector.movement} (J{detector.junction_id})")
+        obj.SetAttValue("Length", float(detector.length))
+        try:
+            obj.SetAttValue("SC", detector.sc_no)
+            obj.SetAttValue("PortNo", detector.port_no)
+        except Exception as exc:  # noqa: BLE001
+            warnings.append(f"Detector {detector.movement}: could not attach to "
+                            f"controller {detector.sc_no}: {str(exc)[:60]}")
+        created += 1
+        shortened += bool(detector.shortened)
+
+    if shortened:
+        warnings.append(f"{shortened} detectors were shrunk to fit a short "
+                        "approach, so they hold a call for less time.")
+    return created, warnings
