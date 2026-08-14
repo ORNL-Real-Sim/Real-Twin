@@ -51,8 +51,21 @@ EXECUTION_FREQUENCY = 10
 #: edge of green on the coordinated phase, which is this.
 OFFSET_REFERENCE = "LeadingStartOfGreen"
 
-#: The ``.prbc`` schema version the reference controllers carry.
-FORMAT_VERSION = [2]
+#: How the pattern treats maximum green.  Every reference controller uses this
+#: value and Vissim rejects the file outright for anything else -- "the value of
+#: attribute MaxGreenMode is invalid" -- so it is fixed rather than derived.
+#: The per-phase inhibit flag still comes from Synchro, on each signal group.
+MAX_GREEN_MODE = "InhibitMaxGreen"
+
+#: How permissive periods open and close for non-coordinated groups.  Note this
+#: is coordination, not permissive left turns, despite the name.
+PERMISSIVE_MODE = "SingleBand"
+
+#: The ``.prbc`` schema version, as a ``[major, minor]`` pair.  Vissim refuses
+#: the file outright if this is wrong -- "The supply data contains invalid
+#: format version data" -- and the simulation then will not start at all, so it
+#: is taken verbatim from the controllers under ``VISSIM_previous/``.
+FORMAT_VERSION = [1, 1]
 
 
 def tenths(seconds: float) -> int:
@@ -153,12 +166,10 @@ def build_controller(plan: SignalPlan) -> dict:
             "Patterns": [{
                 "CycleLength": tenths(plan.cycle_time),
                 "ID": 1,
-                "MaxGreenMode": ("InhibitMaxGreen"
-                                 if any(g.inhibit_max for g in groups)
-                                 else "MaxGreen1"),
+                "MaxGreenMode": MAX_GREEN_MODE,
                 "Offset": tenths(plan.offset),
                 "PedestrianSignalGroupsInPattern": [],
-                "PermissiveMode": "SingleBand",
+                "PermissiveMode": PERMISSIVE_MODE,
                 "UseExplicitForceOffs": False,
                 "UseExplicitPermissivePeriods": False,
                 "VehicleSignalGroupsInPattern": in_pattern,

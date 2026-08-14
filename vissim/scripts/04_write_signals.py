@@ -36,15 +36,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(1, str(Path(__file__).resolve().parents[2]))
 
 from rt_vissim.com import VissimSession  # noqa: E402
+from rt_vissim.conflicts import link_turns, plan_conflicts  # noqa: E402
+from rt_vissim.conflicts import summarise as summarise_conflicts  # noqa: E402
 from rt_vissim.heads import (build_detectors, build_signal_heads,  # noqa: E402
-                             summarise as summarise_placement)
+                             rtor_allowed, summarise as summarise_placement)
 from rt_vissim.matchup import MatchupTable  # noqa: E402
 from rt_vissim.network import read_links_csv  # noqa: E402
 from rt_vissim.rbc import write_controllers  # noqa: E402
 from rt_vissim.signal import (build_signal_plans, read_synchro,  # noqa: E402
                               summarise as summarise_plans)
-from rt_vissim.writer import (clear_signal_control, write_detectors,  # noqa: E402
-                              write_signal_controllers, write_signal_heads)
+from rt_vissim.writer import (clear_signal_control, read_conflict_areas,  # noqa: E402
+                              write_conflict_areas, write_detectors,
+                              write_rtor_stop_signs, write_signal_controllers,
+                              write_signal_heads)
+import pandas as pd  # noqa: E402
 
 
 def open_in_gui(inpx_path: Path) -> bool:
@@ -72,6 +77,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--visible", action="store_true", help="Show the Vissim GUI")
     parser.add_argument("--open-gui", action="store_true",
                         help="Open the saved network in a standalone GUI")
+    parser.add_argument("--movements", default="vissim/work/chattanooga/chatt_movements.csv",
+                        help="Movement table written by stage 1, for conflict areas")
+    parser.add_argument("--no-conflicts", action="store_true",
+                        help="Leave the conflict areas as Vissim detected them, so "
+                             "permissive turns do not yield")
+    parser.add_argument("--no-rtor", action="store_true",
+                        help="Skip the right-turn-on-red stop signs")
     parser.add_argument("--no-heads", action="store_true",
                         help="Write the controllers only, skip heads and detectors")
     parser.add_argument("--keep-opendrive-signals", action="store_true",
@@ -161,11 +173,27 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  :{warning}")
             print(f"  :Created {made} detectors")
 
+        if not args.no_conflicts and Path(args.movements).exists():
+            pairs = read_conflict_areas(session)
+            owners = link_turns(pd.read_csv(args.movements), links)
+            decisions, notes = plan_conflicts(pairs, owners)
+            print(f"  :Conflicts: {summarise_conflicts(decisions, pairs)}")
+            for note in notes:
+                print(f"  :{note}")
+            made, warnings = write_conflict_areas(session, decisions)
+            for warning in warnings:
+                print(f"  :{warning}")
+
+        if heads and not args.no_rtor:
+            allowed = rtor_allowed(matchup, synchro, plans)
+            made, warnings = write_rtor_stop_signs(session, heads, allowed)
+            for warning in warnings:
+                print(f"  :{warning}")
+            print(f"  :Created {made} right-turn-on-red stop signs")
+
         session.save_net_as(out_path)
         print(f"  :Wrote {out_path}")
 
-    print("  :Turns that are permissive still need conflict areas, and "
-          "right-turn-on-red needs stop signs; both are separate stages.")
     if args.open_gui:
         open_in_gui(out_path)
     return 0

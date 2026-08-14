@@ -28,6 +28,7 @@ midnight, so every interval is shifted by the scenario's start time.
 from __future__ import annotations
 
 from .ir import RoutingDecision, VehicleInput
+from .network import _opt_int
 from .routes import (FALLBACK_MAX_SPEED_KMH, ROUTE_END_OFFSET, minimum_gap,
                      plan_decision_positions)
 
@@ -308,9 +309,13 @@ def clear_signal_control(session) -> tuple[int, int, list[str]]:
         ``(heads removed, controllers removed, warnings)``.
     """
     warnings: list[str] = []
-    heads = controllers = 0
+    heads = controllers = signs = 0
 
     try:
+        # Stop signs point at a signal group, so they go before the controllers.
+        for sign in list(session.net.StopSigns.GetAll()):
+            session.net.StopSigns.RemoveStopSign(sign)
+            signs += 1
         # Heads first: a head refers to a controller, so removing the controller
         # underneath one would leave it dangling.
         for head in list(session.net.SignalHeads.GetAll()):
@@ -323,10 +328,11 @@ def clear_signal_control(session) -> tuple[int, int, list[str]]:
         warnings.append(f"Clearing the imported signal control stopped early: "
                         f"{str(exc)[:80]}")
 
-    if heads or controllers:
-        warnings.append(f"Removed {controllers} signal controllers and {heads} "
-                        "signal heads that came from the OpenDRIVE import; the "
-                        "Synchro timings replace them.")
+    if heads or controllers or signs:
+        detail = f"Removed {controllers} signal controllers and {heads} signal heads"
+        if signs:
+            detail += f" and {signs} stop signs"
+        warnings.append(detail + "; the Synchro timings replace them.")
     return heads, controllers, warnings
 
 
@@ -491,4 +497,136 @@ def write_detectors(session, detectors) -> tuple[int, list[str]]:
     if shortened:
         warnings.append(f"{shortened} detectors were shrunk to fit a short "
                         "approach, so they hold a call for less time.")
+    return created, warnings
+
+
+def read_conflict_areas(session) -> list[tuple]:
+    """Return every conflict area as ``(id, link A, link B, status)``.
+
+    Vissim detects these geometrically on import -- Chattanooga comes back with
+    606 -- so they are read rather than created.
+
+    Args:
+        session: A started :class:`~rt_vissim.com.VissimSession`.
+
+    Returns:
+        ``[(conflict id, link A number, link B number, status), ...]``.
+    """
+    out: list[tuple] = []
+    try:
+        areas = session.net.ConflictAreas.GetAll()
+    except Exception:  # noqa: BLE001 - older builds may not expose them
+        return out
+
+    for area in areas:
+        try:
+            out.append((int(area.AttValue("No")),
+                        _opt_int(area.AttValue("LinkA")),
+                        _opt_int(area.AttValue("LinkB")),
+                        str(area.AttValue("Status"))))
+        except Exception:  # noqa: BLE001 - skip one bad area, not all of them
+            continue
+    return out
+
+
+def write_conflict_areas(session, decisions: dict) -> tuple[int, list[str]]:
+    """Apply a right-of-way decision to each conflict area that needs one.
+
+    Args:
+        session: A started :class:`~rt_vissim.com.VissimSession`.
+        decisions: ``{conflict id: status}`` from
+            :func:`rt_vissim.conflicts.plan_conflicts`.
+
+    Returns:
+        ``(areas set, warnings)``.
+    """
+    warnings: list[str] = []
+    applied = 0
+    for conflict_id, status in sorted(decisions.items()):
+        try:
+            area = session.net.ConflictAreas.ItemByKey(conflict_id)
+            area.SetAttValue("Status", status)
+            applied += 1
+        except Exception as exc:  # noqa: BLE001
+            warnings.append(f"Conflict area {conflict_id} could not be set to "
+                            f"{status}: {str(exc)[:60]}")
+    if applied:
+        warnings.append(f"{applied} conflict areas now have a yielding stream, so "
+                        "permissive turns give way instead of driving through "
+                        "opposing traffic.")
+    return applied, warnings
+
+
+def write_rtor_stop_signs(session, heads, allowed: dict) -> tuple[int, list[str]]:
+    """Place a stop sign per right turn that Synchro allows on red.
+
+    This is Vissim's own mechanism for right-turn-on-red, from the manual:
+    "Signal controller with turn on red: Right turns are allowed in spite of a
+    red signal.  In the Green arrow tab, select Only on red, to enable the stop
+    sign only when the selected signal group of the selected SC" is red.
+
+    So the sign sits on the right-turn connector, watches that turn's signal
+    group, and only applies while that group shows red.  RealTwin's SUMO path
+    cannot do this -- SUMO has no RTOR concept, so it folds the permission into
+    the ``tlLogic`` state string instead.
+
+    Args:
+        session: A started :class:`~rt_vissim.com.VissimSession`.
+        heads: Output of :func:`rt_vissim.heads.build_signal_heads`.
+        allowed: ``{(junction id, movement code): bool}`` from Synchro's
+            ``Allow RTOR``.
+
+    Returns:
+        ``(stop signs created, warnings)``.
+    """
+    warnings: list[str] = []
+    created = skipped = 0
+
+    for head in heads:
+        if not str(head.movement).endswith("R"):
+            continue
+        if not allowed.get((str(head.junction_id), head.movement), False):
+            skipped += 1
+            continue
+
+        try:
+            connector = session.net.Links.ItemByKey(head.connector_no)
+            lanes = list(connector.Lanes)
+        except Exception:  # noqa: BLE001
+            warnings.append(f"Connector {head.connector_no} not found; no stop "
+                            f"sign for {head.movement}.")
+            continue
+
+        for lane in lanes:
+            try:
+                sign = session.net.StopSigns.AddStopSign(0, lane, head.pos)
+            except Exception as exc:  # noqa: BLE001
+                warnings.append(f"Stop sign for {head.movement} failed: "
+                                f"{str(exc)[:70]}")
+                continue
+            sign.SetAttValue("Name", f"RTOR {head.movement} (J{head.junction_id})")
+            try:
+                sign.SetAttValue("SG", signal_group_ref(head.sc_no, head.sg_no))
+            except Exception as exc:  # noqa: BLE001 - leave no orphan behind
+                warnings.append(f"Stop sign for {head.movement}: could not bind to "
+                                f"signal group: {str(exc)[:60]}")
+                try:
+                    session.net.StopSigns.RemoveStopSign(sign)
+                except Exception:  # noqa: BLE001
+                    pass
+                continue
+            # OnlyOnRed is not editable: binding the sign to a signal group is
+            # what makes it a turn-on-red sign, and Vissim sets the flag itself.
+            if not sign.AttValue("OnlyOnRed"):
+                warnings.append(f"Stop sign for {head.movement} did not become "
+                                "an only-on-red sign; it would stop traffic on "
+                                "green too.")
+            created += 1
+
+    if created:
+        warnings.append(f"{created} stop signs let a right turn go on red once it "
+                        "has stopped, which the signal group alone cannot express.")
+    if skipped:
+        warnings.append(f"{skipped} right turns are not allowed on red in Synchro "
+                        "and got no stop sign.")
     return created, warnings

@@ -305,7 +305,6 @@ def build_detectors(matchup, links: dict, synchro: dict,
     detectors: list[Detector] = []
     warnings: list[str] = []
     shortened: set[str] = set()
-    port = 0
 
     for plan in sorted(plans, key=lambda p: str(p.junction_id)):
         setbacks = _movement_row(lanes_table, plan.synchro_intid, "FirstDetect")
@@ -342,11 +341,17 @@ def build_detectors(matchup, links: dict, synchro: dict,
                     continue  # a shared lane is detected once, by whichever
                               # movement claims it first
                 taken.add((from_link, lane))
-                port += 1
+                # The port number is how the .prbc finds this detector, and its
+                # VehicleDetectors are keyed on the signal group, so the port
+                # must be the group rather than a running count.  Numbering them
+                # sequentially left five of Chattanooga's six controllers with no
+                # calls at all: their coordinated phases sat green forever while
+                # every actuated phase stayed red.  Several lanes calling one
+                # group share a port, which is ordinary multi-lane detection.
                 detectors.append(Detector(
                     sc_no=plan.sc_no, sg_no=sg_no, junction_id=plan.junction_id,
                     link_no=from_link, lane=lane, pos=pos, length=length,
-                    port_no=port, movement=code, shortened=was_short))
+                    port_no=sg_no, movement=code, shortened=was_short))
 
     if shortened:
         warnings.append(
@@ -366,3 +371,31 @@ def summarise(heads: list[SignalHead], detectors: list[Detector]) -> str:
     return (f"{len(heads)} signal heads ({protected} protected, {both} "
             f"protected-permissive, {permitted} permitted only), "
             f"{len(detectors)} detectors ({short} shortened)")
+
+
+def rtor_allowed(matchup, synchro: dict, plans: list[SignalPlan]) -> dict:
+    """Return which right turns Synchro permits on red.
+
+    Synchro records this per movement in the ``Lanes`` section as ``Allow
+    RTOR``, 1 for permitted.  At Chattanooga's INTID 16 every movement carries
+    a 1, so every right turn there may go on red.
+
+    Args:
+        matchup: A :class:`rt_vissim.matchup.MatchupTable`.
+        synchro: Output of :func:`rt_vissim.signal.read_synchro`.
+        plans: Controllers from :func:`rt_vissim.signal.build_signal_plans`.
+
+    Returns:
+        ``{(junction id, movement code): allowed}``.
+    """
+    lanes_table = synchro.get("Lanes")
+    if lanes_table is None:
+        return {}
+
+    out: dict = {}
+    for plan in plans:
+        allow = _movement_row(lanes_table, plan.synchro_intid, "Allow RTOR")
+        for code, _row in _movements(matchup, plan.junction_id):
+            value = _number(allow.get(code))
+            out[(str(plan.junction_id), code)] = bool(value)
+    return out
