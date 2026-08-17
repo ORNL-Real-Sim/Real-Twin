@@ -36,7 +36,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(1, str(Path(__file__).resolve().parents[2]))
 
 from rt_vissim.com import VissimSession  # noqa: E402
-from rt_vissim.conflicts import link_turns, plan_conflicts  # noqa: E402
+from rt_vissim.conflicts import (degenerate_uturn_paths,  # noqa: E402
+                                 link_turns, plan_conflicts)
 from rt_vissim.conflicts import summarise as summarise_conflicts  # noqa: E402
 from rt_vissim.heads import (build_detectors, build_signal_heads,  # noqa: E402
                              rtor_allowed, summarise as summarise_placement)
@@ -121,7 +122,19 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     synchro = read_synchro(utdf)
 
-    plans, plan_warnings = build_signal_plans(synchro, junctions)
+    # Label each controller with the junction and intersection it serves.  The
+    # controller number is the Synchro INTID, and those cross over badly against
+    # the OpenDRIVE junction numbers -- junction 14 is INTID 4 while junction 4
+    # is INTID 19 -- so without a name there is nothing in the model tying a
+    # controller to the intersection you are looking at.
+    frame = matchup.df.copy()
+    frame["J"] = frame["JunctionID_OpenDrive"].ffill()
+    labels = {}
+    for junction_id, rows in frame.groupby("J"):
+        found = [v for v in rows["IntersectionName_GridSmart"].dropna().unique() if str(v).strip()]
+        if found:
+            labels[str(junction_id)] = f"J{junction_id} {found[0]}"
+    plans, plan_warnings = build_signal_plans(synchro, junctions, names=labels)
     print(f"  :{len(junctions)} signalised junctions from {utdf.name}")
     print(f"  :Plans: {summarise_plans(plans)}")
     for warning in plan_warnings:
@@ -176,7 +189,9 @@ def main(argv: list[str] | None = None) -> int:
         if not args.no_conflicts and Path(args.movements).exists():
             pairs = read_conflict_areas(session)
             owners = link_turns(pd.read_csv(args.movements), links)
-            decisions, notes = plan_conflicts(pairs, owners)
+            moves = pd.read_csv(args.movements)
+            decisions, notes = plan_conflicts(
+                pairs, owners, degenerate_uturn_paths(links, moves))
             print(f"  :Conflicts: {summarise_conflicts(decisions, pairs)}")
             for note in notes:
                 print(f"  :{note}")

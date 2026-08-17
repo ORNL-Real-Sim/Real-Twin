@@ -209,11 +209,21 @@ def build_integrated_decisions(movements: pd.DataFrame, turn_counts: pd.DataFram
 
     decisions: list[RoutingDecision] = []
     uncounted_approaches = 0
+    single_route = []
 
     for (junction_id, from_link), group in movements.groupby(
             ["JunctionID_OpenDrive", "FromLinkNo_Vissim"], sort=True):
         exits = sorted({int(x) for x in group["ToLinkNo_Vissim"]})
         if not exits:
+            continue
+        if len(exits) == 1:
+            # An approach with one exit offers no choice, so a decision here
+            # decides nothing -- and it is worse than merely redundant.  A
+            # vehicle already on a route ignores every decision it passes until
+            # that route ends (manual, 2.16.3.3), so a one-route decision blinds
+            # vehicles to the *next* one and eats the room it needed.  Leaving it
+            # out lets the downstream decision move further upstream instead.
+            single_route.append((junction_id, int(from_link)))
             continue
         bound = str(group["Bound"].iloc[0]) if "Bound" in group.columns else ""
         label = names.get(str(junction_id), f"Junction {junction_id}")
@@ -234,6 +244,12 @@ def build_integrated_decisions(movements: pd.DataFrame, turn_counts: pd.DataFram
         if not has_any:
             uncounted_approaches += 1
 
+    if single_route:
+        where = ", ".join(f"J{j} link {f}" for j, f in single_route)
+        warnings.append(
+            f"{len(single_route)} approaches have a single exit and were given no "
+            f"routing decision ({where}); vehicles have no choice to make there, "
+            "and a decision would have hidden the next one from them.")
     if uncounted_approaches:
         warnings.append(
             f"{uncounted_approaches} approaches have no counts in any interval; "

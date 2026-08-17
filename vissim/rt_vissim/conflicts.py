@@ -48,6 +48,73 @@ UNDETERMINED = "UNDETERMINED"
 PASSIVE = "PASSIVE"
 
 
+#: An internal link shorter than this has no real extent.  SUMO models a
+#: turnaround as a pivot on the spot and ``netconvert`` writes it out as a road
+#: a tenth of a metre long, so Vissim ends up drawing a conflict area between
+#: two links that occupy the same ground in opposite directions -- a polygon
+#: that folds through itself into a bowtie.  Chattanooga has four; the shortest
+#: internal link that is *not* one of them is 8.5 m, so there is no borderline
+#: case.
+DEGENERATE_LENGTH = 1.0
+
+
+def degenerate_links(links: dict) -> set[int]:
+    """Return junction-internal links with no real extent.
+
+    Args:
+        links: Output of :func:`rt_vissim.network.read_links_csv`.
+
+    Returns:
+        The link numbers, empty when the network has none.
+    """
+    return {no for no, link in links.items()
+            if not link.is_connector and link.junction_key
+            and 0 < link.length < DEGENERATE_LENGTH}
+
+
+def degenerate_uturn_paths(links: dict, movements) -> list[set[int]]:
+    """Return the links making up each U-turn that pivots on the spot.
+
+    Such a U-turn retraces its own approach, so it conflicts with *itself*: its
+    entry connector overlaps its exit road and its exit connector overlaps its
+    approach.  Vissim duly draws a conflict area for each, and because the two
+    sides occupy the same ground in opposite directions the polygon folds
+    through itself into a bowtie.
+
+    Returning the whole path -- approach, both connectors, the pivot link and
+    the exit -- lets those self-conflicts be picked out exactly, without
+    touching any conflict this U-turn has with genuinely other traffic.
+
+    Args:
+        links: Output of :func:`rt_vissim.network.read_links_csv`.
+        movements: The stage 1 movement table.
+
+    Returns:
+        One set of link numbers per degenerate U-turn.
+    """
+    degenerate = degenerate_links(links)
+    connectors = {(ln.from_link, ln.to_link): ln.no
+                  for ln in links.values() if ln.is_connector}
+
+    paths: list[set[int]] = []
+    for row in movements.itertuples(index=False):
+        if str(row.Turn) != "Uturn":
+            continue
+        internal = [int(x) for x in
+                    str(getattr(row, "InternalLinks_Vissim", "") or "").split()]
+        if len(internal) != 1 or internal[0] not in degenerate:
+            continue
+        approach = int(row.FromLinkNo_Vissim)
+        exit_link = int(row.ToLinkNo_Vissim)
+        path = {approach, internal[0], exit_link}
+        for pair in ((approach, internal[0]), (internal[0], exit_link)):
+            connector = connectors.get(pair)
+            if connector is not None:
+                path.add(connector)
+        paths.append(path)
+    return paths
+
+
 def link_turns(movements, links: dict | None = None) -> dict[int, tuple]:
     """Map every link inside a junction to the movement that uses it.
 
@@ -117,7 +184,9 @@ def decide(turn_a: str, turn_b: str) -> str | None:
     return A_HAS_RIGHT_OF_WAY if rank_a > rank_b else B_HAS_RIGHT_OF_WAY
 
 
-def plan_conflicts(pairs, owners: dict[int, tuple]) -> tuple[dict, list[str]]:
+def plan_conflicts(pairs, owners: dict[int, tuple],
+                   self_conflicts: list[set[int]] | None = None,
+                   ) -> tuple[dict, list[str]]:
     """Work out a status for each undetermined conflict area.
 
     Args:
@@ -130,9 +199,20 @@ def plan_conflicts(pairs, owners: dict[int, tuple]) -> tuple[dict, list[str]]:
         separate, are left out and counted in the warnings.
     """
     decisions: dict = {}
-    already = other_junction = unranked = unknown = 0
+    self_conflicts = self_conflicts or []
+    already = other_junction = unranked = unknown = suppressed = 0
 
     for conflict_id, link_a, link_b, status in pairs:
+        # A U-turn that pivots on the spot retraces its own approach, so Vissim
+        # finds it conflicting with itself.  That is not an interaction between
+        # two streams, and the polygon drawn for it folds into a bowtie, so it
+        # is switched off.  Only conflicts where *both* sides belong to the same
+        # U-turn's own path qualify; anything that U-turn crosses is left alone.
+        if any({link_a, link_b} <= path for path in self_conflicts):
+            if status != PASSIVE:
+                decisions[conflict_id] = PASSIVE
+                suppressed += 1
+            continue
         if status not in (UNDETERMINED, None, ""):
             already += 1
             continue
@@ -152,6 +232,12 @@ def plan_conflicts(pairs, owners: dict[int, tuple]) -> tuple[dict, list[str]]:
         decisions[conflict_id] = verdict
 
     warnings: list[str] = []
+    if suppressed:
+        warnings.append(f"{suppressed} conflict areas are a U-turn conflicting "
+                        "with its own approach, because SUMO models a turnaround "
+                        "as a pivot on the spot and the exit retraces the "
+                        "approach. They were set passive: the bowtie polygon is "
+                        "not an interaction between two streams.")
     if already:
         warnings.append(f"{already} conflict areas already carry a decision and "
                         "were left alone.")

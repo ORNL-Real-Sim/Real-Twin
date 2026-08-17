@@ -48,6 +48,19 @@ DETECTOR_MARGIN = 1.0
 #: Smallest detector worth creating; below this it barely spans a vehicle.
 MIN_DETECTOR_LENGTH = 2.0
 
+#: How far back from the stop line the detector's downstream edge sits.
+#: Synchro's ``FirstDetect`` is 50 ft on these networks, which puts the detector
+#: 15 m upstream -- far enough back that a queue can form between it and the
+#: stop bar without the controller seeing it.  A stop-bar presence detector
+#: belongs at the line, so the setback is set here rather than taken from
+#: Synchro.  It also buys back most of the room the short approaches lacked.
+#:
+#: Not flush against the line, though: the signal heads sit at the stop bar, so
+#: a detector ending there draws on top of them and neither can be picked out in
+#: the network editor.  A couple of metres clears the heads while still
+#: detecting a vehicle waiting at the line.
+STOP_BAR_SETBACK = 2.0
+
 
 def _movement_row(lanes, intid: str, record: str) -> dict:
     """Return one ``Lanes`` record for an intersection as ``{movement: value}``.
@@ -307,7 +320,6 @@ def build_detectors(matchup, links: dict, synchro: dict,
     shortened: set[str] = set()
 
     for plan in sorted(plans, key=lambda p: str(p.junction_id)):
-        setbacks = _movement_row(lanes_table, plan.synchro_intid, "FirstDetect")
         sizes = _movement_row(lanes_table, plan.synchro_intid, "DetectSize1")
         phases = _movement_row(lanes_table, plan.synchro_intid, "DetectPhase1")
         groups = {g.sg_no for g in plan.signal_groups}
@@ -329,10 +341,8 @@ def build_detectors(matchup, links: dict, synchro: dict,
             wanted_length = (_number(sizes.get(code)) or 0.0) * FEET_TO_METRES
             if wanted_length <= 0:
                 continue
-            setback = (_number(setbacks.get(code)) or 0.0) * FEET_TO_METRES
-
             pos, length, was_short = detector_placement(
-                approach.length, setback, wanted_length)
+                approach.length, STOP_BAR_SETBACK, wanted_length)
             if was_short:
                 shortened.add(f"link {from_link} ({approach.length:.1f} m)")
 
