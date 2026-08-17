@@ -180,6 +180,31 @@ def build_signal_plan(synchro: dict, intid: str, *, junction_id: str | int = "",
     offset = _number(setting("Offset")) or 0.0
     coordinated = coordinated_phases(setting("Reference Phase"))
 
+    # Which phases serve a through movement, read from the Lanes block.
+    #
+    # Synchro carries a ``DualEntry`` row but leaves every cell blank on these
+    # exports, so the value is not available and has to be chosen.  The manual
+    # says dual entry is "often used for through-movement signal groups such
+    # that if one signal group is called, the opposite through movement is
+    # served as well", and the hand-built controllers set it on exactly the
+    # phases that serve a through.  A split-phased side street runs its whole
+    # approach, through included, on one phase, so that phase needs it too or
+    # the approach waits for its own detector call every cycle.
+    #
+    # This is a modelling choice, not a conversion: nothing in the UTDF export
+    # determines it.
+    through_phases: set[int] = set()
+    lanes = synchro.get("Lanes")
+    if lanes is not None:
+        block = lanes[lanes["INTID"].astype(str) == str(intid)]
+        if not block.empty and "Phase1" in set(block["RECORDNAME"]):
+            phase_row = block.set_index("RECORDNAME").loc["Phase1"]
+            for column in phase_row.index:
+                if len(str(column)) == 3 and str(column).endswith("T"):
+                    number = _number(phase_row[column])
+                    if number:
+                        through_phases.add(int(number))
+
     def cell(record: str, column: str):
         if record not in rows.index or column not in rows.columns:
             return None
@@ -223,10 +248,7 @@ def build_signal_plan(synchro: dict, intid: str, *, junction_id: str | int = "",
             coordinated=index in coordinated,
             min_recall=int(recall) == RECALL_MIN,
             max_recall=int(recall) == RECALL_MAX,
-            # Synchro leaves DualEntry blank on these exports.  A coordinated
-            # phase must be able to come up on its partner's call, which is what
-            # the reference controllers do, so it is inferred rather than read.
-            dual_entry=index in coordinated,
+            dual_entry=index in through_phases,
             inhibit_max=bool(cell("InhibitMax", column)),
             start_up=index in coordinated,
         ))
