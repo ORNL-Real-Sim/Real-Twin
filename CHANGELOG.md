@@ -6,6 +6,11 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 ## Change Log
 
+### 2026-08-17
+
+* Find Windows executables outside `PATH` by searching the system drive, prioritizing standard installation directories such as `Program Files`.
+* Preserve the original executable-discovery module import while using the clearer module name internally.
+
 ### 2026-02-19
 
 TODO:

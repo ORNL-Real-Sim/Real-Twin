@@ -15,7 +15,7 @@ import pyufunc as pf
 import subprocess
 import re
 
-from realtwin.util_lib.find_exe_from_PATH import find_executable_from_PATH_on_win
+from realtwin.util_lib.find_executable_path import find_executable_on_win
 
 
 # Check required simulation environments
@@ -53,10 +53,11 @@ def is_sumo_installed(*, ext: str = "exe", sel_dir: list = None, verbose: bool =
         sumo_executable = None  # TODO: Check name of the executable
 
     else:
-        raise Exception("  :Unsupported OS, could not find SUMO executable.")
+        raise Exception("  :Unsupported OS, could not find SUMO executable.")  # noqa: TRY002
 
     # Check if 'sumo' executable is in PATH: return None if not found
-    sumo_exe_lst = find_executable_from_PATH_on_win(sumo_executable, ext=ext, sel_dir=sel_dir, verbose=False)
+    sumo_exe_lst = find_executable_on_win(
+        sumo_executable, ext=ext, sel_dir=sel_dir, verbose=False)
 
     if sumo_exe_lst:
         # remove duplicates
@@ -116,7 +117,7 @@ def is_vissim_installed(*, ext: str = "", sel_dir: list = None, verbose: bool = 
     return False
 
 
-def is_aimsun_installed(*, ext: str = "", sel_dir: list = None, verbose: bool = True) -> bool:
+def is_aimsun_installed(*, ext: str = "", sel_dir: list | None = None, verbose: bool = True) -> bool:
     """Check if AIMSUN is installed on the system.
 
     Args:
@@ -127,5 +128,34 @@ def is_aimsun_installed(*, ext: str = "", sel_dir: list = None, verbose: bool = 
     Returns:
         bool: True if AIMSUN is installed, False otherwise.
     """
-    print("  Warning: Checking AIMSUN installation is not supported yet.")
+    # check the operation system
+    if pf.is_windows():
+        print("  :Checking AIMSUN installation on Windows.")
+        aimsun_executable = "aconsole.exe"  # For Windows
+
+    elif pf.is_linux():
+        print("  :Checking AIMSUN installation on Linux.")
+        aimsun_executable = None  # TODO: Check name of the executable
+
+    elif pf.is_mac():
+        print("  :Checking AIMSUN installation on MacOS.")
+        aimsun_executable = None  # TODO: Check name of the executable
+
+    else:
+        raise Exception("  :Unsupported OS, could not find AIMSUN executable.")  # noqa: TRY002
+
+    # Check if 'aimsun' executable is in PATH: return None if not found
+    aimsun_exe_lst = find_executable_on_win(aimsun_executable, ext=ext, sel_dir=sel_dir, verbose=False)
+
+    if aimsun_exe_lst:
+        # remove duplicates
+        aimsun_exe_lst = list(set(aimsun_exe_lst))
+
+        # print out the version of Aimsun if more than one path is found
+        if len(aimsun_exe_lst) > 1:
+            print(f"  :Multiple AIMSUN executables founds: {aimsun_exe_lst}")
+
+        return aimsun_exe_lst
+
+    print("  :AIMSUN not found in the system PATH.")
     return False

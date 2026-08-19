@@ -24,16 +24,17 @@ if __name__ == '__main__':
     CONFIG_FILE = "./realtwin_config.yaml"
 
     # Step 2: initialize the realtwin object
-    twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
+    # twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
+    twin = rt.RealTwinAimsun(input_config_file=CONFIG_FILE, verbose=True)
 
     # Step 3: check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
-    twin.env_setup(sel_sim=["SUMO", "VISSIM"])
+    twin.env_setup(sel_sim=["Aimsun"], sel_dir=None, verbose=False)
 
     # Step 4: Create Matchup Table from SUMO network
-    # twin.generate_inputs()
+    twin.generate_inputs()
 
-    updated_sumo_net = r"./datasets/example2/updated.net.xml"
-    twin.generate_inputs(incl_sumo_net=updated_sumo_net)
+    # updated_sumo_net = r"./datasets/example2/updated.net.xml"
+    # twin.generate_inputs(incl_sumo_net=updated_sumo_net)
 
     # BEFORE step 5, there are three steps to be performed:
     # 1. Prepare Traffic Demand and save it to Traffic Folder in input directory

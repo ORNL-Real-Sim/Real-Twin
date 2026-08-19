@@ -34,6 +34,8 @@ from realtwin.util_lib import get_bbox_from_vertices
 # Autonomous vehicle simulation
 from realtwin.autonomous_veh import SimAV, prepare_av_configs, load_av_configs
 
+from realtwin.rt_aimsun import RealTwinAimsun
+
 
 __version__ = '0.1.2'
 
@@ -56,6 +58,9 @@ __all__ = [
     'SimAV',
     'prepare_av_configs',
     'load_av_configs',
+
+    # rt_aimsun
+    'RealTwinAimsun'
 ]
 
 

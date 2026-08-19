@@ -19,16 +19,15 @@ from .inst_sumo import (install_sumo,
                         install_sumo_macos)
 
 __all__ = [
-    # Check simulation environment
-    "is_sumo_installed",
-    "is_vissim_installed",
-    "is_aimsun_installed",
-
     # Install simulation environment
     "install_sumo",
-    "install_sumo_windows",
     "install_sumo_linux",
-    "install_sumo_macos"
+    "install_sumo_macos",
+    "install_sumo_windows",
+    # Check simulation environment
+    "is_aimsun_installed",
+    "is_sumo_installed",
+    "is_vissim_installed",
 
     # "install_vissim",
 

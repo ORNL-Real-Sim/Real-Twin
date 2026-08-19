@@ -53,3 +53,10 @@ Calibration:
         tabu_size: 10  # maximum size of the tabu list [2, 10000]
         neighbour_size: 10  # size of the neighborhood for generating candidate solutions [2, 10000]
         perturbation_scale: 0.05  # scale of perturbation for the solution [0, 100]
+
+
+AIMSUN:
+    model_fname: C:\Users\xh8\ORNL_Work\github_workspace\Aimsun-integration-to-RealTwin\chatt_roy\Model\chatt_roy.ang
+    model_xdor: C:\Users\xh8\ORNL_Work\github_workspace\Aimsun-integration-to-RealTwin\chatt_roy\Model\chatt.xodr
+    # include user's python site-packages directory, please make sure your python version aligns with the Aimsun's python version, e.g., Aimsun Next 23 uses python 3.10, so you need to use python 3.10 to install the packages, required packages: numpy, pandas, openpyxl, xlrd
+    site_packages: C:\Users\xh8\AppData\Local\Programs\Python\Python310\Lib\site-packages
