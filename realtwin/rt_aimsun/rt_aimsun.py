@@ -1,21 +1,23 @@
-# -*- coding:utf-8 -*-
-##############################################################
-# Created Date: Friday, August 7th 2026
-# Contact Info: luoxiangyong01@gmail.com
-# Author/Copyright: Mr. Xiangyong Luo
-##############################################################
+##############################################################################
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
+# All rights reserved.                                                       #
+#                                                                            #
+# This file is part of RealTwin and is distributed under a GPL               #
+# license. For the licensing terms see the LICENSE file in the top-level     #
+# directory.                                                                 #
+#                                                                            #
+# Contributors: ORNL Real-Twin Team                                          #
+# Contact: realtwin@ornl.gov                                                 #
+##############################################################################
 
-import cmd
-from concurrent.futures import process
+import re
 import subprocess
 import os
-import re
-import shutil
 from pathlib import Path
 import time
 import pyufunc as pf
 from rich.console import Console
-from rich import json, print as rprint
+from rich import json
 # environment setup
 from realtwin.util_lib.create_venv import venv_create, venv_delete
 from realtwin.util_lib.find_executable_path import find_executable_on_win
@@ -23,24 +25,10 @@ from realtwin.func_lib._a_install_simulator.inst_aimsun import install_aimsun
 
 # input data loading
 from realtwin.func_lib._b_load_inputs.loader_config import load_input_configs
-from realtwin.util_lib.mapping_SUMO_OpenDrive_ID import parse_SUMO_ID, parse_SUMO_to_OpenDrive, parse_SUMO_TLS_ID
 
 # scenario generation
-# from realtwin.util_lib.download_elevation_tif import download_elevation_tif_by_bbox
-from realtwin.util_lib.check_abstract_scenario_inputs import check_abstract_inputs
-from realtwin.func_lib._c_abstract_scenario._abstractScenario import AbstractScenario
-from realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation import generate_matchup_table
-from realtwin.func_lib._c_abstract_scenario.rt_matchup_table_generation import format_junction_bearing
-from realtwin.func_lib._c_abstract_scenario.rt_demand_generation import generate_turn_demand, update_matchup_table
-
-from realtwin.func_lib._d_concrete_scenario._concreteScenario import ConcreteScenario
-
 # simulation
-from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
-
 # calibration
-from realtwin.func_lib._f_calibration.calibration_sumo import cali_sumo
-from realtwin.data_lib.config_data_lib import sel_behavior_routes as sel_behavior_routes_demo
 
 console = Console()
 # info: dim cyan, warning: magenta, danger: bold red
@@ -153,17 +141,17 @@ class RealTwinAimsun:
                     invalid_sim.append(simulator)
             except Exception:
                 invalid_sim.append(simulator)
-                rprint(f"  :[bold magenta]Could not install {simulator} on your operation system", end="")
+                print(f"  :Could not install {simulator} on your operation system", end="")
 
         sel_sim_ = list(set(sel_sim) - set(invalid_sim))
 
         if not sel_sim_:
-            raise Exception("  :Error: No simulator is available. Please select available version(s).")  # noqa: TRY002
+            raise Exception("  :Error: No simulator is available. Please select available version(s).")
         self.sel_sim = sel_sim_
 
         # check Aimsun version installation
         try:
-            print("  :[bold green]Check Aimsun version installation:")
+            print("  :Check Aimsun version installation:")
             path_to_aimsun = pf.path2linux(find_executable_on_win("aconsole.exe", sel_dir=sel_dir, verbose=False)[0])
             # print(f"  :[bold green]Aimsun executable path: {path_to_aimsun}", end="")
             model_path = self.input_config["AIMSUN"]["model_fname"]
@@ -183,15 +171,15 @@ class RealTwinAimsun:
                     version_flag = True
                     self.input_config["AIMSUN"]["python_version"] = line.split(":")[-1].strip()
                     self.input_config["AIMSUN"]["exe_path"] = path_to_aimsun
-                    rprint(f"  :[bold green]{line}", end="")
-                    rprint(
-                        "  :[bold green]Please ensure that your Python site-packages are compatible with the Aimsun Python version you are using.", end="")
+                    print(f"  :{line}", end="")
+                    print(
+                        "  :Please ensure that your Python site-packages are compatible with the Aimsun Python version you are using.", end="")
                     break
             if not version_flag:
-                rprint("  :[bold magenta]Could not check AIMSUN version, no dongle found or not installed properly.", end="")
+                print("  :Could not check AIMSUN version, no dongle found or not installed properly.", end="")
 
-        except Exception as e:  # noqa: BLE001
-            rprint(f"  :[bold magenta]Could not check Aimsun version: {e}, no dongle found", end="")
+        except Exception as e:
+            print(f"  :Could not check Aimsun version: {e}, no dongle found", end="")
             return f"  :Info: Selected simulators: {sel_sim_} are installed successfully."
 
         return f"  :Info: Selected simulators: {sel_sim_} are installed successfully."
@@ -218,7 +206,7 @@ class RealTwinAimsun:
                                 text=True, encoding="utf-8", errors="replace")
             out, _ = process.communicate()
             if "Cannot load the network" in out:
-                raise Exception("  :Error: Cannot load the network. Please check the Aimsun model file path and ensure it is correct.")  # noqa: TRY002
+                raise Exception("  :Error: Cannot load the network. Please check the Aimsun model file path and ensure it is correct.")
 
             # check demand and control data
             # check if Control folder exists in the input directory
@@ -264,13 +252,15 @@ class RealTwinAimsun:
                                        text=True, encoding="utf-8", errors="replace")
             out, _ = process.communicate()
             for line in out.splitlines():
-                if "Matchup table saved to" in line:
-                    self.input_config["AIMSUN"]["matchup_table_path"] = line.split(":")[-1].strip()
-                    break
-            if self.input_config["AIMSUN"]["matchup_table_path"] is None:
-                raise Exception("  :Error: Could not generate the matchup table. Please check the Aimsun model file and ensure it is correct.")  # noqa: TRY002
+                # if it's not log line, print it
+                if not re.match(r"^\[[^\]]+\]\s*", line):
+                    print(f"{line}")
+                    if "Matchup table saved to" in line:
+                        self.input_config["AIMSUN"]["matchup_table_path"] = line.split(":")[-1].strip()
 
-    def generate_abstract_scenario(self, **kwargs) -> str:
+            if self.input_config["AIMSUN"]["matchup_table_path"] is None:
+                raise Exception("  :Error: Could not generate the matchup table. Please check the Aimsun model file and ensure it is correct.")
+
             console.print(
                 f"  [dim cyan]:NOTE: Matchup table is generated and saved to {self.input_config['AIMSUN']['matchup_table_path']}.[/dim cyan]\n"
                 "  :NOTICE: [bold red]Please update the Matchup table from input folder"
@@ -291,87 +281,117 @@ class RealTwinAimsun:
                         console.print("  [dim cyan]:INFO: User confirmed to continue (Matchup Table Updated).")
                         usr_input = True
 
-            # Grab Data From Traffic and Control Folder into Matchup Table
-            print("[bold green]  :Importing Traffic and Control Data into Matchup Table")
-            cmd = [
-                self.input_config["AIMSUN"]["exe_path"],
-                "-script",
-                self.aimsun_file_list[3],
-                self.input_config["AIMSUN"]["model_fname"],
-                json.dumps(self.input_config)
-            ]
+    def generate_abstract_scenario(self, **kwargs) -> str:
 
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                       text=True, encoding="utf-8", errors="replace")
-            out, _ = process.communicate()
-            # print(out)
+        # Grab Data From Traffic and Control Folder into Matchup Table
+        console.print("[bold green]  :Importing Traffic and Control Intersection Info into Matchup Table")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file_list[3],
+            self.input_config["AIMSUN"]["model_fname"],
+            json.dumps(self.input_config)
+        ]
 
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+        # print(out)
 
-            # Import Demand
-            print("[bold green]  :Importing Demand Data into Matchup Table")
-            cmd = [
-                self.input_config["AIMSUN"]["exe_path"],
-                "-script",
-                self.aimsun_file_list[4],
-                self.input_config["AIMSUN"]["model_fname"],
-                json.dumps(self.input_config)
-            ]
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                       text=True, encoding="utf-8", errors="replace")
-            out, _ = process.communicate()
-            # print(out)
+        # add another stop info
+        if self._input_confirm:
+            # Tell user to manually check correctness of the Matchup Table
+            console.input(":warning: [bold magenta]In the Matchup Table, please check if the turn movement in the "
+                            "demand and control data match with bearings in the network data. Enter any key to continue...")
 
-            # Import Signal Part 1: generate detector
-            print("[bold green]  :Importing Signal Data into Matchup Table: Part 1 - generate detector")
-            cmd = [
-                self.input_config["AIMSUN"]["exe_path"],
-                "-script",
-                self.aimsun_file_list[5],
-                self.input_config["AIMSUN"]["model_fname"],
-                json.dumps(self.input_config)
-            ]
-
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                       text=True, encoding="utf-8", errors="replace")
-            out, _ = process.communicate()
-            # print(out)
-
-            # Import Signal Part 2: import signal
-            print("[bold green]  :Importing Signal Data into Matchup Table: Part 2 - import signal")
-            cmd = [
-                self.input_config["AIMSUN"]["exe_path"],
-                "-script",
-                self.aimsun_file_list[6],
-                self.input_config["AIMSUN"]["model_fname"],
-                json.dumps(self.input_config)
-            ]
-
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                       text=True, encoding="utf-8", errors="replace")
-            out, _ = process.communicate()
-            # print(out)
-
-            # Import Signal Part 3: configure Aimsun control plan
-            print("[bold green]  :Importing Signal Data into Matchup Table: Part 3 - configure Aimsun control plan")
-            cmd = [
-                self.input_config["AIMSUN"]["exe_path"],
-                "-script",
-                self.aimsun_file_list[7],
-                self.input_config["AIMSUN"]["model_fname"],
-                json.dumps(self.input_config)
-            ]
-
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                       text=True, encoding="utf-8", errors="replace")
-            out, _ = process.communicate()
-            # print(out)
-
-            console.print("\n[bold green]Abstract Scenario successfully generated.")
+        console.print("\n[bold green]Abstract Scenario successfully generated.")
 
     def generate_concrete_scenario(self, **kwargs) -> str:
+        # Import Demand
+        console.print("[bold green]  :Importing Demand Data into Aimsun")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file_list[4],
+            self.input_config["AIMSUN"]["model_fname"],
+            json.dumps(self.input_config)
+        ]
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+        # print(out)
+
+        # Import Signal Part 1: generate detector
+        console.print("[bold green]  :Importing Signal Data into Aimsun: Part 1 - generate detector")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file_list[5],
+            self.input_config["AIMSUN"]["model_fname"],
+            json.dumps(self.input_config)
+        ]
+
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+        # print(out)
+
+        # Import Signal Part 2: import signal
+        console.print("[bold green]  :Importing Signal Data into Aimsun: Part 2 - import signal")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file_list[6],
+            self.input_config["AIMSUN"]["model_fname"],
+            json.dumps(self.input_config)
+        ]
+
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+        # print(out)
+
+        # Import Signal Part 3: configure Aimsun control plan
+        console.print("[bold green]  :Importing Signal Data into Aimsun: Part 3 - configure Aimsun control plan")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file_list[7],
+            self.input_config["AIMSUN"]["model_fname"],
+            json.dumps(self.input_config)
+        ]
+
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        # print(out)
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+
+        console.print("\n[bold green]Concrete Scenario successfully generated.")
+
+    def prepare_simulation(self, **kwargs) -> str:
 
         # Generate Scenario
-        print("[bold green]  :Generating Abstract Scenario")
+        console.print("[bold green]  :Generating Abstract Scenario")
         cmd = [
             self.input_config["AIMSUN"]["exe_path"],
             "-script",
@@ -383,10 +403,14 @@ class RealTwinAimsun:
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                    text=True, encoding="utf-8", errors="replace")
         out, _ = process.communicate()
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
         # print(out)
 
         # Configure Simulation Output Path in Scenario
-        print("[bold green]  :Configuring Simulation Output Path in Scenario")
+        print("  :Configuring Simulation Output Path in Scenario")
         cmd = [
             self.input_config["AIMSUN"]["exe_path"],
             "-script",
@@ -399,5 +423,8 @@ class RealTwinAimsun:
                                    text=True, encoding="utf-8", errors="replace")
         out, _ = process.communicate()
         # print(out)
-        console.print("\n[bold green]Concrete Scenario successfully generated.")
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
 

@@ -48,6 +48,10 @@ console = Console()
 # info: dim cyan, warning: magenta, danger: bold red
 
 
+class RealTwinError(Exception):
+    """Base exception for RealTwin configuration and runtime errors."""
+
+
 class RealTwin:
     """The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group that
     enables the simulation of twin-structured cities.
@@ -83,11 +87,11 @@ class RealTwin:
 
     def env_setup(self,
                   *,
-                  sel_sim: list = None,
-                  sel_dir: list = None,
-                  strict_sumo_version: str = None,
-                  strict_vissim_version: str = None,
-                  strict_aimsun_version: str = None,
+                  sel_sim: list | None = None,
+                  sel_dir: list | None = None,
+                  strict_sumo_version: str | None = None,
+                  strict_vissim_version: str | None = None,
+                  strict_aimsun_version: str | None = None,
                   **kwargs) -> str:
         """Check and set up the environment for the simulation
 
@@ -163,7 +167,7 @@ class RealTwin:
 
         return f"  :Info: Selected simulators: {sel_sim_} are installed successfully."
 
-    def generate_inputs(self, *, incl_sumo_net: str = None) -> str:
+    def generate_inputs(self, *, incl_sumo_net: str | None = None) -> str:
         """ Generate user inputs, such as MatchUp table, Control and Traffic data
 
         Args:
@@ -286,6 +290,7 @@ class RealTwin:
                                 "For details please refer to the documentation: ")
             df_matchup_table = format_junction_bearing(path_sumo_net)
             generate_matchup_table(df_matchup_table, path_matchup)
+
             console.print(f"  [dim cyan]:NOTE: Matchup table is generated and saved to {path_matchup}.[/dim cyan]\n"
                           "  :NOTICE: [bold red]Please update the Matchup table from input folder"
                           " and then run generate_abstract_scenario()."
@@ -432,10 +437,10 @@ class RealTwin:
             console.print(f"\n[bold green]{simulator.upper()} simulation successfully Prepared.")
         return True
 
-    def calibrate(self, *, sel_algo: dict = None,
-                  sel_behavior_routes: dict = None,
-                  update_turn_flow_algo: dict = None,
-                  update_behavior_algo: dict = None) -> bool:
+    def calibrate(self, *, sel_algo: dict | None = None,
+                  sel_behavior_routes: dict | None = None,
+                  update_turn_flow_algo: dict | None = None,
+                  update_behavior_algo: dict | None = None) -> bool:
         # sourcery skip: extract-duplicate-method, remove-empty-nested-block, remove-redundant-if
         """Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.
 
