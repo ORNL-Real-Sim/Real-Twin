@@ -6,6 +6,10 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 ## Change Log
 
+### 2026-08-25
+
+* Stream the Aimsun version-check command output to the terminal while retaining version detection.
+
 ### 2026-08-17
 
 * Find Windows executables outside `PATH` by searching the system drive, prioritizing standard installation directories such as `Program Files`.

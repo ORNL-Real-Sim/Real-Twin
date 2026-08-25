@@ -35,7 +35,7 @@ if __name__ == '__main__':
     # Step 3: check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
     twin.env_setup()
 
-    # Step 4: Create Matchup Table from SUMO network
+    # Step 4: load/generate network, then prepare Matchup Table
     twin.generate_inputs()
 
     # BEFORE step 5, there are three steps to be performed:

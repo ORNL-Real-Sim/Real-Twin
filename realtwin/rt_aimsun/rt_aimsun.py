@@ -395,7 +395,7 @@ class RealTwinAimsun:
         cmd = [
             self.input_config["AIMSUN"]["exe_path"],
             "-script",
-            self.aimsun_file_list[7],
+            self.aimsun_file_list[8],
             self.input_config["AIMSUN"]["model_fname"],
             # json.dumps(self.input_config)
         ]
@@ -414,7 +414,7 @@ class RealTwinAimsun:
         cmd = [
             self.input_config["AIMSUN"]["exe_path"],
             "-script",
-            self.aimsun_file_list[7],
+            self.aimsun_file_list[9],
             self.input_config["AIMSUN"]["model_fname"],
             # json.dumps(self.input_config)
         ]
