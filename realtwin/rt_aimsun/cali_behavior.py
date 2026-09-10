@@ -10,7 +10,7 @@
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
-""" Behavior Calibration class for SUMO """
+"""Behavior calibration for Aimsun."""
 
 import os
 from functools import partial
@@ -30,8 +30,10 @@ PENALTY_MAE = 1.0e4
 
 
 def run_aconsole(cmd):
+    """Capture script output even if Aimsun crashes during console shutdown."""
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                               text=True, encoding="utf-8", errors="replace")
+                               text=True, encoding="utf-8", errors="replace",
+                               env={**os.environ, "PYTHONUNBUFFERED": "1"})
     out, _ = process.communicate()
     return process.returncode, out
 
@@ -91,7 +93,12 @@ def newParameter(solution_scaled, input_config: dict | None = None):
     model_dir = Path(model_fname).parent
     parameter_csv = os.path.join(model_dir, "DrivingBehaviorParameter.csv")  # will be read by Step7.2_DrivingBehaviorAssign.py
 
-    np.savetxt(parameter_csv, np.asarray(solution_scaled, dtype=float), delimiter=",", fmt="%s")
+    # Step7.2 reads a fixed order, which differs from the shared SUMO names.
+    parameter_names = input_config["AIMSUN"]["behavior"]["params_names"]
+    parameter_values = dict(zip(parameter_names, np.asarray(solution_scaled, dtype=float)))
+    assignment_order = ["MinDist", "MaxAcc", "NormalDec", "MaxDec", "MinHeadway", "SensitivityFactor"]
+    np.savetxt(parameter_csv, [parameter_values[name] for name in assignment_order],
+               delimiter=",", fmt="%s")
     aconsole_path = input_config["AIMSUN"]["exe_path"]
     model_fname = input_config["AIMSUN"]["model_fname"]
     assign_script_path = input_config["AIMSUN"]["aimsun_file"]["step7.2"]
@@ -244,7 +251,7 @@ def resultAnalysis(input_config: dict | None = None):
 
 
 def fitness_func(solution: list | np.ndarray, input_config: dict | None = None) -> float:
-    """ Evaluate the fitness of a given solution for SUMO calibration."""
+    """Evaluate normalized [0, 1] behavior parameters using travel-time MAE."""
 
     lb = np.asarray(input_config["AIMSUN"]["behavior"]["params_lb"], dtype=float)
     ub = np.asarray(input_config["AIMSUN"]["behavior"]["params_ub"], dtype=float)
@@ -348,9 +355,25 @@ class BehaviorCaliAimsun:
         params_names = list(params_names_mapping.values())
         params_ranges_ = {params_names_mapping[k]: v for k, v in params_ranges_.items()}
 
-        params_ranges = self.behavior_cfg.get("params_ranges", params_ranges_).values()
-        params_lb = [val[0] for val in params_ranges]
-        params_ub = [val[1] for val in params_ranges]
+        configured_ranges = self.behavior_cfg.get(
+            "params_ranges", self.behavior_cfg.get("behavior", {}).get("params_ranges", params_ranges_))
+        if not isinstance(configured_ranges, dict):
+            raise ValueError("Aimsun behavior params_ranges must be a dictionary.")
+        unknown_names = set(configured_ranges) - set(params_names_mapping) - set(params_names)
+        if unknown_names:
+            raise ValueError(f"Unknown Aimsun behavior parameter names: {sorted(unknown_names)}")
+        params_ranges = {
+            aimsun_name: configured_ranges.get(
+                aimsun_name, configured_ranges.get(name, params_ranges_[aimsun_name]))
+            for name, aimsun_name in params_names_mapping.items()
+        }
+        ranges_array = np.asarray(list(params_ranges.values()), dtype=float)
+        if ranges_array.shape != (len(params_names), 2) or not np.isfinite(ranges_array).all():
+            raise ValueError("Each Aimsun behavior parameter requires two finite bounds.")
+        params_lb = ranges_array[:, 0].tolist()
+        params_ub = ranges_array[:, 1].tolist()
+        if np.any(ranges_array[:, 0] > ranges_array[:, 1]):
+            raise ValueError("Aimsun behavior lower bounds must not exceed upper bounds.")
 
         if not self.input_config["AIMSUN"]["behavior"]:
             self.input_config["AIMSUN"]["behavior"] = {}
@@ -404,6 +427,9 @@ class BehaviorCaliAimsun:
             output_dir (str): the directory to save the results.
             model: the optimized model object.
         """
+
+        if callable(getattr(model, "run_vis", None)):
+            return model.run_vis(output_dir=output_dir)
 
         # save the best solution
         try:
@@ -658,6 +684,25 @@ class BehaviorCaliAimsun:
         self.problem_dict["obj_func"](g_best.solution)
 
         return (g_best, model_ts)
+
+    def run_BO(self) -> tuple:
+        """Optimize normalized behavior parameters and reapply the best candidate."""
+        from realtwin.func_lib._f_calibration.algo_sumo._bayesian_opt import BayesianOptimization
+
+        # fitness_func maps unit inputs to the configured physical ranges.
+        lower = np.asarray(self.behavior_cfg["params_lb"])
+        upper = np.asarray(self.behavior_cfg["params_ub"])
+        model = BayesianOptimization(
+            scenario_config=self.scenario_config,
+            algo_config=self.behavior_cfg,
+            verbose=self.verbose,
+            bounds=(np.zeros(len(lower)), (upper > lower).astype(float)),
+            simulator="aimsun",
+        )
+        g_best = model.solve(
+            fitness_func, objective_kwargs={"input_config": self.input_config})
+        fitness_func(g_best.solution.copy(), input_config=self.input_config)
+        return g_best, model
 
     def _clean_up(self):
         """Clean up the temporary files generated during the calibration process."""

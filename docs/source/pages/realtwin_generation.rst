@@ -42,7 +42,7 @@ Scenario Generation
         # Step 7: simulate the scenario
         twin.prepare_simulation()
 
-        # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
+        # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search, BO: Bayesian Optimization
         twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"})
 
         # Step 9 (ongoing): post-process the simulation results
@@ -50,3 +50,45 @@ Scenario Generation
 
         # Step 10 (ongoing): visualize the simulation results
         twin.visualize()  # keyword arguments can be passed to specify the visualization options
+
+Bayesian optimization for SUMO and Aimsun
+----------------------------------------
+
+``RealTwin``, ``RealTwinSUMO``, and ``RealTwinAimsun`` accept
+``sel_algo={"turn_inflow": "BO", "behavior": "BO"}`` at the calibration step.
+Install the optional dependencies with ``python -m pip install -e ".[bo]"``
+from the checkout, in the Python environment used by the tutorial. SUMO and
+``jtrrouter`` must be on ``PATH`` and ``SUMO_HOME`` must be configured.
+
+The packaged and tutorial YAML files include ``Calibration.bo_config``.
+Settings are ``kernel_type`` (default ``RBF``), ``target`` (0), ``tolerance`` (3),
+``random_points`` (4000), ``max_evaluations`` (100), ``total_run`` (1), and
+``seed`` (812). Supported kernels are RBF, Matern, RationalQuadratic,
+ExpSineSquared, and Combined. ExpSineSquared uses a fixed period equal to each
+parameter's bound span. The candidate pool must contain at least
+``max_evaluations`` points. Per-stage overrides such as
+``update_behavior_algo={"bo_config": {"max_evaluations": 30}}`` merge with
+the shared settings.
+
+The evaluation budget includes initial samples. BO stops when the best fitness
+is at most ``target + tolerance``: mean GEH for turn/inflow, and travel-time
+RMSE in seconds for SUMO behavior, or MAE in seconds for Aimsun behavior. Each run uses a distinct reproducible seed.
+Each stage applies the best candidate in one additional simulation outside
+the search budget, then exports fitness/parameter/best-per-run CSVs and
+convergence PNGs to ``turn_inflow_bo_result`` or ``behavior_bo_result`` under
+that stage's SUMO directory, or beside the Aimsun model with CSV filenames
+prefixed by ``aimsun_bayesopt``. GA remains the default.
+
+Enable ``Calibration.turn_inflow.is_calibration`` and
+``Calibration.behavior.is_calibration`` independently. Disabled stages
+can be omitted from ``sel_algo``. SUMO behavior-only calibration can
+use a prepared scenario without prior turn/inflow calibration. Aimsun uses
+demand already in its model. Aimsun behavior routes are tuples of
+``(name, start_section_id, end_section_id, observed_seconds)``; they
+are required only when behavior is enabled and can be passed to calibrate()
+or stored under ``Calibration.behavior.sel_behavior_routes``.
+
+Aimsun BO CSV parameters are normalized to [0, 1]. The objectives map
+these values to turning percentages, inflows, or physical behavior ranges.
+Both enabled stages receive a final application of their best candidate;
+an enabled stage without its required inputs reports a failure.

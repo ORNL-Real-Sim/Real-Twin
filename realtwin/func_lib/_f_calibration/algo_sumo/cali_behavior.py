@@ -172,7 +172,8 @@ class BehaviorCali:
             "max_early_stop": self.scenario_config.get("max_early_stop", 80),
         }
 
-        init_params = self.behavior_cfg.get("initial_params", None)
+        behavior_params = self.behavior_cfg.get("behavior", {})
+        init_params = self.behavior_cfg.get("initial_params", behavior_params.get("initial_params"))
         if isinstance(init_params, dict):
             self.init_solution = list(init_params.values())
         elif isinstance(init_params, list):
@@ -191,8 +192,8 @@ class BehaviorCali:
                           "emergencyDecel": [5.0, 9.3]
                           }
 
-        params_ranges = self.behavior_cfg.get("params_ranges",
-                                              params_ranges_).values()
+        params_ranges = self.behavior_cfg.get(
+            "params_ranges", behavior_params.get("params_ranges", params_ranges_)).values()
         params_lb = [val[0] for val in params_ranges]
         params_ub = [val[1] for val in params_ranges]
         self.problem_dict = {
@@ -235,6 +236,10 @@ class BehaviorCali:
             output_dir (str): the directory to save the results.
             model: the optimized model object.
         """
+
+        os.makedirs(output_dir, exist_ok=True)
+        if callable(getattr(model, "run_vis", None)):
+            return model.run_vis(output_dir=output_dir)
 
         # save the best solution
         try:
@@ -476,6 +481,21 @@ class BehaviorCali:
         fitness_func(g_best.solution, scenario_config=self.scenario_config, error_func="rmse")
 
         return (g_best, model_ts)
+
+    def run_BO(self) -> tuple:
+        """Optimize with BO, then restore simulation files using the best solution."""
+        from ._bayesian_opt import BayesianOptimization
+
+        bounds = self.problem_dict["bounds"]
+        model = BayesianOptimization(
+            scenario_config=self.scenario_config,
+            algo_config=self.behavior_cfg,
+            verbose=self.verbose,
+            bounds=(bounds.lb, bounds.ub),
+        )
+        g_best = model.solve(fitness_func)
+        fitness_func(g_best.solution.copy(), scenario_config=self.scenario_config, error_func="rmse")
+        return g_best, model
 
 
 if __name__ == "__main__":

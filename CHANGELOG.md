@@ -6,6 +6,32 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 ## Change Log
 
+### 2026-09-10
+
+#### Aimsun BO and independent calibration stages
+
+* Reuse the shared BO optimizer for Aimsun turn/inflow and behavior calibration, with `input_config` callbacks, normalized parameter bounds, best-candidate application, and `aimsun_bayesopt_*` CSV/plot exports beside the model.
+* Make `Calibration.turn_inflow.is_calibration` and `Calibration.behavior.is_calibration` independent across `RealTwin`, `RealTwinSUMO`, and `RealTwinAimsun`. Disabled algorithms can be omitted or ignored; both stages disabled returns False without running calibration. Propagate calibration failures and merge per-stage BO overrides with shared settings.
+* Allow SUMO behavior-only calibration directly from prepared network/demand files when no turn/inflow output exists. Prior EdgeData is optional; incomplete required inputs now identify the missing files and preparation step.
+* Require routes only for enabled Aimsun behavior calibration, accepting argument or configuration routes. Missing routes no longer silently change the enable flag. Preserve canonical Aimsun behavior bounds and write the assignment CSV in the order expected by Step7.2, correcting swapped sensitivity and maximum-deceleration values.
+* Keep Aimsun Python subprocess output unbuffered so required subpath IDs survive its observed native shutdown crash.
+* Files: `realtwin/rt_aimsun/{rt_aimsun,calibrate_aimsun,cali_turn_inflow,cali_behavior}.py`, `realtwin/func_lib/_f_calibration/algo_sumo/_bayesian_opt.py`, `realtwin/func_lib/_f_calibration/calibration_sumo.py`, `realtwin/{_realtwin.py,rt_sumo/rt_sumo.py}`, packaged/tutorial configurations, both simulator tutorials, README, generation documentation, `tests/test_func_sim/{test_calibration_stages,test_bayesian_optimization}.py`, and this changelog.
+* Validation in `rt`: all 94 BO/stage regression cases passed, including 47 added in this follow-up. The broader suite reported 257 passed, the same two existing calibration tests lacking a Calibration fixture, and the existing executable-discovery collection error. Web-download tests were excluded. Shared BO/tests pass Ruff lint/format checks; changed existing modules add no lint findings relative to the pre-task snapshot. Compilation, YAML checks, whitespace checks, and a local wheel build passed.
+* Live Aimsun turn/inflow-only and behavior-only checks each completed two evaluations plus best-candidate application on independent model copies. Applied turn/inflow and behavior CSVs matched the exported best candidates; original model/input hashes stayed unchanged. A live SUMO behavior-only run completed from prepared files without a turn/inflow directory.
+* Limits: the bounded live runs validate integration rather than optimization quality. Aimsun Console still exits with native code `0xC0000374` after some completed operations; its existing fresh-output checks and retained script output allow these successful runs to be verified. VISSIM and Python 3.10 were not exercised.
+
+#### Initial SUMO BO integration
+
+* Add Bayesian optimization (BO) for SUMO turn/inflow and driving-behavior calibration through both `RealTwin.calibrate()` and `RealTwinSUMO.calibrate()`, adapting the GitLab Real-Twin workflow. GA remains the default.
+* Add optional `realtwin[bo]` dependencies, shared `Calibration.bo_config` settings, five kernel choices, reproducible independent runs, and CSV/convergence-plot exports. Apply per-stage algorithm overrides without modifying the shared settings; honor nested inflow limits and behavior parameter ranges.
+* Correct source BO issues involving repeated seeds, scalar/list fitness values, constant fitness, fixed parameters, evaluation-budget overruns, and quadratic candidate-distance storage. Use a multidimensional periodic covariance with a fixed period equal to each parameter's bound span. Reapply the best candidate once per stage so generated simulation files match the selected input; this application is outside the search budget.
+* Support behavior-only calibration using existing turn/inflow files by initializing its configuration independently and setting the network/simulation names.
+* Files: `realtwin/_realtwin.py`, `realtwin/rt_sumo/rt_sumo.py`, `realtwin/func_lib/_f_calibration/calibration_sumo.py`; `algo_sumo/_bayesian_opt.py`, `_bayesian_opt_util.py`, `cali_turn_inflow.py`, and `cali_behavior.py`; `pyproject.toml`, packaged/tutorial YAML configurations, the SUMO tutorial, `README.md`, `docs/source/pages/realtwin_generation.rst`, `tests/test_func_sim/test_bayesian_optimization.py`, and this changelog.
+* Validation in the `rt` conda environment: all 47 new BO regression cases passed. The broader local suite reported 210 passed, two existing failures from test configurations without `Calibration`, and one existing collection error for the missing `find_executable_from_PATH_on_win` module. The two failing tests also fail against unchanged HEAD; web-download tests were excluded.
+* New BO modules/tests pass Ruff lint and formatting checks; modified existing modules introduce no new Ruff findings relative to HEAD. Compile checks, whitespace checks, YAML parsing, and a local wheel build with BO module/dependency-metadata inspection passed.
+* Real SUMO validation on isolated example2 copies passed: both stages completed two evaluations plus best-candidate application. A separate behavior-only periodic-kernel run completed ten initial and two surrogate-selected evaluations plus best-candidate application. Generated XML parsed, final candidates matched the exported best rows, and source inputs/existing turn files retained their hashes.
+* Limitations: these bounded runs verify integration, not calibration quality or comparative optimization performance. Existing simulator randomness and behavior-parameter repairs can affect repeatability; GP fitting can emit convergence warnings. Aimsun/VISSIM and a Python 3.10 runtime were not exercised.
+
 ### 2026-09-08
 
 * Document editable installation in the debugger's Python environment to resolve `ModuleNotFoundError: No module named 'realtwin'` when launching tutorials from a cloned checkout. Explain why the tutorial's `os.chdir(...)` does not update the import search path. Files: `README.md`, `CHANGELOG.md`.

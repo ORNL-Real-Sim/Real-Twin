@@ -5,6 +5,8 @@
 ##############################################################
 
 
+from pathlib import Path
+
 from realtwin.rt_aimsun.cali_turn_inflow import TurnInflowCaliAimsun, export_turn_inflow_info
 from realtwin.rt_aimsun.cali_behavior import BehaviorCaliAimsun
 
@@ -19,7 +21,7 @@ def cali_aimsun(*, sel_algo: dict | None = None, input_config: dict | None = Non
             verbose (bool): print out processing message. Defaults to True.
 
         Raises:
-            ValueError: if algo_config is not a dict with two levels with keys of 'ga', 'sa', and 'ts'
+            ValueError: if algo_config is not a dict with two levels with keys of 'ga', 'sa', 'ts', and 'bo'
             ValueError: if sel_algo is not a dict with keys of 'turn_inflow' and 'behavior'
 
         Returns:
@@ -36,7 +38,7 @@ def cali_aimsun(*, sel_algo: dict | None = None, input_config: dict | None = Non
         sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
 
     # run calibration based on the selected algorithm: optimize turn and inflow
-    if input_config["AIMSUN"]["turn_inflow"]["turn_inflow"]["is_calibration"]:
+    if input_config["AIMSUN"]["turn_inflow"].get("turn_inflow", {}).get("is_calibration", False):
         print("\n  :Optimize Turn and Inflow...")
         turn_inflow_info = export_turn_inflow_info(input_config=input_config, **kwargs)
         input_config["AIMSUN"]["turn_inflow"].update(turn_inflow_info)
@@ -52,6 +54,10 @@ def cali_aimsun(*, sel_algo: dict | None = None, input_config: dict | None = Non
             case "ts":
                 g_best, model = turn_inflow.run_TS()
                 path_model_result = "turn_inflow_ts_result"
+            case "bo":
+                g_best, model = turn_inflow.run_BO()
+                path_model_result = str(
+                    Path(input_config["AIMSUN"]["model_fname"]).parent / "turn_inflow_bo_result")
             case _:
                 print(f"  :Error: unsupported algorithm {sel_algo['turn_inflow']}, using genetic algorithm as default.")
                 g_best, model = turn_inflow.run_GA()
@@ -63,7 +69,7 @@ def cali_aimsun(*, sel_algo: dict | None = None, input_config: dict | None = Non
     else:
         print("\n  :Turn and Inflow calibration is skipped in the input configuration file.")
 
-    if input_config["AIMSUN"]["behavior"]["behavior"]["is_calibration"]:
+    if input_config["AIMSUN"]["behavior"].get("behavior", {}).get("is_calibration", False):
         print("\n  :Optimize Behavior parameters based on the optimized turn and inflow...")
         if not input_config["AIMSUN"]["turn_inflow"].get("calibration_info_path"):
             turn_inflow_info = export_turn_inflow_info(input_config=input_config, **kwargs)
@@ -80,6 +86,10 @@ def cali_aimsun(*, sel_algo: dict | None = None, input_config: dict | None = Non
             case "ts":
                 g_best, model = behavior.run_TS()
                 path_model_result = "behavior_ts_result"
+            case "bo":
+                g_best, model = behavior.run_BO()
+                path_model_result = str(
+                    Path(input_config["AIMSUN"]["model_fname"]).parent / "behavior_bo_result")
             case _:
                 print(f"  :Error: unsupported algorithm {sel_algo['behavior']}, using genetic algorithm as default.")
                 g_best, model = behavior.run_GA()

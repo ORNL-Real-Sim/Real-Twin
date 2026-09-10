@@ -18,9 +18,11 @@ import re
 
 
 def run_aconsole(cmd):
+    """Capture script output even if Aimsun crashes during console shutdown."""
     process = subprocess.Popen(cmd,
                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                               text=True, encoding="utf-8", errors="replace")
+                               text=True, encoding="utf-8", errors="replace",
+                               env={**os.environ, "PYTHONUNBUFFERED": "1"})
     out, _ = process.communicate()
     return process.returncode, out
 
@@ -379,7 +381,7 @@ class TurnInflowCaliAimsun:
             return np.array(list(init_vals) * pop_size).reshape(pop_size, len(init_vals))
         return None
 
-    def run_vis(self, output_dir: str, model: GA.BaseGA) -> bool:
+    def run_vis(self, output_dir: str, model) -> bool:
         """Save the results of the optimization.
 
         See Also:
@@ -392,6 +394,8 @@ class TurnInflowCaliAimsun:
 
         # check if output_dir exists
         os.makedirs(output_dir, exist_ok=True)
+        if callable(getattr(model, "run_vis", None)):
+            return model.run_vis(output_dir=output_dir)
 
         # save the best solution
         try:
@@ -631,6 +635,24 @@ class TurnInflowCaliAimsun:
         fitness_func_turn_inflow_aimsun(g_best.solution, input_config=self.input_config)
 
         return (g_best, model_ts)
+
+    def run_BO(self) -> tuple:
+        """Optimize normalized turn weights/inflows and reapply the best candidate."""
+        from realtwin.func_lib._f_calibration.algo_sumo._bayesian_opt import BayesianOptimization
+
+        # assignNewTurn scales inflows by max_inflow and normalizes turn weights.
+        n_variable = self.turn_inflow_cfg["num_variables"]
+        model = BayesianOptimization(
+            scenario_config=self.scenario_config,
+            algo_config=self.turn_inflow_cfg,
+            verbose=self.verbose,
+            bounds=([0] * n_variable, [1] * n_variable),
+            simulator="aimsun",
+        )
+        g_best = model.solve(
+            self.fitness_func, objective_kwargs={"input_config": self.input_config})
+        self.fitness_func(g_best.solution.copy(), input_config=self.input_config)
+        return g_best, model
 
     def _clean_up(self):
         """Clean up the temporary files generated during the calibration process."""

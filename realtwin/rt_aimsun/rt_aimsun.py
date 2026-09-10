@@ -446,6 +446,9 @@ class RealTwinAimsun:
         Args:
             sel_algo (dict): The dictionary of algorithms to be used for calibration.
                 Default is None, will use genetic algorithm. e.g. {"turn_inflow": "ga", "behavior": "ga"}.
+                Supports GA, SA, TS, and BO (Bayesian optimization), case-insensitively.
+                Only stages enabled by Calibration.<stage>.is_calibration are run;
+                disabled stages can be omitted from sel_algo.
             sel_behavior_routes (list): The list of behavior route parameters to be used for calibration.
                 Default is None. time (in seconds) is ground truth travel time.
                 Each element is a tuple of (subpath_name, start_section_id, end_section_id, ground_truth_travel_time).
@@ -454,76 +457,67 @@ class RealTwinAimsun:
             update_turn_inflow_algo (dict): The dictionary of algorithms to be used for updating turn flow.
                 Default is None, will use genetic algorithm.
                 Please refer to input configuration file for keys for each algorithm.
-                e.g. update_turn_inflow_algo = {"ga_config": {}, "sa_config":{}, "ts_config":{}}.
+                e.g. update_turn_inflow_algo = {"bo_config": {"max_evaluations": 50}}.
             update_behavior_algo (dict): The dictionary of algorithms to be used for updating behavior.
                 Default is None, will use genetic algorithm.
                 Please refer to input configuration file for keys for each algorithm.
-                e.g. update_behavior_algo = {"ga_config":{}, "sa_config":{}, "ts_config": {}}.
+                e.g. update_behavior_algo = {"bo_config": {"max_evaluations": 30}}.
 
         Returns:
             bool: True if calibration is successful, False otherwise.
         """
 
-        # check if the calibration is enabled in the input configuration file
-        is_cali_turn_inflow = self.input_config["Calibration"]["turn_inflow"].get("is_calibration", False)
-        is_cali_behavior = self.input_config["Calibration"]["behavior"].get("is_calibration", False)
-
-        # Tell user turn flow and behavior calibration is disable in the input configuration file
-        if not is_cali_turn_inflow and not is_cali_behavior:
-            console.print(
-                "\n[bold red]  :Calibration is skipped in the input configuration file. Please enable it to run calibration.")
+        calibration = self.input_config.get("Calibration", {})
+        enabled_stages = {
+            stage: calibration.get(stage, {}).get("is_calibration", False)
+            for stage in ("turn_inflow", "behavior")
+        }
+        if not any(enabled_stages.values()):
+            console.print("  [dim cyan]:Calibration is skipped in the input configuration file.")
             return False
 
-        if sel_algo is None:  # default to genetic algorithm
-            sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
-            console.print(f"  [dim cyan]:sel_algo not specified, use default value: {sel_algo}")
-
-        if not isinstance(sel_algo, dict):
-            sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
-            console.print("  [bold red]:Error: parameter sel_algo must be a dict with"
-                            " keys of 'turn_inflow' and 'behavior', using"
-                            f" default values: {sel_algo}")
-
-        # check if the selected algorithm is supported within the package
-        # convert the algorithm to lower case
-        sel_algo = {key: value.lower() for key, value in sel_algo.items()}
-        if is_cali_turn_inflow is not False and (algo := sel_algo["turn_inflow"]) not in ["ga", "sa", "ts"]:
-            console.print(f"  [dim cyan]:Selected algorithms are {sel_algo}")
-            console.print(f"  [dim cyan]:{algo} for turn and inflow calibration is not supported. "
-                            "Must be one of ['ga', 'sa', 'ts']")
-            return False
+        if sel_algo is not None and not isinstance(sel_algo, dict):
+            console.print("  [bold red]:sel_algo must be a dictionary; using GA for enabled stages.")
+        requested_algorithms = sel_algo if isinstance(sel_algo, dict) else {}
+        sel_algo = {}
+        for stage, enabled in enabled_stages.items():
+            algorithm = requested_algorithms.get(stage, "ga") if enabled else "ga"
+            if not isinstance(algorithm, str) or algorithm.lower() not in {"ga", "sa", "ts", "bo"}:
+                console.print(f"  [bold red]:Unsupported {stage} algorithm {algorithm!r}; use GA, SA, TS, or BO.")
+                return False
+            sel_algo[stage] = algorithm.lower()
 
         # Copy calibration into AIMSUN to make user provided algorithm available both for turn flow and behavior calibration
-        if not self.input_config["AIMSUN"]:
+        if not self.input_config.get("AIMSUN"):
             self.input_config["AIMSUN"] = {}
         self.input_config["AIMSUN"]["turn_inflow"] = {}
         self.input_config["AIMSUN"]["behavior"] = {}
         self.input_config["AIMSUN"]["turn_inflow"].update(self.input_config["Calibration"])
         self.input_config["AIMSUN"]["behavior"].update(self.input_config["Calibration"])
 
-        # update user provided algorithm configuration into the input configuration file
-        if update_turn_inflow_algo is not None:
-            self.input_config["AIMSUN"]["turn_inflow"].update(update_turn_inflow_algo)
-        if update_behavior_algo is not None:
-            self.input_config["AIMSUN"]["behavior"].update(update_behavior_algo)
+        for stage, updates in (
+            ("turn_inflow", update_turn_inflow_algo),
+            ("behavior", update_behavior_algo),
+        ):
+            stage_config = self.input_config["AIMSUN"][stage]
+            for key, value in (updates or {}).items():
+                if isinstance(value, dict) and isinstance(stage_config.get(key), dict):
+                    stage_config[key] = {**stage_config[key], **value}
+                else:
+                    stage_config[key] = value
 
-        # if user provide sel_behavior_routes, and behavior calibration is enabled, check if the selected algorithm is supported within the package
-        if is_cali_behavior is not False:
+        if enabled_stages["behavior"]:
             if sel_behavior_routes is None:
-                # console.print("  [dim cyan]:sel_behavior_routes not specified, will skip behavior calibration. Please provide sel_behavior_routes to run behavior calibration.")
-                self.input_config["Calibration"]["behavior"]["is_calibration"] = False
-                # return False
-
-            if (algo := sel_algo["behavior"]) not in ["ga", "sa", "ts"]:
-                console.print(f"  [dim cyan]:Selected algorithms are {sel_algo}")
-                console.print(f"  [div cyan]:{algo} for behavior calibration is not supported. "
-                                "Must be one of ['ga', 'sa', 'ts']")
+                sel_behavior_routes = calibration.get("behavior", {}).get("sel_behavior_routes")
+            if not sel_behavior_routes:
+                console.print(
+                    "  [bold red]:Behavior calibration requires sel_behavior_routes "
+                    "with observed travel times. Supply routes or disable Calibration.behavior.is_calibration.")
                 return False
-
-            self.input_config["Calibration"]["behavior"]["sel_behavior_routes"] = sel_behavior_routes
             self.input_config["AIMSUN"]["behavior"]["sel_behavior_routes"] = sel_behavior_routes
 
-        cali_aimsun(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose)
+        if not cali_aimsun(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose):
+            return False
 
         console.print("\n[bold green]  :Calibration completed successfully.")
         return True

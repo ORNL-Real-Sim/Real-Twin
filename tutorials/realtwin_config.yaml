@@ -22,12 +22,12 @@ Calibration:
         allow_u_turn: false  # if true, the u-turns are allowed in the simulation
 
     turn_inflow:
-        # Whether to calibrate turn-flow parameters; otherwise, use defaults.
-        is_calibration: true
+        # Independent switch: false keeps the prepared/current demand.
+        is_calibration: false
         max_inflow: 200  # max inflow for during the turn-flow calibration
 
     behavior:
-        # Whether to calibrate behavior parameters; otherwise, use defaults.
+        # Independent switch: behavior can run without turn-flow calibration.
         is_calibration: true
         google_api_key:  # Optional, if not provided, user need manually provide the selected routes in twin.calibrate(sel_behavior_routes=[["route1", "route2"]])
         initial_params:
@@ -58,6 +58,15 @@ Calibration:
         tabu_size: 10  # maximum size of the tabu list [2, 10000]
         neighbour_size: 10  # size of the neighborhood for generating candidate solutions [2, 10000]
         perturbation_scale: 0.05  # scale of perturbation for the solution [0, 100]
+
+    bo_config:  # used only when Bayesian Optimization is selected in calibrate()
+        kernel_type: "RBF"  # RBF, Matern, RationalQuadratic, ExpSineSquared, Combined
+        tolerance: 3  # stop when fitness <= target + tolerance, in objective units
+        target: 0
+        random_points: 4000  # candidate pool size, at least max_evaluations
+        max_evaluations: 100  # per run, includes initialization
+        total_run: 1  # independent runs, 1 to 1000
+        seed: 812  # each run uses seed + run_index
 
 SUMO:
 

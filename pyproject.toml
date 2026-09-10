@@ -31,6 +31,9 @@ keywords = ["Real-Twin", "Digital Twin", "Traffic Micro-simulation", "Scenario G
 
 dynamic = ["dependencies"]
 
+[project.optional-dependencies]
+bo = ["scikit-learn>=1.2", "scipy>=1.9"]
+
 [project.urls]
 "Homepage" = 'https://github.com/ORNL-Real-Sim/Real-Twin'
 'Documentation' = 'https://real-twin.readthedocs.io/en/latest/'

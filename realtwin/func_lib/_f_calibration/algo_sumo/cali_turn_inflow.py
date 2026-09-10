@@ -224,7 +224,7 @@ class TurnInflowCali:
             return np.array(list(init_vals) * pop_size).reshape(pop_size, len(init_vals))
         return None
 
-    def run_vis(self, output_dir: str, model: GA.BaseGA) -> bool:
+    def run_vis(self, output_dir: str, model) -> bool:
         """Save the results of the optimization.
 
         See Also:
@@ -237,6 +237,9 @@ class TurnInflowCali:
 
         # check if output_dir exists
         os.makedirs(output_dir, exist_ok=True)
+
+        if callable(getattr(model, "run_vis", None)):
+            return model.run_vis(output_dir=output_dir)
 
         # save the best solution
         try:
@@ -476,6 +479,21 @@ class TurnInflowCali:
         fitness_func_turn_inflow(g_best.solution, scenario_config=self.scenario_config)
 
         return (g_best, model_ts)
+
+    def run_BO(self) -> tuple:
+        """Optimize with BO, then restore simulation files using the best solution."""
+        from ._bayesian_opt import BayesianOptimization
+
+        bounds = self.problem_dict["bounds"]
+        model = BayesianOptimization(
+            scenario_config=self.scenario_config,
+            algo_config=self.turn_inflow_cfg,
+            verbose=self.verbose,
+            bounds=(bounds.lb, bounds.ub),
+        )
+        g_best = model.solve(self.fitness_func)
+        self.fitness_func(g_best.solution.copy(), scenario_config=self.scenario_config)
+        return g_best, model
 
     def _clean_up(self):
         """Clean up the temporary files generated during the calibration process."""

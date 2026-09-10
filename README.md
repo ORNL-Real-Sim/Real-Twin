@@ -88,7 +88,7 @@ if __name__ == '__main__':
     # Step 7: simulate the scenario
     twin.prepare_simulation()
 
-    # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
+    # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search, BO: Bayesian Optimization
     twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"})
 
     # Step 9 (ongoing): post-process the simulation results
@@ -97,6 +97,145 @@ if __name__ == '__main__':
     # Step 10 (ongoing): visualize the simulation results
     twin.visualize()  # keyword arguments can be passed to specify the visualization options
 ```
+
+## Bayesian optimization for calibration
+
+BO is available for SUMO and Aimsun turn/inflow and driving-behavior calibration
+through `RealTwin.calibrate()`, `RealTwinSUMO.calibrate()`, and
+`RealTwinAimsun.calibrate()`. Install its optional
+Gaussian-process dependencies in the Python environment used to run Real-Twin:
+
+```powershell
+conda run -n rt python -m pip install -e ".[bo]"
+```
+
+For an installed release containing BO, use `python -m pip install "realtwin[bo]"`.
+SUMO and `jtrrouter` must be available on `PATH`, and `SUMO_HOME` must point to
+the SUMO installation. Prepare the scenario using the existing workflow first.
+GA remains the default; select BO explicitly at the calibration step:
+
+```python
+twin.calibrate(
+    sel_algo={"turn_inflow": "BO", "behavior": "BO"},
+    sel_behavior_routes=sel_behavior_routes,
+    update_turn_inflow_algo={"bo_config": {"max_evaluations": 50}},
+    update_behavior_algo={"bo_config": {"max_evaluations": 30}},
+)
+```
+
+Here `sel_behavior_routes` is the existing mapping of observed travel times in
+seconds and SUMO edges, for example
+`{"route_1": {"time": 100, "route_list": ["edge_1", "edge_2"]}}`.
+Use actual routes from your network. SUMO behavior-only calibration uses existing
+turn/inflow output when present, or the network and demand from `prepare_simulation()`
+when turn/inflow calibration has not been run.
+
+Shared settings belong under `Calibration.bo_config` in the YAML configuration.
+Per-stage overrides above merge with these shared settings.
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `kernel_type` | `RBF` | `RBF`, `Matern`, `RationalQuadratic`, `ExpSineSquared`, or `Combined` (RBF plus white noise) |
+| `target` | `0` | Desired minimum fitness |
+| `tolerance` | `3` | Stop when best fitness is at most `target + tolerance` |
+| `random_points` | `4000` | Candidate pool size; at least `max_evaluations` |
+| `max_evaluations` | `100` | Objective evaluations per run, including initialization |
+| `total_run` | `1` | Independent runs, from 1 through 1000 |
+| `seed` | `812` | Run seeds are `seed`, `seed + 1`, and so on |
+
+The periodic kernel uses one fixed period per parameter, equal to that parameter's
+bound span. Its covariance supports multiple parameters.
+
+Turn/inflow fitness is mean GEH. Behavior fitness is travel-time RMSE for SUMO
+and travel-time MAE for Aimsun, both in seconds.
+Choose each stage's tolerance accordingly. Turn ratios use bounds `[0, 1]`;
+inflow bounds use `Calibration.turn_inflow.max_inflow`. Behavior uses
+`Calibration.behavior.params_ranges` in the existing parameter order:
+`min_gap`, `acceleration`, `deceleration`, `sigma`, `tau`, `emergencyDecel`.
+
+The implementation adapts the GitLab Real-Twin BO workflow: space-filling
+initial samples, a Gaussian-process surrogate, and expected improvement blended
+with decreasing exploration. It normalizes parameters by their bounds, supports
+constant objectives and fixed parameters, and does not increase the requested
+evaluation budget. A fixed seed reproduces the search for a deterministic
+objective; simulator randomness and existing behavior-parameter repairs can
+still affect simulation results.
+
+Each enabled stage runs its best candidate once more to restore the generated
+simulation files. This final application is **one additional simulation per
+stage**, outside the search budget and CSV evaluation history. Outputs are saved
+under `output/SUMO/turn_inflow/turn_inflow_bo_result/` and
+`output/SUMO/behavior/behavior_bo_result/`:
+
+- `sumo_bayesopt_<N>runs_results.csv`: fitness at every evaluation.
+- `sumo_bayesopt_<N>runs_points.csv`: proposed parameter values and fitness.
+- `sumo_bayesopt_<N>runs_best_per_run.csv`: best candidate and elapsed search time for each run.
+- Per-run and best-run convergence PNGs showing evaluated fitness and best fitness so far.
+
+CSV parameters retain the source names `param_1`, `param_2`, etc. Turn parameters
+precede inflow parameters; SUMO behavior parameters follow the order above.
+Aimsun output conventions are described below. VISSIM calibration is unchanged.
+
+### Independent calibration stages
+
+For SUMO and Aimsun, set the two switches independently in your existing YAML
+configuration. For a behavior-only run:
+
+```yaml
+Calibration:
+    turn_inflow:
+        is_calibration: false
+    behavior:
+        is_calibration: true
+```
+
+Keep the rest of your configuration, including the model/network paths and BO
+settings. Reverse the flags for turn/inflow-only calibration, or enable both to
+run them in sequence. Disabled stages can be omitted from `sel_algo`; their
+algorithm selections are ignored. If both flags are false, `calibrate()`
+returns `False` without starting calibration.
+
+For an existing `RealTwinAimsun` instance with behavior enabled:
+
+```python
+twin.calibrate(
+    sel_algo={"behavior": "BO"},
+    sel_behavior_routes=[("Subpath1", 2071, 2092, 60.0)],
+    update_behavior_algo={"bo_config": {"max_evaluations": 30}},
+)
+```
+
+Each Aimsun route is `(name, start_section_id, end_section_id, observed_seconds)`;
+replace these sample IDs with sections in your model. Routes can also be stored
+in `Calibration.behavior.sel_behavior_routes`. An enabled behavior stage with
+no routes returns `False` and explains the missing input without changing the
+enable flag. Turn/inflow-only calibration needs no behavior routes:
+
+```python
+twin.calibrate(sel_algo={"turn_inflow": "BO"})
+```
+
+Aimsun behavior-only calibration uses demand already in the model. It exports
+replication metadata and creates the requested subpaths without running the
+turn/inflow optimizer. Complete `env_setup()` and prepare an Aimsun model with
+a replication and SQLite output before calibration. BO runs in the Python
+environment hosting Real-Twin; the Aimsun console continues to run the existing
+assignment and simulation scripts.
+
+Aimsun BO searches normalized `[0, 1]` inputs. Turning weights are converted
+to percentages summing to 100 per approach; normalized inflows are multiplied
+by `Calibration.turn_inflow.max_inflow` in vehicles/hour. Behavior values are
+mapped once to their physical ranges. `params_ranges` accepts the shared names
+listed above or their Aimsun equivalents, in canonical CSV parameter order:
+`MinDist`, `MaxAcc`, `NormalDec`, `SensitivityFactor`, `MinHeadway`, `MaxDec`.
+The assignment CSV is reordered for Aimsun's existing script.
+
+Aimsun exports `aimsun_bayesopt_<N>runs_results.csv`,
+`aimsun_bayesopt_<N>runs_points.csv`, `aimsun_bayesopt_<N>runs_best_per_run.csv`,
+and convergence PNGs under `turn_inflow_bo_result/` or
+`behavior_bo_result/` beside the `.ang` model. Its `param_*</BT> columns
+contain normalized inputs. As in SUMO, the best candidate is applied in one
+additional simulation per enabled stage, outside the search budget.
 
 ## Quick Example - Autonomous Vehicle
 

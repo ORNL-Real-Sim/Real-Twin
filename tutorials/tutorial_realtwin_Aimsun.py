@@ -60,9 +60,11 @@ if __name__ == '__main__':
     # Step 7: simulate the scenario
     # twin.prepare_simulation()
 
-#     # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
+#     # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search, BO: Bayesian Optimization
+    # Calibration.turn_inflow.is_calibration and Calibration.behavior.is_calibration
+    # independently enable stages; sel_algo may omit a disabled stage.
     sel_behavior_routes = [("Subpath1", 2071, 2092, 60)]
-    twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"}, sel_behavior_routes=sel_behavior_routes)
+    twin.calibrate(sel_algo={"turn_inflow": "BO", "behavior": "BO"}, sel_behavior_routes=sel_behavior_routes)
 #
 #     # Step 9 (ongoing): post-process the simulation results
 #     twin.post_process()  # keyword arguments can be passed to specify the post-processing options

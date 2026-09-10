@@ -58,12 +58,14 @@ if __name__ == '__main__':
     # Step 7: simulate the scenario
     twin.prepare_simulation()
 
-    # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
+    # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search, BO: Bayesian Optimization
+    # Stage flags in Calibration are independent; behavior-only runs can use
+    # the network and demand from prepare_simulation().
     sel_behavior_routes = {
         "route_1": {"time": 100, "route_list": ['-90', '-96', '-103', '-105', '-106', '-99', '-94']},
         "route_2": {"time": 150, "route_list": ['-97', '-95', '-100', '-107', '-104', '-102', '-93']}
     } # Optional, if not provided, the system will automatically select two routes from the network
-    twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"}, sel_behavior_routes=sel_behavior_routes)
+    twin.calibrate(sel_algo={"turn_inflow": "BO", "behavior": "BO"}, sel_behavior_routes=sel_behavior_routes)
 
     # Step 9 (ongoing): post-process the simulation results
     twin.post_process()  # keyword arguments can be passed to specify the post-processing options
