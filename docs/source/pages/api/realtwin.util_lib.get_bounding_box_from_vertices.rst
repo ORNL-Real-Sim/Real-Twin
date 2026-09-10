@@ -1,6 +1,6 @@
-realtwin.util\_lib.get\_bounding\_box\_from\_vertices
-=====================================================
+:orphan:
 
-.. currentmodule:: realtwin.util_lib
+Legacy get_bounding_box_from_vertices API
+=========================================
 
-.. autofunction:: get_bbox_from_vertices
+Use :func:`realtwin.util_lib.get_bbox_from_vertices` for the current API.

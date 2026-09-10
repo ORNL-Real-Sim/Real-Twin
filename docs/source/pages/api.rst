@@ -11,7 +11,8 @@ RealTwin API
 .. autosummary::
     :toctree: api/
 
-    RealTwin
+    RealTwinSUMO
+    RealTwinAimsun
 
 
 Utility Functions
@@ -50,7 +51,7 @@ Load Inputs
 .. autosummary::
     :toctree: api/
 
-    func_lib.load_input_config
+    func_lib.load_input_configs
 
 Abstract Scenario Generation
 ============================

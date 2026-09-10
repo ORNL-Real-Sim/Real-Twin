@@ -21,7 +21,7 @@ The first three tutorials use the same broad scenario workflow:
 6. Prepare the simulator files.
 7. Optionally calibrate, post-process, or visualize the results.
 
-The AV tutorial is a separate, shorter SUMO workflow. It does not use `RealTwin.generate_abstract_scenario()` or the matchup table.
+The AV tutorial is a separate, shorter SUMO workflow. It does not use `RealTwinSUMO.generate_abstract_scenario()` or the matchup table.
 
 ## Prerequisites
 
@@ -81,7 +81,7 @@ The script performs these operations:
 ```python
 import realtwin as rt
 
-twin = rt.RealTwin(
+twin = rt.RealTwinSUMO(
     input_config_file="./tutorials/realtwin_config.yaml",
     verbose=True,
 )

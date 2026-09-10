@@ -26,6 +26,10 @@ from realtwin.func_lib._a_install_simulator.inst_aimsun import install_aimsun
 # input data loading
 from realtwin.func_lib._b_load_inputs.loader_config import load_input_configs
 
+from realtwin.func_lib._f_calibration._calibration_workflow import (
+    apply_calibration_overrides,
+    select_calibration_algorithms,
+)
 from realtwin.rt_aimsun.calibrate_aimsun import cali_aimsun
 
 # scenario generation
@@ -110,7 +114,7 @@ class RealTwinAimsun:
 
         Examples:
             >>> import realtwin as rt
-            >>> twin = rt.REALTWIN(input_config_file="config.yaml", verbose=True)
+            >>> twin = rt.RealTwinAimsun(input_config_file="config.yaml", verbose=True)
 
             check simulator is installed or not, default to SUMO, optional: VISSIM, AIMSUN
             >>> twin.env_setup(sel_sim=["AIMSUN"])
@@ -436,87 +440,69 @@ class RealTwinAimsun:
             if not re.match(r"^\[[^\]]+\]\s*", line):
                 print(f"{line}")
 
-    def calibrate(self, *, sel_algo: dict | None = None,
-                    sel_behavior_routes: list | None = None,
-                    update_turn_inflow_algo: dict | None = None,
-                    update_behavior_algo: dict | None = None) -> bool:
-        """
-        Calibrate the turn and inflow, and behavior parameters using the selected algorithms.
+    def calibrate(
+        self,
+        *,
+        sel_algo: dict | None = None,
+        sel_behavior_routes: list | None = None,
+        update_turn_inflow_algo: dict | None = None,
+        update_behavior_algo: dict | None = None,
+    ) -> bool:
+        """Calibrate enabled turn/inflow and driving-behavior stages.
 
         Args:
-            sel_algo (dict): The dictionary of algorithms to be used for calibration.
-                Default is None, will use genetic algorithm. e.g. {"turn_inflow": "ga", "behavior": "ga"}.
-                Supports GA, SA, TS, and BO (Bayesian optimization), case-insensitively.
-                Only stages enabled by Calibration.<stage>.is_calibration are run;
-                disabled stages can be omitted from sel_algo.
-            sel_behavior_routes (list): The list of behavior route parameters to be used for calibration.
-                Default is None. time (in seconds) is ground truth travel time.
-                Each element is a tuple of (subpath_name, start_section_id, end_section_id, ground_truth_travel_time).
-                e.g. sel_behavior_routes = [("Subpath1", 2442, 2433, 180.0),
-                    ("Subpath2", 2460, 2415, 180.0),].
-            update_turn_inflow_algo (dict): The dictionary of algorithms to be used for updating turn flow.
-                Default is None, will use genetic algorithm.
-                Please refer to input configuration file for keys for each algorithm.
-                e.g. update_turn_inflow_algo = {"bo_config": {"max_evaluations": 50}}.
-            update_behavior_algo (dict): The dictionary of algorithms to be used for updating behavior.
-                Default is None, will use genetic algorithm.
-                Please refer to input configuration file for keys for each algorithm.
-                e.g. update_behavior_algo = {"bo_config": {"max_evaluations": 30}}.
+            sel_algo: Algorithms keyed by stage, e.g. {"turn_inflow": "bo"}.
+                Supports GA, SA, TS, and BO case-insensitively; defaults to GA.
+                Calibration.<stage>.is_calibration controls each stage
+                independently. Selectors for disabled stages are ignored.
+            sel_behavior_routes: Tuples of (name, start_section_id,
+                end_section_id, observed_travel_time_seconds). Required when
+                behavior is enabled, either here or in Calibration.behavior.
+            update_turn_inflow_algo: Per-stage configuration overrides,
+                e.g. {"bo_config": {"max_evaluations": 50}}.
+            update_behavior_algo: Behavior-stage overrides in the same format.
+                Dictionary settings merge one level deep with shared settings.
 
         Returns:
-            bool: True if calibration is successful, False otherwise.
+            True when calibration succeeds; False when disabled or rejected.
         """
 
         calibration = self.input_config.get("Calibration", {})
-        enabled_stages = {
-            stage: calibration.get(stage, {}).get("is_calibration", False)
-            for stage in ("turn_inflow", "behavior")
-        }
-        if not any(enabled_stages.values()):
-            console.print("  [dim cyan]:Calibration is skipped in the input configuration file.")
+        algorithms = select_calibration_algorithms(
+            calibration, sel_algo, console=console
+        )
+        if algorithms is None:
             return False
 
-        if sel_algo is not None and not isinstance(sel_algo, dict):
-            console.print("  [bold red]:sel_algo must be a dictionary; using GA for enabled stages.")
-        requested_algorithms = sel_algo if isinstance(sel_algo, dict) else {}
-        sel_algo = {}
-        for stage, enabled in enabled_stages.items():
-            algorithm = requested_algorithms.get(stage, "ga") if enabled else "ga"
-            if not isinstance(algorithm, str) or algorithm.lower() not in {"ga", "sa", "ts", "bo"}:
-                console.print(f"  [bold red]:Unsupported {stage} algorithm {algorithm!r}; use GA, SA, TS, or BO.")
-                return False
-            sel_algo[stage] = algorithm.lower()
-
-        # Copy calibration into AIMSUN to make user provided algorithm available both for turn flow and behavior calibration
+        # Stage overrides replace nested mappings to keep shared settings reusable.
         if not self.input_config.get("AIMSUN"):
             self.input_config["AIMSUN"] = {}
-        self.input_config["AIMSUN"]["turn_inflow"] = {}
-        self.input_config["AIMSUN"]["behavior"] = {}
-        self.input_config["AIMSUN"]["turn_inflow"].update(self.input_config["Calibration"])
-        self.input_config["AIMSUN"]["behavior"].update(self.input_config["Calibration"])
+        aimsun_config = self.input_config["AIMSUN"]
+        aimsun_config["turn_inflow"] = calibration.copy()
+        aimsun_config["behavior"] = calibration.copy()
 
-        for stage, updates in (
-            ("turn_inflow", update_turn_inflow_algo),
-            ("behavior", update_behavior_algo),
-        ):
-            stage_config = self.input_config["AIMSUN"][stage]
-            for key, value in (updates or {}).items():
-                if isinstance(value, dict) and isinstance(stage_config.get(key), dict):
-                    stage_config[key] = {**stage_config[key], **value}
-                else:
-                    stage_config[key] = value
+        apply_calibration_overrides(
+            aimsun_config,
+            turn_inflow=update_turn_inflow_algo,
+            behavior=update_behavior_algo,
+        )
 
-        if enabled_stages["behavior"]:
+        if calibration.get("behavior", {}).get("is_calibration", False):
             if sel_behavior_routes is None:
-                sel_behavior_routes = calibration.get("behavior", {}).get("sel_behavior_routes")
+                sel_behavior_routes = calibration.get("behavior", {}).get(
+                    "sel_behavior_routes"
+                )
             if not sel_behavior_routes:
                 console.print(
                     "  [bold red]:Behavior calibration requires sel_behavior_routes "
-                    "with observed travel times. Supply routes or disable Calibration.behavior.is_calibration.")
+                    "with observed travel times. Supply routes or disable Calibration.behavior.is_calibration."
+                )
                 return False
-            self.input_config["AIMSUN"]["behavior"]["sel_behavior_routes"] = sel_behavior_routes
+            aimsun_config["behavior"]["sel_behavior_routes"] = sel_behavior_routes
 
-        if not cali_aimsun(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose):
+        if not cali_aimsun(
+            sel_algo=algorithms, input_config=self.input_config, verbose=self.verbose
+        ):
             return False
 
         console.print("\n[bold green]  :Calibration completed successfully.")

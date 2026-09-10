@@ -10,7 +10,7 @@
 # Contact: realtwin@ornl.gov                                                 #
 ##############################################################################
 
-""" Sample script to demonstrate the usage of RealTwin for autonomous vehicle simulation."""
+""" Sample script to demonstrate the usage of RealTwin for autonomous vehicle simulation using SUMO."""
 
 import os
 import sys

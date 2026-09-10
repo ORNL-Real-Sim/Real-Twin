@@ -15,27 +15,18 @@
 import os
 from functools import partial
 from pathlib import Path
-import subprocess
 import json
 import sqlite3
 import re
-from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from mealpy import FloatVar, SA, GA, TS
+from mealpy import FloatVar, GA, SA, TS
+
+from realtwin.rt_aimsun._console import run_aconsole as run_aconsole
 
 rng = np.random.default_rng(seed=812)
 PENALTY_MAE = 1.0e4
-
-
-def run_aconsole(cmd):
-    """Capture script output even if Aimsun crashes during console shutdown."""
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                               text=True, encoding="utf-8", errors="replace",
-                               env={**os.environ, "PYTHONUNBUFFERED": "1"})
-    out, _ = process.communicate()
-    return process.returncode, out
 
 
 def export_behavior_info(input_config: dict | None = None):
@@ -418,7 +409,7 @@ class BehaviorCaliAimsun:
         return None
 
     def run_vis(self, output_dir: str, model) -> bool:
-        """ Save the results of the optimization.
+        """Save the results of the optimization.
 
         See Also:
             https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.utils.html#module-mealpy.utils.history
@@ -431,124 +422,74 @@ class BehaviorCaliAimsun:
         if callable(getattr(model, "run_vis", None)):
             return model.run_vis(output_dir=output_dir)
 
-        # save the best solution
-        try:
-            pass
-            # model.history.save_global_objectives_chart(filename=f"{output_dir}/global_objectives")
-            # model.history.save_local_objectives_chart(filename=f"{output_dir}/local_objectives")
-            # model.history.save_global_best_fitness_chart(filename=f"{output_dir}/global_best_fitness")
-            # model.history.save_local_best_fitness_chart(filename=f"{output_dir}/local_best_fitness")
-            # model.history.save_runtime_chart(filename=f"{output_dir}/runtime")
-            # model.history.save_exploration_exploitation_chart(filename=f"{output_dir}/exploration_exploitation")
-            # model.history.save_diversity_chart(filename=f"{output_dir}/diversity")
-            # model.history.save_trajectory_chart(filename=f"{output_dir}/trajectory")
-        except Exception as e:
-            print(f"  :Error in saving vis: {e}")
-            return False
+        # Mealpy visualization is optional for this adapter.
         return True
 
     def run_GA(self, **kwargs):
-        """Run Genetic Algorithm (GA) for behavior optimization.
+        """Run GA and apply the best solution to this simulator's inputs.
 
-        Note:
-            1. The `model_selection` parameter allows you to choose different types of GA models. Default is "BaseGA".
-                Options include "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", and "SingleGA".
-            2. Additional keyword arguments (`**kwargs`) can be passed for specific GA models (See Also).
-            3. Please check original GA model documentation for more kwargs in details: https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
+        Configure BaseGA, EliteSingleGA, EliteMultiGA, MultiGA, or SingleGA
+        through ga_config.model_selection. Extra keywords go to the Mealpy
+        constructor. Adapter-specific initialization and termination stay here.
 
-        Warning:
-            You can change the input parameters only from input_config.yaml file.
-
-        See Also:
-            https://mealpy.readthedocs.io/en/latest/pages/models/mealpy.evolutionary_based.html#module-mealpy.evolutionary_based.GA
-
-        Notes:
-            GA parameters:
-                epoch (int): the iterations. Defaults to 1000.
-                pop_size (int): population size. Defaults to 50.
-                pc (float): crossover probability. Defaults to 0.95.
-                pm (float): mutation probability. Defaults to 0.025.
-                model_selection (str): the type of GA model to use. Defaults to "BaseGA".
-                    options: "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA".
-
-        Args:
-            kwargs: additional keyword arguments for specific GA models (Navigate to See Also).
+        Returns:
+            The best agent and fitted optimizer.
         """
-        if (ga_config := self.input_config.get("AIMSUN", {}).get("behavior", {}).get("ga_config")) is None:
+        if (
+            ga_config := self.input_config.get("AIMSUN", {})
+            .get("behavior", {})
+            .get("ga_config")
+        ) is None:
             raise ValueError(
-                "ga_config is not provided in AIMSUN/behavior setting in input_config.yaml file.")
+                "ga_config is not provided in AIMSUN/behavior setting in input_config.yaml file."
+            )
 
-        epoch = ga_config.get("epoch", 1000)  # max iterations
-        pop_size = ga_config.get("pop_size", 50)  # population size
-        pop_size = max(pop_size, 10)  # ensure population size is at least 10
-        pc = ga_config.get("pc", 0.75)  # crossover probability
-        pm = ga_config.get("pm", 0.1)  # mutation probability
-
-        selection = ga_config.get("selection", "roulette")  # selection method
-        k_way = ga_config.get("k_way", 0.2)  # k-way for tournament selection
-        crossover = ga_config.get("crossover", "uniform")  # crossover method
-        mutation = ga_config.get("mutation", "swap")  # mutation method
-
-        # percentage of the best in elite group, or int, the number of best elite
-        elite_best = ga_config.get("elite_best", 0.1)
-
-        # percentage of the worst in elite group, or int, the number of worst elite
-        elite_worst = ga_config.get("elite_worst", 0.3)
-
-        # "BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA"
-        sel_model = ga_config.get("model_selection", "BaseGA")
-
-        # Generate initial solution for inputs
-        init_vals = self._generate_initial_solutions(self.init_solution, pop_size)
-
-        # print("GA Initial Values:", init_vals)
-
-        if sel_model not in ["BaseGA", "EliteSingleGA", "EliteMultiGA", "MultiGA", "SingleGA"]:
-            print("Error: sel_model must be one of the following: "
-                  "'BaseGA', 'EliteSingleGA', 'EliteMultiGA', 'MultiGA', 'SingleGA'.")
+        population_size = max(ga_config.get("pop_size", 50), 10)
+        # Retain initialization; Aimsun uses Mealpy's own starting population.
+        self._generate_initial_solutions(self.init_solution, population_size)
+        parameters = {
+            "epoch": ga_config.get("epoch", 1000),
+            "pop_size": max(ga_config.get("pop_size", 50), 10),
+            "pc": ga_config.get("pc", 0.75),
+            "pm": ga_config.get("pm", 0.1),
+        }
+        model_types = {
+            "BaseGA": GA.BaseGA,
+            "EliteSingleGA": GA.EliteSingleGA,
+            "EliteMultiGA": GA.EliteMultiGA,
+            "MultiGA": GA.MultiGA,
+            "SingleGA": GA.SingleGA,
+        }
+        model_name = ga_config.get("model_selection", "BaseGA")
+        # Sequence membership also accepts malformed, unhashable selectors.
+        if model_name not in tuple(model_types):
+            print(
+                "Error: sel_model must be one of the following: "
+                "'BaseGA', 'EliteSingleGA', 'EliteMultiGA', 'MultiGA', 'SingleGA'."
+            )
             print("Defaulting to 'BaseGA'.")
-            sel_model = "BaseGA"
+            model_name = "BaseGA"
 
-        if sel_model == "BaseGA":
-            model_ga = GA.BaseGA(
-                epoch=epoch, pop_size=pop_size, pc=pc, pm=pm, **kwargs)
-        elif sel_model == "EliteSingleGA":
-            model_ga = GA.EliteSingleGA(epoch=epoch, pop_size=pop_size, pc=pc, pm=pm,
-                                        selection=selection,
-                                        k_way=k_way,
-                                        crossover=crossover,
-                                        mutation=mutation,
-                                        elite_best=elite_best,
-                                        elite_worst=elite_worst, **kwargs)
-        elif sel_model == "EliteMultiGA":
-            model_ga = GA.EliteMultiGA(epoch=epoch, pop_size=pop_size, pc=pc, pm=pm,
-                                       selection=selection,
-                                       k_way=k_way,
-                                       crossover=crossover,
-                                       mutation=mutation,
-                                       elite_best=elite_best,
-                                       elite_worst=elite_worst, **kwargs)
-        elif sel_model == "MultiGA":
-            model_ga = GA.MultiGA(epoch=epoch, pop_size=pop_size, pc=pc, pm=pm,
-                                  selection=selection,
-                                  k_way=k_way,
-                                  crossover=crossover,
-                                  mutation=mutation, **kwargs)
-        elif sel_model == "SingleGA":
-            model_ga = GA.SingleGA(epoch=epoch, pop_size=pop_size, pc=pc, pm=pm,
-                                   selection=selection,
-                                   k_way=k_way,
-                                   crossover=crossover,
-                                   mutation=mutation, **kwargs)
-
-        # solve the problem
+        if model_name != "BaseGA":
+            parameters.update(
+                selection=ga_config.get("selection", "roulette"),
+                k_way=ga_config.get("k_way", 0.2),
+                crossover=ga_config.get("crossover", "uniform"),
+                mutation=ga_config.get("mutation", "swap"),
+            )
+        if model_name in ("EliteSingleGA", "EliteMultiGA"):
+            parameters.update(
+                elite_best=ga_config.get("elite_best", 0.1),
+                elite_worst=ga_config.get("elite_worst", 0.3),
+            )
+        model_ga = model_types[model_name](**parameters, **kwargs)
         g_best = model_ga.solve(
-            self.problem_dict, termination=self.term_dict)  # starting_solutions=init_vals
+            self.problem_dict,
+            termination=self.term_dict,
+        )
 
-        # update files with the best solution
         self.problem_dict["obj_func"](g_best.solution)
-
-        return (g_best, model_ga)
+        return g_best, model_ga
 
     def run_SA(self, **kwargs):
         """Run Simulated Annealing (SA) for behavior optimization.
@@ -706,16 +647,6 @@ class BehaviorCaliAimsun:
 
     def _clean_up(self):
         """Clean up the temporary files generated during the calibration process."""
-        # network_name = self.scenario_config.get("network_name")
-        # turn_inflow_dir = self.scenario_config.get("dir_turn_inflow")
-        # route_dir = os.path.join(turn_inflow_dir, "route")
-        # flow_file = Path(route_dir) / f"{network_name}.flow.xml"
-        # turn_file = Path(route_dir) / f"{network_name}.turn.xml"
-        # shutil.copy(flow_file, turn_inflow_dir)
-        # shutil.copy(turn_file, turn_inflow_dir)
-        # # remove the route folder
-        # shutil.rmtree(route_dir)
-        # remove all files with .bak, .bak2, .bak3 etc...
         model_fname = self.input_config["AIMSUN"]["model_fname"]
         model_dir = Path(model_fname).parent
 

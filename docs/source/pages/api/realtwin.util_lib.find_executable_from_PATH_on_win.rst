@@ -1,6 +1,6 @@
-realtwin.util\_lib.find\_executable\_from\_PATH\_on\_win
-========================================================
+:orphan:
 
-.. currentmodule:: realtwin.util_lib
+Legacy find_executable_from_PATH_on_win API
+===========================================
 
-.. autofunction:: find_executable_on_win
+Use :func:`realtwin.util_lib.find_executable_on_win` for the current API.

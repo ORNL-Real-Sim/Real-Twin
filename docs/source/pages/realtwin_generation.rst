@@ -17,7 +17,7 @@ Scenario Generation
         CONFIG_FILE = "./realtwin_config.yaml"
 
         # Step 2: initialize the realtwin object
-        twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
+        twin = rt.RealTwinSUMO(input_config_file=CONFIG_FILE, verbose=True)
 
         # Step 3: check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
         twin.env_setup(sel_sim=["SUMO", "VISSIM"])
@@ -52,9 +52,9 @@ Scenario Generation
         twin.visualize()  # keyword arguments can be passed to specify the visualization options
 
 Bayesian optimization for SUMO and Aimsun
-----------------------------------------
+-----------------------------------------
 
-``RealTwin``, ``RealTwinSUMO``, and ``RealTwinAimsun`` accept
+``RealTwinSUMO`` and ``RealTwinAimsun`` accept
 ``sel_algo={"turn_inflow": "BO", "behavior": "BO"}`` at the calibration step.
 Install the optional dependencies with ``python -m pip install -e ".[bo]"``
 from the checkout, in the Python environment used by the tutorial. SUMO and

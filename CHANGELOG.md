@@ -8,6 +8,33 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 ### 2026-09-10
 
+#### Inline adapter GA setup
+
+* Remove `create_ga_model` and delete `realtwin/func_lib/_f_calibration/_optimizer_support.py` as requested. Keep GA construction directly in each SUMO/Aimsun adapter's `run_GA` method and inline result exporting in the three adapters that used the deleted module.
+* Preserve optimizer defaults, keyword validation, stage initialization, termination, best-solution application, BO exports, and independent calibration controls. Update real GA tests to exercise the public adapter and revise README code-organization guidance.
+* Files: both `algo_sumo/{cali_turn_inflow,cali_behavior}.py` adapters, `rt_aimsun/{cali_turn_inflow,cali_behavior}.py`, the deleted helper module, `tests/test_func_sim/test_calibration_optimizers.py`, README, and this changelog.
+* Validation in `rt`: 92 optimizer/export checks and all 370 local tests passed; web-download tests were excluded. No helper definitions/imports/calls remain in production code or tests. Ruff checks report no new adapter findings; signatures, Python 3.10 syntax, compilation, and whitespace checks passed. A fresh wheel excludes the deleted module and contains the current adapters. Native simulations were not rerun.
+
+#### Optimizer and API cleanup (second pass)
+
+* Use Python AST inspection to identify duplicated adapter logic, then replace four GA construction blocks with one `create_ga_model` function. Each adapter retains its configuration errors, initialization, termination settings, objective arguments, and final best-solution application. Its GA method now has 7-8 executable statements instead of 32.
+* Share the three identical result-export implementations through `save_calibration_results`, preserving BO error propagation and nonfatal Mealpy plotting errors. Add only these two shared functions; retain public adapter methods and remove obsolete commented examples and cleanup code.
+* Complete the existing legacy `RealTwin` removal in package exports, tests, examples, and API documentation. Migrate executable-discovery tests to `find_executable_on_win`, isolate test configuration between cases, and retain old documentation URLs as pointers to current APIs. This resolves both collection errors reported in the first pass.
+* Files: `realtwin/func_lib/_f_calibration/_optimizer_support.py`; both SUMO and both Aimsun calibration adapters; `realtwin/__init__.py`; SUMO/Aimsun API docstrings; `tests/test_realtwin.py`, `tests/test_func_utils/test_util_find_exectuable.py`, and `tests/test_func_sim/test_calibration_optimizers.py`; README, simulator tutorials, `docs/source/pages/{api.rst,create_api.py,realtwin_generation.rst}`, current/legacy API pages, and this changelog.
+* Validation in `rt`: all 370 local tests passed, including 92 optimizer checks covering GA variants, constructor keywords, stage side effects, export failures, and real Mealpy runs for all five GA variants. Web-download tests were excluded. Existing BO and independent-stage regressions continue to pass.
+* Ruff lint/format checks passed for new code and migrated tests; modified adapters introduce no new lint findings. Adapter signatures remain unchanged. Compilation, Python 3.10 syntax parsing, whitespace checks, and a fresh-directory wheel build passed; all 12 changed/new production modules in the wheel match current sources.
+* Sphinx validation completed with source generation disabled. Three unrelated warnings remain in `s5defs.txt` and `requirements_dev.txt` (markup/toctree entries). Native Aimsun/SUMO simulations and a separate Python 3.10 runtime were not rerun. No dependencies, BO equations, or calibration parameter units changed.
+
+#### Calibration readability refactor
+
+* Consolidate stage selection, per-stage overrides, and GA/SA/TS/BO dispatch into three shared functions. Keep preparation, route precedence, output paths, and cleanup visible in the SUMO and Aimsun workflows; retain independent enable flags and existing best-candidate application.
+* Share Aimsun console execution through one UTF-8, unbuffered runner, retaining imports from both calibration modules. Remove an empty visualization exception block and simplify public calibration methods and docstrings.
+* Preserve the workspace's existing legacy `RealTwin` removal and autonomous-vehicle tutorial edit. Update focused calibration tests to use the active `RealTwinSUMO` and `RealTwinAimsun` APIs.
+* Files: `realtwin/func_lib/_f_calibration/{_calibration_workflow,calibration_sumo}.py`; `realtwin/rt_sumo/rt_sumo.py`; `realtwin/rt_aimsun/{rt_aimsun,calibrate_aimsun,_console,cali_behavior,cali_turn_inflow}.py`; `tests/test_func_sim/{test_bayesian_optimization,test_calibration_stages,test_calibration_workflow}.py`; README and this changelog.
+* Validation in `rt`: 106 focused tests passed, including 27 new characterization cases covering dispatch order, failures, overrides, route precedence, and subprocess output. Broader local testing reported 251 passed and two existing collection errors: the legacy `tests/test_realtwin.py` import after the workspace's class removal, and a missing executable-discovery module. Web-download tests were excluded.
+* Ruff lint and format checks passed for new modules and focused tests; modified legacy modules have no new lint findings versus the pre-refactor snapshot. Edited production modules parse with Python 3.10 syntax; public calibration signatures are unchanged. Compilation, whitespace checks, and a wheel build from a fresh directory passed; its packaged modules match current sources. No dependencies or optimizer equations changed.
+* Limits: native Aimsun/SUMO simulations and a separate Python 3.10 runtime were not rerun for this structural refactor. The remaining legacy test imports require their own migration.
+
 #### Aimsun BO and independent calibration stages
 
 * Reuse the shared BO optimizer for Aimsun turn/inflow and behavior calibration, with `input_config` callbacks, normalized parameter bounds, best-candidate application, and `aimsun_bayesopt_*` CSV/plot exports beside the model.

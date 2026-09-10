@@ -1,30 +1,6 @@
-realtwin.RealTwin
-=================
+:orphan:
 
-.. currentmodule:: realtwin
+Legacy RealTwin API
+===================
 
-.. autoclass:: RealTwin
-
-   
-   .. automethod:: __init__
-
-   
-   .. rubric:: Methods
-
-   .. autosummary::
-   
-      ~RealTwin.__init__
-      ~RealTwin.calibrate
-      ~RealTwin.env_setup
-      ~RealTwin.generate_abstract_scenario
-      ~RealTwin.generate_concrete_scenario
-      ~RealTwin.generate_inputs
-      ~RealTwin.post_process
-      ~RealTwin.prepare_simulation
-      ~RealTwin.visualize
-   
-   
-
-   
-   
-   
+The legacy RealTwin class has been removed. Use :class:`realtwin.RealTwinSUMO` for SUMO workflows or :class:`realtwin.RealTwinAimsun` for Aimsun workflows.

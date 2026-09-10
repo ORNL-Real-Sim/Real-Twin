@@ -14,7 +14,10 @@ from xml.dom.minidom import parseString
 import shutil
 import os
 from pathlib import Path
+
 import pyufunc as pf
+
+from realtwin.func_lib._f_calibration._calibration_workflow import run_calibration_algorithm
 
 from realtwin.func_lib._f_calibration.algo_sumo.cali_turn_inflow import TurnInflowCali
 from realtwin.func_lib._f_calibration.algo_sumo.cali_behavior import BehaviorCali
@@ -25,31 +28,38 @@ from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (re
 from realtwin.func_lib._f_calibration.algo_sumo.util_cali_behavior import auto_select_two_routes
 
 
-# for the beta version
-def cali_sumo(*, sel_algo: dict | None = None, input_config: dict | None = None, verbose: bool = True, **kwargs) -> bool:
+def cali_sumo(
+    *,
+    sel_algo: dict | None = None,
+    input_config: dict | None = None,
+    verbose: bool = True,
+    **kwargs,
+) -> bool:
     """Run SUMO calibration based on the selected algorithm and input configuration.
 
     Args:
-        sel_algo (dict): the dictionary of selected algorithm for turn_inflow and behavior. Defaults to None.
+        sel_algo (dict): Lowercase algorithm names for turn_inflow and behavior.
+            Defaults to GA. Unsupported names fall back to GA. The public
+            RealTwinSUMO.calibrate method validates names case-insensitively.
         input_config (dict): the dictionary contain configurations from input yaml file. Defaults to None.
         verbose (bool): print out processing message. Defaults to True.
 
     Raises:
         ValueError: if the configuration for the selected GA, SA, TS, or BO algorithm is invalid
-        ValueError: if sel_algo is not a dict with keys of 'turn_inflow' and 'behavior'
 
     Returns:
         bool: True if calibration is successful, False otherwise.
     """
 
-    # Test-driven Development: check selected algorithm from input
     if sel_algo is None:  # use default algorithm if not provided
         sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
 
     if not isinstance(sel_algo, dict):
-        print("  :Error:parameter sel_algo must be a dict with"
-              " keys of 'turn_inflow' and 'behavior', using"
-              " genetic algorithm as default values.")
+        print(
+            "  :Error:parameter sel_algo must be a dict with"
+            " keys of 'turn_inflow' and 'behavior', using"
+            " genetic algorithm as default values."
+        )
         sel_algo = {"turn_inflow": "ga", "behavior": "ga"}
 
     # Both stages need their configuration even when turn/inflow is skipped.
@@ -57,44 +67,49 @@ def cali_sumo(*, sel_algo: dict | None = None, input_config: dict | None = None,
     algo_config_behavior = input_config["SUMO"]["behavior"]
 
     # Prepare scenario_config and algo_config from input_config
-    if input_config["SUMO"]["turn_inflow"].get("turn_inflow", {}).get("is_calibration", False):
+    if (
+        input_config["SUMO"]["turn_inflow"]
+        .get("turn_inflow", {})
+        .get("is_calibration", False)
+    ):
         scenario_config_turn_inflow = prepare_scenario_config_turn_inflow(input_config)
         input_config["Calibration"]["scenario_config"] = scenario_config_turn_inflow
-        input_config["SUMO"]["turn_inflow"]["scenario_config"].update(scenario_config_turn_inflow)
+        input_config["SUMO"]["turn_inflow"]["scenario_config"].update(
+            scenario_config_turn_inflow
+        )
 
         # run calibration based on the selected algorithm: optimize turn and inflow
         print("\n  :Optimize Turn and Inflow...")
-        turn_inflow = TurnInflowCali(scenario_config_turn_inflow, algo_config_turn_inflow, verbose=verbose)
+        turn_inflow = TurnInflowCali(
+            scenario_config_turn_inflow, algo_config_turn_inflow, verbose=verbose
+        )
 
-        match sel_algo["turn_inflow"]:
-            case "ga":
-                g_best, model = turn_inflow.run_GA()
-                path_model_result = "turn_inflow_ga_result"
-            case "sa":
-                g_best, model = turn_inflow.run_SA()
-                path_model_result = "turn_inflow_sa_result"
-            case "ts":
-                g_best, model = turn_inflow.run_TS()
-                path_model_result = "turn_inflow_ts_result"
-            case "bo":
-                g_best, model = turn_inflow.run_BO()
-                path_model_result = "turn_inflow_bo_result"
-            case _:
-                print(f"  :Error: unsupported algorithm {sel_algo['turn_inflow']}, using genetic algorithm as default.")
-                g_best, model = turn_inflow.run_GA()
-                path_model_result = "turn_inflow_ga_result"
+        model, algorithm = run_calibration_algorithm(
+            turn_inflow, sel_algo["turn_inflow"]
+        )
+        path_model_result = f"turn_inflow_{algorithm}_result"
 
         turn_inflow.run_vis(path_model_result, model)
         # clean up the temporary files generated during turn and inflow calibration
         turn_inflow._clean_up()
     else:
-        print("\n  :Turn and Inflow calibration is skipped in the input configuration file.")
+        print(
+            "\n  :Turn and Inflow calibration is skipped in the input configuration file."
+        )
 
-    if input_config["SUMO"]["behavior"].get("behavior", {}).get("is_calibration", False):
-        print("\n  :Optimize Behavior parameters based on the optimized turn and inflow...")
+    if (
+        input_config["SUMO"]["behavior"]
+        .get("behavior", {})
+        .get("is_calibration", False)
+    ):
+        print(
+            "\n  :Optimize Behavior parameters based on the optimized turn and inflow..."
+        )
         scenario_config_behavior = prepare_scenario_config_behavior(input_config)
         if "sel_behavior_routes" in input_config["SUMO"]["behavior"]:
-            scenario_config_behavior["sel_behavior_routes"] = input_config["SUMO"]["behavior"]["sel_behavior_routes"]
+            scenario_config_behavior["sel_behavior_routes"] = input_config["SUMO"][
+                "behavior"
+            ]["sel_behavior_routes"]
         else:
             # automatically select two routes from network
             dir_behavior = scenario_config_behavior["dir_behavior"]
@@ -102,45 +117,43 @@ def cali_sumo(*, sel_algo: dict | None = None, input_config: dict | None = None,
             path_net = Path(dir_behavior) / f"{network_name}.net.xml"
             path_route = Path(dir_behavior) / f"{network_name}.rou.xml"
             path_report = Path(dir_behavior) / "selected_routes_travel_time_map.html"
-            google_api = input_config.get("SUMO").get("behavior").get("google_api_key", "")
+            google_api = (
+                input_config.get("SUMO").get("behavior").get("google_api_key", "")
+            )
 
             if not google_api:
-                print("  :Warning: No Google API key provided, behavior calibration will skipped. User need manually provide the selected routes in twin.calibrate(sel_behavior_routes=[['route1', 'route2']])")
+                print(
+                    "  :Warning: No Google API key provided, behavior calibration will skipped. User need manually provide the selected routes in twin.calibrate(sel_behavior_routes=[['route1', 'route2']])"
+                )
                 return False
 
-            routes_list, time_list, edge_list = auto_select_two_routes(path_route, path_net,
-                                                                    api_key=google_api, path_report=path_report)
+            routes_list, time_list, edge_list = auto_select_two_routes(
+                path_route, path_net, api_key=google_api, path_report=path_report
+            )
             print(f"  : selected routes: {routes_list}")
             print(f"  : selected travel time: {time_list}")
             print(f"  : selected edge list: {edge_list}")
             sel_route_dict = {}
             route_id = 1
-            for route_name, travel_time, edge_id_list in zip(routes_list, time_list, edge_list):
-                sel_route_dict[f"route_{route_id}"] = {"time": travel_time,
-                                                    "edge_list": edge_id_list,
-                                                    "route_list": route_name}
+            for route_name, travel_time, edge_id_list in zip(
+                routes_list, time_list, edge_list
+            ):
+                sel_route_dict[f"route_{route_id}"] = {
+                    "time": travel_time,
+                    "edge_list": edge_id_list,
+                    "route_list": route_name,
+                }
                 route_id += 1
             scenario_config_behavior["sel_behavior_routes"] = sel_route_dict
-        print(f"  \n:Selected behavior routes: {scenario_config_behavior['sel_behavior_routes']}\n")
-        behavior = BehaviorCali(scenario_config_behavior, algo_config_behavior, verbose=verbose)
+        print(
+            f"  \n:Selected behavior routes: {scenario_config_behavior['sel_behavior_routes']}\n"
+        )
+        behavior = BehaviorCali(
+            scenario_config_behavior, algo_config_behavior, verbose=verbose
+        )
 
-        match sel_algo["behavior"]:
-            case "ga":
-                g_best, model = behavior.run_GA()
-                path_model_result = "behavior_ga_result"
-            case "sa":
-                g_best, model = behavior.run_SA()
-                path_model_result = "behavior_sa_result"
-            case "ts":
-                g_best, model = behavior.run_TS()
-                path_model_result = "behavior_ts_result"
-            case "bo":
-                g_best, model = behavior.run_BO()
-                path_model_result = "behavior_bo_result"
-            case _:
-                print(f"  :Error: unsupported algorithm {sel_algo['behavior']}, using genetic algorithm as default.")
-                g_best, model = behavior.run_GA()
-                path_model_result = "behavior_ga_result"
+        model, algorithm = run_calibration_algorithm(behavior, sel_algo["behavior"])
+        path_model_result = f"behavior_{algorithm}_result"
 
         behavior.run_vis(path_model_result, model)
     else:

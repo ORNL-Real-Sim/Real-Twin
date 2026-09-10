@@ -41,6 +41,10 @@ from realtwin.func_lib._d_concrete_scenario._concreteScenario import ConcreteSce
 from realtwin.func_lib._e_simulation._generate_simulation import SimPrep
 
 # calibration
+from realtwin.func_lib._f_calibration._calibration_workflow import (
+    apply_calibration_overrides,
+    select_calibration_algorithms,
+)
 from realtwin.func_lib._f_calibration.calibration_sumo import cali_sumo
 from realtwin.data_lib.config_data_lib import sel_behavior_routes as sel_behavior_routes_demo
 
@@ -109,7 +113,7 @@ class RealTwinSUMO:
 
         Examples:
             >>> import realtwin as rt
-            >>> twin = rt.REALTWIN(input_config_file="config.yaml", verbose=True)
+            >>> twin = rt.RealTwinSUMO(input_config_file="config.yaml", verbose=True)
 
             check simulator is installed or not, default to SUMO, optional: VISSIM, AIMSUN
             >>> twin.env_setup(sel_sim=["SUMO"])
@@ -401,7 +405,7 @@ class RealTwinSUMO:
             >>> import realtwin as rt
 
             load the input configuration file
-            >>> twin = rt.REALTWIN(input_config_file="config.yaml", verbose=True)
+            >>> twin = rt.RealTwinSUMO(input_config_file="config.yaml", verbose=True)
 
             check simulator is installed or not, default to SUMO
             >>> twin.env_setup(sel_sim=["SUMO"])
@@ -437,81 +441,66 @@ class RealTwinSUMO:
             console.print(f"\n[bold green]{simulator.upper()} simulation successfully Prepared.")
         return True
 
-    def calibrate(self, *, sel_algo: dict | None = None,
-                  sel_behavior_routes: dict | None = None,
-                  update_turn_inflow_algo: dict | None = None,
-                  update_behavior_algo: dict | None = None) -> bool:
-        # sourcery skip: extract-duplicate-method, remove-empty-nested-block, remove-redundant-if
-        """
-        Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.
+    def calibrate(
+        self,
+        *,
+        sel_algo: dict | None = None,
+        sel_behavior_routes: dict | None = None,
+        update_turn_inflow_algo: dict | None = None,
+        update_behavior_algo: dict | None = None,
+    ) -> bool:
+        """Calibrate enabled turn/inflow and driving-behavior stages.
 
         Args:
-            sel_algo (dict): The dictionary of algorithms to be used for calibration.
-                Default is None, will use genetic algorithm. e.g. {"turn_inflow": "ga", "behavior": "ga"}.
-                Supports GA, SA, TS, and BO (Bayesian optimization), case-insensitively.
-                Only stages enabled by Calibration.<stage>.is_calibration are run;
-                disabled stages can be omitted from sel_algo.
-            sel_behavior_routes (dict): The dictionary of behavior route parameters to be used for calibration.
-                Default is None. time (in seconds) is ground truth travel time.
-                e.g. sel_behavior_routes = {"route_1": {"time": 20, "edge_list": ["edge_id_1", "edge_d_2", ...]},
-                                           "route_2" {"time": 40, "edge_list":["edge_id_1", "edge_d_2", ...]}
-                                           ...}.
-            update_turn_inflow_algo (dict): The dictionary of algorithms to be used for updating turn flow.
-                Default is None, will use genetic algorithm.
-                Please refer to input configuration file for keys for each algorithm.
-                e.g. update_turn_inflow_algo = {"bo_config": {"max_evaluations": 50}}.
-            update_behavior_algo (dict): The dictionary of algorithms to be used for updating behavior.
-                Default is None, will use genetic algorithm.
-                Please refer to input configuration file for keys for each algorithm.
-                e.g. update_behavior_algo = {"bo_config": {"max_evaluations": 30}}.
+            sel_algo: Algorithms keyed by stage, e.g. {"turn_inflow": "bo"}.
+                Supports GA, SA, TS, and BO case-insensitively; defaults to GA.
+                Calibration.<stage>.is_calibration controls each stage
+                independently. Selectors for disabled stages are ignored.
+            sel_behavior_routes: Observed travel times in seconds and SUMO
+                routes, e.g. {"route_1": {"time": 20, "route_list": ["edge_1"]}}.
+                When omitted, use demo routes or automatic route selection.
+            update_turn_inflow_algo: Per-stage configuration overrides,
+                e.g. {"bo_config": {"max_evaluations": 50}}.
+            update_behavior_algo: Behavior-stage overrides in the same format.
+                Dictionary settings merge one level deep with shared settings.
+
+        Returns:
+            True when calibration succeeds; False when disabled or rejected.
         """
         calibration = self.input_config.get("Calibration", {})
-        enabled_stages = {
-            stage: calibration.get(stage, {}).get("is_calibration", False)
-            for stage in ("turn_inflow", "behavior")
-        }
-        if not any(enabled_stages.values()):
-            console.print("  [dim cyan]:Calibration is skipped in the input configuration file.")
+        algorithms = select_calibration_algorithms(
+            calibration, sel_algo, console=console
+        )
+        if algorithms is None:
             return False
 
-        if sel_algo is not None and not isinstance(sel_algo, dict):
-            console.print("  [bold red]:sel_algo must be a dictionary; using GA for enabled stages.")
-        requested_algorithms = sel_algo if isinstance(sel_algo, dict) else {}
-        sel_algo = {}
-        for stage, enabled in enabled_stages.items():
-            algorithm = requested_algorithms.get(stage, "ga") if enabled else "ga"
-            if not isinstance(algorithm, str) or algorithm.lower() not in {"ga", "sa", "ts", "bo"}:
-                console.print(f"  [bold red]:Unsupported {stage} algorithm {algorithm!r}; use GA, SA, TS, or BO.")
-                return False
-            sel_algo[stage] = algorithm.lower()
-
-        # Copy calibration to sumo to enable both turn and inflow configurations
+        # Stage overrides replace nested mappings to keep shared settings reusable.
         if not self.input_config.get("SUMO"):
             self.input_config["SUMO"] = {}
-        self.input_config["SUMO"]["turn_inflow"] = {}
-        self.input_config["SUMO"]["behavior"] = {}
-        self.input_config["SUMO"]["turn_inflow"].update(self.input_config["Calibration"])
-        self.input_config["SUMO"]["behavior"].update(self.input_config["Calibration"])
+        sumo_config = self.input_config["SUMO"]
+        sumo_config["turn_inflow"] = calibration.copy()
+        sumo_config["behavior"] = calibration.copy()
 
         if sel_behavior_routes:
             # use user defined behavior route, if not provided, automatically select two routes from the network
-            self.input_config["SUMO"]["behavior"]["sel_behavior_routes"] = sel_behavior_routes
-        if self.input_config["demo_data"] and sel_behavior_routes_demo.get(self.input_config["demo_data"]):
-            # use predefined behavior routes for demo data
-            self.input_config["SUMO"]["behavior"]["sel_behavior_routes"] = sel_behavior_routes_demo.get(self.input_config["demo_data"])
-        for stage, updates in (
-            ("turn_inflow", update_turn_inflow_algo),
-            ("behavior", update_behavior_algo),
+            sumo_config["behavior"]["sel_behavior_routes"] = sel_behavior_routes
+        if self.input_config["demo_data"] and sel_behavior_routes_demo.get(
+            self.input_config["demo_data"]
         ):
-            stage_config = self.input_config["SUMO"][stage]
-            for key, value in (updates or {}).items():
-                if isinstance(value, dict) and isinstance(stage_config.get(key), dict):
-                    stage_config[key] = {**stage_config[key], **value}
-                else:
-                    stage_config[key] = value
+            # use predefined behavior routes for demo data
+            sumo_config["behavior"]["sel_behavior_routes"] = (
+                sel_behavior_routes_demo.get(self.input_config["demo_data"])
+            )
+        apply_calibration_overrides(
+            sumo_config,
+            turn_inflow=update_turn_inflow_algo,
+            behavior=update_behavior_algo,
+        )
 
         # run calibration based on the selected algorithm
-        if not cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose):
+        if not cali_sumo(
+            sel_algo=algorithms, input_config=self.input_config, verbose=self.verbose
+        ):
             return False
 
         console.print("[bold green]Calibration successfully completed.\n")

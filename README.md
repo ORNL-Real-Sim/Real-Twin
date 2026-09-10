@@ -63,7 +63,7 @@ if __name__ == '__main__':
     CONFIG_FILE = "./realtwin_config.yaml"
 
     # Step 2: initialize the realtwin object
-    twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
+    twin = rt.RealTwinSUMO(input_config_file=CONFIG_FILE, verbose=True)
 
     # Step 3: check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed
     twin.env_setup(sel_sim=["SUMO", "VISSIM"])
@@ -101,7 +101,7 @@ if __name__ == '__main__':
 ## Bayesian optimization for calibration
 
 BO is available for SUMO and Aimsun turn/inflow and driving-behavior calibration
-through `RealTwin.calibrate()`, `RealTwinSUMO.calibrate()`, and
+through `RealTwinSUMO.calibrate()` and
 `RealTwinAimsun.calibrate()`. Install its optional
 Gaussian-process dependencies in the Python environment used to run Real-Twin:
 
@@ -233,9 +233,26 @@ The assignment CSV is reordered for Aimsun's existing script.
 Aimsun exports `aimsun_bayesopt_<N>runs_results.csv`,
 `aimsun_bayesopt_<N>runs_points.csv`, `aimsun_bayesopt_<N>runs_best_per_run.csv`,
 and convergence PNGs under `turn_inflow_bo_result/` or
-`behavior_bo_result/` beside the `.ang` model. Its `param_*</BT> columns
+`behavior_bo_result/` beside the `.ang` model. Its `param_*` columns
 contain normalized inputs. As in SUMO, the best candidate is applied in one
 additional simulation per enabled stage, outside the search budget.
+
+### Calibration code organization
+
+The shared functions in
+[`_calibration_workflow.py`](realtwin/func_lib/_f_calibration/_calibration_workflow.py)
+validate stage selections, merge overrides, and dispatch GA/SA/TS/BO.
+GA model construction and result exports are implemented directly in each
+calibration adapter.
+Each simulator keeps its stage preparation, route handling, result paths,
+and cleanup in its own calibration workflow. The BO search and result exporter
+remain in `algo_sumo/_bayesian_opt_util.py` and `algo_sumo/_bayesian_opt.py`,
+with simulator-specific objective callbacks and parameter bounds supplied by adapters.
+
+Aimsun's [`_console.py`](realtwin/rt_aimsun/_console.py) owns subprocess output
+capture. Both Aimsun calibration modules still expose `run_aconsole` for existing
+callers. The calibration regression tests cover stage independence, default
+algorithms, override precedence, best-candidate application, and output exports.
 
 ## Quick Example - Autonomous Vehicle
 

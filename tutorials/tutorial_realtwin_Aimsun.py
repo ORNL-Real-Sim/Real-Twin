@@ -30,7 +30,6 @@ if __name__ == '__main__':
     CONFIG_FILE = "./tutorials/realtwin_config.yaml"
 
     # Step 2: initialize the realtwin object
-    # twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
     twin = rt.RealTwinAimsun(input_config_file=CONFIG_FILE, verbose=True)
 
     # Step 3: check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed

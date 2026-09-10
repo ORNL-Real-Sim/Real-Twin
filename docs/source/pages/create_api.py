@@ -17,10 +17,9 @@ sys.path = [str(root)] + sys.path
 import realtwin
 import realtwin.func_lib
 import realtwin.util_lib
-# from realtwin import RealTwin
 
 collected_functions = {
-    "realtwin": ["RealTwin"],
+    "realtwin": ["RealTwinSUMO", "RealTwinAimsun"],
     "realtwin.util_lib": realtwin.util_lib.__all__,
     "realtwin.func_lib": realtwin.func_lib.__all__,
 }

@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 import importlib
+import os
 from pathlib import Path
 import sys
 import xml.etree.ElementTree as ET
@@ -10,7 +11,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from realtwin import RealTwin, RealTwinAimsun, RealTwinSUMO
+from realtwin import RealTwinAimsun, RealTwinSUMO
 from realtwin.func_lib._f_calibration.calibration_sumo import (
     prepare_scenario_config_behavior,
 )
@@ -18,7 +19,6 @@ from realtwin.rt_aimsun import cali_behavior, cali_turn_inflow
 from realtwin.rt_aimsun.calibrate_aimsun import cali_aimsun
 
 PUBLIC_APIS = [
-    (RealTwin, "realtwin._realtwin", "SUMO", "cali_sumo"),
     (RealTwinSUMO, "realtwin.rt_sumo.rt_sumo", "SUMO", "cali_sumo"),
     (RealTwinAimsun, "realtwin.rt_aimsun.rt_aimsun", "AIMSUN", "cali_aimsun"),
 ]
@@ -453,3 +453,29 @@ def test_console_keeps_required_output_when_child_exits_abnormally(module):
     )
     assert return_code == 7
     assert "SUBPATH_ID route=17" in output
+
+
+@pytest.mark.parametrize("module", [cali_turn_inflow, cali_behavior])
+def test_console_merges_utf8_output_and_preserves_parent_environment(
+    module, monkeypatch
+):
+    monkeypatch.setenv("REALTWIN_CONSOLE_TEST", "inherited")
+    monkeypatch.setenv("PYTHONUNBUFFERED", "0")
+    return_code, output = module.run_aconsole(
+        [
+            sys.executable,
+            "-c",
+            "import os; "
+            "os.write(1, 'caf\\u00e9\\n'.encode('utf-8')); "
+            "os.write(2, b'warning\\xff\\n'); "
+            "print(os.environ['REALTWIN_CONSOLE_TEST'])",
+        ]
+    )
+    assert return_code == 0
+    assert output == "caf\u00e9\nwarning\ufffd\ninherited\n"
+    assert os.environ["PYTHONUNBUFFERED"] == "0"
+
+
+def test_aimsun_behavior_visualization_remains_optional():
+    adapter = cali_behavior.BehaviorCaliAimsun.__new__(cali_behavior.BehaviorCaliAimsun)
+    assert adapter.run_vis("unused", object()) is True

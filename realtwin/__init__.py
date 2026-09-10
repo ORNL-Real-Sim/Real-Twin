@@ -33,7 +33,6 @@ from realtwin.util_lib import get_bbox_from_vertices
 # Autonomous vehicle simulation
 from realtwin.autonomous_veh import SimAV, prepare_av_configs, load_av_configs
 
-from realtwin._realtwin import RealTwin
 from realtwin.rt_sumo import RealTwinSUMO
 from realtwin.rt_aimsun import RealTwinAimsun
 
@@ -44,7 +43,6 @@ __version__ = '0.1.2'
 
 __all__ = [
     'BehaviorCali',
-    'RealTwin',
     # rt_aimsun
     'RealTwinAimsun',
     # rt_sumo
@@ -82,7 +80,7 @@ def check_python_version(min_version: str = "3.10") -> tuple:
     major, minor = min_version.split(".")
     try:
         if version_tuple < (int(major), int(minor)):
-            raise EnvironmentError(f"Python version {min_version} or higher is required.")
+            raise OSError(f"Python version {min_version} or higher is required.")
     except Exception:
         print(f"pyufunc supports Python {min_version} or higher.")
     return version_tuple

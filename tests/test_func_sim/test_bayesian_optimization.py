@@ -10,7 +10,7 @@ import pytest
 
 pytest.importorskip("sklearn", reason="BO tests require the realtwin[bo] extra.")
 
-from realtwin import RealTwin, RealTwinSUMO
+from realtwin import RealTwinSUMO
 from realtwin.func_lib._f_calibration import calibration_sumo
 from realtwin.func_lib._f_calibration.algo_sumo import cali_behavior, cali_turn_inflow
 from realtwin.func_lib._f_calibration.algo_sumo._bayesian_opt import (
@@ -303,12 +303,10 @@ def test_behavior_adapter_uses_configured_bounds_and_restores_best(monkeypatch):
     assert optimizer.points_df["param_2"].between(0.5, 0.8).all()
 
 
-@pytest.mark.parametrize("twin_class", [RealTwin, RealTwinSUMO])
 @pytest.mark.parametrize(
     "turn_enabled, behavior_enabled", [(True, True), (True, False), (False, True)]
 )
 def test_public_bo_pipeline_exports_enabled_stages_and_applies_overrides(
-    twin_class,
     turn_enabled,
     behavior_enabled,
     monkeypatch,
@@ -343,7 +341,7 @@ def test_public_bo_pipeline_exports_enabled_stages_and_applies_overrides(
 
     monkeypatch.setattr(cali_turn_inflow, "fitness_func_turn_inflow", objective)
     monkeypatch.setattr(cali_behavior, "fitness_func", objective)
-    twin = twin_class.__new__(twin_class)
+    twin = RealTwinSUMO.__new__(RealTwinSUMO)
     twin.verbose = False
     twin.input_config = {
         "demo_data": False,
@@ -388,19 +386,17 @@ def test_public_bo_pipeline_exports_enabled_stages_and_applies_overrides(
     assert twin.input_config["Calibration"]["bo_config"] == original["bo_config"]
 
 
-@pytest.mark.parametrize(
-    "twin_class, module_name",
-    [(RealTwin, "realtwin._realtwin"), (RealTwinSUMO, "realtwin.rt_sumo.rt_sumo")],
-)
-def test_existing_default_selection_is_preserved(twin_class, module_name, monkeypatch):
+def test_existing_default_selection_is_preserved(monkeypatch):
     calls = []
 
     def calibration(**kwargs):
         calls.append(kwargs)
         return True
 
-    monkeypatch.setattr(importlib.import_module(module_name), "cali_sumo", calibration)
-    twin = twin_class.__new__(twin_class)
+    monkeypatch.setattr(
+        importlib.import_module("realtwin.rt_sumo.rt_sumo"), "cali_sumo", calibration
+    )
+    twin = RealTwinSUMO.__new__(RealTwinSUMO)
     twin.verbose = False
     twin.input_config = {
         "demo_data": False,
