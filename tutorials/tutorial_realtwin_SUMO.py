@@ -13,10 +13,11 @@
 """ Sample script to demonstrate the usage of RealTwin for general traffic simulation."""
 
 import os
+import sys
 from pathlib import Path
 # change the  current working directory to the location of RealTwin package.
 os.chdir(Path(__file__).parents[1].absolute())
-
+sys.path.append(str(Path(__file__).parents[1].absolute()))
 
 import realtwin as rt
 
@@ -30,7 +31,7 @@ if __name__ == '__main__':
 
     # Step 2: initialize the realtwin object
     # twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
-    twin = rt.RealTwin(input_config_file=CONFIG_FILE, verbose=True)
+    twin = rt.RealTwinSUMO(input_config_file=CONFIG_FILE, verbose=True)
 
     # Step 3: check simulator env: if SUMO installed or not
     twin.env_setup()
@@ -58,7 +59,11 @@ if __name__ == '__main__':
     twin.prepare_simulation()
 
     # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
-    twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"})
+    sel_behavior_routes = {
+        "route_1": {"time": 100, "route_list": ['-90', '-96', '-103', '-105', '-106', '-99', '-94']},
+        "route_2": {"time": 150, "route_list": ['-97', '-95', '-100', '-107', '-104', '-102', '-93']}
+    } # Optional, if not provided, the system will automatically select two routes from the network
+    twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"}, sel_behavior_routes=sel_behavior_routes)
 
     # Step 9 (ongoing): post-process the simulation results
     twin.post_process()  # keyword arguments can be passed to specify the post-processing options

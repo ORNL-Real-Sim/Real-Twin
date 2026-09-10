@@ -116,7 +116,7 @@ def fitness_func(solution: list | np.ndarray, scenario_config: dict = None, erro
     #                                                        sim_start_time,
     #                                                        sim_end_time)
     # print(f"  :GEH: Mean Percentage: {mean_geh:.6f}, {geh_percent:.6f}, Travel time error: {fitness_err:.6f}")
-    print(f"  :Travel time error: {fitness_err:.6f}")
+    print(f"  :Travel time {error_func}: {fitness_err:.6f}")
 
     return fitness_err
 
@@ -238,8 +238,7 @@ class BehaviorCali:
 
         # save the best solution
         try:
-            pass
-            # model.history.save_global_objectives_chart(filename=f"{output_dir}/global_objectives")
+            model.history.save_global_objectives_chart(filename=f"{output_dir}/global_objectives")
             # model.history.save_local_objectives_chart(filename=f"{output_dir}/local_objectives")
             # model.history.save_global_best_fitness_chart(filename=f"{output_dir}/global_best_fitness")
             # model.history.save_local_best_fitness_chart(filename=f"{output_dir}/local_best_fitness")

@@ -60,9 +60,8 @@ def load_traffic_volume(demand_data: str | pd.DataFrame) -> pd.DataFrame:
                           "\n  :No traffic volume data loaded from input file")
             return None
 
-        # read the csv file and fill the nan values with 0
+        # Keep missing identifiers separate from missing numeric counts.
         traffic_volume = pd.read_csv(demand_data)
-        traffic_volume.fillna(0, inplace=True)
 
         # Create a copy of the DataFrame
         df_volume = traffic_volume.copy()
@@ -81,8 +80,8 @@ def load_traffic_volume(demand_data: str | pd.DataFrame) -> pd.DataFrame:
                                var_name='Turn',
                                value_name='Count')
 
-    # clean Count column: change "" to 0 and convert to int
-    df_volume['Count'] = df_volume['Count'].replace("", 0).astype(int)
+    # Convert counts before filling missing values; string columns reject numeric fills.
+    df_volume['Count'] = pd.to_numeric(df_volume['Count'].replace("", pd.NA)).fillna(0).astype(int)
 
     # Sort the DataFrame by IntersectionName and Turn columns
     df_volume.sort_values(['IntersectionName', 'IntervalStart', 'IntervalEnd'], inplace=True)

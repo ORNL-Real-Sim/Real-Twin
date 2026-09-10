@@ -30,6 +30,21 @@
 pip install realtwin
 ```
 
+Pandas 3 is supported on Python 3.11 and newer. Python 3.10 uses pandas 2.2 or 2.3 through the dependency requirements.
+
+To run or debug tutorials from a cloned checkout, activate the Python environment
+selected in your debugger and run this command from the repository root:
+
+```shell
+python -m pip install -e .
+```
+
+This editable installation makes the local `realtwin` package importable when
+launching scripts in `tutorials/`, and source edits take effect without
+reinstalling. The tutorials use `os.chdir(...)` to resolve relative data paths;
+changing the working directory does not add the repository to Python's import
+search path (`sys.path`).
+
 ## Documentation
 
 User guide and API documentation can be found at: [Official Documentation](https://real-twin.readthedocs.io/en/latest/)

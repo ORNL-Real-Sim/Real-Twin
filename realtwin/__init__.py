@@ -14,7 +14,6 @@
 """Control of module imports for the RealTwin package."""
 
 import sys
-from realtwin._realtwin import RealTwin
 from realtwin.func_lib._a_install_simulator.check_sim_env import (is_sumo_installed,
                                                                   is_vissim_installed,
                                                                   is_aimsun_installed)
@@ -34,6 +33,8 @@ from realtwin.util_lib import get_bbox_from_vertices
 # Autonomous vehicle simulation
 from realtwin.autonomous_veh import SimAV, prepare_av_configs, load_av_configs
 
+from realtwin._realtwin import RealTwin
+from realtwin.rt_sumo import RealTwinSUMO
 from realtwin.rt_aimsun import RealTwinAimsun
 
 
@@ -46,6 +47,8 @@ __all__ = [
     'RealTwin',
     # rt_aimsun
     'RealTwinAimsun',
+    # rt_sumo
+    'RealTwinSUMO',
     # autonomous_veh
     'SimAV',
     'SimPrep',

@@ -34,7 +34,7 @@ else:
 import traci
 
 
-def update_turn_flow_from_solution(initial_solution: np.array,
+def update_turn_inflow_from_solution(initial_solution: np.array,
                                    TurnDf: pd.DataFrame,
                                    TurnToCalibrate: pd.DataFrame,
                                    InflowDf: pd.DataFrame,
@@ -55,6 +55,10 @@ def update_turn_flow_from_solution(initial_solution: np.array,
     Returns:
         tuple: the updated turn and inflow dataframes
     """
+
+    # Optimizer values and scaled inflows can be fractional, even for integer inputs.
+    TurnDf["TurnRatio"] = TurnDf["TurnRatio"].astype(float)
+    InflowDf["Count"] = InflowDf["Count"].astype(float)
 
     i = 0  # index into initial_solution
     # Loop through each group of (JunctionID_OpenDrive, Numbering)
@@ -166,7 +170,7 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
             # edge_relation.set('from', f"-{TurnData['OpenDriveFromID']}")
             # edge_relation.set('to', f"-{TurnData['OpenDriveToID']}")
             edge_relation.set('from', "-" + str(TurnData['OpenDriveFromID']))
-            edge_relation.set('to',   "-" + str(TurnData['OpenDriveToID']))  
+            edge_relation.set('to',   "-" + str(TurnData['OpenDriveToID']))
             edge_relation.set('probability', str(TurnData['TurnRatio']))
     # <edgeRelation from="" probability="" to=""/>
     TreeTurn = ET.ElementTree(turns)
@@ -281,7 +285,7 @@ def result_analysis_on_EdgeData(Summary_data: pd.DataFrame,
     """
     RealSummary = Summary_data[Summary_data["realcount"].notna()]
     RealSummary['IntervalStart'] = pd.to_numeric(RealSummary['IntervalStart'], errors='coerce')
-    RealSummary['IntervalEnd']   = pd.to_numeric(RealSummary['IntervalEnd'], errors='coerce')    
+    RealSummary['IntervalEnd']   = pd.to_numeric(RealSummary['IntervalEnd'], errors='coerce')
     Interval =   (RealSummary['IntervalEnd'].max()-RealSummary['IntervalStart'].min())/3600
 
     ApproachSummary = RealSummary.groupby(['IntersectionName',
@@ -466,7 +470,8 @@ def generate_turn_demand_cali(*, path_matchup_table: str | pd.DataFrame,
                     df_data = pd.read_excel(gs_file_path, header=[start_row, start_row + 1])
 
                     # Fill merged cells in the first row
-                    df_data.columns = df_data.columns.to_frame().fillna(method="ffill").agg("".join, axis=1)
+                    df_data.columns = df_data.columns.to_frame().ffill().agg("".join, axis=1)
+
 
                     # Remove spaces from column names
                     df_data.columns = [col.replace(" ", "") for col in df_data.columns]
@@ -553,8 +558,6 @@ def generate_inflow(path_net: str,
     MergedDf1 = pd.merge(Count, IDRef, on=['IntersectionName', 'Turn'], how='left')
     Count['OpenDriveFromID'] = MergedDf1['OpenDriveFromID']
     Count['OpenDriveToID'] = MergedDf1['OpenDriveToID']
-    Count['Count'] = Count['Count'].replace('', 0)  # Replace empty strings with 0
-    Count['Count'] = Count['Count'].fillna(0)       # Fill NaNs with 0
     Count['Count'] = pd.to_numeric(Count['Count'], errors='coerce').fillna(0).astype(int)  # Ensure it's int
     Count = Count.groupby(['IntervalStart', 'IntervalEnd', 'IntersectionName', 'OpenDriveFromID'],
                           as_index=False)['Count'].sum()
@@ -667,7 +670,7 @@ def generate_inflow(path_net: str,
                         "FromRoadID_Sumo",
                         "FromRoadID_Sumo_stripped"],
                inplace=True)
-    
+
     # create InflowDf_Calibration for turn and inflow purpose
     InflowDf_Calibration = InflowCount[(InflowCount["IntervalStart"] >= sim_begin) &
                                        (InflowCount["IntervalEnd"] <= sim_end)].copy()
@@ -715,8 +718,6 @@ def generate_turn_summary(TurnDf: pd.DataFrame, MatchupTable_UserInput: pd.DataF
     TurnDfTemp.reset_index(drop=True, inplace=True)
     TurnDfTemp['Bound'] = TurnDfTemp['Turn'].str[0]
     TurnDfTemp['Direction'] = TurnDfTemp['Turn'].str[-1]
-    TurnDfTemp['Count'] = TurnDfTemp['Count'].replace('', 0)  # Replace empty strings with 0
-    TurnDfTemp['Count'] = TurnDfTemp['Count'].fillna(0)       # Fill NaNs with 0
     TurnDfTemp['Count'] = pd.to_numeric(TurnDfTemp['Count'], errors='coerce').fillna(
         0).astype(int)  # Ensure integer type
     FlowTemp = TurnDfTemp.groupby(['IntervalStart',

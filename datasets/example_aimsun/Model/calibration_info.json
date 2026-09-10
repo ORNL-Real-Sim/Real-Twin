@@ -1,0 +1,507 @@
+{
+  "replication_id": 2287,
+  "sim_start_time": 28800,
+  "sim_end_time": 32400,
+  "interval_seconds": 900,
+  "traffic_states": [
+    "8:00",
+    "8:15",
+    "8:30",
+    "8:45"
+  ],
+  "field_approaches": [
+    {
+      "junction": 2172,
+      "section": 2059,
+      "count": 929
+    },
+    {
+      "junction": 2172,
+      "section": 2071,
+      "count": 531
+    },
+    {
+      "junction": 2172,
+      "section": 2091,
+      "count": 43
+    },
+    {
+      "junction": 2172,
+      "section": 2107,
+      "count": 122
+    }
+  ],
+  "calib_inflow_sections": [
+    2064,
+    2068,
+    2070,
+    2072,
+    2074,
+    2079,
+    2085,
+    2086,
+    2094,
+    2100,
+    2103,
+    2108,
+    2117
+  ],
+  "calib_junctions": [
+    2129,
+    2145,
+    2155,
+    2180,
+    2198,
+    2218,
+    2224,
+    2235,
+    2246
+  ],
+  "calib_turns": [
+    {
+      "junction": 2129,
+      "from": 2062,
+      "to": 2076
+    },
+    {
+      "junction": 2129,
+      "from": 2062,
+      "to": 2083
+    },
+    {
+      "junction": 2129,
+      "from": 2062,
+      "to": 2105
+    },
+    {
+      "junction": 2129,
+      "from": 2100,
+      "to": 2076
+    },
+    {
+      "junction": 2129,
+      "from": 2100,
+      "to": 2083
+    },
+    {
+      "junction": 2129,
+      "from": 2100,
+      "to": 2105
+    },
+    {
+      "junction": 2129,
+      "from": 2106,
+      "to": 2076
+    },
+    {
+      "junction": 2129,
+      "from": 2106,
+      "to": 2083
+    },
+    {
+      "junction": 2129,
+      "from": 2106,
+      "to": 2105
+    },
+    {
+      "junction": 2145,
+      "from": 2094,
+      "to": 2060
+    },
+    {
+      "junction": 2145,
+      "from": 2094,
+      "to": 2063
+    },
+    {
+      "junction": 2145,
+      "from": 2094,
+      "to": 2073
+    },
+    {
+      "junction": 2145,
+      "from": 2094,
+      "to": 2106
+    },
+    {
+      "junction": 2145,
+      "from": 2097,
+      "to": 2060
+    },
+    {
+      "junction": 2145,
+      "from": 2097,
+      "to": 2063
+    },
+    {
+      "junction": 2145,
+      "from": 2097,
+      "to": 2073
+    },
+    {
+      "junction": 2145,
+      "from": 2097,
+      "to": 2106
+    },
+    {
+      "junction": 2145,
+      "from": 2105,
+      "to": 2060
+    },
+    {
+      "junction": 2145,
+      "from": 2105,
+      "to": 2063
+    },
+    {
+      "junction": 2145,
+      "from": 2105,
+      "to": 2073
+    },
+    {
+      "junction": 2145,
+      "from": 2105,
+      "to": 2106
+    },
+    {
+      "junction": 2145,
+      "from": 2117,
+      "to": 2060
+    },
+    {
+      "junction": 2145,
+      "from": 2117,
+      "to": 2073
+    },
+    {
+      "junction": 2145,
+      "from": 2117,
+      "to": 2106
+    },
+    {
+      "junction": 2155,
+      "from": 2069,
+      "to": 2059
+    },
+    {
+      "junction": 2155,
+      "from": 2069,
+      "to": 2084
+    },
+    {
+      "junction": 2155,
+      "from": 2069,
+      "to": 2115
+    },
+    {
+      "junction": 2155,
+      "from": 2072,
+      "to": 2115
+    },
+    {
+      "junction": 2155,
+      "from": 2090,
+      "to": 2059
+    },
+    {
+      "junction": 2155,
+      "from": 2090,
+      "to": 2084
+    },
+    {
+      "junction": 2155,
+      "from": 2090,
+      "to": 2115
+    },
+    {
+      "junction": 2180,
+      "from": 2073,
+      "to": 2081
+    },
+    {
+      "junction": 2180,
+      "from": 2073,
+      "to": 2095
+    },
+    {
+      "junction": 2180,
+      "from": 2096,
+      "to": 2095
+    },
+    {
+      "junction": 2180,
+      "from": 2096,
+      "to": 2097
+    },
+    {
+      "junction": 2180,
+      "from": 2108,
+      "to": 2081
+    },
+    {
+      "junction": 2180,
+      "from": 2108,
+      "to": 2095
+    },
+    {
+      "junction": 2180,
+      "from": 2108,
+      "to": 2097
+    },
+    {
+      "junction": 2198,
+      "from": 2064,
+      "to": 2065
+    },
+    {
+      "junction": 2198,
+      "from": 2064,
+      "to": 2066
+    },
+    {
+      "junction": 2198,
+      "from": 2064,
+      "to": 2077
+    },
+    {
+      "junction": 2198,
+      "from": 2064,
+      "to": 2099
+    },
+    {
+      "junction": 2198,
+      "from": 2067,
+      "to": 2065
+    },
+    {
+      "junction": 2198,
+      "from": 2067,
+      "to": 2066
+    },
+    {
+      "junction": 2198,
+      "from": 2067,
+      "to": 2077
+    },
+    {
+      "junction": 2198,
+      "from": 2068,
+      "to": 2065
+    },
+    {
+      "junction": 2198,
+      "from": 2068,
+      "to": 2066
+    },
+    {
+      "junction": 2198,
+      "from": 2068,
+      "to": 2077
+    },
+    {
+      "junction": 2198,
+      "from": 2068,
+      "to": 2099
+    },
+    {
+      "junction": 2198,
+      "from": 2087,
+      "to": 2065
+    },
+    {
+      "junction": 2198,
+      "from": 2087,
+      "to": 2066
+    },
+    {
+      "junction": 2198,
+      "from": 2087,
+      "to": 2077
+    },
+    {
+      "junction": 2198,
+      "from": 2087,
+      "to": 2099
+    },
+    {
+      "junction": 2218,
+      "from": 2070,
+      "to": 2082
+    },
+    {
+      "junction": 2218,
+      "from": 2070,
+      "to": 2089
+    },
+    {
+      "junction": 2218,
+      "from": 2070,
+      "to": 2104
+    },
+    {
+      "junction": 2218,
+      "from": 2070,
+      "to": 2113
+    },
+    {
+      "junction": 2218,
+      "from": 2085,
+      "to": 2082
+    },
+    {
+      "junction": 2218,
+      "from": 2085,
+      "to": 2089
+    },
+    {
+      "junction": 2218,
+      "from": 2085,
+      "to": 2104
+    },
+    {
+      "junction": 2218,
+      "from": 2085,
+      "to": 2113
+    },
+    {
+      "junction": 2218,
+      "from": 2101,
+      "to": 2089
+    },
+    {
+      "junction": 2218,
+      "from": 2101,
+      "to": 2104
+    },
+    {
+      "junction": 2218,
+      "from": 2101,
+      "to": 2113
+    },
+    {
+      "junction": 2218,
+      "from": 2111,
+      "to": 2082
+    },
+    {
+      "junction": 2218,
+      "from": 2111,
+      "to": 2089
+    },
+    {
+      "junction": 2218,
+      "from": 2111,
+      "to": 2104
+    },
+    {
+      "junction": 2218,
+      "from": 2111,
+      "to": 2113
+    },
+    {
+      "junction": 2224,
+      "from": 2074,
+      "to": 2080
+    },
+    {
+      "junction": 2224,
+      "from": 2074,
+      "to": 2111
+    },
+    {
+      "junction": 2224,
+      "from": 2104,
+      "to": 2080
+    },
+    {
+      "junction": 2224,
+      "from": 2112,
+      "to": 2078
+    },
+    {
+      "junction": 2224,
+      "from": 2112,
+      "to": 2111
+    },
+    {
+      "junction": 2235,
+      "from": 2086,
+      "to": 2067
+    },
+    {
+      "junction": 2235,
+      "from": 2086,
+      "to": 2098
+    },
+    {
+      "junction": 2235,
+      "from": 2086,
+      "to": 2116
+    },
+    {
+      "junction": 2235,
+      "from": 2099,
+      "to": 2098
+    },
+    {
+      "junction": 2235,
+      "from": 2099,
+      "to": 2116
+    },
+    {
+      "junction": 2235,
+      "from": 2110,
+      "to": 2067
+    },
+    {
+      "junction": 2235,
+      "from": 2110,
+      "to": 2098
+    },
+    {
+      "junction": 2235,
+      "from": 2110,
+      "to": 2116
+    },
+    {
+      "junction": 2246,
+      "from": 2061,
+      "to": 2090
+    },
+    {
+      "junction": 2246,
+      "from": 2061,
+      "to": 2093
+    },
+    {
+      "junction": 2246,
+      "from": 2103,
+      "to": 2090
+    },
+    {
+      "junction": 2246,
+      "from": 2103,
+      "to": 2093
+    },
+    {
+      "junction": 2246,
+      "from": 2103,
+      "to": 2109
+    },
+    {
+      "junction": 2246,
+      "from": 2115,
+      "to": 2090
+    },
+    {
+      "junction": 2246,
+      "from": 2115,
+      "to": 2093
+    },
+    {
+      "junction": 2246,
+      "from": 2115,
+      "to": 2109
+    }
+  ]
+}

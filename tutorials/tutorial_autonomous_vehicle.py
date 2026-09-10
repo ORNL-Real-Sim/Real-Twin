@@ -13,9 +13,11 @@
 """ Sample script to demonstrate the usage of RealTwin for autonomous vehicle simulation."""
 
 import os
+import sys
 from pathlib import Path
 # change the  current working directory to the location of RealTwin package.
 os.chdir(Path(__file__).parents[1].absolute())
+sys.path.append(str(Path(__file__).parents[1].absolute()))
 
 import realtwin as rt
 

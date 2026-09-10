@@ -439,8 +439,8 @@ class RealTwin:
 
     def calibrate(self, *, sel_algo: dict | None = None,
                   sel_behavior_routes: dict | None = None,
-                  update_turn_flow_algo: dict | None = None,
-                  update_behavior_algo: dict | None = None) -> bool:
+                  update_turn_inflow_algo: dict | None = None,
+                  update_behavior_algo: dict | None = None, **kwargs) -> bool:
         # sourcery skip: extract-duplicate-method, remove-empty-nested-block, remove-redundant-if
         """Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.
 
@@ -452,10 +452,10 @@ class RealTwin:
                 e.g. sel_behavior_routes = {"route_1": {"time": 20, "edge_list": ["edge_id_1", "edge_d_2", ...]},
                                            "route_2" {"time": 40, "edge_list":["edge_id_1", "edge_d_2", ...]}
                                            ...}.
-            update_turn_flow_algo (dict): The dictionary of algorithms to be used for updating turn flow.
+            update_turn_inflow_algo (dict): The dictionary of algorithms to be used for updating turn flow.
                 Default is None, will use genetic algorithm.
                 Please refer to input configuration file for keys for each algorithm.
-                e.g. update_turn_flow_algo = {"ga_config": {}, "sa_config":{}, "ts_config":{}}.
+                e.g. update_turn_inflow_algo = {"ga_config": {}, "sa_config":{}, "ts_config":{}}.
             update_behavior_algo (dict): The dictionary of algorithms to be used for updating behavior.
                 Default is None, will use genetic algorithm.
                 Please refer to input configuration file for keys for each algorithm.
@@ -488,28 +488,28 @@ class RealTwin:
                           "Must be one of ['ga', 'sa', 'ts']")
             return False
 
-        # parse user additional parameters for calibration
-        user_kwargs = {}
+        # if user provides sel_behavior_routes, update_turn_inflow_algo, or update_behavior_algo, use them to update the input_config
+        self.input_config["SUMO"] = {}
+        self.input_config["SUMO"]["turn_inflow"] = {}
+        self.input_config["SUMO"]["behavior"] = {}
+        self.input_config["SUMO"]["turn_inflow"].update(self.input_config["Calibration"])
+        self.input_config["SUMO"]["behavior"].update(self.input_config["Calibration"])
+
         if sel_behavior_routes:
             # use user defined behavior route, if not provided, automatically select two routes from the network
-            user_kwargs["sel_behavior_routes"] = sel_behavior_routes
+            self.input_config["SUMO"]["behavior"]["sel_behavior_routes"] = sel_behavior_routes
         if self.input_config["demo_data"] and sel_behavior_routes_demo.get(self.input_config["demo_data"]):
             # use predefined behavior routes for demo data
-            user_kwargs["sel_behavior_routes"] = sel_behavior_routes_demo.get(self.input_config["demo_data"])
-        if update_turn_flow_algo:
-            user_kwargs["update_turn_flow_algo"] = update_turn_flow_algo
+            self.input_config["SUMO"]["behavior"]["sel_behavior_routes"] = sel_behavior_routes_demo.get(self.input_config["demo_data"])
+        if update_turn_inflow_algo:
+            self.input_config["SUMO"]["turn_inflow"]["update_turn_inflow_algo"] = update_turn_inflow_algo
         if update_behavior_algo:
-            user_kwargs["update_behavior_algo"] = update_behavior_algo
+            self.input_config["SUMO"]["behavior"]["update_behavior_algo"] = update_behavior_algo
 
         # run calibration based on the selected algorithm
-        if "sumo" in self.sel_sim:
-            cali_sumo(sel_algo=sel_algo, input_config=self.input_config, verbose=self.verbose, **user_kwargs)
-
-        if "vissim" in self.sel_sim:
-            pass
-
-        if "aimsun" in self.sel_sim:
-            pass
+        cali_sumo(sel_algo=sel_algo,
+                  input_config=self.input_config,
+                  verbose=self.verbose)
 
         console.print("[bold green]Calibration successfully completed.\n")
 

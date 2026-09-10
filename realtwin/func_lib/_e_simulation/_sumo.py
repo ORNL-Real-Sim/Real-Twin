@@ -467,7 +467,8 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
     signal_path = pf.path2linux(Path(control_dir) / synchro_file)
     SignalDict = process_signal_data(signal_path)
 
-    df_lanes = SignalDict['Lanes']
+    # Movement columns contain numeric lane/phase records and textual metadata.
+    df_lanes = SignalDict['Lanes'].astype(object)
     target_rows = df_lanes["RECORDNAME"].isin(["Lanes", "Shared","Phase1","PermPhase1","Allow RTOR"])
     for idx in df_lanes[target_rows].index:
         for col in df_lanes.columns:
@@ -644,7 +645,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
 
         Synchro[intid]["Phases"] = phases_df
 
-        for idx, thru in Synchro[intid]["Phases"]["Protected"].items():
+        for idx, thru in phases_df["Protected"].items():
             movements = thru.split(",")
             for movement in movements:
                 if movement.endswith("T"):
@@ -656,29 +657,21 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                         else:
                             continue
 
-                        if pd.isna(lane_value) or lane_value == "0":
+                        if pd.isna(lane_value) or lane_value == 0:
                             continue
                         left_turn = movement[:-1] + "L"
                         right_turn = movement[:-1] + "R"
 
                         turns_to_add = []
-                        if lane_value == "1" and left_turn not in movements:
+                        if lane_value in (1, 3) and left_turn not in movements:
                             turns_to_add.append(left_turn)
-                        elif lane_value == "2" and right_turn not in movements:
-                            if right_turn in Synchro[intid]["Phases"]["RTOR"].at[idx]:
-                                Synchro[intid]["Phases"]["RTOR"].at[idx] = Synchro[intid]["Phases"]["RTOR"].at[idx].replace(right_turn, "").strip(",")
+                        if lane_value in (2, 3) and right_turn not in movements:
+                            if right_turn in phases_df.at[idx, "RTOR"]:
+                                phases_df.at[idx, "RTOR"] = phases_df.at[idx, "RTOR"].replace(right_turn, "").strip(",")
                             turns_to_add.append(right_turn)
-
-                        elif lane_value == "3":
-                            if movement not in movements:
-                                turns_to_add.append(movement)
-                            if right_turn not in movements:
-                                if right_turn in Synchro[intid]["Phases"]["RTOR"].at[idx]:
-                                    Synchro[intid]["Phases"]["RTOR"].at[idx] = Synchro[intid]["Phases"]["RTOR"].at[idx].replace(right_turn, "").strip(",")
-                                turns_to_add.append(right_turn)
                         if turns_to_add:
-                            Synchro[intid]["Phases"]["Protected"].at[idx] = ",".join(movements + turns_to_add)
-                    Synchro[intid]["Phases"]["RTOR"].at[idx] = Synchro[intid]["Phases"]["RTOR"].at[idx].replace(",,", ",").strip(",")
+                            phases_df.at[idx, "Protected"] = ",".join(movements + turns_to_add)
+                    phases_df.at[idx, "RTOR"] = phases_df.at[idx, "RTOR"].replace(",,", ",").strip(",")
 
     with open(path_net, 'r', encoding="utf-8") as file:
         NetworkData = file.read()

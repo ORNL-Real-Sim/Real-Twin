@@ -13,10 +13,11 @@
 """ Sample script to demonstrate the usage of RealTwin for general traffic simulation."""
 
 import os
+import sys
 from pathlib import Path
 # change the  current working directory to the location of RealTwin package.
 os.chdir(Path(__file__).parents[1].absolute())
-
+sys.path.append(str(Path(__file__).parents[1].absolute()))
 
 import realtwin as rt
 
@@ -36,7 +37,7 @@ if __name__ == '__main__':
     twin.env_setup()
 
     # Step 4: load/generate network, then prepare Matchup Table
-    twin.generate_inputs()
+    # twin.generate_inputs()
 
     # BEFORE step 5, there are three steps to be performed:
     # 1. Prepare Traffic Demand and save it to Traffic Folder in input directory
@@ -49,18 +50,19 @@ if __name__ == '__main__':
     #  fill in column L of this row with 4, then save and close.
 
     # Step 5: generate abstract scenario
-    twin.generate_abstract_scenario()
+    # twin.generate_abstract_scenario()
 
     # AFTER step 5, Double-check the Matchup Table in the input directory to ensure it is correct.
 
     # Step 6: generate scenarios
-    twin.generate_concrete_scenario()
+    # twin.generate_concrete_scenario()
 
     # Step 7: simulate the scenario
-    twin.prepare_simulation()
+    # twin.prepare_simulation()
 
 #     # Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search
-#     twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"})
+    sel_behavior_routes = [("Subpath1", 2071, 2092, 60)]
+    twin.calibrate(sel_algo={"turn_inflow": "GA", "behavior": "GA"}, sel_behavior_routes=sel_behavior_routes)
 #
 #     # Step 9 (ongoing): post-process the simulation results
 #     twin.post_process()  # keyword arguments can be passed to specify the post-processing options

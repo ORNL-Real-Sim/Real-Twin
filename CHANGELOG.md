@@ -6,6 +6,16 @@ ORNL’s Real-Twin project is a streamlined scenario generation tool that automa
 
 ## Change Log
 
+### 2026-09-08
+
+* Document editable installation in the debugger's Python environment to resolve `ModuleNotFoundError: No module named 'realtwin'` when launching tutorials from a cloned checkout. Explain why the tutorial's `os.chdir(...)` does not update the import search path. Files: `README.md`, `CHANGELOG.md`.
+* Support pandas 3 in SUMO signal preparation by retaining mixed lane values and updating phase DataFrames directly under Copy-on-Write. Normalize shared-lane comparisons so protected turns and right-turn-on-red states are updated consistently.
+* Preserve fractional calibration ratios and inflows with explicit floating-point columns. Convert traffic counts before filling missing values and replace the removed fillna(method=...) API.
+* Align runtime and documentation dependencies for pandas 3 on Python 3.11+, retaining pandas 2 support on Python 3.10.
+* Files: SUMO signal preparation, abstract-scenario traffic loading, both SUMO calibration utilities, runtime/documentation requirements, README, and two new regression-test modules.
+* Validation on Python 3.12.9 / pandas 3.0.3: 17 new regression cases passed; the broader local suite completed 165 tests successfully with one existing collection error for the missing executable-discovery module. Web-download tests were excluded. New tests pass Ruff formatting and lint checks; modified production modules introduce no new Ruff findings relative to HEAD, and focused whitespace checks pass.
+* Integration: prepare_simulation() generated valid network, flow, turn, route, and configuration XML using a temporary copy of example2; a one-second SUMO smoke test exited successfully. Original input and network hashes were unchanged. Full calibration runs, Aimsun/VISSIM execution, and a Python 3.10 runtime were not exercised.
+
 ### 2026-08-25
 
 * Stream the Aimsun version-check command output to the terminal while retaining version detection.

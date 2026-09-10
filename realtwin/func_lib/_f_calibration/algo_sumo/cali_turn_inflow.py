@@ -21,7 +21,7 @@ import warnings
 from mealpy import FloatVar, SA, GA, TS
 try:
     from realtwin.func_lib._f_calibration.algo_sumo.util_cali_turn_inflow import (
-        update_turn_flow_from_solution,
+        update_turn_inflow_from_solution,
         run_SUMO_create_EdgeData,
         run_jtrrouter_to_create_rou_xml,
         result_analysis_on_EdgeData,
@@ -31,7 +31,7 @@ try:
         generate_turn_summary,)
 except ImportError:
     from util_cali_turn_inflow import (
-        update_turn_flow_from_solution,
+        update_turn_inflow_from_solution,
         run_SUMO_create_EdgeData,
         run_jtrrouter_to_create_rou_xml,
         result_analysis_on_EdgeData,
@@ -57,7 +57,7 @@ else:
 rng = np.random.default_rng(seed=812)
 
 
-def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = None, **kwargs) -> float:
+def fitness_func_turn_inflow(solution: list | np.ndarray, scenario_config: dict | None = None, **kwargs) -> float:
     """ Objective function for SUMO calibration, Run a single calibration iteration to get the best solution
 
     Args:
@@ -91,7 +91,7 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
     solution = np.clip(solution, 0, None)
 
     # update turn and flow
-    df_turn, df_inflow = update_turn_flow_from_solution(solution,
+    df_turn, df_inflow = update_turn_inflow_from_solution(solution,
                                                         TurnDf_Calibration,
                                                         TurnToCalibrate,
                                                         InflowDf_Calibration,
@@ -99,7 +99,7 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
                                                         calibration_interval,
                                                         demand_interval)
 
-    # update rou.xml from updated turn and flow in route and turn_flow folders
+    # update rou.xml from updated turn and flow in route and turn_inflow folders
     run_jtrrouter_to_create_rou_xml(network_name,
                                     path_net,
                                     df_turn,
@@ -146,7 +146,7 @@ class TurnInflowCali:
 
     """
 
-    def __init__(self, scenario_config: dict = None, turn_inflow_config: dict = None, verbose: bool = True):
+    def __init__(self, scenario_config: dict | None = None, turn_inflow_config: dict | None = None, verbose: bool = True, **kwargs):
         """Initialize the TurnInflowCalib class with scenario and turn inflow configurations."""
 
         self.scenario_config = scenario_config
@@ -190,8 +190,11 @@ class TurnInflowCali:
         n_turn_variable = self.scenario_config.get("N_TurnVariable")
         max_inflow = self.scenario_config.get("max_inflow", 200)  # max inflow for the inflow variables
 
+        # fitness function for the optimization, default is fitness_func_turn_inflow
+        self.fitness_func = fitness_func_turn_inflow if kwargs.get("fitness_func") is None else kwargs.get("fitness_func")
+
         self.problem_dict = {
-            "obj_func": partial(fitness_func_turn_flow, scenario_config=self.scenario_config),
+            "obj_func": partial(self.fitness_func, scenario_config=self.scenario_config),
             "bounds": FloatVar(lb=[0] * n_variable, ub=[1] * n_turn_variable + [max_inflow] * n_inflow_variable),
             "minmax": "min",  # maximize or minimize
             "log_to": "console",
@@ -342,12 +345,11 @@ class TurnInflowCali:
                                    mutation=mutation, **kwargs)
 
         # solve the problem
-        if epoch > self.term_dict["max_epoch"]:
-            self.term_dict["max_epoch"] = epoch
+        self.term_dict["max_epoch"] = max(self.term_dict["max_epoch"], epoch)
         g_best = model_ga.solve(self.problem_dict, termination=self.term_dict)
 
         # update files with the best solution
-        fitness_func_turn_flow(g_best.solution, scenario_config=self.scenario_config)
+        fitness_func_turn_inflow(g_best.solution, scenario_config=self.scenario_config)
 
         return (g_best, model_ga)
 
@@ -420,7 +422,7 @@ class TurnInflowCali:
         g_best = model_sa.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func_turn_flow(g_best.solution, scenario_config=self.scenario_config)
+        fitness_func_turn_inflow(g_best.solution, scenario_config=self.scenario_config)
 
         return (g_best, model_sa)
 
@@ -471,7 +473,7 @@ class TurnInflowCali:
         g_best = model_ts.solve(self.problem_dict, termination=self.term_dict, starting_solutions=init_vals)
 
         # update files with the best solution
-        fitness_func_turn_flow(g_best.solution, scenario_config=self.scenario_config)
+        fitness_func_turn_inflow(g_best.solution, scenario_config=self.scenario_config)
 
         return (g_best, model_ts)
 
