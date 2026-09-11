@@ -123,6 +123,11 @@ class VissimLink:
             Chattanooga the two-lane left bay at link 33 comes back as lanes
             2 and 3 while the shared through/right uses lane 1, and nothing had
             to be guessed about which end Vissim counts from.
+        from_pos: For connectors, how far along the upstream link the connector
+            leaves it.  This is the stop line, not the end of the link: on
+            Chattanooga the connectors leave about 0.2 m before the link ends,
+            so a signal head at the link's end sits *downstream* of the diverge
+            and every turning vehicle leaves before reaching it.
     """
 
     no: int
@@ -137,6 +142,7 @@ class VissimLink:
     orig_name: str = ""
     junction_key: str | None = None
     from_lanes: list[int] = field(default_factory=list)
+    from_pos: float | None = None
 
     @property
     def is_internal(self) -> bool:
@@ -576,6 +582,10 @@ def read_links(session, road_junction: dict[str, str] | None = None,
             link.from_link = _opt_int(_safe_attr(obj, "FromLink\\No"))
             link.to_link = _opt_int(_safe_attr(obj, "ToLink\\No"))
             link.from_lanes = read_connector_from_lanes(obj)
+            # ``FromPos``, not ``FromLink\\Pos``: the latter parses but raises,
+            # which silently left the column empty on a fresh import and put
+            # every signal head back at the end of its link.
+            link.from_pos = _opt_float(_safe_attr(obj, "FromPos"))
 
     return links
 
@@ -649,6 +659,7 @@ def read_links_csv(path: str | Path,
             junction_key=_junction_key(road_id, orig_name, road_junction),
             from_lanes=[int(x) for x in str(getattr(row, "FromLanes", "")).split()
                         if x.isdigit()],
+            from_pos=_opt_float(getattr(row, "FromPos", None)),
         )
     return links
 
@@ -1157,6 +1168,15 @@ def _safe_attr(obj, name: str):
         return obj.AttValue(name)
     except Exception:  # noqa: BLE001 - attribute not present on this object
         return None
+
+
+def _opt_float(value) -> float | None:
+    """Coerce to ``float``, mapping unparseable values and blanks to ``None``."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return None if number != number else number   # NaN from an empty CSV cell
 
 
 def _opt_int(value) -> int | None:

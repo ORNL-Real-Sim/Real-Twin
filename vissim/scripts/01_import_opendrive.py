@@ -197,6 +197,9 @@ def main(argv: list[str] | None = None) -> int:
         # stages can put a detector on the lanes that serve a movement without
         # a live session.
         "FromLanes": " ".join(str(x) for x in ln.from_lanes),
+        # Where the connector leaves its upstream link -- the stop line, which
+        # is not the end of the link: the signal head has to go upstream of it.
+        "FromPos": "" if ln.from_pos is None else round(ln.from_pos, 3),
     } for ln in sorted(links.values(), key=lambda x: x.no)]
     links_csv = outdir / f"{args.name}_links.csv"
     pd.DataFrame(link_rows).to_csv(links_csv, index=False)

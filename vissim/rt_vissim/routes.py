@@ -45,6 +45,16 @@ ROUTE_END_OFFSET = 2.0
 #: distributions cannot be read.  Only sets the minimum decision gap.
 FALLBACK_MAX_SPEED_KMH = 120.0
 
+#: Relative flow given to an ordinary movement on an approach with no counts.
+#: Vissim ignores a routing decision whose flows are *all* zero -- it reports
+#: "the relative volumes of all routes are zero.  The decision has no effect on
+#: the simulation" -- and vehicles there are then left unrouted, to be
+#: distributed however Vissim sees fit.  Measured at Chattanooga's junction 13,
+#: that sent 25 vehicles round the U-turn and none through.  Giving the ordinary
+#: movements an equal share makes the decision take effect, and the U-turn keeps
+#: its zero.
+UNCOUNTED_FLOW = 1.0
+
 
 def minimum_gap(max_speed_kmh: float, sim_resolution: int) -> float:
     """Return the smallest workable distance between a route end and a decision.
@@ -210,6 +220,7 @@ def build_integrated_decisions(movements: pd.DataFrame, turn_counts: pd.DataFram
     decisions: list[RoutingDecision] = []
     uncounted_approaches = 0
     single_route = []
+    defaulted: set = set()
 
     for (junction_id, from_link), group in movements.groupby(
             ["JunctionID_OpenDrive", "FromLinkNo_Vissim"], sort=True):
@@ -229,10 +240,25 @@ def build_integrated_decisions(movements: pd.DataFrame, turn_counts: pd.DataFram
         label = names.get(str(junction_id), f"Junction {junction_id}")
         has_any = False
 
+        turns = {int(r.ToLinkNo_Vissim): str(r.Turn)
+                 for r in group.itertuples(index=False)}
+
         for start, end in intervals:
             routes = {e: counted.get((int(from_link), e, start), 0.0) for e in exits}
             if sum(routes.values()) > 0:
                 has_any = True
+            else:
+                # No counts anywhere on this approach for this interval.  Spread
+                # the traffic evenly over the ordinary movements rather than
+                # leaving every route at zero, which would switch the decision
+                # off and let Vissim route these vehicles itself -- into the
+                # U-turn, as it turns out.  U-turns stay at zero so nothing is
+                # sent round one by default.
+                ordinary = [e for e in exits if turns.get(e) != "Uturn"]
+                if ordinary:
+                    routes = {e: (UNCOUNTED_FLOW if e in ordinary else 0.0)
+                              for e in exits}
+                    defaulted.add((junction_id, int(from_link)))
             decisions.append(RoutingDecision(
                 junction_id=junction_id,
                 from_link_no=int(from_link),
@@ -250,11 +276,17 @@ def build_integrated_decisions(movements: pd.DataFrame, turn_counts: pd.DataFram
             f"{len(single_route)} approaches have a single exit and were given no "
             f"routing decision ({where}); vehicles have no choice to make there, "
             "and a decision would have hidden the next one from them.")
+    if defaulted:
+        where = ", ".join(f"J{j} link {f}" for j, f in sorted(defaulted, key=str))
+        warnings.append(
+            f"{len(defaulted)} approaches have no counts, so their ordinary "
+            f"movements were given an equal share and their U-turns none "
+            f"({where}). Left at zero the decision would have had no effect at "
+            "all, and Vissim would have distributed those vehicles itself.")
     if uncounted_approaches:
         warnings.append(
             f"{uncounted_approaches} approaches have no counts in any interval; "
-            "their routes are written at relative flow 0 and need a number before "
-            "vehicles will use them.")
+            "their turn split is an equal share, not a measurement.")
     return decisions, warnings
 
 

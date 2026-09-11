@@ -9,6 +9,122 @@ Developed against **PTV Vissim 2026** (COM ProgID `VISSIM.Vissim-64.2600`).
 
 ---
 
+## Running it end to end
+
+Nothing here needs the SUMO pipeline to have been run. The inputs are a SUMO
+network file and the two data folders; the Vissim MatchupTable is generated
+here, and the SUMO one is only ever used for **comparison**.
+
+### What you need
+
+| | |
+|---|---|
+| PTV Vissim 2026, licensed | the COM API is used for every write |
+| SUMO's `netconvert` on `PATH` | stage 1 only, to make the OpenDRIVE file |
+| Python 3.11+ | `pandas`, `openpyxl`, `pywin32` |
+
+Inputs:
+
+```
+<name>.net.xml        RealTwin SUMO network
+Traffic/              GridSmart turning-movement counts (.xls, one per intersection)
+Control/              Synchro UTDF export (.csv, one file for the corridor)
+```
+
+### Step 1 — import the network
+
+```bash
+python vissim/scripts/01_import_opendrive.py     --net datasets/example1/updated_net/chatt.net.xml     --outdir vissim/work/mynet --name chatt
+```
+
+`netconvert` writes the `.xodr`, Vissim imports it, and the link table is read
+back out. Writes `chatt.inpx`, `chatt_links.csv`, `chatt_movements.csv`,
+`chatt_junctions.csv`.
+
+Run this **first even if you already have an `.inpx`**: `chatt_links.csv`
+carries the `FromPos` column, and that is what places signal heads upstream of
+the stop line in stage 4.
+
+### Step 2 — MatchupTable, and the one manual step
+
+```bash
+python vissim/scripts/02_matchup_table.py     --movements vissim/work/mynet/chatt_movements.csv     --outdir vissim/work/mynet
+```
+
+This derives the junctions, approaches, bearings and turns on its own, then
+stops and asks for the only thing it cannot know — **which data file belongs to
+which junction**. Open `MatchupTable.xlsx` and fill three columns for each
+signalised junction:
+
+| column | what to put |
+|---|---|
+| `File_GridSmart` | the GridSmart workbook for that intersection |
+| `File_Synchro` | the Synchro UTDF file |
+| `IntersectionID_Synchro` | that intersection's Synchro `INTID` |
+
+This is the same manual step the SUMO pipeline has —
+`rt_matchup_table_generation.py` writes those three columns blank too, which is
+why the repository carries a hand-filled `MatchupTable_updated.xlsx`. On
+Chattanooga it is **13 cells across 6 signalised junctions**.
+
+Re-run the same command afterwards and everything else fills in: on Chattanooga
+80 of 104 `Turn_GridSmart` and `Turn_Synchro` codes, plus a flow-continuity
+check between adjacent junctions. A re-run keeps your edits unless you pass
+`--regenerate`.
+
+*Shortcut:* `--seed-from <an existing MatchupTable>` copies those 13 cells from
+a table that already has them, including the SUMO one. Convenience only — the
+pipeline does not need it.
+
+### Step 3 — demand
+
+```bash
+python vissim/scripts/03_write_demand.py     --inpx vissim/work/mynet/chatt.inpx     --matchup vissim/work/mynet/MatchupTable.xlsx     --links vissim/work/mynet/chatt_links.csv     --movements vissim/work/mynet/chatt_movements.csv     --start 08:00 --end 09:00
+```
+
+Turning-movement counts become vehicle inputs on the entry links and one static
+routing decision per approach, carrying the counts as relative flows. Writes
+`chatt_demand.inpx`.
+
+### Step 4 — signal control
+
+```bash
+python vissim/scripts/04_write_signals.py     --inpx vissim/work/mynet/chatt_demand.inpx     --matchup vissim/work/mynet/MatchupTable.xlsx     --links vissim/work/mynet/chatt_links.csv     --movements vissim/work/mynet/chatt_movements.csv     --strict
+```
+
+Synchro timings become one `.prbc` Ring Barrier Controller per junction, then
+signal heads, detectors, conflict areas and right-turn-on-red stop signs are
+written over COM. Writes `chatt_demand_signals.inpx`.
+
+`--strict` refuses to write if any lane of a signalised approach would be left
+without a signal head. Use it: a lane with no head crosses the junction
+unsignalised, and nothing in a phase audit will notice.
+
+### What you should see on Chattanooga
+
+Every number below is checked by the pipeline itself, so a fresh run that
+differs means something is wrong:
+
+```
+stage 1   441 links (186 links, 255 connectors), 10 junctions
+stage 2   104 movements, 10 junctions, 34 approaches
+stage 3   16 vehicle inputs, 30 routing decisions, 100 routes, 4,061 vehicles
+stage 4   6 controllers, 32 signal groups, 69 signal heads, 68 detectors,
+          24 right-turn-on-red stop signs
+          Coverage: 69/69 lanes carry exactly one signal head,
+                    69/69 of them upstream of the stop line
+```
+
+### Tests
+
+```bash
+python -m pytest vissim/tests/ -q        # 117 tests, no Vissim licence needed
+```
+
+---
+
+---
+
 ## Why standalone, and not chained off the SUMO IDs
 
 The SUMO MatchupTable's `FromRoadID_OpenDrive` / `ToRoadID_OpenDrive` columns are
@@ -103,11 +219,16 @@ the derived movement table with RealTwin's hand-curated
 | Junction IDs | `2,3,4,7,8,9,10,11,12,18` | `2,3,4,7,8,9,10,11,12,18` |
 | Movements per junction | `4,5,7,8,8,8,16,16,16,16` | `4,5,7,8,8,8,16,16,16,16` |
 | Legs per junction | `3,3,3,3,3,3,4,4,4,4` | `3,3,3,3,3,3,4,4,4,4` |
-| Turn mix | R28 T28 L26 U22 | R28 T30 L24 U22 |
+| Turn mix | R28 T30 L24 U22 | R28 T30 L24 U22 |
 
-The structure matches exactly. Two movements are labelled `left` where SUMO says
-`thru` — skewed approaches near the 20° classification threshold. As with the
-SUMO flow, the MatchupTable is the place to correct them by hand.
+The tables agree on **all 104 movements, 34 approaches and 10 junctions**, column
+for column.  Approach bearings, derived independently on each side, agree to
+0.073° on average.
+
+The last two turn labels only agreed once SUMO's own rule was ported from
+`NBNode::getDirection`: a 44° straight band **plus** a check for whether another
+movement off the same approach is straighter.  A fixed angular threshold cannot
+express that second part, and mislabelled two skewed approaches.
 
 ---
 
@@ -116,21 +237,28 @@ SUMO flow, the MatchupTable is the place to correct them by hand.
 ```
 vissim/
   rt_vissim/
-    com.py          COM session, OpenDRIVE import, collection reads
-    network.py      links -> junctions, bearings, turn movements
-    ir.py           simulator-agnostic scenario IR (vehicle inputs, routes, signals)
-    matchup.py      generate / read the Vissim MatchupTable      [done]
-    demand.py       GridSmart turn counts -> IR                  [done]
-    signal.py       Synchro UTDF -> IR                           [todo]
-    rbc.py          IR -> .prbc Ring Barrier Controller files    [todo]
-    writer.py       IR -> Vissim, over COM                       [todo]
-    pipeline.py     orchestrator                                 [todo]
+    com.py          COM session, OpenDRIVE import, collection reads    [done]
+    network.py      links -> junctions, bearings, turn movements       [done]
+    ir.py           simulator-agnostic scenario IR                     [done]
+    matchup.py      generate / read the Vissim MatchupTable            [done]
+    demand.py       GridSmart turn counts -> IR                        [done]
+    routes.py       vehicle inputs and static routing decisions        [done]
+    signal.py       Synchro UTDF -> IR                                 [done]
+    rbc.py          IR -> .prbc Ring Barrier Controller files          [done]
+    heads.py        per-lane signal heads, detectors, RTOR             [done]
+    conflicts.py    conflict-area right of way                         [done]
+    writer.py       IR -> Vissim, over COM                             [done]
+    pipeline.py     orchestrator                                       [not built]
   scripts/
-    01_import_opendrive.py    stage 1: netconvert + import + inspect
-  tests/                                                          [todo]
+    01_import_opendrive.py    netconvert + import + link/movement CSVs
+    02_matchup_table.py       MatchupTable from the link table
+    03_write_demand.py        vehicle inputs + routing decisions
+    04_write_signals.py       controllers, heads, detectors, conflicts, RTOR
+  tests/                      117 tests, no Vissim licence needed
   work/                       generated artefacts (gitignored)
   VISSIM_previous/            prior ORNL VISSIM work, kept for reference
 ```
+
 
 `rt_vissim` is deliberately split so that only `com.py` and `writer.py` need
 Vissim. Everything else is plain pandas/JSON and is unit-testable without a
@@ -180,25 +308,31 @@ This preserves actuation, which a fixed-time conversion would throw away.
 
 ---
 
-## Running it
+## Artefacts and options
 
-```bash
-# from the repository root, with the venv active
-.venv/Scripts/python.exe vissim/scripts/01_import_opendrive.py --open-gui
-```
+Everything lands in `vissim/work/<scenario>/`:
 
-Options: `--net` (source SUMO network), `--name`, `--outdir`, `--progid`
-(pin a Vissim version), `--skip-netconvert`, `--visible`, `--open-gui`.
+| file | written by | what it is |
+|---|---|---|
+| `<name>.xodr` | stage 1 | OpenDRIVE, georeferenced to true UTM |
+| `<name>.inpx` | stage 1 | the imported Vissim network |
+| `<name>_links.csv` | stage 1 | every link and connector, incl. `FromLanes` and `FromPos` |
+| `<name>_movements.csv` | stage 1 | junctions, bearings, turn movements |
+| `<name>_junctions.csv` | stage 1 | junction membership and coordinates |
+| `MatchupTable.xlsx` | stage 2 | the join between network, counts and signals |
+| `<name>_demand.inpx` | stage 3 | network + vehicle inputs + routing decisions |
+| `rbc_timings_<INTID>.prbc` | stage 4 | one Ring Barrier Controller per junction |
+| `<name>_demand_signals.inpx` | stage 4 | the finished model |
 
-Outputs into `vissim/work/<scenario>/`:
-
-- `<name>.xodr` — OpenDRIVE, georeferenced to true UTM
-- `<name>.inpx` — the imported Vissim network
-- `<name>_links.csv` — every link/connector with parsed names and geometry
-- `<name>_movements.csv` — junctions, bearings and turn movements
+Useful flags: `--progid` pins a Vissim version, `--visible` shows the GUI,
+`--skip-netconvert` reuses an existing `.xodr`, `--no-conflicts` / `--no-rtor` /
+`--no-heads` skip parts of stage 4.
 
 A Vissim instance started over COM terminates when Python releases it, so
 `--open-gui` launches the saved `.inpx` in a standalone GUI instead.
+
+Do not run two Vissim COM sessions at once: `Dispatch` attaches to the existing
+instance, and when one script exits it takes the other's instance down.
 
 ---
 
@@ -224,19 +358,15 @@ stop control.
 
 ## Open questions
 
-- **Signal heads.** Placement needs a lane-level mapping from movement to
-  approach lane. Synchro gives lane groups, not lanes; the lane assignment for
-  shared lanes needs a rule.
-- **Detectors.** RBC actuation needs vehicle detectors. Synchro carries
-  `DetectSize1`/`FirstDetect`; `.prbc` has an empty `VehicleDetectors` list to
-  populate, and detectors also have to be created on the Vissim links.
-- **Turn threshold.** The 20° thru/turn boundary mislabels two skewed movements
-  in Chattanooga relative to SUMO — one each at junctions 8 and 9, both a `left`
-  where SUMO says `thru`. Because the code is derived per row, each duplicates
-  another code on its approach, so `update_matchup_table` flags those junctions
-  `Need calibration? = Y`. This is the only gap left in the auto-fill: 102 of 104
-  `Turn_GridSmart` and `Turn_Synchro` codes match SUMO exactly. Worth checking
-  against another network before tuning the threshold.
+- **Detector position.** Synchro's `DetectPos1` is ignored: two approaches ask
+  for a 6 ft detector 224 ft upstream (an advance detector) and both are placed
+  at the stop bar instead, raised to a car length.  Fine for presence detection,
+  wrong if advance detection matters.
+- **Counts.** Junctions 5, 7, 13 and 15 have no GridSmart data, so four entry
+  links carry zero volume and six movements are starved — including both of
+  junction 4's throughs (1,032 and 958 counted, 0 simulated). That is a data
+  gap, not a code gap.
+- **Calibration.** `RealTwin.Calibration.Vissim` is still a stub.
 - **Right turn on red.** Not a port of the SUMO path. SUMO has no RTOR concept,
   so RealTwin folds Synchro's `Allow RTOR` into the `tlLogic` state string as a
   permissive `s`. Vissim models it structurally instead — a conflict area or

@@ -39,8 +39,9 @@ from rt_vissim.com import VissimSession  # noqa: E402
 from rt_vissim.conflicts import (degenerate_uturn_paths,  # noqa: E402
                                  link_turns, plan_conflicts)
 from rt_vissim.conflicts import summarise as summarise_conflicts  # noqa: E402
-from rt_vissim.heads import (build_detectors, build_signal_heads,  # noqa: E402
-                             rtor_allowed, summarise as summarise_placement)
+from rt_vissim.heads import (build_detectors, build_lane_control,  # noqa: E402
+                             build_signal_heads, check_coverage, rtor_allowed,
+                             summarise as summarise_placement)
 from rt_vissim.matchup import MatchupTable  # noqa: E402
 from rt_vissim.network import read_links_csv  # noqa: E402
 from rt_vissim.rbc import write_controllers  # noqa: E402
@@ -87,6 +88,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="Skip the right-turn-on-red stop signs")
     parser.add_argument("--no-heads", action="store_true",
                         help="Write the controllers only, skip heads and detectors")
+    parser.add_argument("--strict", action="store_true",
+                        help="Stop before writing if any lane of a signalised "
+                             "approach would be left without a signal head")
     parser.add_argument("--keep-opendrive-signals", action="store_true",
                         help="Keep the signal controllers and heads Vissim built "
                              "from the OpenDRIVE file instead of replacing them "
@@ -149,13 +153,28 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  :WARNING: {warning}")
     print(f"  :Wrote {len(written)} .prbc controller files into {prbc_dir}")
 
-    heads, detectors = [], []
+    heads, detectors, controls = [], [], []
     if not args.no_heads:
+        # Heads, detectors and the right-turn-on-red signs all come off one
+        # lane table, so none of them can cover a lane the others miss.
+        controls, _ = build_lane_control(matchup, links, synchro, plans)
         heads, head_warnings = build_signal_heads(matchup, links, synchro, plans)
         detectors, det_warnings = build_detectors(matchup, links, synchro, plans)
         print(f"  :Placement: {summarise_placement(heads, detectors)}")
         for warning in head_warnings + det_warnings:
             print(f"  :WARNING: {warning}")
+
+        # Counting heads cannot show a head that was never placed, so check the
+        # other way round: every connector and lane the network has against the
+        # ones a head reached.
+        gaps, coverage = check_coverage(links, heads, detectors)
+        print(f"  :Coverage: {coverage}")
+        for gap in gaps:
+            print(f"  :COVERAGE GAP: {gap}")
+        if gaps and args.strict:
+            print(f"  :{len(gaps)} coverage gaps and --strict was given; "
+                  "nothing written.")
+            return 1
 
     with VissimSession(args.progid, visible=args.visible) as session:
         print(f"  :Loading {inpx_path.name} ...")
@@ -199,9 +218,9 @@ def main(argv: list[str] | None = None) -> int:
             for warning in warnings:
                 print(f"  :{warning}")
 
-        if heads and not args.no_rtor:
+        if controls and not args.no_rtor:
             allowed = rtor_allowed(matchup, synchro, plans)
-            made, warnings = write_rtor_stop_signs(session, heads, allowed)
+            made, warnings = write_rtor_stop_signs(session, controls, allowed)
             for warning in warnings:
                 print(f"  :{warning}")
             print(f"  :Created {made} right-turn-on-red stop signs")

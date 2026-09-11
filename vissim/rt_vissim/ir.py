@@ -175,28 +175,82 @@ class SignalPlan:
 
 
 @dataclass
-class SignalHead:
-    """A signal head governing one movement.
+class LaneControl:
+    """What the signal does to one lane of one approach.
 
-    Placed on the movement's **connector** rather than on a lane of the
-    approach.  A connector carries exactly one movement, so the signal group is
-    unambiguous and no assumption is needed about which end VISSIM numbers lanes
-    from; the manual uses the same technique to give a turn its own signal
-    group.  Connectors here are short -- a median of 1.6 m on Chattanooga -- so
-    a head at the connector's start sits at the stop line.
+    Every lane of a signalised approach appears here exactly once, whatever
+    mixture of movements it serves.  Heads and detectors are both derived from
+    this, so neither can cover a lane the other misses -- they used to resolve
+    connectors independently, and Chattanooga's link 17 lane 2 lost its head
+    *and* its detector that way.
+
+    Attributes:
+        sc_no: Signal controller number.
+        sg_no: Signal group the lane runs on.
+        junction_id: Derived junction ID (matches ``JunctionID_OpenDrive``).
+        link_no: VISSIM link number of the approach.
+        lane: Lane number on that approach, counted as VISSIM counts it.
+        scnd_sg_no: "Or signal group": a second group that also shows green.
+        movements: Synchro movement codes served from this lane, e.g.
+            ``("SBT", "SBL")`` for a shared through/left lane.
+        connectors: The connectors those movements leave on.  A movement served
+            from two lanes has one connector per lane, so this is not one entry
+            per movement.
+        turns: RealTwin turn labels for ``movements``.
+        permissive_only: Every movement here is permitted but never protected.
+        mixed: The movements do not share one signal group, so a single head on
+            the lane cannot express them and they need heads on their own
+            connectors instead.
+    """
+
+    sc_no: int
+    sg_no: int
+    junction_id: str | int
+    link_no: int
+    lane: int
+    scnd_sg_no: int | None = None
+    movements: tuple[str, ...] = ()
+    connectors: tuple[int, ...] = ()
+    turns: tuple[str, ...] = ()
+    permissive_only: bool = False
+    mixed: bool = False
+
+
+@dataclass
+class SignalHead:
+    """One signal head, on one lane, at the stop line.
+
+    The manual prefers the head on the **link**: "Combined right turning and
+    straight lanes ... it would be better to place them on the link rather than
+    on the connector" (p. 634).  That is what a driver sees -- one lane, one
+    indication -- and it avoids the doubled heads that appear when two
+    connectors leave overlapping sets of lanes, as Chattanooga's link 35 does
+    with its triple right turn.
+
+    The exception the manual gives (p. 653) is a turn that needs a signal group
+    of its own while sharing a lane with other traffic: that head "must be
+    located on a connector not used by vehicles traveling straight ahead".
+    ``connector_no`` is set in that case and ``lane`` is ``None``, meaning every
+    lane of the connector.
+
+    One record is one VISSIM signal head, so the count here is the count in the
+    network.
 
     Attributes:
         sc_no: Signal controller number.
         sg_no: Signal group number (the protected phase where there is one).
         junction_id: Derived junction ID (matches ``JunctionID_OpenDrive``).
         from_link_no: VISSIM link number of the approach.
-        to_link_no: VISSIM link number of the receiving link (identifies the turn).
-        connector_no: VISSIM link number of the connector the head sits on.
-        pos: Distance in metres from the start of the connector.
+        link_no: Link the head sits on -- the approach, or the connector when
+            ``connector_no`` is set.
+        lane: Lane on ``link_no``; ``None`` means every lane of a connector.
+        pos: Distance in metres from the start of ``link_no``.
         scnd_sg_no: "Or signal group": a second group that also turns this head
             green.  Set for a protected-permissive turn, where Synchro gives
             both a ``Phase1`` and a ``PermPhase1``.
-        movement: Synchro movement code, e.g. ``"NBL"``.
+        connector_no: Set only for the connector exception above.
+        movement: Synchro movement codes the head governs, joined with ``/``
+            when the lane is shared, e.g. ``"SBT/SBL"``.
         turn: RealTwin turn label: ``left`` / ``thru`` / ``right`` / ``Uturn``.
         permissive_only: The turn is permitted but never protected, so it runs
             on the opposing through phase and has to yield.
@@ -206,7 +260,9 @@ class SignalHead:
     sg_no: int
     junction_id: str | int
     from_link_no: int
-    to_link_no: int
+    link_no: int = 0
+    lane: int | None = None
+    to_link_no: int = 0
     connector_no: int = 0
     pos: float = 0.0
     scnd_sg_no: int | None = None

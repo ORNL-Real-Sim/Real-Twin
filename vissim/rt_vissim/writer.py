@@ -397,7 +397,13 @@ def write_signal_controllers(session, plans, prbc_dir) -> tuple[int, list[str]]:
 
 
 def write_signal_heads(session, heads) -> tuple[int, list[str]]:
-    """Place the signal heads, each on its movement's connector.
+    """Place the signal heads, one per lane at the stop line.
+
+    One record is one head, so the number created here is the number of records
+    passed in.  Heads normally sit on the approach link, which the manual
+    prefers for a lane carrying several movements (p. 634); a head with
+    ``connector_no`` set and no lane is the exception the manual reserves for a
+    turn with its own signal group, and covers every lane of that connector.
 
     Args:
         session: A started :class:`~rt_vissim.com.VissimSession`.
@@ -410,22 +416,31 @@ def write_signal_heads(session, heads) -> tuple[int, list[str]]:
     created = both = 0
 
     for head in heads:
+        link_no = head.connector_no or head.link_no or head.from_link_no
         try:
-            connector = session.net.Links.ItemByKey(head.connector_no)
-            lanes = list(connector.Lanes)
-        except Exception:  # noqa: BLE001 - the connector went missing
-            warnings.append(f"Connector {head.connector_no} not found; no signal "
-                            f"head for {head.movement}.")
+            link = session.net.Links.ItemByKey(link_no)
+            lanes = list(link.Lanes)
+        except Exception:  # noqa: BLE001 - the link went missing
+            warnings.append(f"Link {link_no} not found; no signal head for "
+                            f"{head.movement}.")
             continue
 
-        # A connector carries one movement but may carry it on several lanes,
-        # and a head governs a single lane, so each lane needs its own.
-        for lane in lanes:
+        if head.lane is None:
+            chosen = lanes                      # every lane of a connector
+        elif 1 <= int(head.lane) <= len(lanes):
+            chosen = [lanes[int(head.lane) - 1]]
+        else:
+            warnings.append(f"Link {link_no} has {len(lanes)} lanes, so lane "
+                            f"{head.lane} does not exist; no signal head for "
+                            f"{head.movement}.")
+            continue
+
+        for lane in chosen:
             try:
                 obj = session.net.SignalHeads.AddSignalHead(0, lane, head.pos)
             except Exception as exc:  # noqa: BLE001
-                warnings.append(f"Signal head on connector {head.connector_no} "
-                                f"failed: {str(exc)[:70]}")
+                warnings.append(f"Signal head on link {link_no} lane "
+                                f"{head.lane} failed: {str(exc)[:70]}")
                 continue
             obj.SetAttValue("Name", f"{head.movement} (J{head.junction_id})")
             try:
@@ -557,7 +572,7 @@ def write_conflict_areas(session, decisions: dict) -> tuple[int, list[str]]:
     return applied, warnings
 
 
-def write_rtor_stop_signs(session, heads, allowed: dict) -> tuple[int, list[str]]:
+def write_rtor_stop_signs(session, controls, allowed: dict) -> tuple[int, list[str]]:
     """Place a stop sign per right turn that Synchro allows on red.
 
     This is Vissim's own mechanism for right-turn-on-red, from the manual:
@@ -565,14 +580,17 @@ def write_rtor_stop_signs(session, heads, allowed: dict) -> tuple[int, list[str]
     red signal.  In the Green arrow tab, select Only on red, to enable the stop
     sign only when the selected signal group of the selected SC" is red.
 
-    So the sign sits on the right-turn connector, watches that turn's signal
-    group, and only applies while that group shows red.  RealTwin's SUMO path
-    cannot do this -- SUMO has no RTOR concept, so it folds the permission into
-    the ``tlLogic`` state string instead.
+    The sign goes on the right-turn **connector**, not the lane, which is the
+    half of p. 634 that stays connector-based: "the stop sign must be placed on
+    the connector for right turns.  This makes the stop sign only visible for
+    turning vehicles."  It watches that turn's signal group and applies only
+    while the group shows red.  RealTwin's SUMO path cannot do this -- SUMO has
+    no RTOR concept, so it folds the permission into the ``tlLogic`` state
+    string instead.
 
     Args:
         session: A started :class:`~rt_vissim.com.VissimSession`.
-        heads: Output of :func:`rt_vissim.heads.build_signal_heads`.
+        controls: Output of :func:`rt_vissim.heads.build_lane_control`.
         allowed: ``{(junction id, movement code): bool}`` from Synchro's
             ``Allow RTOR``.
 
@@ -581,47 +599,55 @@ def write_rtor_stop_signs(session, heads, allowed: dict) -> tuple[int, list[str]
     """
     warnings: list[str] = []
     created = skipped = 0
+    done: set[int] = set()
 
-    for head in heads:
-        if not str(head.movement).endswith("R"):
-            continue
-        if not allowed.get((str(head.junction_id), head.movement), False):
-            skipped += 1
-            continue
-
-        try:
-            connector = session.net.Links.ItemByKey(head.connector_no)
-            lanes = list(connector.Lanes)
-        except Exception:  # noqa: BLE001
-            warnings.append(f"Connector {head.connector_no} not found; no stop "
-                            f"sign for {head.movement}.")
-            continue
-
-        for lane in lanes:
-            try:
-                sign = session.net.StopSigns.AddStopSign(0, lane, head.pos)
-            except Exception as exc:  # noqa: BLE001
-                warnings.append(f"Stop sign for {head.movement} failed: "
-                                f"{str(exc)[:70]}")
+    # A right turn made from two lanes appears once per lane but is one
+    # connector, so the sign is placed once.
+    for control in controls:
+        for movement, connector_no in zip(control.movements, control.connectors):
+            if not str(movement).endswith("R") or connector_no in done:
                 continue
-            sign.SetAttValue("Name", f"RTOR {head.movement} (J{head.junction_id})")
+            if not allowed.get((str(control.junction_id), movement), False):
+                skipped += 1
+                done.add(connector_no)
+                continue
+            done.add(connector_no)
+
             try:
-                sign.SetAttValue("SG", signal_group_ref(head.sc_no, head.sg_no))
-            except Exception as exc:  # noqa: BLE001 - leave no orphan behind
-                warnings.append(f"Stop sign for {head.movement}: could not bind to "
-                                f"signal group: {str(exc)[:60]}")
+                connector = session.net.Links.ItemByKey(connector_no)
+                lanes = list(connector.Lanes)
+            except Exception:  # noqa: BLE001
+                warnings.append(f"Connector {connector_no} not found; no stop "
+                                f"sign for {movement}.")
+                continue
+
+            for lane in lanes:
                 try:
-                    session.net.StopSigns.RemoveStopSign(sign)
-                except Exception:  # noqa: BLE001
-                    pass
-                continue
-            # OnlyOnRed is not editable: binding the sign to a signal group is
-            # what makes it a turn-on-red sign, and Vissim sets the flag itself.
-            if not sign.AttValue("OnlyOnRed"):
-                warnings.append(f"Stop sign for {head.movement} did not become "
-                                "an only-on-red sign; it would stop traffic on "
-                                "green too.")
-            created += 1
+                    sign = session.net.StopSigns.AddStopSign(0, lane, 0.0)
+                except Exception as exc:  # noqa: BLE001
+                    warnings.append(f"Stop sign for {movement} failed: "
+                                    f"{str(exc)[:70]}")
+                    continue
+                sign.SetAttValue("Name",
+                                 f"RTOR {movement} (J{control.junction_id})")
+                try:
+                    sign.SetAttValue("SG", signal_group_ref(control.sc_no,
+                                                            control.sg_no))
+                except Exception as exc:  # noqa: BLE001 - leave no orphan behind
+                    warnings.append(f"Stop sign for {movement}: could not bind to "
+                                    f"signal group: {str(exc)[:60]}")
+                    try:
+                        session.net.StopSigns.RemoveStopSign(sign)
+                    except Exception:  # noqa: BLE001
+                        pass
+                    continue
+                # OnlyOnRed is not editable: binding the sign to a signal group
+                # is what makes it a turn-on-red sign, and Vissim sets the flag.
+                if not sign.AttValue("OnlyOnRed"):
+                    warnings.append(f"Stop sign for {movement} did not become "
+                                    "an only-on-red sign; it would stop traffic "
+                                    "on green too.")
+                created += 1
 
     if created:
         warnings.append(f"{created} stop signs let a right turn go on red once it "
