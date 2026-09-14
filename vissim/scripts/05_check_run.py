@@ -82,6 +82,7 @@ def summarise(messages: list[str]) -> dict:
     waited: collections.Counter = collections.Counter()
     too_close: list[tuple[str, str, float]] = []
     other: collections.Counter = collections.Counter()
+    other_example: dict[str, str] = {}
 
     for message in messages:
         found = STRANDED.search(message)
@@ -99,11 +100,16 @@ def summarise(messages: list[str]) -> dict:
             too_close.append((found.group(1), found.group(2),
                               float(found.group(3))))
             continue
-        # Anything else, collapsed so a thousand identical lines read as one.
-        other[re.sub(r"\d+(\.\d+)?", "N", message)[:110]] += 1
+        # Anything else, collapsed so a thousand identical lines read as one --
+        # but keep a real example of each, because the numbers are the point:
+        # "SG N of controller N" says nothing about which signal to go and look
+        # at.
+        shape = re.sub(r"\d+(\.\d+)?", "N", message)[:110]
+        other[shape] += 1
+        other_example.setdefault(shape, message)
 
     return {"stranded": stranded, "detail": stranded_detail, "waited": waited,
-            "too_close": too_close, "other": other}
+            "too_close": too_close, "other": other, "example": other_example}
 
 
 def report(found: dict, released: int | None) -> int:
@@ -146,8 +152,11 @@ def report(found: dict, released: int | None) -> int:
 
     if found["other"]:
         print(f"  :{sum(found['other'].values())} other messages:")
-        for message, count in found["other"].most_common(5):
-            print(f"  :   x{count} {message}")
+        for shape, count in found["other"].most_common(5):
+            example = found["example"].get(shape, shape)
+            print(f"  :   x{count} {example}")
+            if count > 1:
+                print(f"  :        (and {count - 1} like it)")
 
     return lost
 
