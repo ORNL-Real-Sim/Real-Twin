@@ -141,6 +141,39 @@ written over COM. Writes `chatt_demand_signals.inpx`.
 without a signal head. Use it: a lane with no head crosses the junction
 unsignalised, and nothing in a phase audit will notice.
 
+### Step 5 — check what the run did
+
+```bash
+python vissim/scripts/05_check_run.py --run 900
+```
+
+Vissim notes every vehicle it removes in an `.err` file beside the network,
+with the link, the route and the reason. Nothing reads it by default, so a
+model can delete a steady share of its traffic and still look healthy — the
+phases cycle, no two greens conflict, and the counts that *do* arrive match.
+Chattanooga was losing 101 vehicles of 4,061 that way and it took watching the
+animation to notice.
+
+Run it after simulating, in the GUI or with `--run`:
+
+```
+:2 routing decisions sit close to their first connector, which is where
+ vehicles get stranded:
+:   decision 20: 3.77 m -- 0416) Shallowford Rd & Lifestyle Way NB (J4)
+:12 vehicles were removed during the run.
+:   4 reached the end of a link and could not enter the connector their route
+     needs. They were in the wrong lane with no room left to move over:
+:      link 43: 4 vehicles, route 20 - 1 into connector 10080
+:   8 waited for a lane change until Vissim removed them.
+```
+
+The two causes need different fixes. **Stranded** means the vehicle was in the
+wrong lane with no room to move — a routing decision too close to the junction
+for the lane change it implies. **Waited** means it knew the route and never
+found a gap, which is congestion or geometry.
+
+`--fail-over N` exits non-zero above N removals, for a scripted run.
+
 ### What you should see on Chattanooga
 
 Every number below is checked by the pipeline itself, so a fresh run that
@@ -295,6 +328,7 @@ vissim/
     02_matchup_table.py       MatchupTable from the link table
     03_write_demand.py        vehicle inputs + routing decisions
     04_write_signals.py       controllers, heads, detectors, conflicts, RTOR
+    05_check_run.py           what Vissim removed during a simulation
   tests/                      117 tests, no Vissim licence needed
   work/                       generated artefacts (gitignored)
   VISSIM_previous/            prior ORNL VISSIM work, kept for reference
@@ -364,6 +398,7 @@ Everything lands in `vissim/work/<scenario>/`:
 | `<name>_demand.inpx` | stage 3 | network + vehicle inputs + routing decisions |
 | `rbc_timings_<INTID>.prbc` | stage 4 | one Ring Barrier Controller per junction |
 | `<name>_demand_signals.inpx` | stage 4 | the finished model |
+| `<name>_demand_signals*.err` | Vissim | every vehicle it removed; read by stage 5 |
 
 Useful flags: `--progid` pins a Vissim version, `--visible` shows the GUI,
 `--skip-netconvert` reuses an existing `.xodr`, `--no-conflicts` / `--no-rtor` /
