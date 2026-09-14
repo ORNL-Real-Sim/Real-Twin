@@ -73,7 +73,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Directory holding the GridSmart files")
     parser.add_argument("--out", default=None,
                         help="Output .inpx (default: <name>_demand.inpx, or "
-                             "<name>_demand_combined.inpx with --combine-routes)")
+                             "<name>_demand_separate.inpx with "
+                             "--no-combine-routes)")
     parser.add_argument("--start", default="07:00", help="Scenario start, HH:MM")
     parser.add_argument("--end", default="09:00", help="Scenario end, HH:MM")
     parser.add_argument("--progid", default=None, help="Pin a Vissim COM ProgID")
@@ -84,10 +85,12 @@ def main(argv: list[str] | None = None) -> int:
                         help="Movement table written by stage 1, for the routing decisions")
     parser.add_argument("--no-routes", action="store_true",
                         help="Write vehicle inputs only, skip routing decisions")
-    parser.add_argument("--combine-routes", action="store_true",
-                        help="Combine consecutive routing decisions so vehicles "
-                             "change lanes for the turn after next (opt-in: it "
-                             "changes driving behaviour, not just the network)")
+    parser.add_argument("--no-combine-routes", action="store_true",
+                        help="Leave each routing decision to itself. Vehicles "
+                             "then learn a turn only on reaching its approach, "
+                             "and on a short one there is no room left to reach "
+                             "the turn lane: 93 of Chattanooga's 4,061 vehicles "
+                             "are deleted rather than served")
     args = parser.parse_args(argv)
 
     inpx_path = Path(args.inpx).resolve()
@@ -98,10 +101,12 @@ def main(argv: list[str] | None = None) -> int:
             return 1
 
     start_time, end_time = clock_to_seconds(args.start), clock_to_seconds(args.end)
-    # Combined and uncombined routing are different models, so they get different
-    # files by default.  Sharing one name would mean the second run silently
-    # replaced the first and the two could never be compared.
-    suffix = "_demand_combined" if args.combine_routes else "_demand"
+    # Combining is the default: a vehicle that only learns its turn on reaching
+    # a short approach cannot reach the turn lane in time, and Vissim deletes
+    # it -- 93 of 4,061 on Chattanooga, against 4 with combining.  The two are
+    # different models, so --no-combine-routes writes a different file rather
+    # than silently replacing this one.
+    suffix = "_demand_separate" if args.no_combine_routes else "_demand"
     out_path = (Path(args.out).resolve() if args.out
                 else inpx_path.with_name(f"{inpx_path.stem}{suffix}.inpx"))
 
@@ -150,7 +155,7 @@ def main(argv: list[str] | None = None) -> int:
         if integrated:
             n_dec, n_routes, route_warnings = write_routing_decisions(
                 session, integrated, start_time, links,
-                combine=args.combine_routes)
+                combine=not args.no_combine_routes)
             for warning in route_warnings:
                 print(f"  :{warning}")
             print(f"  :Created {n_dec} routing decisions, {n_routes} routes")

@@ -103,6 +103,30 @@ Turning-movement counts become vehicle inputs on the entry links and one static
 routing decision per approach, carrying the counts as relative flows. Writes
 `chatt_demand.inpx`.
 
+Consecutive routing decisions are **combined** by default
+(`CombineStaRoutDec`), which Vissim resolves at simulation start: a vehicle
+passing the first decision already knows the turn it will make at the second,
+and changes lanes for it in time.
+
+Without that a vehicle learns a turn only on reaching its approach, and a short
+approach leaves no room to cross into the turn lane — Vissim deletes it.  On
+Chattanooga that is the difference between **93 vehicles destroyed and 4**, out
+of 4,061:
+
+```
+                  stranded   waited   total
+separate decisions      93        8     101   2.49%
+combined  decisions      4        8      12   0.30%
+```
+
+Only one of 111 movements changes, by exactly the number of vehicles that had
+been deleted on that approach — the traffic is restored, not redistributed.
+`--no-combine-routes` writes `<name>_demand_separate.inpx` for comparison.
+
+The 4 that remain are on a 7.5 m entry stub where vehicles are generated 3.8 m
+before the diverge; there is no upstream decision to combine with, so that one
+needs a longer entry link rather than better information.
+
 ### Step 4 — signal control
 
 ```bash

@@ -170,7 +170,7 @@ def enable_route_lookahead(session) -> int:
 def write_routing_decisions(session, decisions: list[RoutingDecision],
                             sim_start_time: float, links: dict,
                             sim_resolution: int = 10,
-                            combine: bool = False) -> tuple[int, int, list[str]]:
+                            combine: bool = True) -> tuple[int, int, list[str]]:
     """Create one static routing decision per approach, with a route per exit.
 
     All of an approach's intervals share one decision object: Vissim indexes the
