@@ -62,19 +62,36 @@ signalised junction:
 | `File_Synchro` | the Synchro UTDF file |
 | `IntersectionID_Synchro` | that intersection's Synchro `INTID` |
 
+Each GridSmart workbook names the intersection it covers, so opening one tells
+you which junction it belongs to. On Chattanooga that is **6 surveyed junctions
+× 3 values**; `File_Synchro` is the same file for the whole corridor.
+
 This is the same manual step the SUMO pipeline has —
 `rt_matchup_table_generation.py` writes those three columns blank too, which is
-why the repository carries a hand-filled `MatchupTable_updated.xlsx`. On
-Chattanooga it is **13 cells across 6 signalised junctions**.
+why the repository carries a hand-filled `MatchupTable_updated.xlsx`.
 
-Re-run the same command afterwards and everything else fills in: on Chattanooga
-80 of 104 `Turn_GridSmart` and `Turn_Synchro` codes, plus a flow-continuity
-check between adjacent junctions. A re-run keeps your edits unless you pass
-`--regenerate`.
+**Then run the same command again.** The second run keeps what you typed and
+derives the rest: on Chattanooga 80 of 104 `Turn_GridSmart` and `Turn_Synchro`
+codes, the intersection names read out of the workbooks themselves, and a
+flow-continuity check between adjacent junctions. Pass `--regenerate` only to
+rebuild the table from the movement table, discarding your entries.
 
-*Shortcut:* `--seed-from <an existing MatchupTable>` copies those 13 cells from
-a table that already has them, including the SUMO one. Convenience only — the
-pipeline does not need it.
+It also says which junctions name nothing:
+
+```
+:6 junctions name their data files.
+:4 name none and will carry no counts: 5, 7, 13, 15. That is right for an
+ intersection nobody surveyed, and wrong if one was missed.
+```
+
+Worth reading: a junction left out here carries no demand, and that surfaces
+much later as an entry link written at volume zero.
+
+*Shortcut:* `--seed-from <a filled MatchupTable>` copies those values from a
+table that already has them. It expects one keyed on **SUMO** junction IDs,
+which is what RealTwin's SUMO pipeline produces — hand it a Vissim-keyed table
+and it translates IDs that need no translating, seeding the wrong junctions.
+Convenience only; the pipeline does not need it.
 
 ### Step 3 — demand
 
