@@ -67,7 +67,7 @@ class RoutingDecision:
         interval_start: Start of the demand interval, in simulation seconds.
         interval_end: End of the demand interval, in simulation seconds.
         routes: ``{to_link_no: relative_flow}``.  Relative flows are the raw
-            movement counts; VISSIM normalises them internally.
+            movement counts; VISSIM normalizes them internally.
         name: Human readable label, usually ``"<intersection> <bound>"``.
     """
 
@@ -178,7 +178,7 @@ class SignalPlan:
 class LaneControl:
     """What the signal does to one lane of one approach.
 
-    Every lane of a signalised approach appears here exactly once, whatever
+    Every lane of a signalized approach appears here exactly once, whatever
     mixture of movements it serves.  Heads and detectors are both derived from
     this, so neither can cover a lane the other misses -- they used to resolve
     connectors independently, and Chattanooga's link 17 lane 2 lost its head
@@ -342,7 +342,7 @@ class ScenarioIR:
         """Write the IR to ``path`` as JSON and return the path.
 
         Dumping the IR is the fastest way to review what the pipeline decided
-        without a VISSIM licence in the loop.
+        without a VISSIM license in the loop.
         """
         with open(path, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, indent=indent, default=str)

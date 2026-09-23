@@ -164,7 +164,7 @@ def report(found: dict, released: int | None) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--inpx",
-                        default="vissim/work/chattanooga/chatt_demand_signals.inpx",
+                        default="vissim/work/mynet/chatt_demand_signals.inpx",
                         help="The model whose error files should be read")
     parser.add_argument("--run", type=int, default=0, metavar="SECONDS",
                         help="Simulate for this many seconds first, discarding "

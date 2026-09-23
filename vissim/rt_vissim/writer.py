@@ -11,7 +11,7 @@
 ##############################################################################
 """Push the scenario IR into Vissim over COM.
 
-The only module besides :mod:`rt_vissim.com` that needs a Vissim licence.
+The only module besides :mod:`rt_vissim.com` that needs a Vissim license.
 Everything upstream produces the dataclasses in :mod:`rt_vissim.ir`; this turns
 them into network objects.
 
@@ -106,7 +106,7 @@ def write_vehicle_inputs(session, inputs: list[VehicleInput],
     for link_no, per_interval in sorted(by_link.items()):
         try:
             link = session.net.Links.ItemByKey(link_no)
-        except Exception:  # noqa: BLE001 - COM raises a generic error for a missing key
+        except Exception:
             warnings.append(f"Link {link_no} not found; skipped its vehicle input.")
             continue
 
@@ -137,7 +137,7 @@ def network_max_speed(session) -> float:
                 speeds.append(float(point.AttValue("Fx")))
         if speeds:
             return max(speeds)
-    except Exception:  # noqa: BLE001 - attribute layout varies by version
+    except Exception:  # noqa: S110
         pass
     return FALLBACK_MAX_SPEED_KMH
 
@@ -158,11 +158,11 @@ def enable_route_lookahead(session) -> int:
     """
     changed = 0
     try:
-        for behaviour in session.net.DrivingBehaviors.GetAll():
-            if not behaviour.AttValue("VehRoutDecLookAhead"):
-                behaviour.SetAttValue("VehRoutDecLookAhead", True)
+        for behavior in session.net.DrivingBehaviors.GetAll():
+            if not behavior.AttValue("VehRoutDecLookAhead"):
+                behavior.SetAttValue("VehRoutDecLookAhead", True)
                 changed += 1
-    except Exception:  # noqa: BLE001 - attribute absent on older builds
+    except Exception:
         return 0
     return changed
 
@@ -219,7 +219,7 @@ def write_routing_decisions(session, decisions: list[RoutingDecision],
         anchor, position = placements.get((junction_id, from_link), (from_link, gap))
         try:
             link = session.net.Links.ItemByKey(anchor)
-        except Exception:  # noqa: BLE001 - COM raises generically for a bad key
+        except Exception:
             warnings.append(f"Decision link {anchor} not found; skipped.")
             continue
 
@@ -229,7 +229,7 @@ def write_routing_decisions(session, decisions: list[RoutingDecision],
         if combine:
             try:
                 vrd.SetAttValue("CombineStaRoutDec", True)
-            except Exception:  # noqa: BLE001 - not present on older builds
+            except Exception:
                 combine = False
                 warnings.append("CombineStaRoutDec is not available in this "
                                 "Vissim version; decisions left uncombined.")
@@ -239,7 +239,7 @@ def write_routing_decisions(session, decisions: list[RoutingDecision],
         for exit_link in exits:
             try:
                 dest = session.net.Links.ItemByKey(exit_link)
-            except Exception:  # noqa: BLE001
+            except Exception:
                 warnings.append(f"Exit link {exit_link} not found; route skipped.")
                 continue
             route = vrd.VehRoutSta.AddVehicleRouteStatic(0, dest, ROUTE_END_OFFSET)
@@ -324,7 +324,7 @@ def clear_signal_control(session) -> tuple[int, int, list[str]]:
         for controller in list(session.net.SignalControllers.GetAll()):
             session.net.SignalControllers.RemoveSignalController(controller)
             controllers += 1
-    except Exception as exc:  # noqa: BLE001 - report what was reached
+    except Exception as exc:
         warnings.append(f"Clearing the imported signal control stopped early: "
                         f"{str(exc)[:80]}")
 
@@ -365,7 +365,7 @@ def write_signal_controllers(session, plans, prbc_dir) -> tuple[int, list[str]]:
     for plan in plans:
         try:
             controller = session.net.SignalControllers.AddSignalController(plan.sc_no)
-        except Exception as exc:  # noqa: BLE001 - COM reports a generic failure
+        except Exception as exc:
             warnings.append(f"Signal controller {plan.sc_no} could not be created: "
                             f"{str(exc)[:80]}")
             continue
@@ -373,7 +373,7 @@ def write_signal_controllers(session, plans, prbc_dir) -> tuple[int, list[str]]:
         controller.SetAttValue("Name", plan.name or f"INTID {plan.synchro_intid}")
         try:
             controller.SetAttValue("Type", RBC_TYPE)
-        except Exception:  # noqa: BLE001 - older builds may not offer RBC
+        except Exception:
             warnings.append(f"Signal controller {plan.sc_no}: this Vissim has no "
                             "Ring Barrier Controller; left as fixed time.")
 
@@ -388,7 +388,7 @@ def write_signal_controllers(session, plans, prbc_dir) -> tuple[int, list[str]]:
             try:
                 signal_group = controller.SGs.AddSignalGroup(group.sg_no)
                 signal_group.SetAttValue("Name", str(group.sg_no))
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 warnings.append(f"Signal controller {plan.sc_no}: signal group "
                                 f"{group.sg_no} could not be created: {str(exc)[:60]}")
         created += 1
@@ -420,7 +420,7 @@ def write_signal_heads(session, heads) -> tuple[int, list[str]]:
         try:
             link = session.net.Links.ItemByKey(link_no)
             lanes = list(link.Lanes)
-        except Exception:  # noqa: BLE001 - the link went missing
+        except Exception:
             warnings.append(f"Link {link_no} not found; no signal head for "
                             f"{head.movement}.")
             continue
@@ -438,14 +438,14 @@ def write_signal_heads(session, heads) -> tuple[int, list[str]]:
         for lane in chosen:
             try:
                 obj = session.net.SignalHeads.AddSignalHead(0, lane, head.pos)
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 warnings.append(f"Signal head on link {link_no} lane "
                                 f"{head.lane} failed: {str(exc)[:70]}")
                 continue
             obj.SetAttValue("Name", f"{head.movement} (J{head.junction_id})")
             try:
                 obj.SetAttValue("SG", signal_group_ref(head.sc_no, head.sg_no))
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 warnings.append(f"Signal head {head.movement}: signal group "
                                 f"{head.sc_no}-{head.sg_no} not accepted: "
                                 f"{str(exc)[:60]}")
@@ -456,7 +456,7 @@ def write_signal_heads(session, heads) -> tuple[int, list[str]]:
                                     signal_group_ref(head.sc_no, head.scnd_sg_no))
                     obj.SetAttValue("ScndSGTyp", OR_SIGNAL_GROUP)
                     both += 1
-                except Exception as exc:  # noqa: BLE001
+                except Exception as exc:
                     warnings.append(f"Signal head {head.movement}: Or signal group "
                                     f"could not be set: {str(exc)[:60]}")
             created += 1
@@ -486,14 +486,14 @@ def write_detectors(session, detectors) -> tuple[int, list[str]]:
         try:
             link = session.net.Links.ItemByKey(detector.link_no)
             lane = link.Lanes.ItemByKey(detector.lane)
-        except Exception:  # noqa: BLE001 - link or lane absent
+        except Exception:
             warnings.append(f"Link {detector.link_no} lane {detector.lane} not "
                             f"found; no detector for {detector.movement}.")
             continue
 
         try:
             obj = session.net.Detectors.AddDetector(0, lane, detector.pos)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             warnings.append(f"Detector on link {detector.link_no} lane "
                             f"{detector.lane} failed: {str(exc)[:70]}")
             continue
@@ -503,7 +503,7 @@ def write_detectors(session, detectors) -> tuple[int, list[str]]:
         try:
             obj.SetAttValue("SC", detector.sc_no)
             obj.SetAttValue("PortNo", detector.port_no)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             warnings.append(f"Detector {detector.movement}: could not attach to "
                             f"controller {detector.sc_no}: {str(exc)[:60]}")
         created += 1
@@ -530,7 +530,7 @@ def read_conflict_areas(session) -> list[tuple]:
     out: list[tuple] = []
     try:
         areas = session.net.ConflictAreas.GetAll()
-    except Exception:  # noqa: BLE001 - older builds may not expose them
+    except Exception:
         return out
 
     for area in areas:
@@ -539,7 +539,7 @@ def read_conflict_areas(session) -> list[tuple]:
                         _opt_int(area.AttValue("LinkA")),
                         _opt_int(area.AttValue("LinkB")),
                         str(area.AttValue("Status"))))
-        except Exception:  # noqa: BLE001 - skip one bad area, not all of them
+        except Exception:  # noqa: S112
             continue
     return out
 
@@ -562,7 +562,7 @@ def write_conflict_areas(session, decisions: dict) -> tuple[int, list[str]]:
             area = session.net.ConflictAreas.ItemByKey(conflict_id)
             area.SetAttValue("Status", status)
             applied += 1
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             warnings.append(f"Conflict area {conflict_id} could not be set to "
                             f"{status}: {str(exc)[:60]}")
     if applied:
@@ -616,7 +616,7 @@ def write_rtor_stop_signs(session, controls, allowed: dict) -> tuple[int, list[s
             try:
                 connector = session.net.Links.ItemByKey(connector_no)
                 lanes = list(connector.Lanes)
-            except Exception:  # noqa: BLE001
+            except Exception:
                 warnings.append(f"Connector {connector_no} not found; no stop "
                                 f"sign for {movement}.")
                 continue
@@ -624,7 +624,7 @@ def write_rtor_stop_signs(session, controls, allowed: dict) -> tuple[int, list[s
             for lane in lanes:
                 try:
                     sign = session.net.StopSigns.AddStopSign(0, lane, 0.0)
-                except Exception as exc:  # noqa: BLE001
+                except Exception as exc:
                     warnings.append(f"Stop sign for {movement} failed: "
                                     f"{str(exc)[:70]}")
                     continue
@@ -633,12 +633,12 @@ def write_rtor_stop_signs(session, controls, allowed: dict) -> tuple[int, list[s
                 try:
                     sign.SetAttValue("SG", signal_group_ref(control.sc_no,
                                                             control.sg_no))
-                except Exception as exc:  # noqa: BLE001 - leave no orphan behind
+                except Exception as exc:
                     warnings.append(f"Stop sign for {movement}: could not bind to "
                                     f"signal group: {str(exc)[:60]}")
                     try:
                         session.net.StopSigns.RemoveStopSign(sign)
-                    except Exception:  # noqa: BLE001
+                    except Exception:  # noqa: S110
                         pass
                     continue
                 # OnlyOnRed is not editable: binding the sign to a signal group

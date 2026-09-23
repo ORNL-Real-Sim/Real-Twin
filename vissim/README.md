@@ -17,11 +17,11 @@ here, and the SUMO one is only ever used for **comparison**.
 
 ### What you need
 
-| | |
-|---|---|
-| PTV Vissim 2026, licensed | the COM API is used for every write |
-| SUMO's `netconvert` on `PATH` | stage 1 only, to make the OpenDRIVE file |
-| Python 3.11+ | `pandas`, `openpyxl`, `pywin32` |
+|                                  |                                          |
+| -------------------------------- | ---------------------------------------- |
+| PTV Vissim 2026, licensed        | the COM API is used for every write      |
+| SUMO's`netconvert` on `PATH` | stage 1 only, to make the OpenDRIVE file |
+| Python 3.11+                     | `pandas`, `openpyxl`, `pywin32`    |
 
 Inputs:
 
@@ -56,11 +56,11 @@ stops and asks for the only thing it cannot know — **which data file belongs t
 which junction**. Open `MatchupTable.xlsx` and fill three columns for each
 signalised junction:
 
-| column | what to put |
-|---|---|
-| `File_GridSmart` | the GridSmart workbook for that intersection |
-| `File_Synchro` | the Synchro UTDF file |
-| `IntersectionID_Synchro` | that intersection's Synchro `INTID` |
+| column                     | what to put                                  |
+| -------------------------- | -------------------------------------------- |
+| `File_GridSmart`         | the GridSmart workbook for that intersection |
+| `File_Synchro`           | the Synchro UTDF file                        |
+| `IntersectionID_Synchro` | that intersection's Synchro`INTID`         |
 
 Each GridSmart workbook names the intersection it covers, so opening one tells
 you which junction it belongs to. On Chattanooga that is **6 surveyed junctions
@@ -217,17 +217,17 @@ bearings and turns from the Vissim network itself.
 
 ## Pipeline stages
 
-| SUMO (`realtwin`) | VISSIM (`rt_vissim`) |
-|---|---|
-| `parse_SUMO_to_OpenDrive` → `netconvert` | `scripts/01_import_opendrive.py` → `netconvert` + COM import |
-| parse `net.xml` junctions/edges | [`network.py`](rt_vissim/network.py) reads `Vissim.Net.Links` |
-| `format_junction_bearing` (bearings from lane shape) | bearings from Vissim link polylines |
-| junction = `<junction>` element | junction = SUMO internal edge name in the Vissim link name |
-| turn from `connection dir` attribute | turn classified from bearing change |
-| `generate_matchup_table` → `MatchupTable.xlsx` | same layout, `*_Vissim` link-number columns |
-| `update_matchup_table` fills the derivable columns | same, but codes derived per row rather than positionally |
-| GridSmart → `.flow.xml` / `.turn.xml` → `jtrrouter` | GridSmart → vehicle inputs + static routing decisions |
-| Synchro UTDF → NEMA `tlLogic` | Synchro UTDF → `.prbc` Ring Barrier Controller files |
+| SUMO (`realtwin`)                                        | VISSIM (`rt_vissim`)                                            |
+| ---------------------------------------------------------- | ----------------------------------------------------------------- |
+| `parse_SUMO_to_OpenDrive` → `netconvert`              | `scripts/01_import_opendrive.py` → `netconvert` + COM import |
+| parse`net.xml` junctions/edges                           | [`network.py`](rt_vissim/network.py) reads `Vissim.Net.Links`  |
+| `format_junction_bearing` (bearings from lane shape)     | bearings from Vissim link polylines                               |
+| junction =`<junction>` element                           | junction = SUMO internal edge name in the Vissim link name        |
+| turn from`connection dir` attribute                      | turn classified from bearing change                               |
+| `generate_matchup_table` → `MatchupTable.xlsx`        | same layout,`*_Vissim` link-number columns                      |
+| `update_matchup_table` fills the derivable columns       | same, but codes derived per row rather than positionally          |
+| GridSmart →`.flow.xml` / `.turn.xml` → `jtrrouter` | GridSmart → vehicle inputs + static routing decisions            |
+| Synchro UTDF → NEMA`tlLogic`                            | Synchro UTDF →`.prbc` Ring Barrier Controller files            |
 
 ---
 
@@ -268,10 +268,10 @@ Treating each connector as a movement classifies almost everything as "thru"
 
 Vissim also names each link after the OpenDRIVE road it came from:
 
-| Link name | Meaning |
-|---|---|
-| `390-0-Right` | OpenDRIVE road 390, lane section 0, right side |
-| `473: :12_0-0-Right` | road 473, OpenDRIVE road name `:12_0` |
+| Link name              | Meaning                                        |
+| ---------------------- | ---------------------------------------------- |
+| `390-0-Right`        | OpenDRIVE road 390, lane section 0, right side |
+| `473: :12_0-0-Right` | road 473, OpenDRIVE road name`:12_0`         |
 
 `:12_0` is a SUMO **internal edge** — a path inside SUMO junction 12 — carried
 across by `netconvert --output.original-names`. That yields an exact junction
@@ -286,14 +286,14 @@ Running stage 1 on `datasets/chattanooga/updated_net/chatt.net.xml` and comparin
 the derived movement table with RealTwin's hand-curated
 `datasets/chattanooga/updated_net/MatchupTable.xlsx`:
 
-| | VISSIM-derived | SUMO MatchupTable |
-|---|---|---|
-| Movements | 104 | 104 |
-| Junctions | 10 | 10 |
-| Junction IDs | `2,3,4,7,8,9,10,11,12,18` | `2,3,4,7,8,9,10,11,12,18` |
+|                        | VISSIM-derived              | SUMO MatchupTable           |
+| ---------------------- | --------------------------- | --------------------------- |
+| Movements              | 104                         | 104                         |
+| Junctions              | 10                          | 10                          |
+| Junction IDs           | `2,3,4,7,8,9,10,11,12,18` | `2,3,4,7,8,9,10,11,12,18` |
 | Movements per junction | `4,5,7,8,8,8,16,16,16,16` | `4,5,7,8,8,8,16,16,16,16` |
-| Legs per junction | `3,3,3,3,3,3,4,4,4,4` | `3,3,3,3,3,3,4,4,4,4` |
-| Turn mix | R28 T30 L24 U22 | R28 T30 L24 U22 |
+| Legs per junction      | `3,3,3,3,3,3,4,4,4,4`     | `3,3,3,3,3,3,4,4,4,4`     |
+| Turn mix               | R28 T30 L24 U22             | R28 T30 L24 U22             |
 
 The tables agree on **all 104 movements, 34 approaches and 10 junctions**, column
 for column.  Approach bearings, derived independently on each side, agree to
@@ -334,7 +334,6 @@ vissim/
   VISSIM_previous/            prior ORNL VISSIM work, kept for reference
 ```
 
-
 `rt_vissim` is deliberately split so that only `com.py` and `writer.py` need
 Vissim. Everything else is plain pandas/JSON and is unit-testable without a
 licence.
@@ -369,15 +368,15 @@ licence.
 
 The Synchro → RBC mapping is therefore direct:
 
-| Synchro UTDF | `.prbc` |
-|---|---|
-| `Phases.BRP` (barrier/ring/position) | `Sequence.BarrierGroups[].RingGroups[]` |
-| `Phases.MinGreen` / `MaxGreen` | `MinGreen` / `MaxGreen1` |
-| `Phases.Yellow` / `AllRed` | `Yellow` / `RedClearance` |
-| `Phases.VehExt` | `VehExtension` |
-| `Phases.Recall` (`1` min, `3` max) | `MinRecall` / `MaxRecall` |
-| `Timeplans.Cycle Length` / `Offset` | `Pattern.CycleLength` / `Offset` |
-| `Timeplans.Reference Phase` | `VehicleSignalGroupsInPattern[].Coordinated` |
+| Synchro UTDF                             | `.prbc`                                      |
+| ---------------------------------------- | ---------------------------------------------- |
+| `Phases.BRP` (barrier/ring/position)   | `Sequence.BarrierGroups[].RingGroups[]`      |
+| `Phases.MinGreen` / `MaxGreen`       | `MinGreen` / `MaxGreen1`                   |
+| `Phases.Yellow` / `AllRed`           | `Yellow` / `RedClearance`                  |
+| `Phases.VehExt`                        | `VehExtension`                               |
+| `Phases.Recall` (`1` min, `3` max) | `MinRecall` / `MaxRecall`                  |
+| `Timeplans.Cycle Length` / `Offset`  | `Pattern.CycleLength` / `Offset`           |
+| `Timeplans.Reference Phase`            | `VehicleSignalGroupsInPattern[].Coordinated` |
 
 This preserves actuation, which a fixed-time conversion would throw away.
 
@@ -387,18 +386,18 @@ This preserves actuation, which a fixed-time conversion would throw away.
 
 Everything lands in `vissim/work/<scenario>/`:
 
-| file | written by | what it is |
-|---|---|---|
-| `<name>.xodr` | stage 1 | OpenDRIVE, georeferenced to true UTM |
-| `<name>.inpx` | stage 1 | the imported Vissim network |
-| `<name>_links.csv` | stage 1 | every link and connector, incl. `FromLanes` and `FromPos` |
-| `<name>_movements.csv` | stage 1 | junctions, bearings, turn movements |
-| `<name>_junctions.csv` | stage 1 | junction membership and coordinates |
-| `MatchupTable.xlsx` | stage 2 | the join between network, counts and signals |
-| `<name>_demand.inpx` | stage 3 | network + vehicle inputs + routing decisions |
-| `rbc_timings_<INTID>.prbc` | stage 4 | one Ring Barrier Controller per junction |
-| `<name>_demand_signals.inpx` | stage 4 | the finished model |
-| `<name>_demand_signals*.err` | Vissim | every vehicle it removed; read by stage 5 |
+| file                           | written by | what it is                                                   |
+| ------------------------------ | ---------- | ------------------------------------------------------------ |
+| `<name>.xodr`                | stage 1    | OpenDRIVE, georeferenced to true UTM                         |
+| `<name>.inpx`                | stage 1    | the imported Vissim network                                  |
+| `<name>_links.csv`           | stage 1    | every link and connector, incl.`FromLanes` and `FromPos` |
+| `<name>_movements.csv`       | stage 1    | junctions, bearings, turn movements                          |
+| `<name>_junctions.csv`       | stage 1    | junction membership and coordinates                          |
+| `MatchupTable.xlsx`          | stage 2    | the join between network, counts and signals                 |
+| `<name>_demand.inpx`         | stage 3    | network + vehicle inputs + routing decisions                 |
+| `rbc_timings_<INTID>.prbc`   | stage 4    | one Ring Barrier Controller per junction                     |
+| `<name>_demand_signals.inpx` | stage 4    | the finished model                                           |
+| `<name>_demand_signals*.err` | Vissim     | every vehicle it removed; read by stage 5                    |
 
 Useful flags: `--progid` pins a Vissim version, `--visible` shows the GUI,
 `--skip-netconvert` reuses an existing `.xodr`, `--no-conflicts` / `--no-rtor` /

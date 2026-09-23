@@ -76,7 +76,7 @@ def tenths(seconds: float) -> int:
     send 0.05 s to 0 and 0.15 s to 2, which is a surprise not worth leaving in a
     unit conversion.
     """
-    return int(math.floor(float(seconds) * 10 + 0.5))
+    return math.floor(float(seconds) * 10 + 0.5)
 
 
 def build_controller(plan: SignalPlan) -> dict:
@@ -106,7 +106,7 @@ def build_controller(plan: SignalPlan) -> dict:
         # seconds, so the rounding remainder goes to yellow and the split stays
         # exact.  Reproducing this is what makes the output identical to a
         # hand-built controller rather than merely close.
-        max_green = int(round(group.max_green)) * 10
+        max_green = round(group.max_green) * 10
         yellow = split - max_green - red_clearance
         if yellow <= 0:  # a plan too tight to round; keep Synchro's own yellow
             yellow = tenths(group.yellow)

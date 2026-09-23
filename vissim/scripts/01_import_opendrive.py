@@ -38,10 +38,10 @@ from pathlib import Path
 # Make `rt_vissim` importable when running this file directly.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import pandas as pd  # noqa: E402
+import pandas as pd
 
-from rt_vissim.com import VissimSession, available_progids  # noqa: E402
-from rt_vissim.network import (  # noqa: E402
+from rt_vissim.com import VissimSession, available_progids
+from rt_vissim.network import (
     DEFAULT_JUNCTION_RADIUS, JUNCTION_SOURCES, extract_network,
     read_opendrive_junction_names)
 
@@ -49,7 +49,7 @@ from rt_vissim.network import (  # noqa: E402
 def read_net_offset(net_path: Path) -> tuple[float, float]:
     """Return the ``netOffset`` recorded in a SUMO network.
 
-    SUMO normalises coordinates so the network sits near the origin and stores
+    SUMO normalizes coordinates so the network sits near the origin and stores
     the shift it applied in ``<location netOffset="-x,-y">``.  Negating it
     recovers the true projected (UTM) origin.
 

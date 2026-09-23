@@ -36,6 +36,7 @@ other in different intersections are left alone.
 """
 
 from __future__ import annotations
+import itertools
 
 #: Who gives way, by turn.  Higher wins.  A through movement is never the one
 #: to yield; a U-turn always is.
@@ -151,7 +152,7 @@ def link_turns(movements, links: dict | None = None) -> dict[int, tuple]:
 
         # The connectors stitching the path together carry the same movement.
         chain = [int(row.FromLinkNo_Vissim), *internal, int(row.ToLinkNo_Vissim)]
-        for upstream, downstream in zip(chain, chain[1:]):
+        for upstream, downstream in itertools.pairwise(chain):
             connector = connectors.get((upstream, downstream))
             if connector is not None:
                 owner[connector] = (junction, turn)

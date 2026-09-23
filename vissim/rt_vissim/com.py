@@ -139,7 +139,7 @@ class VissimSession:
                 try:
                     import win32com.client as _c
                     _c.GetActiveObject(progid)
-                except Exception:  # noqa: BLE001 - not running, which is what we want
+                except Exception:  # noqa: S112
                     continue
                 raise VissimComError(
                     f"Vissim is already running ({progid}). A COM session would take "
@@ -158,7 +158,7 @@ class VissimSession:
                 self.vissim = win32com.client.DispatchEx(progid)
                 self.progid = progid
                 break
-            except Exception as exc:  # noqa: BLE001 - COM raises many types
+            except Exception as exc:
                 errors.append(f"{progid}: {exc}")
         else:
             detail = "\n    ".join(errors) or "no ProgIDs tried"
@@ -170,7 +170,7 @@ class VissimSession:
 
         try:
             self.vissim.Visible = self.visible
-        except Exception:  # noqa: BLE001 - not fatal, some builds disallow it
+        except Exception:  # noqa: S110
             pass
         return self
 
@@ -179,7 +179,7 @@ class VissimSession:
         if self.vissim is not None and self.quit_on_exit:
             try:
                 self.vissim.Exit()
-            except Exception:  # noqa: BLE001 - teardown is best effort
+            except Exception:  # noqa: S110
                 pass
         self.vissim = None
 
@@ -278,7 +278,7 @@ class VissimSession:
                 try:
                     fn(target)
                     return
-                except Exception as exc:  # noqa: BLE001 - COM raises many types
+                except Exception as exc:
                     attempts.append((f"{owner_name}.{method}", str(exc)))
 
         detail = "\n    ".join(f"{name}: {err}" for name, err in attempts)
@@ -295,7 +295,7 @@ class VissimSession:
     # ------------------------------------------------------------------ #
     def configure_simulation(self, *, start_time: float, end_time: float,
                              resolution: int = 10, seed: int = 42) -> None:
-        """Set the simulation window and stochastics.
+        """Set the simulation window and stochastic.
 
         Args:
             start_time: Simulation start, in seconds after midnight.  Written to
@@ -307,8 +307,8 @@ class VissimSession:
         """
         self._require_started()
         sim = self.vissim.Simulation
-        sim.SetAttValue("SimPeriod", int(round(end_time - start_time)))
-        sim.SetAttValue("StartTm", int(round(start_time)))
+        sim.SetAttValue("SimPeriod", round(end_time - start_time))
+        sim.SetAttValue("StartTm", round(start_time))
         sim.SetAttValue("SimRes", int(resolution))
         sim.SetAttValue("RandSeed", int(seed))
 
@@ -336,7 +336,7 @@ def com_objects_to_records(collection, attributes: list[str]) -> list[dict]:
     try:
         rows = collection.GetMultipleAttributes(attributes)
         return [dict(zip(attributes, row)) for row in rows]
-    except Exception:  # noqa: BLE001 - fall back to the slow path
+    except Exception:
         out = []
         for obj in collection:
             out.append({attr: obj.AttValue(attr) for attr in attributes})
