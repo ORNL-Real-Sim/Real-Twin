@@ -119,9 +119,12 @@ def fitness_func_turn_flow(solution: list | np.ndarray, scenario_config: dict = 
                                                            sim_end_time)
     print(f"  GEH: {mean_GEH}, Percentage of GEH<5: {GEH_percent*100:.2f}%")
 
-    # minimize the negative percentage of GEH and the mean GEH
-    # return [mean_GEH, -GEH_percent]
-    return [mean_GEH]
+    # The calibration acceptance criterion is the share of links below the
+    # configured GEH threshold.  Optimizing the mean GEH can select a solution
+    # with a worse accepted-link share, so make the percentage the objective.
+    # Mealpy minimizes this value; the complement converts maximization of the
+    # percentage into a minimization problem without changing its scale.
+    return 1 - GEH_percent
 
 
 class TurnInflowCali:
