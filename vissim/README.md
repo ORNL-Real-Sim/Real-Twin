@@ -15,6 +15,21 @@ Nothing here needs the SUMO pipeline to have been run. The inputs are a SUMO
 network file and the two data folders; the Vissim MatchupTable is generated
 here, and the SUMO one is only ever used for **comparison**.
 
+### The steps at a glance
+
+| step | script | what it does | writes |
+|---|---|---|---|
+| 1 | `01_import_opendrive.py` | SUMO network → OpenDRIVE → Vissim | `chatt.inpx` + link and movement tables |
+| 2 | `02_matchup_table.py` | junctions, approaches, turns | `MatchupTable.xlsx` |
+|   | *you* | name each surveyed junction's data files, then re-run step 2 | |
+| 3 | `03_write_demand.py` | counts → vehicle inputs + routing decisions | `chatt_demand.inpx` |
+| 4 | `04_write_signals.py` | Synchro → controllers, heads, detectors | `chatt_demand_signals.inpx` |
+| 5 | `05_check_run.py` | what Vissim removed during a run | a report |
+| 6 | `06_calibrate_turn_inflow.py` | estimate the demand nobody measured | `*_calibrated.inpx` |
+
+Steps 1–4 build the model and step 5 checks it. Step 6 is optional and takes
+hours; run it once the model is right.
+
 ### What you need
 
 | | |
@@ -34,7 +49,9 @@ Control/              Synchro UTDF export (.csv, one file for the corridor)
 ### Step 1 — import the network
 
 ```bash
-python vissim/scripts/01_import_opendrive.py     --net datasets/example1/updated_net/chatt.net.xml     --outdir vissim/work/mynet --name chatt
+python vissim/scripts/01_import_opendrive.py \
+    --net datasets/example1/updated_net/chatt.net.xml \
+    --outdir vissim/work/mynet --name chatt
 ```
 
 `netconvert` writes the `.xodr`, Vissim imports it, and the link table is read
@@ -48,7 +65,9 @@ the stop line in stage 4.
 ### Step 2 — MatchupTable, and the one manual step
 
 ```bash
-python vissim/scripts/02_matchup_table.py     --movements vissim/work/mynet/chatt_movements.csv     --outdir vissim/work/mynet
+python vissim/scripts/02_matchup_table.py \
+    --movements vissim/work/mynet/chatt_movements.csv \
+    --outdir vissim/work/mynet
 ```
 
 This derives the junctions, approaches, bearings and turns on its own, then
@@ -87,6 +106,11 @@ It also says which junctions name nothing:
 Worth reading: a junction left out here carries no demand, and that surfaces
 much later as an entry link written at volume zero.
 
+`Need calibration?` (column N) is filled in for you: **Y** for a junction with
+no counts, **N** once its GridSmart file has been read. Step 6 calibrates only
+the junctions marked Y, as SUMO's calibration does — set one to N by hand to
+leave it out. On Chattanooga: Y for 5, 7, 13 and 15.
+
 *Shortcut:* `--seed-from <a filled MatchupTable>` copies those values from a
 table that already has them. It expects one keyed on **SUMO** junction IDs,
 which is what RealTwin's SUMO pipeline produces — hand it a Vissim-keyed table
@@ -96,7 +120,12 @@ Convenience only; the pipeline does not need it.
 ### Step 3 — demand
 
 ```bash
-python vissim/scripts/03_write_demand.py     --inpx vissim/work/mynet/chatt.inpx     --matchup vissim/work/mynet/MatchupTable.xlsx     --links vissim/work/mynet/chatt_links.csv     --movements vissim/work/mynet/chatt_movements.csv     --start 08:00 --end 09:00
+python vissim/scripts/03_write_demand.py \
+    --inpx vissim/work/mynet/chatt.inpx \
+    --matchup vissim/work/mynet/MatchupTable.xlsx \
+    --links vissim/work/mynet/chatt_links.csv \
+    --movements vissim/work/mynet/chatt_movements.csv \
+    --start 08:00 --end 09:00
 ```
 
 Turning-movement counts become vehicle inputs on the entry links and one static
@@ -130,7 +159,12 @@ needs a longer entry link rather than better information.
 ### Step 4 — signal control
 
 ```bash
-python vissim/scripts/04_write_signals.py     --inpx vissim/work/mynet/chatt_demand.inpx     --matchup vissim/work/mynet/MatchupTable.xlsx     --links vissim/work/mynet/chatt_links.csv     --movements vissim/work/mynet/chatt_movements.csv     --strict
+python vissim/scripts/04_write_signals.py \
+    --inpx vissim/work/mynet/chatt_demand.inpx \
+    --matchup vissim/work/mynet/MatchupTable.xlsx \
+    --links vissim/work/mynet/chatt_links.csv \
+    --movements vissim/work/mynet/chatt_movements.csv \
+    --strict
 ```
 
 Synchro timings become one `.prbc` Ring Barrier Controller per junction, then
@@ -174,6 +208,101 @@ found a gap, which is congestion or geometry.
 
 `--fail-over N` exits non-zero above N removals, for a scripted run.
 
+### Step 6 — calibrate the demand nobody measured
+
+Junctions without a camera give step 3 nothing to write: their entry links get
+volume zero and their approaches an even split across the exits. That
+placeholder shows — on Chattanooga the model puts **6,543** vehicles through the
+counted movements against **13,786** counted, and the worst movements are not
+slightly off but empty:
+
+```
+55 ->  3   counted 1032   modelled 0
+38 ->  6   counted  958   modelled 0
+```
+
+What entered at the unsurveyed junctions can still be inferred, because it has
+to leave through movements that *were* counted. Step 6 searches for the inflows
+and turn splits there that make the counted movements come out right, scored by
+**GEH** — the method of RealTwin's SUMO `TurnInflowCali`, on the same variables.
+
+**First, see what it will calibrate** — no licence needed:
+
+```bash
+python vissim/scripts/06_calibrate_turn_inflow.py --dry-run
+```
+
+```
+:Junctions marked for calibration: 5, 7, 13, 15
+:12 variables -- 4 inflows, 8 splits:
+:   inflow  input 7 on link 42 (J5)
+:   ...
+:   split   decision 25 for approach 7 (J7), exits (56, 57)
+:GA: epoch 10, population 10, pc 0.75, pm 0.1 -- about 110 simulations
+```
+
+Nothing is listed by hand; the variables are read off the network:
+
+- an **inflow** for every vehicle input step 3 wrote at zero, because no counted
+  approach traces to it;
+- a **split** for every routing decision on an approach with no counts. One
+  variable per split, not one per exit — with two exits the first takes `x` and
+  the second `1 − x`. **U-turns stay at zero**; freeing them lets the search
+  send traffic round a turnaround to close a gap elsewhere;
+- only at junctions marked `Need calibration? = Y`.
+
+On Chattanooga that is **4 + 8 = 12**, the same as SUMO's `N_Variable` for this
+network.
+
+**Then run it:**
+
+```bash
+python vissim/scripts/06_calibrate_turn_inflow.py \
+    --inpx vissim/work/mynet/chatt_demand_signals.inpx \
+    --matchup vissim/work/mynet/MatchupTable.xlsx \
+    --links vissim/work/mynet/chatt_links.csv \
+    --movements vissim/work/mynet/chatt_movements.csv
+```
+
+It is a genetic algorithm from mealpy, as SUMO uses, with `epoch`, `pop_size`,
+`pc` and `pm` taken from `realtwin_config.yaml` so both pipelines run the same
+search. Each evaluation is one full simulation of the demand hour — about two
+minutes on Chattanooga — so the default **110 evaluations take about 3½ hours**.
+For a quick check that it moves the right way, use one epoch:
+
+```bash
+python vissim/scripts/06_calibrate_turn_inflow.py --epoch 1     # ~20 runs, ~40 min
+```
+
+The Vissim random seed is fixed for every evaluation, so the search sees the
+effect of the parameters and not of the dice. Every evaluation is appended to
+the history file as it finishes, so a long run can be watched, and a stopped
+one still says what it found.
+
+**What it writes**, beside the input network:
+
+| file | what it is |
+|---|---|
+| `*_calibrated.inpx` | the model with the best demand found |
+| `*_calibrated_history.csv` | one row per evaluation: mean GEH, share under 5, the values tried |
+| `*_calibrated_summary.json` | before and after scores, and each calibrated value, labelled |
+
+**The target** is RealTwin's: GEH below 5 on 85% of counted movements. Before
+calibration Chattanooga sits at **67.5%**, mean GEH 5.75.
+
+**No data collection points are needed.** Vissim's node evaluation reports
+volume per turning movement, keyed by the same (from link, to link) pair the
+MatchupTable and the counts use. The earlier ORNL calibration notebooks
+hand-placed 68 data collection measurements to get the same numbers.
+
+Two things worth knowing before reading the result:
+
+- A genetic algorithm converges slowly. 110 evaluations over 12 variables will
+  improve the demand a long way but may not finish converging — true of SUMO's
+  run at the same settings too. Raise `--epoch` for more.
+- A calibrated split at an unsurveyed junction is an **estimate**, fitted so
+  the downstream counts agree. It is the best available, not a measurement.
+
 ### What you should see on Chattanooga
 
 Every number below is checked by the pipeline itself, so a fresh run that
@@ -192,10 +321,8 @@ stage 4   6 controllers, 32 signal groups, 69 signal heads, 68 detectors,
 ### Tests
 
 ```bash
-python -m pytest vissim/tests/ -q        # 117 tests, no Vissim licence needed
+python -m pytest vissim/tests/ -q        # 143 tests, no Vissim licence needed
 ```
-
----
 
 ---
 
@@ -322,6 +449,7 @@ vissim/
     heads.py        per-lane signal heads, detectors, RTOR             [done]
     conflicts.py    conflict-area right of way                         [done]
     writer.py       IR -> Vissim, over COM                             [done]
+    calibrate.py    unmeasured inflows and turn splits, GEH objective  [done]
     pipeline.py     orchestrator                                       [not built]
   scripts/
     01_import_opendrive.py    netconvert + import + link/movement CSVs
@@ -329,7 +457,8 @@ vissim/
     03_write_demand.py        vehicle inputs + routing decisions
     04_write_signals.py       controllers, heads, detectors, conflicts, RTOR
     05_check_run.py           what Vissim removed during a simulation
-  tests/                      117 tests, no Vissim licence needed
+    06_calibrate_turn_inflow.py   estimate the demand nobody measured
+  tests/                      143 tests, no Vissim licence needed
   work/                       generated artefacts (gitignored)
   VISSIM_previous/            prior ORNL VISSIM work, kept for reference
 ```
@@ -399,6 +528,8 @@ Everything lands in `vissim/work/<scenario>/`:
 | `rbc_timings_<INTID>.prbc` | stage 4 | one Ring Barrier Controller per junction |
 | `<name>_demand_signals.inpx` | stage 4 | the finished model |
 | `<name>_demand_signals*.err` | Vissim | every vehicle it removed; read by stage 5 |
+| `<name>_demand_signals_calibrated.inpx` | stage 6 | the model with calibrated demand |
+| `…_calibrated_history.csv`, `…_summary.json` | stage 6 | every evaluation; before/after and values |
 
 Useful flags: `--progid` pins a Vissim version, `--visible` shows the GUI,
 `--skip-netconvert` reuses an existing `.xodr`, `--no-conflicts` / `--no-rtor` /
@@ -442,7 +573,7 @@ stop control.
   links carry zero volume and six movements are starved — including both of
   junction 4's throughs (1,032 and 958 counted, 0 simulated). That is a data
   gap, not a code gap.
-- **Calibration.** `RealTwin.Calibration.Vissim` is still a stub.
+- **Calibration.** Turn and inflow calibration runs standalone as stage 6. Driver behaviour calibration is not built yet, and stage 6 is not wired into `RealTwin.Calibration.Vissim`, which is still a stub.
 - **Right turn on red.** Not a port of the SUMO path. SUMO has no RTOR concept,
   so RealTwin folds Synchro's `Allow RTOR` into the `tlLogic` state string as a
   permissive `s`. Vissim models it structurally instead — a conflict area or

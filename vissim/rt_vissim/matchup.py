@@ -474,7 +474,15 @@ LETTER_TURNS = {letter: turn for turn, letter in TURN_LETTERS.items()}
 #: put there by a person and is not ours to overwrite.  ``Turn`` is absent by
 #: design: it is derived from the geometry every time, and preserving it would
 #: block the correction that turn ordering applies.
-PRESERVED_COLUMNS = ["Turn_GridSmart", "Turn_Synchro", "Need calibration?"]
+#:
+#: ``Need calibration?`` is absent for the same reason.  It is *derived* -- Y
+#: for a junction with no counts, N once its GridSmart file is read -- and it is
+#: never blank, so a value already in it is the previous run's output, not a
+#: person's.  Preserving it froze the very first run, when no file had been
+#: named yet and every junction was therefore Y: the six surveyed junctions on
+#: Chattanooga stayed Y after their files were filled in, and the column could
+#: no longer say which junctions calibration should touch.
+PRESERVED_COLUMNS = ["Turn_GridSmart", "Turn_Synchro"]
 
 
 def _reconcile_turns(df: pd.DataFrame, group: pd.DataFrame,
