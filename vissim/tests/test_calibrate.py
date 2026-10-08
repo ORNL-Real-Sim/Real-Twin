@@ -26,7 +26,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from rt_vissim.calibrate import (InflowKnob, Problem, SplitKnob,  # noqa: E402
-                                 build_problem, epoch_for, geh, plot_comparison,
+                                 build_problem, counting_sites, epoch_for, geh,
+                                 plot_comparison,
                                  plot_history, read_history, score,
                                  simulations, stick_shares)
 
@@ -142,6 +143,14 @@ class TestScore:
         assert result["share"] == 1.0
         assert result["mean"] == 0.0
 
+    def test_per_approach_score_is_sumos_looser_test(self):
+        """Right approach total, wrong split: passes per approach, fails per movement."""
+        result = score({(1, 2): 700, (1, 3): 300}, {(1, 2): 500, (1, 3): 500})
+        assert result["share"] == 0.0
+        assert result["approaches"] == 1
+        assert result["approach_mean"] == 0.0
+        assert result["approach_share"] == 1.0
+
     def test_share_below_five(self):
         result = score({(1, 2): 100, (3, 4): 0}, {(1, 2): 100, (3, 4): 400})
         assert result["share"] == 0.5
@@ -165,12 +174,163 @@ class TestProgressCharts:
         assert h["best"] == [5.9, 5.2, 5.2]
         assert h["best_share"] == pytest.approx([66.0, 74.0, 74.0])
 
+    def test_the_approach_level_is_read_when_logged(self, tmp_path):
+        """SUMO's level by default; a log without it falls back to movements."""
+        path = tmp_path / "run_ga_history.csv"
+        path.write_text("n,seconds,mean_geh,share_below_5,modelled_total,"
+                        "approach_mean_geh,approach_share_below_5,x0\n"
+                        "1,60,3.0,0.80,9000,7.0,0.60,0.1\n"
+                        "2,60,2.5,0.85,9500,8.0,0.65,0.2\n")
+        h = read_history(path)
+        assert h["level"] == "approach" and h["best"] == [7.0, 7.0]
+        assert read_history(path, "movement")["best"] == [3.0, 2.5]
+        assert read_history(self.history(tmp_path))["level"] == "movement"
+
     def test_charts_are_written(self, tmp_path):
         ga = self.history(tmp_path)
         sa = self.history(tmp_path, "run_sa_history.csv")
         assert plot_history(ga, tmp_path / "p.png", "GA", (5.75, 0.675)).stat().st_size
         assert plot_comparison({"ga": ga, "sa": sa}, tmp_path / "c.png", "all",
                                (5.75, 0.675)).stat().st_size
+
+
+class TestCountingSites:
+    """Each movement is counted on every junction link that carries it alone."""
+
+    @staticmethod
+    def links():
+        from rt_vissim.network import VissimLink
+        def conn(no, a, b):
+            return VissimLink(no, is_connector=True, from_link=a, to_link=b, length=1.5)
+        return {
+            1: VissimLink(1, length=100), 10: VissimLink(10, length=100),
+            11: VissimLink(11, length=100), 12: VissimLink(12, length=100),
+            # a double right turn: two junction links from approach 1 to exit 10
+            156: VissimLink(156, length=10.0), 157: VissimLink(157, length=15.6),
+            # a U-turn stub too short to carry a point
+            170: VissimLink(170, length=0.05),
+            901: conn(901, 1, 156), 902: conn(902, 156, 10),
+            903: conn(903, 1, 157), 904: conn(904, 157, 10),
+            905: conn(905, 1, 170), 906: conn(906, 170, 12),
+            907: conn(907, 1, 11),                        # straight across, no junction link
+        }
+
+    def test_both_paths_of_a_double_turn_are_counted(self):
+        sites, _ = counting_sites(self.links(), [(1, 10)])
+        assert sites[(1, 10)] == [156, 157]
+
+    def test_a_stub_too_short_is_counted_on_its_connector(self):
+        sites, _ = counting_sites(self.links(), [(1, 12)])
+        assert sites[(1, 12)] == [905]
+
+    def test_a_direct_connector_is_its_own_site(self):
+        sites, _ = counting_sites(self.links(), [(1, 11)])
+        assert sites[(1, 11)] == [907]
+
+    def test_a_movement_with_no_path_is_reported(self):
+        sites, notes = counting_sites(self.links(), [(10, 1)])
+        assert (10, 1) not in sites
+        assert any("10 -> 1" in note for note in notes)
+
+    @pytest.mark.skipif(not (WORK / "chatt_links.csv").exists(),
+                        reason="Chattanooga build not present")
+    def test_chattanooga_double_right_and_full_coverage(self):
+        from rt_vissim.network import read_links_csv
+        movements = pd.read_csv(WORK / "chatt_movements.csv")
+        keys = list(zip(movements.FromLinkNo_Vissim.astype(int),
+                        movements.ToLinkNo_Vissim.astype(int)))
+        sites, notes = counting_sites(read_links_csv(WORK / "chatt_links.csv"), keys)
+        assert sites[(35, 10)] == [156, 157]
+        assert len(sites) == len(keys) and not notes
+
+
+class TestLaneRoutes:
+    """A split searches one share per exit, divided among the exit's lane routes."""
+
+    class _Route:
+        def __init__(self, log, key):
+            self.log, self.key = log, key
+
+        def SetAttValue(self, name, value):  # noqa: N802 - COM spelling
+            self.log[(self.key, name)] = value
+
+    def session(self, log):
+        route = self._Route
+        class Collection:  # noqa: D106
+            def __init__(self, make):
+                self.make = make
+
+            def ItemByKey(self, key):  # noqa: N802
+                return self.make(key)
+
+        class Decision:  # noqa: D106
+            def __init__(self, no):
+                self.VehRoutSta = Collection(lambda r: route(log, (no, r)))
+
+        class Net:  # noqa: D106
+            VehicleRoutingDecisionsStatic = Collection(Decision)
+            VehicleInputs = Collection(lambda n: route(log, ("input", n)))
+
+        class Session:  # noqa: D106
+            net = Net()
+        return Session()
+
+    def test_the_through_share_is_halved_over_two_lanes(self):
+        """Exits 23 and 24; 24 is a two-lane through written as routes 3 and 5."""
+        from rt_vissim.calibrate import apply_solution
+        knob = SplitKnob(8, 15, "13", (2, 3), (23, 24), zero_routes=(1,), intervals=1,
+                         lane_routes={24: ((3, 0.5), (5, 0.5))})
+        log = {}
+        apply_solution(self.session(log), Problem(splits=[knob]), [0.2])
+        flows = {key[1]: value for (key, name), value in log.items() if name == "RelFlow(1)"}
+        assert flows == pytest.approx({2: 0.2, 3: 0.4, 5: 0.4, 1: 0.0})
+
+    def test_lane_routes_add_no_variables(self):
+        knob = SplitKnob(8, 15, "13", (2, 3), (23, 24), lane_routes={24: ((3, 0.5), (5, 0.5))})
+        assert knob.size == 1
+
+
+class TestJunctionPaths:
+    """Every lane path through a junction, as stage 3 routes and stage 6 counts."""
+
+    def test_two_lane_paths_and_their_lanes(self):
+        from rt_vissim.network import VissimLink, junction_paths
+        links = TestCountingSites.links()
+        links[157] = VissimLink(157, length=15.6, num_lanes=2)
+        assert junction_paths(links, 1, 10) == [(156, 1), (157, 2)]
+
+    def test_no_path_is_empty(self):
+        from rt_vissim.network import junction_paths
+        assert junction_paths(TestCountingSites.links(), 10, 1) == []
+
+
+class TestSavedModelRuns:
+    """A calibrated model saved elsewhere takes its signal timing files along."""
+
+    @staticmethod
+    def stage6():
+        import importlib.util
+        path = Path(__file__).resolve().parents[1] / "scripts" / "06_calibrate_turn_inflow.py"
+        spec = importlib.util.spec_from_file_location("stage6", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_data_relative_files_are_copied(self, tmp_path):
+        src, dst = tmp_path / "work", tmp_path / "out"
+        src.mkdir()
+        dst.mkdir()
+        (src / "net.inpx").write_text('<sc supplyFile1="#data#rbc_4.prbc" supplyFile2=""/>')
+        (src / "rbc_4.prbc").write_text("timings")
+        copied = self.stage6().copy_supply_files(src / "net.inpx", dst / "net_ga.inpx")
+        assert copied == ["rbc_4.prbc"]
+        assert (dst / "rbc_4.prbc").read_text() == "timings"
+
+    def test_nothing_is_copied_into_the_same_folder(self, tmp_path):
+        (tmp_path / "net.inpx").write_text('"#data#rbc_4.prbc"')
+        (tmp_path / "rbc_4.prbc").write_text("timings")
+        assert self.stage6().copy_supply_files(tmp_path / "net.inpx",
+                                               tmp_path / "net_ga.inpx") == []
 
 
 @pytest.mark.skipif(not (WORK / "chatt_demand_signals.inpx").exists(),
@@ -214,6 +374,14 @@ class TestBuildProblemOnChattanooga:
     def test_twelve_variables_as_in_sumo(self):
         problem, _ = self.build()
         assert problem.size == 12
+
+    def test_lane_routes_are_one_variable_shared_by_lanes(self):
+        """Approach 7's through has a 3-lane and a 1-lane path: one share, split 3:1."""
+        problem, _ = self.build()
+        knob = next(k for k in problem.splits if k.decision_no == 25)
+        assert knob.exits == (56, 57) and knob.size == 1
+        shares = [share for _route, share in knob.lane_routes[56]]
+        assert sorted(shares) == pytest.approx([0.25, 0.75])
 
     def test_a_junction_marked_n_is_left_out(self):
         problem, notes = self.build(needs={"5", "13", "15"})   # J7 marked N

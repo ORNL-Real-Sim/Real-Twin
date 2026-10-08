@@ -49,6 +49,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -58,9 +60,10 @@ sys.path.insert(1, str(Path(__file__).resolve().parents[2]))
 
 import pandas as pd  # noqa: E402
 
-from rt_vissim.calibrate import (ALGORITHMS, MAX_INFLOW, TARGET_GEH,  # noqa: E402
+from rt_vissim.calibrate import (ALGORITHMS, MAX_INFLOW, OBJECTIVES,  # noqa: E402
+                                 TARGET_GEH,
                                  TARGET_SHARE, Evaluator, apply_solution,
-                                 build_problem, epoch_for, make_optimiser,
+                                 build_problem, counting_sites, epoch_for, make_optimiser,
                                  plot_comparison, plot_history, simulations)
 from rt_vissim.demand import build_turn_counts  # noqa: E402
 from rt_vissim.matchup import MatchupTable  # noqa: E402
@@ -101,6 +104,26 @@ def config_defaults(config_path: Path) -> dict:
     return settings
 
 
+def copy_supply_files(net_path: Path, out_path: Path) -> list[str]:
+    """Copy the files the model names relative to its own folder.
+
+    Vissim stores each signal controller's timing file as ``#data#<name>`` --
+    "next to the network file".  A model saved into another folder still names
+    them that way, and without them Vissim refuses to start the run ("The
+    simulation run could not be initialized").
+    """
+    if net_path.parent == out_path.parent:
+        return []
+    copied = []
+    text = net_path.read_text(encoding="utf-8", errors="ignore")
+    for name in sorted(set(re.findall(r'"#data#([^"]+)"', text))):
+        source = net_path.parent / name
+        if source.exists():
+            shutil.copy2(source, out_path.parent / name)
+            copied.append(name)
+    return copied
+
+
 def draw_charts(out_path: Path, algo: str, before: dict | None = None) -> list[Path]:
     """Chart a run's progress, and compare it with the other algorithms' runs.
 
@@ -130,12 +153,30 @@ def draw_charts(out_path: Path, algo: str, before: dict | None = None) -> list[P
     return written
 
 
+def approach_table(before: dict, after: dict, counts: pd.DataFrame) -> pd.DataFrame:
+    """One row per approach, laid out like SUMO's: junction, bound, counted, modelled, GEH."""
+    names = (counts.assign(Bound=counts.Turn.str[0])
+             .groupby("FromLinkNo_Vissim")[["IntersectionName", "Bound"]].first())
+    rows = []
+    for (link, want, got_before, geh_before), (_l, _w, got_after, geh_after) in zip(
+            before["by_approach"], after["by_approach"]):
+        rows.append({"IntersectionName": names.IntersectionName.get(link, "?"),
+                     "Bound": names.Bound.get(link, "?"), "approach_link": link,
+                     "counted": round(want), "modelled_before": round(got_before),
+                     "GEH_before": round(geh_before, 2), "modelled_after": round(got_after),
+                     "GEH_after": round(geh_after, 2)})
+    return pd.DataFrame(rows).sort_values(["IntersectionName", "Bound"])
+
+
 def report(label: str, result: dict) -> None:
-    met = "meets" if result["share"] >= TARGET_SHARE else "does not meet"
-    print(f"  :{label}: GEH<{TARGET_GEH:.0f} on {result['share']:.1%} of "
-          f"{result['matched']} movements, mean GEH {result['mean']:.2f}, "
-          f"modelled {result['modelled_total']:.0f} of {result['counted_total']:.0f} "
-          f"counted -- {met} the {TARGET_SHARE:.0%} target")
+    """The target is judged per approach, as SUMO judges it; movements are shown too."""
+    met = "meets" if result["approach_share"] >= TARGET_SHARE else "does not meet"
+    print(f"  :{label}: per approach (SUMO's test): GEH<{TARGET_GEH:.0f} on "
+          f"{result['approach_share']:.1%} of {result['approaches']} approaches, "
+          f"mean GEH {result['approach_mean']:.2f} -- {met} the {TARGET_SHARE:.0%} target")
+    print(f"  :{' ' * len(label)}  per movement: GEH<{TARGET_GEH:.0f} on {result['share']:.1%} of "
+          f"{result['matched']} movements, mean GEH {result['mean']:.2f}; modelled "
+          f"{result['modelled_total']:.0f} of {result['counted_total']:.0f} counted")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -159,6 +200,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="Override the algorithm's epoch from the config")
     parser.add_argument("--pop-size", type=int, default=None,
                         help="Override the population size (GA needs at least 10)")
+    parser.add_argument("--objective", choices=OBJECTIVES, default="approach",
+                        help="What the search minimises: mean GEH per approach, as "
+                             "SUMO's calibration does (default), or per movement")
     parser.add_argument("--budget", type=int, default=None,
                         help="Set the epoch to spend about this many simulations, "
                              "to compare algorithms on equal terms")
@@ -213,12 +257,17 @@ def main(argv: list[str] | None = None) -> int:
     table["J"] = table["JunctionID_OpenDrive"].ffill().astype(str).str.removesuffix(".0")
     flagged = set(table.loc[table["Need calibration?"].astype(str).str.upper() == "Y", "J"])
 
-    problem, notes = build_problem(net_path, read_links_csv(args.links),
+    links = read_links_csv(args.links)
+    problem, notes = build_problem(net_path, links,
                                    pd.read_csv(args.movements), counted_approaches,
                                    counted, args.max_inflow, flagged)
+    sites, site_notes = counting_sites(links, counted)
+    notes += site_notes
     print(f"  :{len(counted)} counted movements, {counts.Count.sum():.0f} vehicles, "
           f"{args.start}-{args.end}")
     print(f"  :Junctions marked for calibration: {', '.join(sorted(flagged, key=int))}")
+    print(f"  :Counted by data collection: {len(sites)} movements over "
+          f"{sum(len(s) for s in sites.values())} junction links, every lane")
     print(f"  :{problem.size} variables -- {len(problem.inflows)} inflows, "
           f"{len(problem.splits)} splits:")
     for line in problem.describe():
@@ -256,8 +305,8 @@ def main(argv: list[str] | None = None) -> int:
 
     with VissimSession(args.progid, visible=False) as session:
         session.load_net(net_path)
-        evaluator = Evaluator(session, problem, period, seed=args.seed,
-                              history=history)
+        evaluator = Evaluator(session, problem, period, sites, seed=args.seed,
+                              history=history, objective=args.objective)
 
         print("  :Scoring the model as it stands ...", flush=True)
         before = evaluator.run(None)
@@ -275,9 +324,17 @@ def main(argv: list[str] | None = None) -> int:
         apply_solution(session, problem, best_solution)
         after = evaluator.run(None)
         session.save_net_as(out_path)
+    copied = copy_supply_files(net_path, out_path)
+    if copied:
+        print(f"  :Copied beside it, as the model needs them: {', '.join(copied)}")
 
     report("Before", before)
     report("After ", after)
+    approaches = approach_table(before, after, counts)
+    approaches.to_csv(out_path.with_name(f"{out_path.stem}_approaches.csv"), index=False)
+    print("  :Per approach, as SUMO scores it (vehicles in the hour):")
+    for line in approaches.to_string(index=False).splitlines():
+        print(f"  :   {line}")
     print(f"  :{evaluator.count} simulations in {(time.time() - began) / 60:.0f} min")
     values = problem.decode(best_solution)
     for label, value in values:
@@ -298,12 +355,15 @@ def main(argv: list[str] | None = None) -> int:
     summary.write_text(json.dumps({
         "network": net_path.name, "calibrated": out_path.name,
         "period": [args.start, args.end],
-        "algorithm": args.algo, "settings": settings, "optimiser_seed": args.ga_seed,
+        "algorithm": args.algo, "objective": args.objective, "settings": settings,
+        "optimiser_seed": args.ga_seed,
         "vissim_seed": args.seed, "evaluations": evaluator.count,
         "before": {k: before[k] for k in ("mean", "share", "matched",
-                                          "modelled_total", "counted_total")},
+                                          "modelled_total", "counted_total",
+                   "approach_mean", "approach_share", "approaches")},
         "after": {k: after[k] for k in ("mean", "share", "matched",
-                                        "modelled_total", "counted_total")},
+                                        "modelled_total", "counted_total",
+                   "approach_mean", "approach_share", "approaches")},
         "values": [{"knob": label, "value": value} for label, value in values],
         "solution": problem.physical(best_solution),
     }, indent=2, default=str), encoding="utf-8")

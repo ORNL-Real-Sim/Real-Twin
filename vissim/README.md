@@ -25,7 +25,7 @@ here, and the SUMO one is only ever used for **comparison**.
 | 3 | `03_write_demand.py` | counts → vehicle inputs + routing decisions | `chatt_demand.inpx` |
 | 4 | `04_write_signals.py` | Synchro → controllers, heads, detectors | `chatt_demand_signals.inpx` |
 | 5 | `05_check_run.py` | what Vissim removed during a run | a report |
-| 6 | `06_calibrate_turn_inflow.py` | estimate the demand nobody measured | `*_calibrated.inpx` |
+| 6 | `06_calibrate_turn_inflow.py` | estimate the demand nobody measured | `*_calibrated_<algo>.inpx` |
 
 Steps 1–4 build the model and step 5 checks it. Step 6 is optional and takes
 hours; run it once the model is right.
@@ -156,6 +156,23 @@ The 4 that remain are on a 7.5 m entry stub where vehicles are generated 3.8 m
 before the diverge; there is no upstream decision to combine with, so that one
 needs a longer entry link rather than better information.
 
+**A turn the road allows from two lanes gets a route for each.** The OpenDRIVE
+import gives every lane-to-lane connection its own junction link, so a double
+left has two paths through the junction. A route created with only its
+destination follows the one path Vissim finds shortest, and a vehicle's lane is
+set by the connector its route uses ("The vehicle performs a lane change
+required to reach the next connector of a vehicle route", manual 1.20.10) — so
+every left-turner would queue in one lane. Step 3 writes one route per path,
+pinned with `UpdateLinkSequence` as PTV's COM example does, and shares the
+measured flow between them by lanes. The movement's total is the measured one;
+only the lane use is new.
+
+On Chattanooga 9 movements have two paths. On the I-75 SB off-ramp (link 17),
+whose ~400 left-turners have two lanes, the single route put them all in one:
+the queue reached the network edge and 42 vehicles never entered. With a route
+per lane the uncalibrated model gets 612 of the ramp's 690 counted vehicles
+through instead of 445.
+
 ### Step 4 — signal control
 
 ```bash
@@ -188,17 +205,17 @@ phases cycle, no two greens conflict, and the counts that *do* arrive match.
 Chattanooga was losing 101 vehicles of 4,061 that way and it took watching the
 animation to notice.
 
-Run it after simulating, in the GUI or with `--run`:
+Run it after simulating, in the GUI or with `--run`. Chattanooga, 15 minutes:
 
 ```
 :2 routing decisions sit close to their first connector, which is where
  vehicles get stranded:
+:   decision 27: 2.35 m -- Junction 7 SB (J7)
 :   decision 20: 3.77 m -- 0416) Shallowford Rd & Lifestyle Way NB (J4)
-:12 vehicles were removed during the run.
-:   4 reached the end of a link and could not enter the connector their route
+:5 vehicles were removed during the run.
+:   5 reached the end of a link and could not enter the connector their route
      needs. They were in the wrong lane with no room left to move over:
-:      link 43: 4 vehicles, route 20 - 1 into connector 10080
-:   8 waited for a lane change until Vissim removed them.
+:      link 43: 5 vehicles, route 20 - 1 into connector 10080
 ```
 
 The two causes need different fixes. **Stranded** means the vehicle was in the
@@ -212,19 +229,14 @@ found a gap, which is congestion or geometry.
 
 Junctions without a camera give step 3 nothing to write: their entry links get
 volume zero and their approaches an even split across the exits. That
-placeholder shows — on Chattanooga the model puts **6,543** vehicles through the
-counted movements against **13,786** counted, and the worst movements are not
-slightly off but empty:
-
-```
-55 ->  3   counted 1032   modelled 0
-38 ->  6   counted  958   modelled 0
-```
+placeholder sends half the main road down each unsurveyed side street, and
+every main-road approach downstream comes up short — on Chattanooga the worst
+carries 92 vehicles of the 1,072 counted.
 
 What entered at the unsurveyed junctions can still be inferred, because it has
 to leave through movements that *were* counted. Step 6 searches for the inflows
-and turn splits there that make the counted movements come out right, scored by
-**GEH** — the method of RealTwin's SUMO `TurnInflowCali`, on the same variables.
+and turn splits there that make the counts come out right, scored by **GEH** —
+the method of RealTwin's SUMO `TurnInflowCali`, on the same variables.
 
 **First, see what it will calibrate** — no licence needed:
 
@@ -234,11 +246,12 @@ python vissim/scripts/06_calibrate_turn_inflow.py --dry-run
 
 ```
 :Junctions marked for calibration: 5, 7, 13, 15
+:Counted by data collection: 80 movements over 85 junction links, every lane
 :12 variables -- 4 inflows, 8 splits:
 :   inflow  input 7 on link 42 (J5)
 :   ...
 :   split   decision 25 for approach 7 (J7), exits (56, 57)
-:GA: epoch 10, population 10, pc 0.75, pm 0.1 -- about 110 simulations
+:GA: model_selection BaseGA, epoch 10, pop_size 10, pc 0.75, pm 0.1 -- about 110 simulations
 ```
 
 Nothing is listed by hand; the variables are read off the network:
@@ -247,12 +260,15 @@ Nothing is listed by hand; the variables are read off the network:
   approach traces to it;
 - a **split** for every routing decision on an approach with no counts. One
   variable per split, not one per exit — with two exits the first takes `x` and
-  the second `1 − x`. **U-turns stay at zero**; freeing them lets the search
-  send traffic round a turnaround to close a gap elsewhere;
+  the second `1 − x` — and one per exit however many lane routes step 3 wrote
+  to it. **U-turns stay at zero**; freeing them lets the search send traffic
+  round a turnaround to close a gap elsewhere;
 - only at junctions marked `Need calibration? = Y`.
 
 On Chattanooga that is **4 + 8 = 12**, the same as SUMO's `N_Variable` for this
-network.
+network. The search runs every variable over 0–1 and scales inflows to veh/h
+(ceiling `max_inflow`, 200 as in SUMO) only when it writes them, so a step size
+means the same fraction of every variable's range.
 
 **Then run it:**
 
@@ -264,42 +280,73 @@ python vissim/scripts/06_calibrate_turn_inflow.py \
     --movements vissim/work/mynet/chatt_movements.csv
 ```
 
-It is a genetic algorithm from mealpy, as SUMO uses, with `epoch`, `pop_size`,
-`pc` and `pm` taken from `realtwin_config.yaml` so both pipelines run the same
-search. Each evaluation is one full simulation of the demand hour — about two
-minutes on Chattanooga — so the default **110 evaluations take about 3½ hours**.
-For a quick check that it moves the right way, use one epoch:
+**The target is SUMO's, judged the way SUMO judges it:** each approach's
+movements summed, one GEH per approach (`result_analysis_on_EdgeData`), GEH
+below 5 on 85% of approaches. The search minimises mean GEH per approach, as
+SUMO's does (`--objective movement` minimises it per turning movement instead).
+Both levels are reported. Per approach is the harsher test where a whole
+approach is short — GEH grows with volume, and an approach is three or four
+movements added together.
 
-```bash
-python vissim/scripts/06_calibrate_turn_inflow.py --epoch 1     # ~20 runs, ~40 min
-```
+**Three algorithms**, the ones SUMO's calibration offers, each with its block in
+`realtwin_config.yaml`: `--algo ga` (default), `sa` or `ts`. At the same epoch
+they cost very different numbers of simulations — 110, 12 and 102 at the
+defaults — so `--budget N` sets each one's epoch to spend about N, for a fair
+comparison. Each simulation is one demand hour, about a minute on Chattanooga,
+so the default GA takes about **2 hours**; `--budget 25` is a 30-minute check.
+
+**Counting.** Each counted movement is measured by data collection points, one
+on every lane of each junction link that carries that movement alone — found
+from the connectors, so a double turn is counted on both its lanes. They are
+placed over COM when step 6 opens the model; the input network is not changed.
+Vissim's node evaluation is not used, and cannot be: "If an edge between nodes
+leads via more than three branchings, it is ignored during node evaluation"
+(manual, Evaluating nodes). Every main-road approach that fans out into turn
+bays is such an edge, and node evaluation reported five of Chattanooga's 22
+approaches — its busiest — as carrying no traffic at all.
 
 The Vissim random seed is fixed for every evaluation, so the search sees the
 effect of the parameters and not of the dice. Every evaluation is appended to
 the history file as it finishes, so a long run can be watched, and a stopped
 one still says what it found.
 
-**What it writes**, beside the input network:
+**What it writes**, beside the output network (default
+`<name>_calibrated_<algo>.inpx`; with `--out` elsewhere the signal timing files
+are copied along, since Vissim reads them from the model's folder):
 
 | file | what it is |
 |---|---|
-| `*_calibrated.inpx` | the model with the best demand found |
-| `*_calibrated_history.csv` | one row per evaluation: mean GEH, share under 5, the values tried |
-| `*_calibrated_summary.json` | before and after scores, and each calibrated value, labelled |
+| `*_calibrated_<algo>.inpx` | the model with the best demand found, counters included |
+| `…_history.csv` | one row per simulation: GEH per approach and per movement, the values tried |
+| `…_summary.json` | before and after scores, and each calibrated value, labelled |
+| `…_approaches.csv` | one row per approach, as SUMO lays it out: counted, modelled and GEH before and after |
+| `…_progress.png` | GEH per approach against simulation: every one, and the best so far |
+| `…_comparison.png` | the best-so-far curves of every algorithm run beside it |
 
-**The target** is RealTwin's: GEH below 5 on 85% of counted movements. Before
-calibration Chattanooga sits at **67.5%**, mean GEH 5.75.
+`--plot-only` redraws the charts from a finished run's files.
 
-**No data collection points are needed.** Vissim's node evaluation reports
-volume per turning movement, keyed by the same (from link, to link) pair the
-MatchupTable and the counts use. The earlier ORNL calibration notebooks
-hand-placed 68 data collection measurements to get the same numbers.
+**On Chattanooga** (GA, 110 simulations, 122 min), against SUMO's saved GA run
+scored by SUMO's own code:
 
-Two things worth knowing before reading the result:
+```
+                         per approach (22)       per movement (80)
+                         mean GEH   GEH<5        mean GEH   GEH<5
+as built                   8.86     59.1%          3.69     77.5%
+Vissim, GA                 3.85     77.3%          1.75     90.0%
+SUMO,   GA                 4.28     77.3%            --       --
+```
 
-- A genetic algorithm converges slowly. 110 evaluations over 12 variables will
-  improve the demand a long way but may not finish converging — true of SUMO's
-  run at the same settings too. Raise `--epoch` for more.
+Neither reaches 85% per approach, and both fail on the **same five**: 0413 E,
+0414 E, 0416 E, 0416 W and 0417 E — main-road approaches downstream of the
+unsurveyed junctions J5 and J7. Two simulators missing the same approaches
+suggests the cause lies in the counts or the unsurveyed junctions rather than
+in either model.
+
+Two things worth knowing before reading a result:
+
+- 110 evaluations over 12 variables improve the demand a long way but do not
+  finish converging. A 25-simulation run is a quick check, not a result; compare
+  algorithms at a common `--budget`.
 - A calibrated split at an unsurveyed junction is an **estimate**, fitted so
   the downstream counts agree. It is the best available, not a measurement.
 
@@ -311,7 +358,8 @@ differs means something is wrong:
 ```
 stage 1   441 links (186 links, 255 connectors), 10 junctions
 stage 2   104 movements, 10 junctions, 34 approaches
-stage 3   16 vehicle inputs, 30 routing decisions, 100 routes, 4,061 vehicles
+stage 3   16 vehicle inputs, 30 routing decisions, 109 routes (18 pinned to a
+          lane path), 4,061 vehicles
 stage 4   6 controllers, 32 signal groups, 69 signal heads, 68 detectors,
           24 right-turn-on-red stop signs
           Coverage: 69/69 lanes carry exactly one signal head,
@@ -321,7 +369,7 @@ stage 4   6 controllers, 32 signal groups, 69 signal heads, 68 detectors,
 ### Tests
 
 ```bash
-python -m pytest vissim/tests/ -q        # 143 tests, no Vissim licence needed
+python -m pytest vissim/tests/ -q        # 166 tests, no Vissim licence needed
 ```
 
 ---
@@ -458,7 +506,7 @@ vissim/
     04_write_signals.py       controllers, heads, detectors, conflicts, RTOR
     05_check_run.py           what Vissim removed during a simulation
     06_calibrate_turn_inflow.py   estimate the demand nobody measured
-  tests/                      143 tests, no Vissim licence needed
+  tests/                      166 tests, no Vissim licence needed
   work/                       generated artefacts (gitignored)
   VISSIM_previous/            prior ORNL VISSIM work, kept for reference
 ```
@@ -528,8 +576,9 @@ Everything lands in `vissim/work/<scenario>/`:
 | `rbc_timings_<INTID>.prbc` | stage 4 | one Ring Barrier Controller per junction |
 | `<name>_demand_signals.inpx` | stage 4 | the finished model |
 | `<name>_demand_signals*.err` | Vissim | every vehicle it removed; read by stage 5 |
-| `<name>_demand_signals_calibrated.inpx` | stage 6 | the model with calibrated demand |
-| `…_calibrated_history.csv`, `…_summary.json` | stage 6 | every evaluation; before/after and values |
+| `<name>_demand_signals_calibrated_<algo>.inpx` | stage 6 | the model with calibrated demand |
+| `…_history.csv`, `…_summary.json`, `…_approaches.csv` | stage 6 | every simulation; before/after, values; per-approach GEH |
+| `…_progress.png`, `…_comparison.png` | stage 6 | GEH per approach against simulation |
 
 Useful flags: `--progid` pins a Vissim version, `--visible` shows the GUI,
 `--skip-netconvert` reuses an existing `.xodr`, `--no-conflicts` / `--no-rtor` /
@@ -545,23 +594,22 @@ instance, and when one script exits it takes the other's instance down.
 
 ## Status
 
-**Working:** OpenDRIVE conversion with correct georeferencing, COM import into
-Vissim 2026, link/connector extraction, junction derivation, approach bearings,
-turn classification — validated against the SUMO MatchupTable on Chattanooga.
-MatchupTable generation and read-back, laid out so columns A–N match the SUMO
-table position for position. GridSmart ingestion into vehicle inputs and static
-routing decisions — all six Chattanooga exports parse to 96 quarter-hour bins.
+**Working, end to end on Chattanooga:** OpenDRIVE conversion with correct
+georeferencing and COM import into Vissim 2026 (stage 1); junctions, bearings
+and turns derived from the Vissim network and matching the SUMO MatchupTable on
+all 104 movements (stages 1–2); GridSmart counts written as vehicle inputs and
+static routing decisions, one route per lane path (stage 3); Synchro timings as
+`.prbc` Ring Barrier Controllers with per-lane signal heads, detectors, conflict
+areas and right-turn-on-red (stage 4); a report of every vehicle Vissim removed
+(stage 5); turn and inflow calibration with GA, SA or TS, measured by data
+collection and judged per approach as SUMO judges it (stage 6).
 
-MatchupTable auto-fill. As in the SUMO flow, the only hand input is a
-per-junction seed — which GridSmart file and which Synchro `INTID` belong to each
-junction, plus the one `File_Synchro`; 13 of Chattanooga's 104 rows. The
-intersection name, date, `Need calibration?` and all 80 `Turn_GridSmart` /
-`Turn_Synchro` codes are derived. Seeded from the SUMO table's own user input,
-102 of 104 codes in each column match it exactly.
+The only hand input is SUMO's: which GridSmart file and which Synchro `INTID`
+belong to each surveyed junction, filled into the MatchupTable after stage 2.
+Everything else is derived from the network.
 
-**Next:** the COM writer. Nothing reaches a `.inpx` until it exists, so demand
-cannot yet be inspected in Vissim. Then Synchro UTDF → `.prbc`, then RTOR and
-stop control.
+**Not built:** driver-behaviour calibration, and wiring the stages into
+`RealTwin` (`pipeline.py`, `RealTwin.Calibration.Vissim`).
 
 ## Open questions
 
@@ -569,15 +617,22 @@ stop control.
   for a 6 ft detector 224 ft upstream (an advance detector) and both are placed
   at the stop bar instead, raised to a car length.  Fine for presence detection,
   wrong if advance detection matters.
-- **Counts.** Junctions 5, 7, 13 and 15 have no GridSmart data, so four entry
-  links carry zero volume and six movements are starved — including both of
-  junction 4's throughs (1,032 and 958 counted, 0 simulated). That is a data
-  gap, not a code gap.
-- **Calibration.** Turn and inflow calibration runs standalone as stage 6. Driver behaviour calibration is not built yet, and stage 6 is not wired into `RealTwin.Calibration.Vissim`, which is still a stub.
+- **The 85% target.** Neither pipeline reaches it per approach on Chattanooga
+  (both 77.3%), and both miss the same five main-road approaches downstream of
+  the unsurveyed junctions J5 and J7. Not yet investigated: whether the counts
+  along that stretch balance at all, and whether the 200 veh/h inflow ceiling
+  (SUMO's) is what limits the search — one inflow finishes at 182.
+- **Counts.** Junctions 5, 7, 13 and 15 have no GridSmart data, so their entry
+  links start at zero volume and their approaches at an even split; stage 6
+  estimates both. That is a data gap, not a code gap.
+- **Entry link 43.** A 7.5 m stub whose routing decision sits 3.8 m before the
+  diverge; Vissim strands about 29 of its 49 vehicles an hour. Needs a longer
+  entry link.
+- **Calibration.** Driver-behaviour calibration is not built, and stage 6 is not
+  wired into `RealTwin.Calibration.Vissim`, which is still a stub.
 - **Right turn on red.** Not a port of the SUMO path. SUMO has no RTOR concept,
   so RealTwin folds Synchro's `Allow RTOR` into the `tlLogic` state string as a
-  permissive `s`. Vissim models it structurally instead — a conflict area or
-  priority rule on the right-turn connector, with the signal head omitted or set
-  to allow red-on-right — so this stage has to be designed against Vissim
-  semantics rather than translated. Same for stop/yield control on unsignalised
-  approaches.
+  permissive `s`. Stage 4 models it as Vissim does, structurally: a stop sign
+  on the right-turn connector that releases on red once the vehicle has
+  stopped. No stop or yield signs are written on unsignalised approaches; who
+  gives way there is whatever their conflict areas say.

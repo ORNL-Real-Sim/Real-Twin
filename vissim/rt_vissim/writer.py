@@ -28,7 +28,7 @@ midnight, so every interval is shifted by the scenario's start time.
 from __future__ import annotations
 
 from .ir import RoutingDecision, VehicleInput
-from .network import _opt_int
+from .network import _opt_int, junction_paths
 from .routes import (FALLBACK_MAX_SPEED_KMH, ROUTE_END_OFFSET, minimum_gap,
                      plan_decision_positions)
 
@@ -167,6 +167,22 @@ def enable_route_lookahead(session) -> int:
     return changed
 
 
+def pin_route(session, route, site: int) -> bool:
+    """Make a static route pass through ``site``, a junction link or connector.
+
+    ``UpdateLinkSequence`` takes ``[link, offset, ...]`` -- "a list of each link
+    and its offset that should be part of the route" -- and recomputes the
+    rest (PTV Vissim 2026, Examples Training/COM/Network Objects Adding).
+
+    Returns:
+        Whether the route's link sequence now passes through ``site``.
+    """
+    link = session.net.Links.ItemByKey(site)
+    route.UpdateLinkSequence([link, float(link.AttValue("Length2D")) / 2])
+    sequence = str(route.AttValue("LinkSeq") or "").split(",")
+    return str(site) in (s.strip() for s in sequence)
+
+
 def write_routing_decisions(session, decisions: list[RoutingDecision],
                             sim_start_time: float, links: dict,
                             sim_resolution: int = 10,
@@ -213,7 +229,7 @@ def write_routing_decisions(session, decisions: list[RoutingDecision],
         list(by_approach), links, destinations, gap)
     warnings.extend(place_warnings)
 
-    made_decisions = made_routes = 0
+    made_decisions = made_routes = made_pinned = 0
     for (junction_id, from_link), group in sorted(
             by_approach.items(), key=lambda kv: (str(kv[0][0]), kv[0][1])):
         anchor, position = placements.get((junction_id, from_link), (from_link, gap))
@@ -242,12 +258,34 @@ def write_routing_decisions(session, decisions: list[RoutingDecision],
             except Exception:  # noqa: BLE001
                 warnings.append(f"Exit link {exit_link} not found; route skipped.")
                 continue
-            route = vrd.VehRoutSta.AddVehicleRouteStatic(0, dest, ROUTE_END_OFFSET)
-            made_routes += 1
-            for decision in group:
-                number = numbering[(decision.interval_start, decision.interval_end)]
-                route.SetAttValue(f"RelFlow({number})",
-                                  float(decision.routes.get(exit_link, 0.0)))
+            # A route given only its destination follows the one path Vissim
+            # finds shortest, and a vehicle's lane is set by the connector its
+            # route uses ("The vehicle performs a lane change required to reach
+            # the next connector of a vehicle route", manual 1.20.10).  So a
+            # turn the road allows from two lanes would be driven from one.
+            # Each path gets its own route instead, pinned to it as PTV's COM
+            # example does, carrying the measured flow in proportion to lanes.
+            paths = junction_paths(links, from_link, exit_link)
+            shares = ([(None, 1.0)] if len(paths) < 2 else
+                      [(site, lanes / sum(n for _s, n in paths)) for site, lanes in paths])
+            for site, share in shares:
+                route = vrd.VehRoutSta.AddVehicleRouteStatic(0, dest, ROUTE_END_OFFSET)
+                made_routes += 1
+                if site is not None:
+                    pinned = pin_route(session, route, site)
+                    route.SetAttValue("Name", f"via {site}")
+                    made_pinned += 1
+                    if not pinned:
+                        warnings.append(f"Route from {from_link} to {exit_link} could not "
+                                        f"be pinned through {site}; Vissim chose its own path.")
+                for decision in group:
+                    number = numbering[(decision.interval_start, decision.interval_end)]
+                    route.SetAttValue(f"RelFlow({number})",
+                                      float(decision.routes.get(exit_link, 0.0)) * share)
+
+    if made_pinned:
+        warnings.append(f"{made_pinned} routes pinned to one lane path each, for movements "
+                        "the road allows from more than one lane.")
 
     if combine:
         changed = enable_route_lookahead(session)

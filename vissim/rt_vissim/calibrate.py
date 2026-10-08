@@ -48,11 +48,18 @@ variable range over ``[0, 1]`` independently.  U-turns are held at zero
 throughout -- the demand stage does not model them, and freeing them lets an
 optimiser send traffic round a turnaround to close a gap somewhere else.
 
-No data collection points are needed.  Vissim's node evaluation reports volume
-per turning movement, keyed by the same (from link, to link) pair the
-MatchupTable and the counts use, so the objective reads straight out of it.
-The earlier notebooks hand-placed 68 data collection measurements and kept
-dictionaries mapping them to approaches; none of that has to be maintained.
+Each counted movement is measured by data collection points, one per lane on
+the junction link that carries that movement and nothing else
+(:func:`counting_sites`, :func:`place_counters`).  The earlier ORNL notebooks
+did the same with 68 hand-placed measurements; here they are placed over COM
+when the model is opened, from the network's own topology.
+
+Node evaluation looks like the obvious source and is not usable for this:
+"If an edge between nodes leads via more than three branchings, it is ignored
+during node evaluation" (manual, Evaluating nodes).  Every main-road approach
+whose lanes fan out into turn bays before the stop line is such an edge, and
+node evaluation reported those approaches -- five of Chattanooga's 22, its
+busiest -- as carrying no traffic at all.
 """
 
 from __future__ import annotations
@@ -68,6 +75,11 @@ from pathlib import Path
 #: movements that have a count to compare against.
 TARGET_GEH = 5.0
 TARGET_SHARE = 0.85
+
+#: What the search minimises and the target is judged on.  ``"approach"`` is
+#: SUMO's: each approach's movements summed, one GEH per approach
+#: (``result_analysis_on_EdgeData``).  ``"movement"`` scores every counted turn.
+OBJECTIVES = ("approach", "movement")
 
 #: Vehicles per hour, the ceiling on an unmeasured entry.  The same value and
 #: unit as SUMO's ``max_inflow`` (``realtwin_config.yaml``, default 200): its
@@ -165,6 +177,11 @@ class SplitKnob:
         exits: The exit link each free route reaches, in the same order.
         zero_routes: U-turn route numbers, pinned at zero.
         intervals: How many time intervals the routes carry.
+        lane_routes: For an exit the road reaches from more than one lane,
+            ``{exit: ((route, share of the exit's flow), ...)}`` -- stage 3
+            writes one route per lane path.  The search still sets one share
+            per exit; it is divided among these routes.  Absent means the
+            exit has the one route in ``free_routes``.
     """
 
     decision_no: int
@@ -174,10 +191,16 @@ class SplitKnob:
     exits: tuple[int, ...] = ()
     zero_routes: tuple[int, ...] = ()
     intervals: int = 4
+    lane_routes: dict[int, tuple[tuple[int, float], ...]] = field(default_factory=dict)
 
     @property
     def size(self) -> int:
         return max(0, len(self.free_routes) - 1)
+
+    def routes_of(self, index: int) -> tuple[tuple[int, float], ...]:
+        """The routes carrying exit ``index``'s flow, each with its share of it."""
+        exit_no = self.exits[index]
+        return self.lane_routes.get(exit_no, ((self.free_routes[index], 1.0),))
 
     def label(self) -> str:
         return (f"split   decision {self.decision_no} for approach {self.approach} "
@@ -258,6 +281,23 @@ def _route_sequence(route) -> list[int]:
     return out
 
 
+def _first_rel_flow(route) -> float:
+    """A route's relative flow in its first interval, from ``relFlow="2 0:50.5, ..."``."""
+    text = route.get("relFlow") or ""
+    try:
+        return float(text.split(",")[0].split(":")[1])
+    except (IndexError, ValueError):
+        return 0.0
+
+
+def _lane_shares(routes: list[tuple[int, float]]) -> tuple[tuple[int, float], ...]:
+    """Each lane route's share of its exit, from the flows stage 3 wrote (by lanes)."""
+    total = sum(flow for _r, flow in routes)
+    if total <= 0:
+        return tuple((r, 1.0 / len(routes)) for r, _f in routes)
+    return tuple((r, flow / total) for r, flow in routes)
+
+
 def build_problem(inpx: str | Path, links: dict, movements, counted_approaches: set[int],
                   counted: dict[tuple[int, int], float] | None = None,
                   max_inflow: float = MAX_INFLOW,
@@ -322,10 +362,10 @@ def build_problem(inpx: str | Path, links: dict, movements, counted_approaches: 
             plain = [n for n in seq[:-1]
                      if n in links and not links[n].is_connector and not links[n].is_internal]
             approach = plain[-1] if plain else sits_on
-            routes.append((int(route.get("no")), approach, exit_no))
+            routes.append((int(route.get("no")), approach, exit_no, _first_rel_flow(route)))
         if not routes:
             continue
-        approaches = {a for _r, a, _e in routes}
+        approaches = {a for _r, a, _e, _f in routes}
         if len(approaches) != 1:
             notes.append(f"decision {number} governs approaches {sorted(approaches)}; "
                          "left alone")
@@ -333,13 +373,19 @@ def build_problem(inpx: str | Path, links: dict, movements, counted_approaches: 
         approach = approaches.pop()
         if approach in counted_approaches:
             continue
-        free = [(r, e) for r, _a, e in routes if turn_of.get((approach, e)) != "Uturn"]
-        zero = tuple(r for r, _a, e in routes if turn_of.get((approach, e)) == "Uturn")
-        if len(free) < 2:
+        # One variable per exit, however many lane routes stage 3 wrote to it.
+        by_exit: dict[int, list[tuple[int, float]]] = {}
+        for r, _a, e, flow in routes:
+            by_exit.setdefault(e, []).append((r, flow))
+        free_exits = [e for e in by_exit if turn_of.get((approach, e)) != "Uturn"]
+        zero = tuple(r for e, rs in by_exit.items() if turn_of.get((approach, e)) == "Uturn"
+                     for r, _f in rs)
+        if len(free_exits) < 2:
             continue                      # nothing to choose between
+        lane_routes = {e: _lane_shares(by_exit[e]) for e in free_exits if len(by_exit[e]) > 1}
         splits.append(SplitKnob(number, approach, junction_of.get(approach, "?"),
-                                tuple(r for r, _e in free), tuple(e for _r, e in free),
-                                zero, intervals))
+                                tuple(by_exit[e][0][0] for e in free_exits), tuple(free_exits),
+                                zero, intervals, lane_routes))
 
     if needs_calibration is not None:
         gated = {str(j).removesuffix(".0") for j in needs_calibration}
@@ -381,7 +427,9 @@ def apply_solution(session, problem: Problem, solution) -> None:
     for knob in problem.splits:
         shares = stick_shares(solution[cursor:cursor + knob.size])
         cursor += knob.size
-        weights = dict(zip(knob.free_routes, shares))
+        weights = {route_no: share * lane_share
+                   for index, share in enumerate(shares)
+                   for route_no, lane_share in knob.routes_of(index)}
         weights.update({route_no: 0.0 for route_no in knob.zero_routes})
         decision = net.VehicleRoutingDecisionsStatic.ItemByKey(knob.decision_no)
         for route_no, weight in weights.items():
@@ -390,33 +438,78 @@ def apply_solution(session, problem: Problem, solution) -> None:
                 route.SetAttValue(f"RelFlow({interval})", float(weight))
 
 
-def read_movements(session) -> dict[tuple[int, int], float]:
-    """Return ``{(from link, to link): vehicles}`` from node evaluation."""
-    served: dict[tuple[int, int], float] = {}
-    for node in session.net.Nodes.GetAll():
-        try:
-            movements = list(node.Movements.GetAll())
-        except Exception:  # noqa: BLE001 - a node with no movements
-            continue
-        for movement in movements:
-            try:
-                a = int(float(movement.AttValue("FromLink\\No")))
-                b = int(float(movement.AttValue("ToLink\\No")))
-                value = movement.AttValue("Vehs(Current, Last, All)")
-            except Exception:  # noqa: BLE001
-                continue
-            if value is not None:
-                served[(a, b)] = float(value)
-    return served
+def counting_sites(links: dict, movements) -> tuple[dict[tuple[int, int], list[int]], list[str]]:
+    """Where to count each movement: every junction path that carries it alone.
+
+    Read off the network (:func:`rt_vissim.network.junction_paths`) rather
+    than the movement table, which lists one junction link per movement: a
+    double right turn has two (on Chattanooga, approach 35 turns right into
+    link 10 over links 156 and 157), and counting only the listed one misses
+    the traffic on the other.  Stage 3 routes over the same paths.
+
+    Args:
+        links: Output of :func:`rt_vissim.network.read_links_csv`.
+        movements: ``(from link, to link)`` pairs to count.
+
+    Returns:
+        ``({(from, to): [link or connector numbers]}, notes)``.
+    """
+    from .network import junction_paths  # noqa: PLC0415
+
+    sites: dict[tuple[int, int], list[int]] = {}
+    notes: list[str] = []
+    for a, b in movements:
+        paths = junction_paths(links, int(a), int(b))
+        if paths:
+            sites[(int(a), int(b))] = [site for site, _lanes in paths]
+        else:
+            notes.append(f"movement {a} -> {b}: no path through the junction; not counted")
+    return sites, notes
+
+
+def place_counters(session, sites: dict[tuple[int, int], list[int]]) -> dict:
+    """Put a data collection point on every lane of every site, one measurement per movement.
+
+    Returns:
+        ``{(from, to): DataCollectionMeasurement}`` for :func:`read_counters`.
+    """
+    net = session.net
+    measures = {}
+    for (a, b), site_links in sites.items():
+        points: list[str] = []
+        for number in site_links:
+            link = net.Links.ItemByKey(number)
+            middle = float(link.AttValue("Length2D")) / 2
+            for lane in link.Lanes.GetAll():
+                point = net.DataCollectionPoints.AddDataCollectionPoint(0, lane, middle)
+                points.append(str(point.AttValue("No")))
+        measure = net.DataCollectionMeasurements.AddDataCollectionMeasurement(0)
+        measure.SetAttValue("DataCollectionPoints", ",".join(points))
+        measure.SetAttValue("Name", f"movement {a}->{b}")
+        measures[(a, b)] = measure
+    return measures
+
+
+def read_counters(measures: dict) -> dict[tuple[int, int], float]:
+    """Vehicles each movement's measurement counted in the run just finished."""
+    return {key: float(m.AttValue("Vehs(Current, Last, All)") or 0)
+            for key, m in measures.items()}
 
 
 def score(modelled: dict[tuple[int, int], float],
           counted: dict[tuple[int, int], float]) -> dict:
     """Score a run against the counts.
 
+    Each counted turning movement is scored -- the objective.  The same run is
+    also scored the way SUMO's ``result_analysis_on_EdgeData`` scores it: the
+    movements summed per approach and one GEH per approach.  That test is
+    looser (an approach can carry the right total split the wrong way) and is
+    reported only, so the two pipelines' numbers can be set side by side.
+
     Returns:
         ``mean`` GEH, ``share`` below :data:`TARGET_GEH`, ``matched`` movements,
-        totals and the worst few, so a run can be judged rather than just ranked.
+        totals and the worst few, so a run can be judged rather than just ranked;
+        and ``approach_mean``, ``approach_share``, ``approaches`` for SUMO's test.
     """
     values = []
     for key, want in counted.items():
@@ -426,13 +519,25 @@ def score(modelled: dict[tuple[int, int], float],
         values.append((key, want, got, geh(got, want)))
     if not values:
         return {"mean": float("inf"), "share": 0.0, "matched": 0, "worst": [],
-                "modelled_total": 0.0, "counted_total": 0.0}
+                "modelled_total": 0.0, "counted_total": 0.0,
+                "approach_mean": float("inf"), "approach_share": 0.0, "approaches": 0}
+    approaches: dict[int, list[float]] = {}
+    for (from_link, _to), want, got, _g in values:
+        pair = approaches.setdefault(from_link, [0.0, 0.0])
+        pair[0] += want
+        pair[1] += got
+    by_approach = [geh(got, want) for want, got in approaches.values()]
+    approach_rows = [(from_link, want, got, geh(got, want))
+                     for from_link, (want, got) in sorted(approaches.items())]
     values.sort(key=lambda row: -row[3])
     return {"mean": sum(row[3] for row in values) / len(values),
             "share": sum(1 for row in values if row[3] < TARGET_GEH) / len(values),
             "matched": len(values), "worst": values[:10],
             "modelled_total": sum(row[2] for row in values),
-            "counted_total": sum(row[1] for row in values)}
+            "counted_total": sum(row[1] for row in values),
+            "approach_mean": sum(by_approach) / len(by_approach),
+            "approach_share": sum(1 for g in by_approach if g < TARGET_GEH) / len(by_approach),
+            "approaches": len(by_approach), "by_approach": approach_rows}
 
 
 def speed_up(session) -> list[str]:
@@ -484,18 +589,24 @@ _DOTS = "#86b6ef"
 _INK, _MUTED, _SURFACE = "#52514e", "#898781", "#fcfcfb"
 
 
-def read_history(path: str | Path) -> dict[str, list[float]]:
-    """The evaluation log :class:`Evaluator` writes, as columns.
+def read_history(path: str | Path, level: str = "approach") -> dict[str, list[float]]:
+    """The evaluation log :class:`Evaluator` writes, as columns, at one level.
 
+    ``level`` is ``"approach"`` (SUMO's, the default) or ``"movement"``; a log
+    written before approach scores were recorded falls back to movements.
     Adds ``best`` (lowest mean GEH so far) and ``best_share`` (the GEH<5 share
-    of that best candidate), which is what the search is actually keeping.
+    of that best candidate).
     """
     with Path(path).open(newline="") as handle:
         rows = list(csv.DictReader(handle))
+    if level == "approach" and rows and "approach_mean_geh" in rows[0]:
+        mean_col, share_col, used = "approach_mean_geh", "approach_share_below_5", "approach"
+    else:
+        mean_col, share_col, used = "mean_geh", "share_below_5", "movement"
     out = {"n": [int(r["n"]) for r in rows],
-           "mean": [float(r["mean_geh"]) for r in rows],
-           "share": [100 * float(r["share_below_5"]) for r in rows],
-           "best": [], "best_share": []}
+           "mean": [float(r[mean_col]) for r in rows],
+           "share": [100 * float(r[share_col]) for r in rows],
+           "best": [], "best_share": [], "level": used}
     best, best_share = math.inf, 0.0
     for mean, share in zip(out["mean"], out["share"]):
         if mean < best:
@@ -549,8 +660,9 @@ def plot_history(path: str | Path, out: str | Path, title: str,
     last = h["n"][-1] if h["n"] else 1
     fig, (top, bottom) = plt.subplots(2, 1, figsize=(8, 6.4), sharex=True,
                                       facecolor=_SURFACE)
-    for ax, each, best, label in ((top, h["mean"], h["best"], "Mean GEH"),
-                                  (bottom, h["share"], h["best_share"], "GEH < 5 (%)")):
+    level = f"per {h['level']}"
+    for ax, each, best, label in ((top, h["mean"], h["best"], f"Mean GEH, {level}"),
+                                  (bottom, h["share"], h["best_share"], f"GEH < 5 (%), {level}")):
         _style(ax, label)
         ax.scatter(h["n"], each, s=14, color=_DOTS, zorder=2, label="each evaluation")
         ax.step(h["n"], best, where="post", color=_SERIES["ga"], linewidth=2, zorder=3,
@@ -590,8 +702,10 @@ def plot_comparison(histories: dict[str, str | Path], out: str | Path, title: st
     last = max((h["n"][-1] for h in runs.values() if h["n"]), default=1)
     fig, (top, bottom) = plt.subplots(2, 1, figsize=(8, 6.4), sharex=True,
                                       facecolor=_SURFACE)
-    _style(top, "Best mean GEH")
-    _style(bottom, "GEH < 5 of best (%)")
+    levels = {h["level"] for h in runs.values()}
+    level = f"per {levels.pop()}" if len(levels) == 1 else "mixed levels"
+    _style(top, f"Best mean GEH, {level}")
+    _style(bottom, f"GEH < 5 of best (%), {level}")
     for algo, h in runs.items():
         if not h["n"]:
             continue
@@ -713,12 +827,22 @@ class Evaluator:
 
     Every evaluation is appended to ``history`` as it finishes, so a run that
     is stopped part way still says what it found.
+
+    ``sites`` says where to count each movement (:func:`counting_sites`).  The
+    counters are placed in the loaded network, so the input file is untouched;
+    the calibrated model saved at the end keeps them, for checking in the GUI.
     """
 
-    def __init__(self, session, problem: Problem, period: int, seed: int = 42,
-                 resolution: int = 10, history: str | Path | None = None):
+    def __init__(self, session, problem: Problem, period: int,
+                 sites: dict[tuple[int, int], list[int]], seed: int = 42,
+                 resolution: int = 10, history: str | Path | None = None,
+                 objective: str = "approach"):
+        if objective not in OBJECTIVES:
+            raise ValueError(f"objective must be one of {OBJECTIVES}, not {objective!r}")
         self.session = session
         self.problem = problem
+        self.sites = sites
+        self.objective = objective
         self.period = period
         self.seed = seed
         self.resolution = resolution
@@ -729,7 +853,8 @@ class Evaluator:
         if self.history is not None:
             with self.history.open("w", newline="") as handle:
                 csv.writer(handle).writerow(
-                    ["n", "seconds", "mean_geh", "share_below_5", "modelled_total"]
+                    ["n", "seconds", "mean_geh", "share_below_5", "modelled_total",
+                     "approach_mean_geh", "approach_share_below_5"]
                     + [f"x{i}" for i in range(problem.size)])
 
     def _prepare(self) -> None:
@@ -740,12 +865,13 @@ class Evaluator:
         sim.SetAttValue("RandSeed", self.seed)
         sim.SetAttValue("SimRes", self.resolution)
         self.speed_settings = speed_up(self.session)
+        self.measures = place_counters(self.session, self.sites)
         evaluation = net.Evaluation
-        evaluation.SetAttValue("NodeResCollectData", True)
+        evaluation.SetAttValue("DataCollCollectData", True)
         # Measured from the start of the run, not the clock time it represents.
-        evaluation.SetAttValue("NodeResFromTime", 0)
-        evaluation.SetAttValue("NodeResToTime", self.period)
-        evaluation.SetAttValue("NodeResInterval", self.period)
+        evaluation.SetAttValue("DataCollFromTime", 0)
+        evaluation.SetAttValue("DataCollToTime", self.period)
+        evaluation.SetAttValue("DataCollInterval", self.period)
 
     def run(self, solution=None) -> dict:
         """Score one candidate, or the network as it stands when ``None``."""
@@ -755,27 +881,34 @@ class Evaluator:
                 if solution is not None:
                     apply_solution(self.session, self.problem, solution)
                 self.session.net.Simulation.RunContinuous()
-                return score(read_movements(self.session), self.problem.counted)
+                return score(read_counters(self.measures), self.problem.counted)
             except Exception as exc:  # noqa: BLE001 - transient COM refusals
                 last_error = exc
                 time.sleep(2 * (attempt + 1))
         raise RuntimeError(f"evaluation failed {COM_RETRIES} times: {last_error}")
 
+    def value(self, result: dict) -> float:
+        """The number the search minimises: mean GEH at the chosen level."""
+        return result["approach_mean"] if self.objective == "approach" else result["mean"]
+
     def __call__(self, solution) -> float:
-        """Objective for the optimiser: mean GEH over the counted movements."""
+        """Objective for the optimiser: mean GEH per approach (SUMO's) or per movement."""
         began = time.time()
         result = self.run(solution)
         self.count += 1
         values = [float(v) for v in solution]
-        if self.best is None or result["mean"] < self.best[0]:
-            self.best = (result["mean"], values, result)
+        if self.best is None or self.value(result) < self.best[0]:
+            self.best = (self.value(result), values, result)
         if self.history is not None:
             # Inflows in vehicles per hour, so the file reads without the scale.
             with self.history.open("a", newline="") as handle:
                 csv.writer(handle).writerow(
                     [self.count, round(time.time() - began, 1), round(result["mean"], 4),
-                     round(result["share"], 4), round(result["modelled_total"], 1)]
+                     round(result["share"], 4), round(result["modelled_total"], 1),
+                     round(result["approach_mean"], 4), round(result["approach_share"], 4)]
                     + [round(v, 4) for v in self.problem.physical(values)])
-        print(f"  :eval {self.count:>3}  mean GEH {result['mean']:6.2f}  "
-              f"GEH<5 {result['share']:6.1%}  best {self.best[0]:6.2f}", flush=True)
-        return result["mean"]
+        print(f"  :eval {self.count:>3}  per approach GEH {result['approach_mean']:6.2f}  "
+              f"GEH<5 {result['approach_share']:6.1%}  |  per movement GEH "
+              f"{result['mean']:5.2f}  GEH<5 {result['share']:6.1%}  |  "
+              f"best ({self.objective}) {self.best[0]:6.2f}", flush=True)
+        return self.value(result)

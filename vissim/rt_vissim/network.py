@@ -717,6 +717,49 @@ def build_graph(links: dict[int, VissimLink]) -> tuple[dict[int, list[tuple[int,
     return dict(successors), dict(predecessors)
 
 
+#: A junction link shorter than this (OpenDRIVE U-turn stubs are 0.05 m) cannot
+#: carry a counter or a route waypoint; the connector into it stands for it.
+MIN_PATH_LINK_LENGTH = 1.0
+
+
+def junction_paths(links: dict[int, VissimLink], approach: int,
+                   exit_link: int) -> list[tuple[int, int]]:
+    """Every way through the junction from ``approach`` to ``exit_link``.
+
+    The OpenDRIVE import gives each lane-to-lane connection its own junction
+    link, so a turn the road allows from two lanes -- a double left, a two-lane
+    through -- has two paths.  A path is the junction link a connector feeds
+    from the approach and that leads by connector to the exit; with no
+    junction link between them, the connector itself; for a junction link too
+    short to stand on, the connector into it.
+
+    Args:
+        links: Output of :func:`read_links_csv`.
+        approach: Link the movement starts on.
+        exit_link: Link it ends on.
+
+    Returns:
+        ``[(link or connector number, lanes), ...]`` sorted by number; empty
+        when no path exists.
+    """
+    leaving: dict[int, list[VissimLink]] = defaultdict(list)
+    for link in links.values():
+        if link.is_connector and link.from_link is not None and link.to_link is not None:
+            leaving[int(link.from_link)].append(link)
+    found: dict[int, int] = {}
+    for conn in leaving.get(int(approach), []):
+        middle = int(conn.to_link)
+        if middle == int(exit_link):
+            found[int(conn.no)] = int(conn.num_lanes)
+        elif any(int(c.to_link) == int(exit_link) for c in leaving.get(middle, [])):
+            inner = links.get(middle)
+            if inner is not None and inner.length >= MIN_PATH_LINK_LENGTH:
+                found[middle] = int(inner.num_lanes)
+            else:
+                found[int(conn.no)] = int(conn.num_lanes)
+    return sorted(found.items())
+
+
 def derive_junctions(links: dict[int, VissimLink],
                      radius: float = DEFAULT_JUNCTION_RADIUS) -> dict[str, list[int]]:
     """Group the junction-internal links into junctions.
