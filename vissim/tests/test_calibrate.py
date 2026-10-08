@@ -326,6 +326,19 @@ class TestSavedModelRuns:
         assert copied == ["rbc_4.prbc"]
         assert (dst / "rbc_4.prbc").read_text() == "timings"
 
+    def test_the_as_built_line_matches_the_charted_level(self, tmp_path):
+        """A per-approach chart takes the per-approach start, not the per-movement one."""
+        before = {"mean": 3.69, "share": 0.775, "approach_mean": 8.86, "approach_share": 0.591}
+        new_log = tmp_path / "new_history.csv"
+        new_log.write_text("n,seconds,mean_geh,share_below_5,modelled_total,"
+                           "approach_mean_geh,approach_share_below_5\n")
+        old_log = tmp_path / "old_history.csv"
+        old_log.write_text("n,seconds,mean_geh,share_below_5,modelled_total\n")
+        stage6 = self.stage6()
+        assert stage6.chart_reference(before, new_log) == (8.86, 0.591)
+        assert stage6.chart_reference(before, old_log) == (3.69, 0.775)
+        assert stage6.chart_reference(None, new_log) is None
+
     def test_nothing_is_copied_into_the_same_folder(self, tmp_path):
         (tmp_path / "net.inpx").write_text('"#data#rbc_4.prbc"')
         (tmp_path / "rbc_4.prbc").write_text("timings")

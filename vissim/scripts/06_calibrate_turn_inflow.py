@@ -124,6 +124,21 @@ def copy_supply_files(net_path: Path, out_path: Path) -> list[str]:
     return copied
 
 
+def chart_reference(before: dict | None, history: Path) -> tuple[float, float] | None:
+    """The "as built" line, at the level the chart plots.
+
+    The charts plot per approach whenever the history logged it, so the
+    reference must be the per-approach score too -- the per-movement one sits
+    far lower and makes every run look worse than where it started.
+    """
+    if not before:
+        return None
+    header = history.read_text(encoding="utf-8").splitlines()[0].split(",")
+    if "approach_mean_geh" in header and "approach_mean" in before:
+        return before["approach_mean"], before["approach_share"]
+    return before["mean"], before["share"]
+
+
 def draw_charts(out_path: Path, algo: str, before: dict | None = None) -> list[Path]:
     """Chart a run's progress, and compare it with the other algorithms' runs.
 
@@ -140,7 +155,7 @@ def draw_charts(out_path: Path, algo: str, before: dict | None = None) -> list[P
         summary = out_path.with_name(f"{stem}_summary.json")
         if summary.exists():
             before = json.loads(summary.read_text(encoding="utf-8")).get("before")
-    reference = (before["mean"], before["share"]) if before else None
+    reference = chart_reference(before, history)
     written = [plot_history(history, out_path.with_name(f"{stem}_progress.png"),
                             f"{algo.upper()} -- {stem}", reference)]
     if stem.endswith(f"_{algo}"):
