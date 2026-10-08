@@ -102,9 +102,9 @@ def decision_position(link_length: float, gap: float) -> tuple[float, list[str]]
     # with no path is worse than a decision some vehicles miss.
     position = max(ROUTE_END_OFFSET + 0.1, cap)
     return round(position, 2), [
-        f"approach is only {link_length:.1f} m: decision at {position:.1f} m "
+        (f"approach is only {link_length:.1f} m: decision at {position:.1f} m "
         f"leaves {position - ROUTE_END_OFFSET:.1f} m of gap, under the "
-        f"{gap:.1f} m one time step needs, so some vehicles may miss it"]
+        f"{gap:.1f} m one time step needs, so some vehicles may miss it")]
 
 
 def plan_decision_positions(approaches: list[tuple], links: dict,

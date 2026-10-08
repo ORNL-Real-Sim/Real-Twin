@@ -353,12 +353,12 @@ def build_lane_control(matchup, links: dict, synchro: dict,
             # Chattanooga's link 17 lane 2 crossing junction 9 unsignalised.
             for connector in movement_connectors:
                 for lane in (connector.from_lanes or [1]):
-                    per_lane.setdefault((from_link, int(lane)), []).append(dict(
-                        code=code, sg=protected_sg if protected_sg is not None
-                        else permitted_sg, scnd=secondary, perm_sg=permitted_sg,
-                        plan=plan, connector=int(connector.no),
-                        turn=str(getattr(row, "Turn", "")),
-                        permissive_only=protected_sg is None))
+                    per_lane.setdefault((from_link, int(lane)), []).append({
+                        "code": code, "sg": protected_sg if protected_sg is not None
+                        else permitted_sg, "scnd": secondary, "perm_sg": permitted_sg,
+                        "plan": plan, "connector": int(connector.no),
+                        "turn": str(getattr(row, "Turn", "")),
+                        "permissive_only": protected_sg is None})
 
     controls, warnings = _resolve_lanes(per_lane, warnings)
 

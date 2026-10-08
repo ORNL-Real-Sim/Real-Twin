@@ -26,6 +26,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pandas as pd
+import itertools
 
 #: Two legs closer than this are hard to order reliably, so the rank rule that
 #: names directions may pair them the wrong way round.
@@ -78,8 +79,8 @@ def check_leg_separation(movements: pd.DataFrame,
         legs = (group.drop_duplicates("FromLinkNo_Vissim")
                 .sort_values("Bearing")[["FromLinkNo_Vissim", "Bearing"]])
         rows = list(legs.itertuples(index=False))
-        for first, second in zip(rows, rows[1:]):
-            gap = abs(second.Bearing - first.Bearing)
+        for first, second in itertools.pairwise(rows):
+            gap = abs(float(second.Bearing) - float(first.Bearing))
             gap = min(gap, 360.0 - gap)
             if gap < minimum:
                 findings.append(Finding(

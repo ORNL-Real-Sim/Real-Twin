@@ -42,13 +42,13 @@ from .ir import (  # noqa: F401
 )
 
 __all__ = [
-    "VissimSession",
-    "VissimComError",
-    "available_progids",
-    "ScenarioIR",
-    "VehicleInput",
     "RoutingDecision",
-    "SignalPlan",
+    "ScenarioIR",
     "SignalGroupTiming",
     "SignalHead",
+    "SignalPlan",
+    "VehicleInput",
+    "VissimComError",
+    "VissimSession",
+    "available_progids",
 ]

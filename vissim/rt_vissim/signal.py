@@ -173,7 +173,7 @@ def build_signal_plan(synchro: dict, intid: str, *, junction_id: str | int = "",
     def setting(key):
         try:
             return settings.get(key)
-        except AttributeError:  # pragma: no cover - empty timeplan block
+        except AttributeError:  # pragma: no cover - empty time-plan block
             return None
 
     cycle = _number(setting("Cycle Length")) or 0.0
@@ -273,7 +273,7 @@ def build_signal_plan(synchro: dict, intid: str, *, junction_id: str | int = "",
 def build_signal_plans(synchro: dict, junctions: dict[str, str], *,
                        names: dict[str, str] | None = None,
                        ) -> tuple[list[SignalPlan], list[str]]:
-    """Build a plan for every signalised junction in the MatchupTable.
+    """Build a plan for every signalized junction in the MatchupTable.
 
     Args:
         synchro: Output of :func:`read_synchro`.
