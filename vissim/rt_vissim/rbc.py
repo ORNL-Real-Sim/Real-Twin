@@ -100,17 +100,15 @@ def build_controller(plan: SignalPlan) -> dict:
 
     vehicle_groups = []
     for group in groups:
-        split = tenths(group.split)
+        # Synchro's own values, in the tenths the format stores.  The hand-built
+        # controllers under VISSIM_previous/ round MaxGreen to whole seconds and
+        # move the remainder into yellow -- a habit of the RBC editor, not a
+        # limit of the format -- which changes the yellow interval by up to half
+        # a second.  SUMO's NEMA controller takes Synchro's values as they are,
+        # and so does this.
         red_clearance = tenths(group.all_red)
-        # Synchro carries tenths on MaxGreen while the RBC editor writes whole
-        # seconds, so the rounding remainder goes to yellow and the split stays
-        # exact.  Reproducing this is what makes the output identical to a
-        # hand-built controller rather than merely close.
-        max_green = round(group.max_green) * 10
-        yellow = split - max_green - red_clearance
-        if yellow <= 0:  # a plan too tight to round; keep Synchro's own yellow
-            yellow = tenths(group.yellow)
-            max_green = max(0, split - yellow - red_clearance)
+        max_green = tenths(group.max_green)
+        yellow = tenths(group.yellow)
 
         vehicle_groups.append({
             "DualEntry": bool(group.dual_entry),

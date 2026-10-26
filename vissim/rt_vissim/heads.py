@@ -616,17 +616,46 @@ def build_detectors(matchup, links: dict, synchro: dict,
     #: intersection's usual detector length rather than being dropped -- on
     #: Chattanooga that is four right turns whose phases would otherwise go
     #: uncalled from their own lane.
+    #:
+    #: Some exports give no placement at all -- ``DetectPhase1`` and
+    #: ``numDetects`` blank at every movement of an intersection, only
+    #: ``DetectSize1`` filled (Phoenix).  Placing none would leave every phase
+    #: without recall uncalled.  There the intersection is detected as SUMO's
+    #: NEMA controller detects it: every signalised lane, calling its movement's
+    #: own phase, the longest ``DetectSize1`` for through and right lanes and the
+    #: shortest for left-turn lanes (``detector-length`` and
+    #: ``detector-length-leftTurnLane`` in RealTwin's ``_sumo.py``).
     spec = {}
+    fallback: list[str] = []
     for plan in plans:
-        sizes = _movement_row(lanes_table, plan.synchro_intid, "DetectSize1")
+        intid = plan.synchro_intid
+        sizes = _movement_row(lanes_table, intid, "DetectSize1")
+        phases = _movement_row(lanes_table, intid, "DetectPhase1")
+        counts = _movement_row(lanes_table, intid, "numDetects")
         usual = [value for value in (_number(v) for v in sizes.values())
                  if value and value > 0]
+        if not any(_number(v) is not None for v in list(phases.values()) + list(counts.values())):
+            protected = _movement_row(lanes_table, intid, "Phase1")
+            permitted = _movement_row(lanes_table, intid, "PermPhase1")
+            phases = {code: protected.get(code) if _number(protected.get(code))
+                      else permitted.get(code) for code in set(protected) | set(permitted)}
+            longest = max(usual) if usual else DEFAULT_DETECTOR_FEET
+            shortest = min(usual) if usual else DEFAULT_DETECTOR_FEET
+            sizes = {code: shortest if code.endswith(("L", "U")) else longest
+                     for code in phases}
+            counts = {}
+            fallback.append(intid)
         spec[plan.sc_no] = (
-            sizes,
-            _movement_row(lanes_table, plan.synchro_intid, "DetectPhase1"),
-            _movement_row(lanes_table, plan.synchro_intid, "numDetects"),
+            sizes, phases, counts,
             {g.sg_no for g in plan.signal_groups},
             max(set(usual), key=usual.count) if usual else DEFAULT_DETECTOR_FEET)
+    if fallback:
+        warnings.append(
+            f"{len(fallback)} intersections give detector sizes but no placement "
+            f"(DetectPhase1 and numDetects blank): {', '.join(fallback)}. Detected "
+            "as SUMO's NEMA controller does: every signalised lane, calling its "
+            "movement's own phase, the longest DetectSize1 for through and right "
+            "lanes, the shortest for left-turn lanes.")
 
     for control in controls:
         sizes, phases, counts, groups, usual = spec.get(

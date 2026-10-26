@@ -935,8 +935,10 @@ def build_movement_table(links: dict[int, VissimLink],
         links: Output of :func:`read_links`.
         junctions: Output of :func:`derive_junctions`.
         min_legs: Minimum distinct approaches for a group to count as a
-            junction.  Two-leg groups are mid-block link joins, not
-            intersections; SUMO applies the same filter via an exit count.
+            junction.  Two-leg groups are mostly mid-block link joins, not
+            intersections.  SUMO's MatchupTable does not always drop them: on
+            Phoenix it keeps nine two-leg junctions (24 movements) that this
+            leaves out, one of which (``644``) has a real choice of exit.
 
     Returns:
         One row per movement, sorted the way RealTwin sorts its SUMO matchup

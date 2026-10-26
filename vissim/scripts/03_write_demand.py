@@ -155,7 +155,8 @@ def main(argv: list[str] | None = None) -> int:
         if integrated:
             n_dec, n_routes, route_warnings = write_routing_decisions(
                 session, integrated, start_time, links,
-                combine=not args.no_combine_routes)
+                combine=not args.no_combine_routes,
+                demand_approaches=set(movements["FromLinkNo_Vissim"].astype(int)))
             for warning in route_warnings:
                 print(f"  :{warning}")
             print(f"  :Created {n_dec} routing decisions, {n_routes} routes")

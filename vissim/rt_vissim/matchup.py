@@ -358,6 +358,18 @@ def _gridsmart_info(path: Path) -> tuple[str | None, str | None, set[str]]:
             if raw.iloc[:, col].eq(movement).any():
                 movement_columns[movement] = col
 
+    def _counted(value) -> bool:
+        # Some exports leave a leg the junction does not have blank; others
+        # (Phoenix) write zeros.  A zero is not a reported movement: counted
+        # as one, a three-leg junction appears to have four directions, and the
+        # rank rule then hands every approach its neighbour's code.
+        if pd.isna(value):
+            return False
+        try:
+            return float(value) > 0
+        except (TypeError, ValueError):
+            return True
+
     codes: set[str] = set()
     for direction, prefix in (("Northbound", "NB"), ("Eastbound", "EB"),
                               ("Southbound", "SB"), ("Westbound", "WB")):
@@ -367,7 +379,7 @@ def _gridsmart_info(path: Path) -> tuple[str | None, str | None, set[str]]:
         row = rows[0]
         for movement, suffix in (("Right", "R"), ("Through", "T"), ("Left", "L")):
             col = movement_columns.get(movement)
-            if col is not None and pd.notna(raw.iloc[row, col]):
+            if col is not None and _counted(raw.iloc[row, col]):
                 codes.add(f"{prefix}{suffix}")
                 if suffix == "L":
                     codes.add(f"{prefix}U")

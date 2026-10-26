@@ -186,7 +186,9 @@ def pin_route(session, route, site: int) -> bool:
 def write_routing_decisions(session, decisions: list[RoutingDecision],
                             sim_start_time: float, links: dict,
                             sim_resolution: int = 10,
-                            combine: bool = True) -> tuple[int, int, list[str]]:
+                            combine: bool = True,
+                            demand_approaches: set[int] | None = None,
+                            ) -> tuple[int, int, list[str]]:
     """Create one static routing decision per approach, with a route per exit.
 
     All of an approach's intervals share one decision object: Vissim indexes the
@@ -200,6 +202,8 @@ def write_routing_decisions(session, decisions: list[RoutingDecision],
         sim_start_time: Scenario start in seconds after midnight.
         links: Output of :func:`rt_vissim.network.read_links_csv`, for lengths.
         sim_resolution: Simulation steps per second, for the minimum gap.
+        demand_approaches: Every approach in the movement table; see
+            :func:`rt_vissim.routes.plan_decision_positions`.
         combine: Set ``CombineStaRoutDec`` on every decision, so a vehicle
             passing one already knows the route it will take at the next and can
             start changing lanes for it.  Off by default: it changes how vehicles
@@ -226,7 +230,7 @@ def write_routing_decisions(session, decisions: list[RoutingDecision],
 
     destinations = {e for d in decisions for e in d.routes}
     placements, place_warnings = plan_decision_positions(
-        list(by_approach), links, destinations, gap)
+        list(by_approach), links, destinations, gap, demand_approaches)
     warnings.extend(place_warnings)
 
     made_decisions = made_routes = made_pinned = 0

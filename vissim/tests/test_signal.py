@@ -139,24 +139,23 @@ class TestTenths:
 
 
 class TestBuildController:
-    def test_yellow_absorbs_the_rounding(self):
-        """MaxGreen is rounded to whole seconds; the split must still hold.
+    def test_times_are_synchros_own(self):
+        """6.3 s max green, 3.0 s yellow, 2.7 s all-red: written as given.
 
-        Synchro carries 6.3 s of max green with 3.0 s yellow and 2.7 s all-red,
-        a 12.0 s split.  MaxGreen1 rounds to 60 tenths, so yellow takes the
-        remaining 33 to keep 60 + 33 + 27 = 120.
+        Not rounded to whole seconds with yellow taking the remainder, as the
+        hand-built controllers are; SUMO's NEMA controller keeps them as given.
         """
         plan = SignalPlan(sc_no=1, junction_id="1", synchro_intid="1",
                           cycle_time=12.0, signal_groups=[
                               group(1, max_green=6.3, yellow=3.0, all_red=2.7)])
         sg = build_controller(plan)["Controller"]["VehicleSignalGroups"][0]
-        assert sg["MaxGreen1"] == 60
+        assert sg["MaxGreen1"] == 63
         assert sg["RedClearance"] == 27
-        assert sg["Yellow"] == 33
+        assert sg["Yellow"] == 30
         assert sg["MaxGreen1"] + sg["Yellow"] + sg["RedClearance"] == 120
 
     def test_split_survives_every_rounding(self):
-        """Whatever the decimals, the three parts must add back to the split."""
+        """Whatever the decimals, the three parts add back to the split."""
         for max_green in (6.3, 21.9, 30.4, 18.3, 7.7, 20.3):
             plan = SignalPlan(sc_no=1, junction_id="1", synchro_intid="1",
                               signal_groups=[group(1, max_green=max_green,
@@ -211,12 +210,22 @@ class TestAgainstReference:
         assert check_plan(plan) == []
 
     def test_timings_match_field_for_field(self, generated):
+        """Identical but for the hand-built rounding of max green into yellow.
+
+        Where Synchro's max green has tenths, the hand-built file holds it in
+        whole seconds and a yellow that absorbed the remainder; this holds
+        Synchro's own values.  Each phase's green + yellow is still the same.
+        """
         from rt_vissim.rbc import compare_controllers
         _, doc = generated
         reference = json.loads(REFERENCE.read_text())
         differences = [d for d in compare_controllers(doc, reference)
                        if not d.startswith("sequence")]
-        assert differences == []
+        assert all("MaxGreen1" in d or "Yellow" in d for d in differences), differences
+        ours = {g["ID"]: g for g in doc["Controller"]["VehicleSignalGroups"]}
+        theirs = {g["ID"]: g for g in reference["Controller"]["VehicleSignalGroups"]}
+        for sg, g in ours.items():
+            assert g["MaxGreen1"] + g["Yellow"] == theirs[sg]["MaxGreen1"] + theirs[sg]["Yellow"]
 
     def test_sequence_follows_synchro_not_the_reference(self, generated):
         """The one deliberate departure.
@@ -236,3 +245,19 @@ class TestAgainstReference:
                      for b in reference["Controller"]["Sequence"]["BarrierGroups"]
                      for r in b["RingGroups"]]
         assert [3, 4] in ref_rings
+
+
+@pytest.mark.skipif(not (ROOT / "datasets/Pheonix/Pheonix/Control/Synchro_signal.csv").exists(),
+                    reason="Phoenix data not present")
+class TestNonNumericIntid:
+    """Phoenix's Synchro export names one intersection "J9"."""
+
+    def test_every_intid_gets_an_integer_controller(self):
+        from rt_vissim.signal import build_signal_plans, read_synchro
+        synchro = read_synchro(ROOT / "datasets/Pheonix/Pheonix/Control/Synchro_signal.csv")
+        junctions = {"2": "J9", "95": "4", "111": "451"}
+        plans, notes = build_signal_plans(synchro, junctions)
+        by_intid = {p.synchro_intid: p.sc_no for p in plans}
+        assert by_intid["4"] == 4 and by_intid["451"] == 451     # numeric keep their number
+        assert by_intid["J9"] == 452                               # next free above them
+        assert any("J9" in n for n in notes)

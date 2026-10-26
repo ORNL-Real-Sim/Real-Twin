@@ -83,7 +83,15 @@ signalised junction:
 
 Each GridSmart workbook names the intersection it covers, so opening one tells
 you which junction it belongs to. On Chattanooga that is **6 surveyed junctions
-× 3 values**; `File_Synchro` is the same file for the whole corridor.
+× 3 values**; `File_Synchro` is the same file for the whole corridor. On
+Phoenix it is 13, and the workbooks are named after their SUMO junction
+(`4.xls`, `J9.xls`) — the same name the `.xodr` records beside each junction
+number, which `phoenix_junctions.csv` lists as `Name_OpenDrive`.
+
+A direction the workbook reports at zero all day is treated as absent, as a
+blank one is: some exports write zeros for the leg a three-way junction does
+not have, and counting it as a direction would hand every approach its
+neighbour's code.
 
 This is the same manual step the SUMO pipeline has —
 `rt_matchup_table_generation.py` writes those three columns blank too, which is
@@ -192,6 +200,23 @@ written over COM. Writes `chatt_demand_signals.inpx`.
 without a signal head. Use it: a lane with no head crosses the junction
 unsignalised, and nothing in a phase audit will notice.
 
+**Timings are Synchro's own**, in the tenths of a second the `.prbc` stores:
+a 48.6 s max green stays 48.6 s and its 3.6 s yellow stays 3.6 s, as in SUMO's
+NEMA controller. (The hand-built controllers under `VISSIM_previous/` round max
+green to whole seconds and move the remainder into yellow, as PTV's RBC editor
+does; this does not.)
+
+**Detectors** go where Synchro places them (`numDetects`, `DetectPhase1`). An
+intersection whose export gives detector sizes but no placement — every
+`DetectPhase1` and `numDetects` blank, as on Phoenix — is detected the way
+SUMO's NEMA controller detects it: every signalised lane, calling its
+movement's own phase, the longest `DetectSize1` for through and right lanes
+and the shortest for left-turn lanes. Without that, a phase with no recall is
+never called.
+
+A Synchro `INTID` need not be a number (Phoenix has `J9`); such an
+intersection gets the next free controller number above the numeric ones.
+
 ### Step 5 — check what the run did
 
 ```bash
@@ -224,6 +249,33 @@ for the lane change it implies. **Waited** means it knew the route and never
 found a gap, which is congestion or geometry.
 
 `--fail-over N` exits non-zero above N removals, for a scripted run.
+
+**Did the run deliver what was ingested?** `--compare-counts` simulates the
+count period with data collection on every counted movement and across every
+counted entry, then compares:
+
+```bash
+python vissim/scripts/05_check_run.py --compare-counts \
+    --inpx vissim/work/mynet/chatt_demand_signals.inpx \
+    --matchup vissim/work/mynet/MatchupTable.xlsx \
+    --links vissim/work/mynet/chatt_links.csv \
+    --traffic-dir datasets/chattanooga/Traffic
+```
+
+It splits the counted approaches by where their traffic comes from, because
+the two halves mean different things:
+
+- **fed straight from a counted entry** — stage 3 set that entry's input from
+  the approach's own count, so ingestion alone fixes the flow and simulated
+  should equal counted. A gap is a modelling fault: capacity, a lane, a route.
+- **fed from upstream junctions** — the traffic is whatever leaves the junctions
+  before it, some unsurveyed, and entries no count traces to are written at 0.
+  The volume can only match once stage 6 estimates that demand; the **turn
+  shares** must match already.
+
+Volumes are scored by GEH per movement and per approach; shares by the largest
+gap per approach, judged only where 50 or more vehicles arrived. The table is
+saved as `<name>_ingested_vs_simulated.csv`.
 
 ### Step 6 — calibrate the demand nobody measured
 
@@ -366,10 +418,37 @@ stage 4   6 controllers, 32 signal groups, 69 signal heads, 68 detectors,
                     69/69 of them upstream of the stop line
 ```
 
+### What you should see on Phoenix
+
+`datasets/Pheonix/Pheonix/`, 08:00–09:00, built standalone and checked
+against SUMO's `MatchupTable_SUMO.xlsx`:
+
+```
+stage 1   1,191 links, 1,687 connectors, 115 junctions, 70 with movements,
+          738 movements -- all 227 approaches carry the same turns as SUMO's;
+          9 two-leg junctions SUMO lists (24 movements) are left out
+stage 2   13 junctions with counts, 13 signalised; Turn_GridSmart and
+          Turn_Synchro identical to SUMO on 191 of 192 movements (the other a
+          U-turn counted 0 all day)
+stage 3   67 vehicle inputs, 226 routing decisions, 740 routes;
+          144/144 non-zero counts on SUMO's movement, value for value;
+          15/15 counted entries at 4 x their 15-min count
+stage 4   13 controllers (INTID J9 is controller 625), 151 signal heads,
+          151 detectors, 47 right-turn-on-red stop signs;
+          730/730 Synchro timing values identical in the .prbc files
+```
+
+Two things it shows that Chattanooga could not: four lanes shared by a left
+and a through on different phases, where one Vissim head can show only the
+through's phase (manual p. 652) and the left runs permitted on it; and the
+southbound approach to 7th St (SUMO junction 155), where about 1,400 veh/h of
+through traffic has the 2 through lanes the network gives it — SUMO's network
+has the same 2, Synchro's model 3 — so its queue reaches the network edge.
+
 ### Tests
 
 ```bash
-python -m pytest vissim/tests/ -q        # 166 tests, no Vissim licence needed
+python -m pytest vissim/tests/ -q        # 176 tests, no Vissim licence needed
 ```
 
 ---
@@ -498,6 +577,7 @@ vissim/
     conflicts.py    conflict-area right of way                         [done]
     writer.py       IR -> Vissim, over COM                             [done]
     calibrate.py    unmeasured inflows and turn splits, GEH objective  [done]
+    verify.py       ingested against simulated, volumes and shares     [done]
     pipeline.py     orchestrator                                       [not built]
   scripts/
     01_import_opendrive.py    netconvert + import + link/movement CSVs
@@ -506,7 +586,7 @@ vissim/
     04_write_signals.py       controllers, heads, detectors, conflicts, RTOR
     05_check_run.py           what Vissim removed during a simulation
     06_calibrate_turn_inflow.py   estimate the demand nobody measured
-  tests/                      166 tests, no Vissim licence needed
+  tests/                      176 tests, no Vissim licence needed
   work/                       generated artefacts (gitignored)
   VISSIM_previous/            prior ORNL VISSIM work, kept for reference
 ```
@@ -556,6 +636,7 @@ The Synchro → RBC mapping is therefore direct:
 | `Timeplans.Reference Phase`            | `VehicleSignalGroupsInPattern[].Coordinated` |
 
 This preserves actuation, which a fixed-time conversion would throw away.
+Every time is written exactly as Synchro gives it, converted to tenths.
 
 ---
 

@@ -109,6 +109,7 @@ def decision_position(link_length: float, gap: float) -> tuple[float, list[str]]
 
 def plan_decision_positions(approaches: list[tuple], links: dict,
                             destinations: set[int], gap: float,
+                            demand_approaches: set[int] | None = None,
                             ) -> tuple[dict[tuple, tuple[int, float]], list[str]]:
     """Choose where each approach's decision sits, as far upstream as is legal.
 
@@ -129,11 +130,16 @@ def plan_decision_positions(approaches: list[tuple], links: dict,
         links: Output of :func:`rt_vissim.network.read_links_csv`.
         destinations: Links that routes end on.
         gap: Minimum gap from :func:`minimum_gap`.
+        demand_approaches: Every approach in the movement table, which stage 3
+            builds vehicle inputs from.  Lets a decision pass a fork onto a
+            network entry that only its own approach feeds; without it the
+            walk stops at every fork, as before.
 
     Returns:
         ``({(junction_id, from_link): (link, position)}, warnings)``.
     """
-    from .demand import road_predecessors  # local: avoids a circular import
+    from .demand import (find_origin_links, road_predecessors,  # local: avoids a
+                         trace_to_origin)                       # circular import
 
     preds = road_predecessors(links)
     succs: dict[int, set[int]] = {}
@@ -141,10 +147,29 @@ def plan_decision_positions(approaches: list[tuple], links: dict,
         for source in sources:
             succs.setdefault(source, set()).add(target)
 
+    # One exception to stopping at a fork: a network entry whose vehicle input
+    # stage 3 builds from this approach alone (the same trace_to_origin walk).
+    # Every vehicle on it is then bound for this approach by construction, so
+    # the fork divides no demand, and a decision on the entry tells vehicles
+    # their lane earlier and keeps them off the branch.  Phoenix link 6: the
+    # 7th St approach's count is its whole input, the fork is the two-leg
+    # junction M003, and the decision gains 60 m.
+    origins = find_origin_links(links)
+    # Owners are counted over every approach stage 3 can build demand from --
+    # the movement table's, including those with a single exit, which get no
+    # decision but still draw traffic from their entry.  Approaches of
+    # junctions the table leaves out (two-leg joins) carry no demand.
+    owners: dict[int, list[int]] = {}
+    for approach in sorted(set(demand_approaches or ()) | {a for _j, a in approaches}):
+        entry = trace_to_origin(links, approach)
+        if entry is not None:
+            owners.setdefault(entry, []).append(approach)
+
     placements: dict[tuple, tuple[int, float]] = {}
     taken: dict[int, tuple] = {}
     moved = 0
     warnings: list[str] = []
+    via_entry: list[str] = []
 
     for junction_id, from_link in sorted(approaches, key=lambda a: (str(a[0]), a[1])):
         # Walk upstream through the unambiguous corridor, nearest first.
@@ -154,9 +179,16 @@ def plan_decision_positions(approaches: list[tuple], links: dict,
             if len(upstream) != 1:
                 break                      # a merge, or the network entry
             nxt = next(iter(upstream))
-            if nxt in chain or succs.get(nxt, set()) != {current}:
-                break                      # a loop, or a fork: not all traffic
-                                           # here is bound for this junction
+            if nxt in chain:
+                break                      # a loop
+            if succs.get(nxt, set()) != {current}:
+                # A fork: not all traffic here is bound for this junction --
+                # unless it is an entry this approach alone feeds.
+                if (demand_approaches is not None and nxt in origins
+                        and owners.get(nxt) == [from_link]):
+                    chain.append(nxt)
+                    via_entry.append(f"J{junction_id} link {from_link} onto entry {nxt}")
+                break
             chain.append(nxt)
             current = nxt
 
@@ -180,6 +212,9 @@ def plan_decision_positions(approaches: list[tuple], links: dict,
     if moved:
         warnings.append(f"{moved} of {len(approaches)} decisions moved upstream of "
                         "their approach, so vehicles are told of the turn earlier.")
+    if via_entry:
+        warnings.append(f"{len(via_entry)} of them past a fork onto a network entry "
+                        f"whose input is that approach's count alone: {'; '.join(via_entry)}.")
     return placements, warnings
 
 

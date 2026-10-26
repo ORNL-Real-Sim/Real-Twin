@@ -390,3 +390,30 @@ class TestResolveLanes:
         _, warnings = _resolve_lanes(
             {(17, 2): [self.entry("SBL", 1, perm_sg=None), self.entry("SBT", 4)]}, [])
         assert any("Check the Synchro Lanes record" in w for w in warnings)
+
+
+PHOENIX = Path(__file__).resolve().parents[2] / "datasets/Pheonix/Pheonix/Control/Synchro_signal.csv"
+PHOENIX_WORK = Path(__file__).resolve().parents[1] / "work/phoenix"
+
+
+@pytest.mark.skipif(not (PHOENIX.exists() and (PHOENIX_WORK / "MatchupTable.xlsx").exists()),
+                    reason="Phoenix data or build not present")
+class TestDetectorsWithoutPlacement:
+    """Phoenix's Synchro gives DetectSize1 only: detect every lane, as SUMO does."""
+
+    def test_every_signalised_lane_is_detected_with_sumos_lengths(self):
+        from rt_vissim.heads import build_detectors, build_lane_control
+        from rt_vissim.matchup import MatchupTable
+        from rt_vissim.network import read_links_csv
+        from rt_vissim.signal import build_signal_plans, read_synchro
+        matchup = MatchupTable(str(PHOENIX_WORK / "MatchupTable.xlsx"))
+        links = read_links_csv(PHOENIX_WORK / "phoenix_links.csv")
+        synchro = read_synchro(PHOENIX)
+        plans, _ = build_signal_plans(synchro, matchup.signalized_junctions())
+        controls, _ = build_lane_control(matchup, links, synchro, plans)
+        detectors, notes = build_detectors(matchup, links, synchro, plans)
+        lanes = {(c.link_no, c.lane) for c in controls}
+        assert {(d.link_no, d.lane) for d in detectors} == lanes
+        unshortened = {round(d.length, 2) for d in detectors if not d.shortened}
+        assert unshortened == {15.24, 7.62}                   # 50 ft and 25 ft
+        assert any("as SUMO's NEMA controller does" in n for n in notes)

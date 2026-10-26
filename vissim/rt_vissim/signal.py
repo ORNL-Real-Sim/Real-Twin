@@ -32,10 +32,11 @@ sum, and the barriers must add to the cycle -- which is what
 :func:`check_plan` tests, and the only check available on a corridor with no
 reference controller to compare against.
 
-**Yellow absorbs the rounding.**  ``MaxGreen`` carries tenths in Synchro
-(6.3 s, 21.9 s) while the RBC editor writes whole seconds, so ``MaxGreen1`` is
-rounded and the remainder goes to yellow, keeping the split exact.  Reproducing
-that is what takes INTID 16 from approximately right to identical.
+**Times are written as Synchro gives them.**  ``MaxGreen`` carries tenths in
+Synchro (6.3 s, 21.9 s).  The hand-built controller rounds ``MaxGreen1`` to
+whole seconds and moves the remainder into yellow, as PTV's RBC editor does;
+this writes Synchro's own values, as SUMO's NEMA controller does, so INTID 16
+differs from the hand-built file only in those two fields.
 """
 
 from __future__ import annotations
@@ -287,8 +288,20 @@ def build_signal_plans(synchro: dict, junctions: dict[str, str], *,
     names = names or {}
     plans: list[SignalPlan] = []
     warnings: list[str] = []
+    # A Vissim controller number must be an integer, and an INTID need not be:
+    # Phoenix has "J9".  A numeric INTID keeps its own number, as before; any
+    # other takes the next free number above them, in INTID order, so the
+    # numbering is the same on every run.
+    numeric = {int(i) for i in junctions.values() if str(i).strip().isdigit()}
+    free = max(numeric, default=0)
+    sc_numbers: dict[str, int] = {}
+    for intid in sorted({str(i).strip() for i in junctions.values()} - {str(n) for n in numeric}):
+        free += 1
+        sc_numbers[intid] = free
+        warnings.append(f"INTID {intid} is not a number; its signal controller is {free}.")
     for junction_id, intid in sorted(junctions.items(), key=lambda kv: str(kv[0])):
         plan, notes = build_signal_plan(synchro, intid, junction_id=junction_id,
+                                        sc_no=sc_numbers.get(str(intid).strip(), 0),
                                         name=names.get(str(junction_id), ""))
         warnings.extend(notes)
         if plan is None:

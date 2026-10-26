@@ -40,6 +40,10 @@ from pathlib import Path
 #: Preferred ProgIDs, most specific first.  ``VissimSession`` walks this list
 #: when no explicit ProgID is given.  Vissim 2026 is what the RealTwin VISSIM
 #: pipeline is developed against.
+#: Vissim 2026 first: the pipeline is written against it -- attribute names, the
+#: .prbc format, UpdateLinkSequence.  Older versions remain as a fallback, but
+#: they run on a different licence and are not what the outputs are checked
+#: against, so falling back is announced (see :data:`PREFERRED_PROGIDS`).
 DEFAULT_PROGIDS = (
     "VISSIM.Vissim-64.2600",   # Vissim 2026, 64 bit
     "VISSIM.Vissim.2026",
@@ -47,6 +51,10 @@ DEFAULT_PROGIDS = (
     "VISSIM.Vissim.2022",
     "VISSIM.Vissim",           # whatever registered last
 )
+
+#: The ProgIDs the pipeline is built and checked on.  Starting any other prints
+#: a warning, so a run never moves to another version unnoticed.
+PREFERRED_PROGIDS = ("VISSIM.Vissim-64.2600", "VISSIM.Vissim.2026")
 
 
 class VissimComError(RuntimeError):
@@ -105,6 +113,8 @@ class VissimSession:
     def __init__(self, progid: str | None = None, *, visible: bool = True,
                  quit_on_exit: bool = True, attach: bool = False):
         self.progid = progid
+        #: A ProgID passed in is a deliberate choice; only a fallback warns.
+        self.progid_requested = progid is not None
         self.visible = visible
         self.quit_on_exit = quit_on_exit
         #: Share an already-running Vissim instead of refusing to start.
@@ -157,6 +167,10 @@ class VissimSession:
                 # private instance.
                 self.vissim = win32com.client.DispatchEx(progid)
                 self.progid = progid
+                if progid not in PREFERRED_PROGIDS and not self.progid_requested:
+                    print(f"  :WARNING: Vissim 2026 would not start ({errors[-1] if errors else ''}); "
+                          f"fell back to {progid}, which runs on a different licence and is not "
+                          "the version this pipeline is checked on. Pass --progid to choose.")
                 break
             except Exception as exc:
                 errors.append(f"{progid}: {exc}")
@@ -164,6 +178,8 @@ class VissimSession:
             detail = "\n    ".join(errors) or "no ProgIDs tried"
             raise VissimComError(
                 "Could not start Vissim over COM. Tried:\n    " + detail
+                + "\n  'Server execution failed' usually means Vissim could not get a "
+                "licence or another instance is still closing; wait and re-run."
                 + "\n  Registered ProgIDs on this machine: "
                 + (", ".join(available_progids()) or "<none>")
             )
