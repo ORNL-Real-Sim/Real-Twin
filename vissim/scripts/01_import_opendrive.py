@@ -40,6 +40,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pandas as pd
 
+from rt_vissim.dataset import RECORD, write_record  # noqa: E402
 from rt_vissim.com import VissimSession, available_progids
 from rt_vissim.network import (
     DEFAULT_JUNCTION_RADIUS, JUNCTION_SOURCES, extract_network,
@@ -240,6 +241,16 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  :Wrote {links_csv}")
     print(f"  :Wrote {movements_csv}")
     print(f"  :Wrote {junctions_csv}")
+
+    # Which dataset this network came from, so stages 2-6 read *its* Traffic/
+    # and Control/ rather than some example's.
+    record = write_record(outdir, Path(args.net))
+    if record:
+        print(f"  :Dataset: {record['dataset']} -- later stages read its Traffic/ "
+              f"and Control/ (recorded in {outdir / RECORD})")
+    else:
+        print("  :NOTE: no folder with Traffic/ and Control/ at or above the network; "
+              "pass --traffic-dir and --control-dir to the later stages.")
 
     if args.open_gui:
         open_in_gui(inpx_path)

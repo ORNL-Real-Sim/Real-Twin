@@ -267,8 +267,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="Exit non-zero if more than N vehicles were removed")
     parser.add_argument("--compare-counts", action="store_true",
                         help="Simulate the count period and compare what was ingested "
-                             "with what the run delivered (needs --matchup, --links, "
-                             "--traffic-dir)")
+                             "with what the run delivered (needs --matchup and --links)")
     parser.add_argument("--matchup", default=None, help="The MatchupTable stage 3 used")
     parser.add_argument("--links", default=None, help="Link table written by stage 1")
     parser.add_argument("--traffic-dir", default=None, help="Directory of GridSmart files")
@@ -284,8 +283,9 @@ def main(argv: list[str] | None = None) -> int:
     released = None
     comparison = None
     if args.compare_counts:
-        missing = [f"--{n.replace('_', '-')}" for n in ("matchup", "links", "traffic_dir")
-                   if not getattr(args, n)]
+        from rt_vissim.dataset import data_dir  # noqa: PLC0415
+        args.traffic_dir = data_dir("traffic", args.traffic_dir, net.parent)
+        missing = [f"--{n}" for n in ("matchup", "links") if not getattr(args, n)]
         if missing:
             print(f"  :--compare-counts needs {', '.join(missing)}")
             return 1

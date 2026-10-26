@@ -35,6 +35,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(1, str(Path(__file__).resolve().parents[2]))
 
+from rt_vissim.dataset import data_dir  # noqa: E402
 from rt_vissim.com import VissimSession  # noqa: E402
 from rt_vissim.conflicts import (degenerate_uturn_paths,  # noqa: E402
                                  link_turns, plan_conflicts)
@@ -71,7 +72,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="MatchupTable written by stage 2")
     parser.add_argument("--links", default="vissim/work/chattanooga/chatt_links.csv",
                         help="Link table written by stage 1")
-    parser.add_argument("--control-dir", default="datasets/example1/Control",
+    parser.add_argument("--control-dir", default=None,
                         help="Directory holding the Synchro UTDF file")
     parser.add_argument("--out", default=None,
                         help="Output .inpx (default: <name>_signals.inpx)")
@@ -99,6 +100,9 @@ def main(argv: list[str] | None = None) -> int:
                              "NEMA phasing, and their numbering can collide with "
                              "the Synchro INTIDs")
     args = parser.parse_args(argv)
+    # This network's own Synchro export, as stage 1 recorded it -- a default
+    # folder would hand another network's timings to this one.
+    args.control_dir = data_dir("control", args.control_dir, Path(args.inpx).parent)
 
     inpx_path = Path(args.inpx).resolve()
     for label, path in (("Network", inpx_path), ("MatchupTable", Path(args.matchup)),

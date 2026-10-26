@@ -35,6 +35,7 @@ sys.path.insert(1, str(Path(__file__).resolve().parents[2]))
 
 import pandas as pd  # noqa: E402
 
+from rt_vissim.dataset import data_dir  # noqa: E402
 from rt_vissim.com import VissimSession  # noqa: E402
 from rt_vissim.demand import build_demand, build_turn_counts  # noqa: E402
 from rt_vissim.matchup import MatchupTable  # noqa: E402
@@ -69,7 +70,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="MatchupTable written by stage 2")
     parser.add_argument("--links", default="vissim/work/chattanooga/chatt_links.csv",
                         help="Link table written by stage 1")
-    parser.add_argument("--traffic-dir", default="datasets/chattanooga/Traffic",
+    parser.add_argument("--traffic-dir", default=None,
                         help="Directory holding the GridSmart files")
     parser.add_argument("--out", default=None,
                         help="Output .inpx (default: <name>_demand.inpx, or "
@@ -92,6 +93,7 @@ def main(argv: list[str] | None = None) -> int:
                              "the turn lane: 93 of Chattanooga's 4,061 vehicles "
                              "are deleted rather than served")
     args = parser.parse_args(argv)
+    args.traffic_dir = data_dir("traffic", args.traffic_dir, Path(args.inpx).parent)
 
     inpx_path = Path(args.inpx).resolve()
     for label, path in (("Network", inpx_path), ("MatchupTable", Path(args.matchup)),

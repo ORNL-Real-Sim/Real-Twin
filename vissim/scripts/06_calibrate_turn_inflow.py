@@ -60,6 +60,7 @@ sys.path.insert(1, str(Path(__file__).resolve().parents[2]))
 
 import pandas as pd  # noqa: E402
 
+from rt_vissim.dataset import data_dir  # noqa: E402
 from rt_vissim.calibrate import (ALGORITHMS, MAX_INFLOW, OBJECTIVES,  # noqa: E402
                                  TARGET_GEH,
                                  TARGET_SHARE, Evaluator, apply_solution,
@@ -205,7 +206,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--matchup", default=f"{work}/MatchupTable.xlsx")
     parser.add_argument("--links", default=f"{work}/chatt_links.csv")
     parser.add_argument("--movements", default=f"{work}/chatt_movements.csv")
-    parser.add_argument("--traffic-dir", default="datasets/chattanooga/Traffic")
+    parser.add_argument("--traffic-dir", default=None,
+                        help="GridSmart files (default: the dataset stage 1 recorded)")
     parser.add_argument("--start", default="08:00", help="Demand start, HH:MM")
     parser.add_argument("--end", default="09:00", help="Demand end, HH:MM")
     parser.add_argument("--algo", choices=ALGORITHMS, default="ga",
@@ -237,6 +239,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="Redraw the charts of a finished run (--out, --algo) "
                              "and stop; needs no licence")
     args = parser.parse_args(argv)
+    args.traffic_dir = data_dir("traffic", args.traffic_dir, Path(args.inpx).parent)
 
     if args.plot_only:
         net = Path(args.inpx).resolve()

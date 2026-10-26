@@ -42,6 +42,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 # The repository root, so the Synchro UTDF parser in realtwin is importable.
 sys.path.insert(1, str(Path(__file__).resolve().parents[2]))
 
+from rt_vissim.dataset import data_dir  # noqa: E402
 from rt_vissim.demand import build_turn_counts  # noqa: E402
 from rt_vissim.matchup import (  # noqa: E402
     ALL_COLUMNS, MatchupTable, generate_matchup_table, update_matchup_table)
@@ -167,9 +168,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="Movement table written by stage 1")
     parser.add_argument("--outdir", default="vissim/work/chattanooga",
                         help="Where to write MatchupTable.xlsx")
-    parser.add_argument("--traffic-dir", default="datasets/chattanooga/Traffic",
+    parser.add_argument("--traffic-dir", default=None,
                         help="Directory holding the GridSmart files")
-    parser.add_argument("--control-dir", default="datasets/chattanooga/Control",
+    parser.add_argument("--control-dir", default=None,
                         help="Directory holding the Synchro UTDF file")
     parser.add_argument("--seed-from", default=None,
                         help="A SUMO MatchupTable to copy the per-junction seeds from")
@@ -179,6 +180,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="Rebuild the filled columns, discarding hand edits "
                              "(use after changing the derivation itself)")
     args = parser.parse_args(argv)
+    if not args.no_update:
+        # This dataset's own Traffic/ and Control/, as stage 1 recorded them.
+        args.traffic_dir = data_dir("traffic", args.traffic_dir, args.outdir)
+        args.control_dir = data_dir("control", args.control_dir, args.outdir)
 
     movements_path = Path(args.movements)
     if not movements_path.exists():

@@ -34,9 +34,13 @@ hours; run it once the model is right.
 
 |                                  |                                          |
 | -------------------------------- | ---------------------------------------- |
-| PTV Vissim 2026, licensed        | the COM API is used for every write      |
-| SUMO's`netconvert` on `PATH` | stage 1 only, to make the OpenDRIVE file |
-| Python 3.11+                     | `pandas`, `openpyxl`, `pywin32`    |
+| Windows, PTV Vissim 2026, licensed | the COM API is used for every write    |
+| SUMO's `netconvert` on `PATH`    | stage 1 only, to make the OpenDRIVE file |
+| Python 3.11+                     | `pip install -r requirements.txt pywin32` from the repository root |
+
+Run every command from the **repository root**. Close any Vissim window first:
+each stage starts its own hidden Vissim 2026 and refuses to take over one you
+have open.
 
 Inputs:
 
@@ -45,6 +49,133 @@ Inputs:
 Traffic/              GridSmart turning-movement counts (.xls, one per intersection)
 Control/              Synchro UTDF export (.csv, one file for the corridor)
 ```
+
+### Quick start: Phoenix, from scratch
+
+Everything below is copy-and-paste. Each command is one line, so it runs as is
+in PowerShell, cmd or bash. Expected figures are from SUMO 1.24's `netconvert`
+and Vissim 2026 SP 09; another `netconvert` version may number the junctions
+differently, which is why the manual step below goes by junction *name*.
+
+**0. The data.** It is not in the repository. Put it at
+`datasets/Pheonix/Pheonix/` (folder name as supplied):
+
+```
+datasets/Pheonix/Pheonix/
+    Phoenix.net.xml            the SUMO network: the pipeline's only network input
+    Traffic/   4.xls  106.xls  124.xls  145.xls  155.xls  298.xls  347.xls
+               380.xls  451.xls  525.xls  540.xls  624.xls  J9.xls
+    Control/   Synchro_signal.csv
+    MatchupTable_SUMO.xlsx     SUMO's table: for comparison only, never read
+```
+
+**1. Import the network** (about 5 minutes):
+
+```
+python vissim/scripts/01_import_opendrive.py --net datasets/Pheonix/Pheonix/Phoenix.net.xml --outdir vissim/work/phoenix --name phoenix
+```
+
+Expect `Re-applying UTM offset (400352.46, 3704833.76)`, `1191 links, 1687
+connectors`, `Derived 738 movements across 70 junctions`, and `Dataset:
+...datasets\Pheonix\Pheonix` — every later stage reads that folder's
+`Traffic/` and `Control/`, so none of them needs it spelled out. The WARNING
+`1191 Vissim links against 1193 drivable OpenDRIVE roads` is expected: two
+U-turn paths do not import.
+
+**2. Build the MatchupTable:**
+
+```
+python vissim/scripts/02_matchup_table.py --movements vissim/work/phoenix/phoenix_movements.csv --outdir vissim/work/phoenix
+```
+
+It stops at `No junction names its data files yet`. **The manual step:** each
+GridSmart file is named after its SUMO junction, and
+`vissim/work/phoenix/phoenix_junctions.csv` gives each Vissim junction's SUMO
+name in `Name_OpenDrive`. For each of the 13 files, find the row whose
+`Name_OpenDrive` is the file name without `.xls`, then in `MatchupTable.xlsx`,
+on the **first row** of that `JunctionID_OpenDrive`'s block, enter:
+
+| column | value |
+|---|---|
+| `File_GridSmart` | the file name, e.g. `4.xls` |
+| `File_Synchro` | `Synchro_signal.csv` |
+| `IntersectionID_Synchro` | the same name, e.g. `4` (and `J9` for `J9.xls`: Synchro's INTID really is `J9`) |
+
+With SUMO 1.24 the 13 junctions come out as:
+
+| file | `JunctionID_OpenDrive` | | file | `JunctionID_OpenDrive` |
+|---|---|---|---|---|
+| `J9.xls` | 2 | | `525.xls` | 39 |
+| `155.xls` | 10 | | `124.xls` | 41 |
+| `624.xls` | 13 | | `540.xls` | 52 |
+| `347.xls` | 16 | | `145.xls` | 91 |
+| `106.xls` | 22 | | `4.xls` | 95 |
+| `298.xls` | 29 | | `451.xls` | 111 |
+| `380.xls` | 32 | | | |
+
+Save, close Excel (a table open in Excel cannot be read), and run the same
+command again. Expect `13 junctions name their data files`, `13 junctions with
+counts, 13 signalised, 191 movements joined to a turn count`, and no WARNING
+lines. The note about junction 2's westbound U-turn is expected.
+
+**3. Demand, 08:00–09:00** (about 3 minutes):
+
+```
+python vissim/scripts/03_write_demand.py --inpx vissim/work/phoenix/phoenix.inpx --matchup vissim/work/phoenix/MatchupTable.xlsx --links vissim/work/phoenix/phoenix_links.csv --movements vissim/work/phoenix/phoenix_movements.csv --start 08:00 --end 09:00
+```
+
+Expect `Created 67 vehicle inputs`, `Created 226 routing decisions, 740
+routes`, `6 routes pinned to one lane path each`, and `J10 link 5 onto entry
+6`. 52 of the 67 entries are written at volume 0: no count traces to them, and
+estimating them is step 6's job.
+
+**4. Signals** (about 5 minutes):
+
+```
+python vissim/scripts/04_write_signals.py --inpx vissim/work/phoenix/phoenix_demand.inpx --matchup vissim/work/phoenix/MatchupTable.xlsx --links vissim/work/phoenix/phoenix_links.csv --movements vissim/work/phoenix/phoenix_movements.csv --strict
+```
+
+Expect `13 controllers, 88 signal groups`, `INTID J9 is not a number; its
+signal controller is 625`, `Coverage: 151/151 signalised lanes carry exactly
+one signal head ... 0 with no detector`, `Created 151 detectors`, `Created 47
+right-turn-on-red stop signs`. Its WARNING lines are expected: J9's
+controller number, 8 turns sharing a lane with another phase, U-turns
+inheriting their left's phase, the 13 intersections detected SUMO's way, and 4
+detectors shortened on short approaches. The finished model is
+`vissim/work/phoenix/phoenix_demand_signals.inpx`.
+
+**5. Check the run** (one simulated hour, about 7 minutes):
+
+```
+python vissim/scripts/05_check_run.py --inpx vissim/work/phoenix/phoenix_demand_signals.inpx --compare-counts --matchup vissim/work/phoenix/MatchupTable.xlsx --links vissim/work/phoenix/phoenix_links.csv
+```
+
+Expect about 42 vehicles removed, input 5 (7th St southbound) short by about
+285, and:
+
+```
+:Counted entries: 15, ingested 9,843 veh/h, entered 9,558 (97.1%).
+:15 approaches fed straight from a counted entry -- simulated should equal counted:
+:   volume: ... GEH<5 on 97.7% of 44 movements ... and 93.3% of approaches
+:35 approaches fed from upstream junctions -- volume needs the missing demand (stage 6); ...
+:   volume: ingested 23,738, simulated 3,970 (16.7%) ...
+```
+
+The entry-fed approaches deliver their counts; the one exception, 7th St
+southbound at Indian School Rd, is over capacity in the SUMO network itself
+(SUMO leaves 295 vehicles uninserted on the same demand). The upstream-fed
+approaches are short because their demand comes through unsurveyed junctions —
+that is calibration's to estimate (step 6), and uncalibrated the model scores
+GEH<5 on 32% of approaches, as SUMO's did before calibration.
+
+**If something fails:**
+
+- `Server execution failed` — Vissim 2026 could not start, usually the
+  licence: open Vissim 2026 once, select the licence, close it, re-run.
+- `Vissim is already running` — close the Vissim window.
+- `... is open in another program` — close the MatchupTable in Excel.
+- A different Vissim version starting is announced with a WARNING; pass
+  `--progid VISSIM.Vissim-64.2600` to insist on 2026.
 
 ### Step 1 — import the network
 
@@ -57,6 +188,13 @@ python vissim/scripts/01_import_opendrive.py \
 `netconvert` writes the `.xodr`, Vissim imports it, and the link table is read
 back out. Writes `chatt.inpx`, `chatt_links.csv`, `chatt_movements.csv`,
 `chatt_junctions.csv`.
+
+Stage 1 also records **which dataset the network came from** — the nearest
+folder at or above the `.net.xml` holding `Traffic/` and `Control/` — in
+`dataset.json` beside the build. Stages 2–6 read their counts and signal
+timings from that dataset unless given `--traffic-dir` / `--control-dir`, so a
+network never picks up another dataset's data. With no such folder and no
+flag, a stage stops and asks rather than guess.
 
 Run this **first even if you already have an `.inpx`**: `chatt_links.csv`
 carries the `FromPos` column, and that is what places signal heads upstream of
@@ -258,8 +396,7 @@ counted entry, then compares:
 python vissim/scripts/05_check_run.py --compare-counts \
     --inpx vissim/work/mynet/chatt_demand_signals.inpx \
     --matchup vissim/work/mynet/MatchupTable.xlsx \
-    --links vissim/work/mynet/chatt_links.csv \
-    --traffic-dir datasets/chattanooga/Traffic
+    --links vissim/work/mynet/chatt_links.csv
 ```
 
 It splits the counted approaches by where their traffic comes from, because
@@ -448,7 +585,7 @@ has the same 2, Synchro's model 3 — so its queue reaches the network edge.
 ### Tests
 
 ```bash
-python -m pytest vissim/tests/ -q        # 176 tests, no Vissim licence needed
+python -m pytest vissim/tests/ -q        # 182 tests, no Vissim licence needed
 ```
 
 ---
@@ -482,6 +619,40 @@ bearings and turns from the Vissim network itself.
 | `update_matchup_table` fills the derivable columns       | same, but codes derived per row rather than positionally          |
 | GridSmart →`.flow.xml` / `.turn.xml` → `jtrrouter` | GridSmart → vehicle inputs + static routing decisions            |
 | Synchro UTDF → NEMA`tlLogic`                            | Synchro UTDF →`.prbc` Ring Barrier Controller files            |
+
+---
+
+## What the model contains, compared with SUMO
+
+**Written from the data, by stage:**
+
+| stage | in the Vissim model | source | SUMO's counterpart |
+|---|---|---|---|
+| 1 | links and connectors, at true UTM position | SUMO `.net.xml` → OpenDRIVE | the same network |
+| 3 | vehicle inputs on every entry, per 15 min; 0 where nothing traces to a count | GridSmart | flows on boundary edges |
+| 3 | one static routing decision per approach with the counted split per 15 min; even split where uncounted, U-turns 0 | GridSmart | turn ratios (`jtrrouter`) |
+| 3 | a route pinned to each lane of a multi-lane turn; decisions moved upstream and combined, with route look-ahead | network topology | SUMO drivers use any lane allowing the turn |
+| 4 | Ring Barrier Controllers (`.prbc`): phases, rings, barriers, min/max green, yellow, all-red, extension, recall, cycle, offset | Synchro | NEMA `tlLogic` from the same fields |
+| 4 | a signal head per signalised lane, on its Synchro phase; "Or" group for protected-permissive | Synchro | per-connection signal states |
+| 4 | a detector per signalised lane, calling its phase | Synchro, or SUMO's lengths when Synchro gives no placement | NEMA detectors on every lane |
+| 4 | conflict areas with a yielding stream, so permissive turns give way | movement turns | junction right of way |
+| 4 | right-turn-on-red stop signs where Synchro allows RTOR | Synchro `Allow RTOR` | permissive `s` in the state string |
+| 5, 6 | data collection on every counted movement, at run time only | MatchupTable | edge data |
+
+**Left at Vissim's defaults — different from SUMO:**
+
+| | Vissim model | SUMO |
+|---|---|---|
+| **desired speed** | 50 km/h everywhere (composition "Car, LGV, HGV (50 km/h)"); no desired speed decisions | each lane's speed limit — on Phoenix mostly 56 km/h (35 mph), also 40, 48–50 and 62–65 km/h |
+| **speed on turns** | no reduced speed areas, so turns are taken at the desired speed | slower through the junction's internal lanes |
+| **vehicle mix** | 93% car, 5% LGV, 2% HGV | one `car` type in RealTwin's routes |
+| **unsignalised right of way** | conflict areas only; no stop or yield signs | priority junction rules |
+
+Speeds and the vehicle mix shape travel time and how fast a queue
+discharges, so a capacity comparison with SUMO carries that difference too.
+Writing them from the SUMO network (desired speed decisions where the limit
+changes, reduced speed areas on turning connectors, a cars-only composition)
+is not built yet.
 
 ---
 
@@ -576,6 +747,7 @@ vissim/
     heads.py        per-lane signal heads, detectors, RTOR             [done]
     conflicts.py    conflict-area right of way                         [done]
     writer.py       IR -> Vissim, over COM                             [done]
+    dataset.py      which dataset a build came from (dataset.json)    [done]
     calibrate.py    unmeasured inflows and turn splits, GEH objective  [done]
     verify.py       ingested against simulated, volumes and shares     [done]
     pipeline.py     orchestrator                                       [not built]
@@ -586,7 +758,7 @@ vissim/
     04_write_signals.py       controllers, heads, detectors, conflicts, RTOR
     05_check_run.py           what Vissim removed during a simulation
     06_calibrate_turn_inflow.py   estimate the demand nobody measured
-  tests/                      176 tests, no Vissim licence needed
+  tests/                      182 tests, no Vissim licence needed
   work/                       generated artefacts (gitignored)
   VISSIM_previous/            prior ORNL VISSIM work, kept for reference
 ```
@@ -651,6 +823,7 @@ Everything lands in `vissim/work/<scenario>/`:
 | `<name>_links.csv`                                    | stage 1    | every link and connector, incl. `FromLanes` and `FromPos` |
 | `<name>_movements.csv`                                | stage 1    | junctions, bearings, turn movements                       |
 | `<name>_junctions.csv`                                | stage 1    | junction membership and coordinates                       |
+| `dataset.json`                                        | stage 1    | the dataset whose Traffic/ and Control/ later stages read  |
 | `MatchupTable.xlsx`                                   | stage 2    | the join between network, counts and signals              |
 | `<name>_demand.inpx`                                  | stage 3    | network + vehicle inputs + routing decisions              |
 | `rbc_timings_<INTID>.prbc`                            | stage 4    | one Ring Barrier Controller per junction                  |
