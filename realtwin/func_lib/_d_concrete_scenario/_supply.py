@@ -24,7 +24,7 @@ class Supply:
 
     def is_empty(self):
         """Check if the Supply object is empty."""
-        pass
+        return
 
     def generate_network(self, AbsScn):
         """Generate network data from the abstract scenario."""

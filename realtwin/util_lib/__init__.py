@@ -15,20 +15,18 @@
 from .create_venv import venv_create, venv_delete
 from .download_elevation_tif import download_elevation_tif_by_bbox
 from .download_file_from_web import download_single_file_from_web
-from .find_exe_from_PATH import find_executable_from_PATH_on_win
+from .find_executable_path import find_executable_on_win
 from .create_config import prepare_realtwin_configs
 from .get_bbox_from_list_of_coords import get_bbox_from_vertices
 
 __all__ = [
 
+    'download_elevation_tif_by_bbox',
+    'download_single_file_from_web',
+    'find_executable_on_win',
+    'get_bbox_from_vertices',
+    'prepare_realtwin_configs',
     # create_venv
     'venv_create',
     'venv_delete',
-
-    'download_elevation_tif_by_bbox',
-    'download_single_file_from_web',
-    'find_executable_from_PATH_on_win',
-
-    'prepare_realtwin_configs',
-    'get_bbox_from_vertices',
 ]

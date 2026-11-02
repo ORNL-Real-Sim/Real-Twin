@@ -1,6 +1,6 @@
-realtwin.func\_lib.load\_input\_config
-======================================
+:orphan:
 
-.. currentmodule:: realtwin.func_lib
+Legacy load_input_config API
+============================
 
-.. autofunction:: load_input_config
+Use :func:`realtwin.func_lib.load_input_configs` for the current API.

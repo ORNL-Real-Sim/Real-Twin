@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c7632d00"></script>
+      <script src="../_static/documentation_options.js?v=92734c54"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">Supported Simulators</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="realtwin_prepare.html">Preparation</a></li>
@@ -111,6 +111,20 @@
 <section id="about-real-twin">
 <h1>About Real-Twin<a class="headerlink" href="#about-real-twin" title="Link to this heading"></a></h1>
 <p>ORNL’s Real-Twin project is a streamlined scenario generation tool that automatically integrates real-world traffic data to create high-fidelity digital twins for simulating the impacts of connected and automated vehicles in micro-simulation environments.</p>
+<p>The current Real-Twin package supports Windows only. Prepare the Python
+environment, simulator installations, and licenses on Windows before running
+the scenario or autonomous-vehicle workflows.</p>
+<p>The package exposes separate SUMO, Vissim, and Aimsun scenario classes.
+Each workflow prepares a network/model, maps observed traffic to its native
+movements, generates demand and optional external signals, and calibrates the
+enabled stages. Existing source/model control is retained when external signal
+loading is disabled. Genetic algorithm (GA), simulated annealing (SA), tabu
+search (TS), and Bayesian optimization (BO) are available for calibration.</p>
+<p>See <a class="reference internal" href="realtwin_simulator.html"><span class="doc">Supported Simulators</span></a> for platform requirements,
+<a class="reference internal" href="realtwin_prepare.html"><span class="doc">Preparation</span></a> for configuration and data preparation, and
+<a class="reference internal" href="realtwin_generation.html"><span class="doc">Scenario Generation</span></a> for the current repository examples. The Vissim
+tutorial’s travel-time reference is simulated; replace it with field
+observations when calibrating against measured conditions.</p>
 <section id="real-twin-framework">
 <h2>Real-Twin Framework<a class="headerlink" href="#real-twin-framework" title="Link to this heading"></a></h2>
 <p>The framework is designed to be user-friendly, allowing users to easily generate realistic traffic scenarios by leveraging real-world data. It supports various micro-simulation platforms and is particularly useful for researchers and practitioners in the field of transportation systems, connected vehicles, and traffic management.</p>
@@ -146,7 +160,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

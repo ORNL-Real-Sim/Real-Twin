@@ -4,6 +4,9 @@ Autonomous Vehicle Simulation
 
 This section provides the simulation capabilities for autonomous vehicles (AV, CAV, EV, etc.) within the Real-Twin framework using SUMO, allowing for realistic traffic simulations and road network modeling.
 
+The current Real-Twin package supports Windows only, including this SUMO
+vehicle-type workflow.
+
 
 Key Features in AV Simulation
 ==============================
@@ -18,7 +21,7 @@ To effectively simulate autonomous vehicles, the following data is required:
 
 1. **SUMO Network File (.net.xml)**: A SUMO network file that defines the road network, including lanes, junctions, and traffic signals. This file is essential for setting up the simulation environment.
 2. **SUMO Demand Files (.flow.xml and .turn.xml)**: SUMO flow and turn files that specify the traffic demand, including vehicle types, routes, and turning movements at intersections. These files are crucial for simulating realistic traffic patterns.
-3. **SUMO Configuration File (.sumocfg)**: A SUMO configuration file that ties together the network and demand files, specifying simulation parameters such as time step and duration, output files, etc. This file is necessary to run the simulation.
+3. **AV YAML configuration**: vehicle types, penetration percentages, car-following/lane-changing models, and simulation settings. ``SimAV`` generates the SUMO route/configuration files during preparation.
 
 Prepare AV Simulation Configuration Data
 ===========================================
@@ -31,10 +34,28 @@ To prepare the configuration data for AV simulation, realtwin provides a script 
 
     import realtwin as rt
 
-    # Generate SUMO configuration file for AV simulation
+    # Copy a starter AV YAML configuration into an existing directory.
     rt.prepare_av_configs(dest_dir="")
 
-This script will generate the necessary SUMO configuration files, including the network, demand, and configuration files, in the specified destination directory. The generated files can then be used to run the AV simulation in SUMO.
+This copies ``config_av.yaml`` into the destination directory. It does not
+generate a network or traffic observations. Edit its input paths and vehicle
+settings before passing it to ``SimAV``. The repository example uses:
+
+.. code-block:: python
+
+    import realtwin as rt
+
+    sim = rt.SimAV(
+        path_config="./tutorials/realtwin_av_config.yaml",
+        verbose=True,
+    )
+    sim.run_simulation()
+
+Run from the repository root with SUMO available. The example reads
+``datasets/autonomous_veh/chatt.net.xml``, ``chatt.flow.xml``, and
+``chatt.turn.xml``. Generated files and results are written to
+``datasets/autonomous_veh/output_AV/``. This workflow does not use a matchup
+table or the scenario classes' abstract/concrete generation methods.
 
 
 .. _Update AV Simulation Configuration Data:
@@ -74,7 +95,7 @@ To update the AV simulation configuration data, you can modify the generated SUM
 
   Percentage of penetration of the specified vehicle types in the traffic flow. Default is [40, 30, 30] for ["Human", "AVnormal", "CAV"] respectively. The sum of the percentages should equal 100.
 
-- :orange:`car_following_model`:
+- :orange:`car_follow_model`:
 
   The car-following model to be used in the simulation. Options include "Krauss", "Wiedemann", "IDM", etc. Default is "Krauss". please refer to the SUMO documentation for a complete list of available car-following models: https://sumo.dlr.de/docs/Definition_of_Vehicles%2C_Vehicle_Types%2C_and_Routes.html.
 

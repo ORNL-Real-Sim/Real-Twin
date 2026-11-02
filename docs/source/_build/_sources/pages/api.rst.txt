@@ -2,6 +2,7 @@
 API Reference
 ======================
 
+.. py:module:: realtwin
 .. currentmodule:: realtwin
 
 
@@ -11,7 +12,31 @@ RealTwin API
 .. autosummary::
     :toctree: api/
 
-    RealTwin
+    RealTwinSUMO
+    RealTwinVISSIM
+    RealTwinAimsun
+
+Autonomous Vehicle API
+======================
+
+.. autosummary::
+    :toctree: api/
+
+    SimAV
+    prepare_av_configs
+
+SUMO and OpenDRIVE Conversion
+=============================
+
+These helpers write separate conversion outputs. See
+:doc:`realtwin_generation` for source identity metadata and native conversion
+limitations.
+
+.. autosummary::
+    :toctree: api/
+
+    rt_sumo.xodr_sumo.xodr_from_net_xml
+    rt_sumo.xodr_sumo.xodr_to_net_xml
 
 
 Utility Functions
@@ -24,7 +49,7 @@ Utility Functions
     util_lib.venv_delete
     util_lib.download_elevation_tif_by_bbox
     util_lib.download_single_file_from_web
-    util_lib.find_executable_from_PATH_on_win
+    util_lib.find_executable_on_win
     util_lib.prepare_realtwin_configs
     util_lib.get_bbox_from_vertices
 
@@ -37,8 +62,6 @@ Installation and Environment
 
     func_lib.install_sumo
     func_lib.install_sumo_windows
-    func_lib.install_sumo_linux
-    func_lib.install_sumo_macos
 
     func_lib.is_sumo_installed
     func_lib.is_aimsun_installed
@@ -50,7 +73,7 @@ Load Inputs
 .. autosummary::
     :toctree: api/
 
-    func_lib.load_input_config
+    func_lib.load_input_configs
 
 Abstract Scenario Generation
 ============================

@@ -18,7 +18,7 @@ from .sim_av import SimAV, prepare_av_configs
 from ._generate_loop_detector import generate_sumo_loop_detector_add_xml
 
 
-__all__ = [
+__all__ = [  # noqa: RUF022
     'SimAV',
     'prepare_av_configs',
     'load_av_configs',

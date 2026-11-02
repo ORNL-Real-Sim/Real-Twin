@@ -60,7 +60,7 @@ from realtwin.func_lib._f_calibration.calibration_aimsun import cali_aimsun
 from realtwin.func_lib._f_calibration.calibration_vissim import cali_vissim
 
 
-__all__ = [
+__all__ = [  # noqa: RUF022
     # _a_install_simulator
     "is_sumo_installed",
     "is_vissim_installed",

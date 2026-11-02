@@ -22,7 +22,7 @@ class TrafficControl:
 
     def is_empty(self):
         """Check if the TrafficControl object is empty."""
-        pass
+        return
 
     def generate_control(self, AbsScn):
         """Generate control data from the abstract scenario."""
@@ -34,4 +34,4 @@ class TrafficControl:
         # IDRef = pd.read_csv('Synchro_lookuptable.csv')
         # MergedDf3 = pd.merge(SignalDict ,IDRef, on=['INTID'], how='left')
 
-        pass
+        return

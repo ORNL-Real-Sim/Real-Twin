@@ -106,7 +106,10 @@ class OpenDriveNetwork:
         #     os.remove(PathDelete4)  # Delete the file
 
     def create_OpenDrive_network(self):
-        """Create OpenDrive network from SUMO Network"""
+        """Export OpenDrive with source IDs without rewriting the SUMO network."""
+        # Import here because the public SUMO adapter also imports AbstractScenario.
+        from realtwin.rt_sumo.xodr_sumo import xodr_from_net_xml
+
         # get node and edge path
         path_net = pf.path2linux(os.path.join(self._output_dir, f'OpenDrive/{self._net_name}.net.xml'))
         path_net_elevation = pf.path2linux(
@@ -122,14 +125,12 @@ class OpenDriveNetwork:
         if not os.path.exists(Path(self._output_dir) / 'OpenDrive'):
             os.makedirs(Path(self._output_dir) / 'OpenDrive', exist_ok=True)
 
-        command2 = f'cmd/c "netconvert -s "{path_net}" --opendrive-output="{path_open_drive_output}""'
-        os.system(command2)
+        xodr_from_net_xml(path_net, path_open_drive_output)
         self.OpenDrive_network = [path_open_drive_output]
 
         # with elevation data
-        if self._ele_map != "No elevation map provided!":
-            command4 = f'cmd/c "netconvert -s {path_net_elevation} --opendrive-output={path_open_drive_ele}"'
-            os.system(command4)
+        if self._ele_map != "No elevation map provided!" and os.path.exists(path_net_elevation):
+            xodr_from_net_xml(path_net_elevation, path_open_drive_ele)
             self.OpenDrive_network.append(path_open_drive_ele)
         else:
             self.OpenDrive_network.append(None)

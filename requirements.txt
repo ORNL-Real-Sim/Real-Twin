@@ -5,7 +5,8 @@ openpyxl
 folium
 matplotlib
 pyufunc
-pandas<3.0.0
+pandas>=2.2.0,<3.0.0; python_version < "3.11"
+pandas>=3.0.0; python_version >= "3.11"
 networkx
 osmnx
 sumolib

@@ -1,0 +1,44 @@
+{
+  "reference_source": {
+    "kind": "simulated_baseline",
+    "network": "datasets/example1/output/VISSIM/chatt_demand_signals.inpx",
+    "network_sha256": "d5be94200e4349004f5f8958bb30922e982a36991e3887467f6bfcc768c2fc33",
+    "signal_file_sha256": "81e863c6d6f66b57ab1c59d9caca5f924af8813fa1526b8ba2acd3ee8a503a18",
+    "generated_at_utc": "2026-10-12T21:59:35.397316+00:00",
+    "period": [
+      28800,
+      32400
+    ],
+    "seed": 42,
+    "resolution": 10,
+    "completed_vehicles": 162.0,
+    "vissim_version": "2026.00-10 [308111]"
+  },
+  "sel_behavior_routes": [
+    [
+      "Shallowford_WB_9_to_15",
+      9,
+      15,
+      39.198670326443576
+    ]
+  ],
+  "route_positions": {
+    "Shallowford_WB_9_to_15": {
+      "start": 0.0,
+      "end": 0.5
+    }
+  },
+  "driving_behavior_ids": [
+    1
+  ],
+  "params_ranges": {
+    "W74ax": [
+      1.0,
+      3.0
+    ],
+    "W74bxAdd": [
+      1.0,
+      4.0
+    ]
+  }
+}

@@ -176,7 +176,7 @@ def generate_junction_bearing(path_net: str) -> pd.DataFrame:
         inc_lanes = junction.get("incLanes", "").split()
 
         # Extract unique edges from lane IDs
-        edges = set(lane.rsplit("_", 1)[0] for lane in inc_lanes if lane)
+        edges = {lane.rsplit("_", 1)[0] for lane in inc_lanes if lane}
 
         # Get entrance and exit counts for this junction
         # entrance_count = sum(df_edges["To"] == junction_id)
@@ -282,9 +282,9 @@ def format_junction_bearing(path_net: str) -> pd.DataFrame:
         "Direction": "Turn"
     }, inplace=True)
 
-    # remove "-" before the sumo edge id to be OpenDrive road id
-    MatchupTable["FromRoadID_OpenDrive"] = MatchupTable["FromRoadID_OpenDrive"].astype(str).str.replace(r"^-", "", n=1, regex=True)
-    MatchupTable["ToRoadID_OpenDrive"] = MatchupTable["ToRoadID_OpenDrive"].astype(str).str.replace(r"^-", "", n=1, regex=True)
+    # The OpenDrive export uses these exact SUMO edge IDs, including leading '-'.
+    MatchupTable["FromRoadID_OpenDrive"] = MatchupTable["FromRoadID_OpenDrive"].astype(str)
+    MatchupTable["ToRoadID_OpenDrive"] = MatchupTable["ToRoadID_OpenDrive"].astype(str)
 
     MatchupTable["File_GridSmart"] = None
     MatchupTable["Date_GridSmart"] = None

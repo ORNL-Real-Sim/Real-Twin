@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c7632d00"></script>
+      <script src="../_static/documentation_options.js?v=92734c54"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">Supported Simulators</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="realtwin_prepare.html">Preparation</a></li>
@@ -111,6 +111,8 @@
 <section id="autonomous-vehicle-simulation">
 <h1>Autonomous Vehicle Simulation<a class="headerlink" href="#autonomous-vehicle-simulation" title="Link to this heading"></a></h1>
 <p>This section provides the simulation capabilities for autonomous vehicles (AV, CAV, EV, etc.) within the Real-Twin framework using SUMO, allowing for realistic traffic simulations and road network modeling.</p>
+<p>The current Real-Twin package supports Windows only, including this SUMO
+vehicle-type workflow.</p>
 <section id="key-features-in-av-simulation">
 <h2>Key Features in AV Simulation<a class="headerlink" href="#key-features-in-av-simulation" title="Link to this heading"></a></h2>
 <ul class="simple">
@@ -124,7 +126,7 @@
 <ol class="arabic simple">
 <li><p><strong>SUMO Network File (.net.xml)</strong>: A SUMO network file that defines the road network, including lanes, junctions, and traffic signals. This file is essential for setting up the simulation environment.</p></li>
 <li><p><strong>SUMO Demand Files (.flow.xml and .turn.xml)</strong>: SUMO flow and turn files that specify the traffic demand, including vehicle types, routes, and turning movements at intersections. These files are crucial for simulating realistic traffic patterns.</p></li>
-<li><p><strong>SUMO Configuration File (.sumocfg)</strong>: A SUMO configuration file that ties together the network and demand files, specifying simulation parameters such as time step and duration, output files, etc. This file is necessary to run the simulation.</p></li>
+<li><p><strong>AV YAML configuration</strong>: vehicle types, penetration percentages, car-following/lane-changing models, and simulation settings. <code class="docutils literal notranslate"><span class="pre">SimAV</span></code> generates the SUMO route/configuration files during preparation.</p></li>
 </ol>
 </section>
 <section id="prepare-av-simulation-configuration-data">
@@ -132,11 +134,27 @@
 <p>To prepare the configuration data for AV simulation, realtwin provides a script that generate configuration file.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"><span class="linenos">1</span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
 </span><span class="linenos">2</span>
-<span class="linenos">3</span><span class="c1"># Generate SUMO configuration file for AV simulation</span>
+<span class="linenos">3</span><span class="c1"># Copy a starter AV YAML configuration into an existing directory.</span>
 <span class="hll"><span class="linenos">4</span><span class="n">rt</span><span class="o">.</span><span class="n">prepare_av_configs</span><span class="p">(</span><span class="n">dest_dir</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
-<p>This script will generate the necessary SUMO configuration files, including the network, demand, and configuration files, in the specified destination directory. The generated files can then be used to run the AV simulation in SUMO.</p>
+<p>This copies <code class="docutils literal notranslate"><span class="pre">config_av.yaml</span></code> into the destination directory. It does not
+generate a network or traffic observations. Edit its input paths and vehicle
+settings before passing it to <code class="docutils literal notranslate"><span class="pre">SimAV</span></code>. The repository example uses:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+
+<span class="n">sim</span> <span class="o">=</span> <span class="n">rt</span><span class="o">.</span><span class="n">SimAV</span><span class="p">(</span>
+    <span class="n">path_config</span><span class="o">=</span><span class="s2">&quot;./tutorials/realtwin_av_config.yaml&quot;</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">run_simulation</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Run from the repository root with SUMO available. The example reads
+<code class="docutils literal notranslate"><span class="pre">datasets/autonomous_veh/chatt.net.xml</span></code>, <code class="docutils literal notranslate"><span class="pre">chatt.flow.xml</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">chatt.turn.xml</span></code>. Generated files and results are written to
+<code class="docutils literal notranslate"><span class="pre">datasets/autonomous_veh/output_AV/</span></code>. This workflow does not use a matchup
+table or the scenario classes’ abstract/concrete generation methods.</p>
 </section>
 <section id="update-av-simulation-configuration-data">
 <span id="id1"></span><h2><span class="red">Update AV Simulation Configuration Data</span><a class="headerlink" href="#update-av-simulation-configuration-data" title="Link to this heading"></a></h2>
@@ -167,7 +185,7 @@
 <li><p><span class="orange">pct_penetration</span>:</p>
 <p>Percentage of penetration of the specified vehicle types in the traffic flow. Default is [40, 30, 30] for [“Human”, “AVnormal”, “CAV”] respectively. The sum of the percentages should equal 100.</p>
 </li>
-<li><p><span class="orange">car_following_model</span>:</p>
+<li><p><span class="orange">car_follow_model</span>:</p>
 <p>The car-following model to be used in the simulation. Options include “Krauss”, “Wiedemann”, “IDM”, etc. Default is “Krauss”. please refer to the SUMO documentation for a complete list of available car-following models: <a class="reference external" href="https://sumo.dlr.de/docs/Definition_of_Vehicles%2C_Vehicle_Types%2C_and_Routes.html">https://sumo.dlr.de/docs/Definition_of_Vehicles%2C_Vehicle_Types%2C_and_Routes.html</a>.</p>
 </li>
 <li><p><span class="orange">lane_change_model</span>:</p>
@@ -213,7 +231,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

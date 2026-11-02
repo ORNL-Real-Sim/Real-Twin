@@ -1,0 +1,82 @@
+{
+  "network": "C:\\Users\\xh8\\ORNL_Work\\gitlab_workspace\\Real-Twin\\datasets\\example1\\output\\VISSIM\\behavior_reference\\bo_validation_b9_5hrk0\\VISSIM\\chatt_demand_signals.inpx",
+  "calibrated": "C:\\Users\\xh8\\ORNL_Work\\gitlab_workspace\\Real-Twin\\datasets\\example1\\output\\VISSIM\\behavior_reference\\bo_validation_b9_5hrk0\\VISSIM\\chatt_demand_signals_behavior_bo.inpx",
+  "stage": "behavior",
+  "algorithm": "bo",
+  "objective": "travel_time_mae_seconds",
+  "settings": {
+    "kernel_type": "RBF",
+    "tolerance": 3,
+    "target": 0,
+    "random_points": 8,
+    "max_evaluations": 2,
+    "total_run": 1,
+    "seed": 812
+  },
+  "period": [
+    28800,
+    32400
+  ],
+  "vissim_seed": 42,
+  "optimiser_seed": 812,
+  "resolution": 10,
+  "evaluations": 1,
+  "route_positions": {
+    "Shallowford_WB_9_to_15": {
+      "start": 0.0,
+      "end": 0.5
+    }
+  },
+  "reference_source": {
+    "kind": "simulated_baseline",
+    "record": "datasets/example1/output/VISSIM/behavior_reference/Shallowford_WB_baseline.json"
+  },
+  "driving_behavior_ids": [
+    1
+  ],
+  "params_ranges": {
+    "W74ax": [
+      1.0,
+      3.0
+    ],
+    "W74bxAdd": [
+      1.0,
+      4.0
+    ]
+  },
+  "values": {
+    "W74ax": 2.103090684351358,
+    "W74bxAdd": 1.2519283306943918
+  },
+  "solution": [
+    2.103090684351358,
+    1.2519283306943918
+  ],
+  "before": {
+    "mae_seconds": 0.0,
+    "missing_routes": 0,
+    "routes": [
+      {
+        "route": "Shallowford_WB_9_to_15",
+        "observed_seconds": 39.198670326443576,
+        "modelled_seconds": 39.198670326443576,
+        "vehicles": 162.0,
+        "absolute_error_seconds": 0.0
+      }
+    ]
+  },
+  "after": {
+    "mae_seconds": 1.1760365392103296,
+    "missing_routes": 0,
+    "routes": [
+      {
+        "route": "Shallowford_WB_9_to_15",
+        "observed_seconds": 39.198670326443576,
+        "modelled_seconds": 38.02263378723325,
+        "vehicles": 178.0,
+        "absolute_error_seconds": 1.1760365392103296
+      }
+    ]
+  },
+  "missing_route_penalty": 10000.0
+}

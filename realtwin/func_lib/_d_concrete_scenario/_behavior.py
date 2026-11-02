@@ -22,4 +22,4 @@ class Behavior:
 
     def ApplicationInterpreter(self, AbsScn):
         """Interpret the application element of the Abstract scenario"""
-        pass
+        return

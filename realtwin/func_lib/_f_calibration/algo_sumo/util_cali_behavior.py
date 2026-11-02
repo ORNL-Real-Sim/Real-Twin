@@ -35,7 +35,7 @@ else:
 import traci
 
 
-def update_turn_flow_from_solution(path_turn: str,
+def update_turn_inflow_from_solution(path_turn: str,
                                    path_inflow: str,
                                    initial_solution: np.array,
                                    cali_interval: int,
@@ -57,6 +57,7 @@ def update_turn_flow_from_solution(path_turn: str,
 
     # create the copy of turn and inflow dataframes for internal operations
     TurnDf = pd.read_excel(path_turn)
+    TurnDf["TurnRatio"] = TurnDf["TurnRatio"].astype(float)
     InflowDf = pd.read_excel(path_inflow)
 
     # --- Update TurnRatios ---

@@ -12,10 +12,10 @@
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../_static/css/realtwin_css.css?v=836a7079" />
 
-
+  
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c7632d00"></script>
+      <script src="../_static/documentation_options.js?v=92734c54"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -23,18 +23,18 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="realtwin.RealTwin" href="api/realtwin.RealTwin.html" />
-    <link rel="prev" title="Autonomous Vehicle Simulation" href="autonomous_vehicles_simulation.html" />
+    <link rel="next" title="realtwin.RealTwinSUMO" href="api/realtwin.RealTwinSUMO.html" />
+    <link rel="prev" title="Autonomous Vehicle Simulation" href="autonomous_vehicles_simulation.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
 
-
-
+          
+          
           <a href="../index.html" class="icon icon-home">
             realtwin
           </a>
@@ -54,7 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">Supported Simulators</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="realtwin_prepare.html">Preparation</a></li>
@@ -68,7 +68,19 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#realtwin-api">RealTwin API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/realtwin.RealTwin.html">realtwin.RealTwin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/realtwin.RealTwinSUMO.html">realtwin.RealTwinSUMO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/realtwin.RealTwinVISSIM.html">realtwin.RealTwinVISSIM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/realtwin.RealTwinAimsun.html">realtwin.RealTwinAimsun</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#autonomous-vehicle-api">Autonomous Vehicle API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/realtwin.SimAV.html">realtwin.SimAV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/realtwin.prepare_av_configs.html">realtwin.prepare_av_configs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sumo-and-opendrive-conversion">SUMO and OpenDRIVE Conversion</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml.html">realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml.html">realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#utility-functions">Utility Functions</a><ul>
@@ -76,7 +88,7 @@
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.venv_delete.html">realtwin.util_lib.venv_delete</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.download_elevation_tif_by_bbox.html">realtwin.util_lib.download_elevation_tif_by_bbox</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.download_single_file_from_web.html">realtwin.util_lib.download_single_file_from_web</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.find_executable_from_PATH_on_win.html">realtwin.util_lib.find_executable_from_PATH_on_win</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.find_executable_on_win.html">realtwin.util_lib.find_executable_on_win</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.prepare_realtwin_configs.html">realtwin.util_lib.prepare_realtwin_configs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.util_lib.get_bbox_from_vertices.html">realtwin.util_lib.get_bbox_from_vertices</a></li>
 </ul>
@@ -84,15 +96,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#installation-and-environment">Installation and Environment</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.func_lib.install_sumo.html">realtwin.func_lib.install_sumo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.func_lib.install_sumo_windows.html">realtwin.func_lib.install_sumo_windows</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/realtwin.func_lib.install_sumo_linux.html">realtwin.func_lib.install_sumo_linux</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/realtwin.func_lib.install_sumo_macos.html">realtwin.func_lib.install_sumo_macos</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.func_lib.is_sumo_installed.html">realtwin.func_lib.is_sumo_installed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.func_lib.is_aimsun_installed.html">realtwin.func_lib.is_aimsun_installed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/realtwin.func_lib.is_vissim_installed.html">realtwin.func_lib.is_vissim_installed</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#load-inputs">Load Inputs</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/realtwin.func_lib.load_input_config.html">realtwin.func_lib.load_input_config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/realtwin.func_lib.load_input_configs.html">realtwin.func_lib.load_input_configs</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#abstract-scenario-generation">Abstract Scenario Generation</a><ul>
@@ -157,17 +167,52 @@
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-
+             
   <blockquote>
 <div></div></blockquote>
-<section id="api-reference">
-<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+<section id="module-realtwin">
+<span id="api-reference"></span><h1>API Reference<a class="headerlink" href="#module-realtwin" title="Link to this heading"></a></h1>
 <section id="realtwin-api">
 <h2>RealTwin API<a class="headerlink" href="#realtwin-api" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.RealTwin.html#realtwin.RealTwin" title="realtwin.RealTwin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RealTwin</span></code></a>([input_config_file])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.RealTwinSUMO.html#realtwin.RealTwinSUMO" title="realtwin.RealTwinSUMO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RealTwinSUMO</span></code></a>([input_config_file])</p></td>
 <td><p>The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group that enables the simulation of twin-structured cities.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.RealTwinVISSIM.html#realtwin.RealTwinVISSIM" title="realtwin.RealTwinVISSIM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RealTwinVISSIM</span></code></a>([input_config_file])</p></td>
+<td><p>The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group that enables the simulation of twin-structured cities.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.RealTwinAimsun.html#realtwin.RealTwinAimsun" title="realtwin.RealTwinAimsun"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RealTwinAimsun</span></code></a>([input_config_file])</p></td>
+<td><p>The RealTwin Aimsun integration developed by ORNL Applied Research and Mobility System (ARMS) group that enables the simulation of twin-structured cities.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="autonomous-vehicle-api">
+<h2>Autonomous Vehicle API<a class="headerlink" href="#autonomous-vehicle-api" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.SimAV.html#realtwin.SimAV" title="realtwin.SimAV"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimAV</span></code></a>([path_config, verbose])</p></td>
+<td><p>Autonomous Vehicle Simulation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.prepare_av_configs.html#realtwin.prepare_av_configs" title="realtwin.prepare_av_configs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_av_configs</span></code></a>([dest_dir])</p></td>
+<td><p>Generate configuration files for autonomous vehicles simulation.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="sumo-and-opendrive-conversion">
+<h2>SUMO and OpenDRIVE Conversion<a class="headerlink" href="#sumo-and-opendrive-conversion" title="Link to this heading"></a></h2>
+<p>These helpers write separate conversion outputs. See
+<a class="reference internal" href="realtwin_generation.html"><span class="doc">Scenario Generation</span></a> for source identity metadata and native conversion
+limitations.</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml.html#realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml" title="realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rt_sumo.xodr_sumo.xodr_from_net_xml</span></code></a>([...])</p></td>
+<td><p>Convert a <code class="docutils literal notranslate"><span class="pre">.net.xml</span></code> file or <code class="docutils literal notranslate"><span class="pre">sumolib.net.Net</span></code> object to <code class="xref py py-class docutils literal notranslate"><span class="pre">pyopendrive.OpenDriveMap</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml.html#realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml" title="realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rt_sumo.xodr_sumo.xodr_to_net_xml</span></code></a>(xodr_file)</p></td>
+<td><p>Convert an OpenDRIVE <code class="docutils literal notranslate"><span class="pre">.xodr</span></code> file to a <code class="docutils literal notranslate"><span class="pre">sumolib.net.Net</span></code> object.</p></td>
 </tr>
 </tbody>
 </table>
@@ -188,8 +233,8 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.util_lib.download_single_file_from_web.html#realtwin.util_lib.download_single_file_from_web" title="realtwin.util_lib.download_single_file_from_web"><code class="xref py py-obj docutils literal notranslate"><span class="pre">util_lib.download_single_file_from_web</span></code></a>(url, ...)</p></td>
 <td><p>Downloads a large file from a URL in chunks and saves it to the specified destination.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.util_lib.find_executable_from_PATH_on_win.html#realtwin.util_lib.find_executable_from_PATH_on_win" title="realtwin.util_lib.find_executable_from_PATH_on_win"><code class="xref py py-obj docutils literal notranslate"><span class="pre">util_lib.find_executable_from_PATH_on_win</span></code></a>(...)</p></td>
-<td><p>Find the executable from the system PATH.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.util_lib.find_executable_on_win.html#realtwin.util_lib.find_executable_on_win" title="realtwin.util_lib.find_executable_on_win"><code class="xref py py-obj docutils literal notranslate"><span class="pre">util_lib.find_executable_on_win</span></code></a>(exe_name[, ...])</p></td>
+<td><p>Find an executable from PATH or the Windows system drive.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.util_lib.prepare_realtwin_configs.html#realtwin.util_lib.prepare_realtwin_configs" title="realtwin.util_lib.prepare_realtwin_configs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">util_lib.prepare_realtwin_configs</span></code></a>([dest_dir])</p></td>
 <td><p>Create a default/demo configuration file for the RealTwin package.</p></td>
@@ -210,12 +255,6 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.func_lib.install_sumo_windows.html#realtwin.func_lib.install_sumo_windows" title="realtwin.func_lib.install_sumo_windows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.install_sumo_windows</span></code></a>([...])</p></td>
 <td><p>Install SUMO onto the windows system.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.func_lib.install_sumo_linux.html#realtwin.func_lib.install_sumo_linux" title="realtwin.func_lib.install_sumo_linux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.install_sumo_linux</span></code></a>([sumo_version, ...])</p></td>
-<td><p>Install SUMO onto the linux system.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.func_lib.install_sumo_macos.html#realtwin.func_lib.install_sumo_macos" title="realtwin.func_lib.install_sumo_macos"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.install_sumo_macos</span></code></a>([sumo_version, ...])</p></td>
-<td><p>Install SUMO onto the mac system.</p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.func_lib.is_sumo_installed.html#realtwin.func_lib.is_sumo_installed" title="realtwin.func_lib.is_sumo_installed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.is_sumo_installed</span></code></a>(*[, ext, ...])</p></td>
 <td><p>Check if SUMO is installed on the system.</p></td>
 </tr>
@@ -232,7 +271,7 @@
 <h2>Load Inputs<a class="headerlink" href="#load-inputs" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.func_lib.load_input_config.html#realtwin.func_lib.load_input_config" title="realtwin.func_lib.load_input_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.load_input_config</span></code></a>(path_config)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.func_lib.load_input_configs.html#realtwin.func_lib.load_input_configs" title="realtwin.func_lib.load_input_configs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.load_input_configs</span></code></a>(path_config)</p></td>
 <td><p>load input configuration from yaml file</p></td>
 </tr>
 </tbody>
@@ -300,7 +339,7 @@
 <td><p>Run SUMO calibration based on the selected algorithm and input configuration.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/realtwin.func_lib.cali_aimsun.html#realtwin.func_lib.cali_aimsun" title="realtwin.func_lib.cali_aimsun"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.cali_aimsun</span></code></a>(*[, sel_algo, ...])</p></td>
-<td><p>Run SUMO calibration based on the selected algorithm and input configuration.</p></td>
+<td><p>Run AimSUN calibration based on the selected algorithm and input configuration.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/realtwin.func_lib.cali_vissim.html#realtwin.func_lib.cali_vissim" title="realtwin.func_lib.cali_vissim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_lib.cali_vissim</span></code></a>(*[, sel_algo, ...])</p></td>
 <td><p>Run VISSIM calibration using the specified algorithm and input configuration.</p></td>
@@ -321,19 +360,19 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="autonomous_vehicles_simulation.html" class="btn btn-neutral float-left" title="Autonomous Vehicle Simulation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="api/realtwin.RealTwin.html" class="btn btn-neutral float-right" title="realtwin.RealTwin" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="api/realtwin.RealTwinSUMO.html" class="btn btn-neutral float-right" title="realtwin.RealTwinSUMO" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     provided by <a href="https://readthedocs.org">Read the Docs</a>.
-
+   
 
 </footer>
         </div>
@@ -344,7 +383,7 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
+  </script> 
 
 </body>
 </html>

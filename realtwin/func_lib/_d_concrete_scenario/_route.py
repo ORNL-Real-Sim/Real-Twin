@@ -25,7 +25,7 @@ class Route:
 
     def is_empty(self):
         """Check if the Route object is empty."""
-        pass
+        return
 
     def generate_route(self, AbsScn):
         """Generate route data from the abstract scenario."""

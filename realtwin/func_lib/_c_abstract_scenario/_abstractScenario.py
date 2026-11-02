@@ -60,9 +60,8 @@ def load_traffic_volume(demand_data: str | pd.DataFrame) -> pd.DataFrame:
                           "\n  :No traffic volume data loaded from input file")
             return None
 
-        # read the csv file and fill the nan values with 0
+        # Keep missing identifiers separate from missing numeric counts.
         traffic_volume = pd.read_csv(demand_data)
-        traffic_volume.fillna(0, inplace=True)
 
         # Create a copy of the DataFrame
         df_volume = traffic_volume.copy()
@@ -81,8 +80,8 @@ def load_traffic_volume(demand_data: str | pd.DataFrame) -> pd.DataFrame:
                                var_name='Turn',
                                value_name='Count')
 
-    # clean Count column: change "" to 0 and convert to int
-    df_volume['Count'] = df_volume['Count'].replace("", 0).astype(int)
+    # Convert counts before filling missing values; string columns reject numeric fills.
+    df_volume['Count'] = pd.to_numeric(df_volume['Count'].replace("", pd.NA)).fillna(0).astype(int)
 
     # Sort the DataFrame by IntersectionName and Turn columns
     df_volume.sort_values(['IntersectionName', 'IntervalStart', 'IntervalEnd'], inplace=True)
@@ -185,7 +184,7 @@ def load_control_signal(path_signal: str) -> dict:
 class AbstractScenario:
     """Initialize an Abstract Scenario"""
 
-    def __init__(self, input_config: dict = None):
+    def __init__(self, input_config: dict | None = None):
 
         self.input_config = input_config
 
@@ -244,14 +243,7 @@ class AbstractScenario:
 
         self.Network.OpenDriveNetwork.create_OpenDrive_network()
 
-        # re-write sumo network based on the OpenDriveNetwork
-        net_name = self.Network.OpenDriveNetwork._net_name
-        path_open_drive = pf.path2linux(Path(self.Network._output_dir) / f"OpenDrive/{net_name}.xodr")
-        path_sumo_net = pf.path2linux(Path(self.Network._output_dir) / f"OpenDrive/{net_name}.net.xml")
-        os.system(f'cmd/c "netconvert --opendrive "{path_open_drive}"'
-                  f' -o "{path_sumo_net}" --no-internal-links"')
-
-    def update_AbstractScenario_from_input(self, df_volume: pd.DataFrame = None, signal_dict: dict = None):
+    def update_AbstractScenario_from_input(self, df_volume: pd.DataFrame = None, signal_dict: dict | None = None):
         """ update values from config dict to specific data object"""
 
         # TDD check whether the input_config is not None
@@ -285,7 +277,9 @@ class AbstractScenario:
             self.Traffic.TurningRatio = load_traffic_turning_ratio(self.Traffic.Volume)
 
         # update Control
-        if signal_dict is not None:
+        if not self.input_config.get('SUMO', {}).get('is_control_data', True):
+            self.Control.Signal = {}
+        elif signal_dict is not None:
             self.Control.Signal = signal_dict
         elif control_data := self.input_config.get('Control'):
             if isinstance(control_data, dict):
@@ -305,4 +299,4 @@ class AbstractScenario:
 
     def fillAbstractScenario(self):
         """Fill the AbstractScenario with the data from the input_config"""
-        pass
+        return

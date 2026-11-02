@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/realtwin_css.css?v=836a7079" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=92734c54"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="realtwin.util_lib.venv_create" href="realtwin.util_lib.venv_create.html" />
+    <link rel="prev" title="realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml" href="realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            realtwin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">About Real-Twin</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../realtwin_simulator.html">Supported Simulators</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../realtwin_prepare.html">Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../realtwin_generation.html">Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../autonomous_vehicles_simulation.html">Autonomous Vehicle Simulation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#realtwin-api">RealTwin API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#autonomous-vehicle-api">Autonomous Vehicle API</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#sumo-and-opendrive-conversion">SUMO and OpenDRIVE Conversion</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml.html">realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml"><code class="docutils literal notranslate"><span class="pre">xodr_to_net_xml()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#utility-functions">Utility Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#installation-and-environment">Installation and Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#load-inputs">Load Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#abstract-scenario-generation">Abstract Scenario Generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#concrete-scenario-generation">Concrete Scenario Generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#prepare-simulation-documents">Prepare Simulation Documents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#calibration">Calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#native-vissim-calibration-adapters">Native Vissim Calibration Adapters</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html#citation-request">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../support.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+      <li class="breadcrumb-item active">realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/pages/api/realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <blockquote>
+<div></div></blockquote>
+<section id="realtwin-rt-sumo-xodr-sumo-xodr-to-net-xml">
+<h1>realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml<a class="headerlink" href="#realtwin-rt-sumo-xodr-sumo-xodr-to-net-xml" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml">
+<span class="sig-prename descclassname"><span class="pre">realtwin.rt_sumo.xodr_sumo.</span></span><span class="sig-name descname"><span class="pre">xodr_to_net_xml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xodr_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">net_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">netconvert_binary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">netconvert_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">import_all_lanes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_internal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">sumolib.net.Net</span></span></span><a class="reference internal" href="../../_modules/realtwin/rt_sumo/xodr_sumo.html#xodr_to_net_xml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml" title="Link to this definition"></a></dt>
+<dd><p>Convert an OpenDRIVE <code class="docutils literal notranslate"><span class="pre">.xodr</span></code> file to a <code class="docutils literal notranslate"><span class="pre">sumolib.net.Net</span></code> object.</p>
+<p>Files exported by <a class="reference internal" href="realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml.html#realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml" title="realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml"><code class="xref py py-func docutils literal notranslate"><span class="pre">xodr_from_net_xml()</span></code></a> carry metadata for restoring
+source SUMO junction, edge and lane IDs, TLS programs and controlled lane
+connections. OpenDrive uses local integer lane IDs; SUMO lane names are
+retained separately in <code class="docutils literal notranslate"><span class="pre">userData</span></code>. For other OpenDrive files, native
+generated IDs are retained and their OpenDrive origins are recorded as
+parameters. Roads split by netconvert retain generated segment IDs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xodr_file</strong> – Source OpenDRIVE file.</p></li>
+<li><p><strong>net_file</strong> – output SUMO <code class="docutils literal notranslate"><span class="pre">.net.xml</span></code> path.</p></li>
+<li><p><strong>netconvert_binary</strong> – Optional path or executable name for SUMO
+<code class="docutils literal notranslate"><span class="pre">netconvert</span></code>. When omitted, <code class="docutils literal notranslate"><span class="pre">netconvert</span></code> is resolved from
+<code class="docutils literal notranslate"><span class="pre">PATH</span></code>.</p></li>
+<li><p><strong>netconvert_options</strong> – Extra command-line options for <code class="docutils literal notranslate"><span class="pre">netconvert</span></code> as
+<code class="docutils literal notranslate"><span class="pre">{&quot;option&quot;:</span> <span class="pre">value}</span></code>.</p></li>
+<li><p><strong>read_options</strong> – Extra keyword arguments passed to
+<code class="docutils literal notranslate"><span class="pre">sumolib.net.readNet</span></code>.</p></li>
+<li><p><strong>import_all_lanes</strong> – Whether to pass <code class="docutils literal notranslate"><span class="pre">--opendrive.import-all-lanes</span></code>.</p></li>
+<li><p><strong>with_internal</strong> – Value passed as <code class="docutils literal notranslate"><span class="pre">withInternal</span></code> to
+<code class="docutils literal notranslate"><span class="pre">sumolib.net.readNet</span></code> unless overridden by <code class="docutils literal notranslate"><span class="pre">read_options</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>The converted network object.</dt><dd><p>The generated SUMO net XML file is retained and its path is attached to the returned object as an attribute.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sumolib.net.Net</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>RuntimeError</strong> – If <code class="docutils literal notranslate"><span class="pre">sumolib</span></code> or <code class="docutils literal notranslate"><span class="pre">netconvert</span></code> is unavailable, or if
+    <code class="docutils literal notranslate"><span class="pre">netconvert</span></code> exits with an error.</p></li>
+<li><p><strong>ValueError</strong> – If the output would overwrite the input, original-name
+    metadata is disabled, or controlled lane connections cannot be
+    restored after conversion.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml.html" class="btn btn-neutral float-left" title="realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="realtwin.util_lib.venv_create.html" class="btn btn-neutral float-right" title="realtwin.util_lib.venv_create" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

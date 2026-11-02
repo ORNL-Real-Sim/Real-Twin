@@ -15,7 +15,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=c7632d00"></script>
+      <script src="_static/documentation_options.js?v=92734c54"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -53,7 +53,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pages/install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_simulator.html">Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_simulator.html">Supported Simulators</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pages/realtwin_prepare.html">Preparation</a></li>
@@ -107,7 +107,7 @@
 </a>
 <a class="reference external image-reference" href="https://pepy.tech/project/realtwin"><img alt="https://static.pepy.tech/badge/realtwin" src="https://static.pepy.tech/badge/realtwin" />
 </a>
-<a class="reference external image-reference" href="https://pypi.python.org/pypi/realtwin"><img alt="https://img.shields.io/pypi/wheel/gensim.svg" src="https://img.shields.io/pypi/wheel/gensim.svg" />
+<a class="reference external image-reference" href="https://pypi.python.org/pypi/realtwin"><img alt="https://img.shields.io/pypi/wheel/realtwin.svg" src="https://img.shields.io/pypi/wheel/realtwin.svg" />
 </a>
 <a class="reference external image-reference" href="https://www.python.org/"><img alt="https://img.shields.io/pypi/pyversions/realtwin.svg" src="https://img.shields.io/pypi/pyversions/realtwin.svg" />
 </a>
@@ -117,6 +117,19 @@
 </a>
 <a class="reference external image-reference" href="https://www.gnu.org/licenses/gpl-3.0.en.html"><img alt="https://img.shields.io/badge/License-GPL-blue.svg" src="https://img.shields.io/badge/License-GPL-blue.svg" />
 </a>
+<p>Real-Twin provides scenario generation and calibration through
+<code class="docutils literal notranslate"><span class="pre">RealTwinSUMO</span></code>, <code class="docutils literal notranslate"><span class="pre">RealTwinVISSIM</span></code>, and <code class="docutils literal notranslate"><span class="pre">RealTwinAimsun</span></code>. The current
+workflows support traffic demand with optional external signal control and
+independent turn/inflow and behavior calibration using genetic algorithm (GA),
+simulated annealing (SA), tabu search (TS), or Bayesian optimization (BO).</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The current Real-Twin package supports Windows only.</p>
+</div>
+<p>Start with <a class="reference internal" href="pages/install.html"><span class="doc">Installation</span></a>, configure your data using
+<a class="reference internal" href="pages/realtwin_prepare.html"><span class="doc">Preparation</span></a>, and follow <a class="reference internal" href="pages/realtwin_generation.html"><span class="doc">Scenario Generation</span></a>.
+The SUMO vehicle-type workflow is described in
+<a class="reference internal" href="pages/autonomous_vehicles_simulation.html"><span class="doc">Autonomous Vehicle Simulation</span></a>.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
 <ul>
@@ -132,46 +145,49 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pages/install.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pages/install.html#potential-issues">Potential Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/install.html#published-package">Published package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/install.html#repository-tutorials">Repository tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/install.html#optional-calibration-and-simulator-dependencies">Optional calibration and simulator dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/install.html#build-the-documentation">Build the documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/install.html#common-installation-problems">Common installation problems</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_simulator.html">Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_simulator.html">Supported Simulators</a></li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pages/realtwin_prepare.html">Preparation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-prepare-update-configuration-file-required">How To Prepare / Update Configuration File (<span class="blue">Required</span>)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#prepare-from-realtwin-package">Prepare from <span class="incremental">realtwin</span> Package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#prepare-from-github">Prepare from GitHub</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#update-configuration-file"><span class="red">Update Configuration File</span></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#choose-a-configuration">Choose a configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#configuration-settings">Configuration settings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#input-directories-and-network">Input directories and network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#traffic-and-matchup-tables">Traffic and matchup tables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#optional-external-signal-control">Optional external signal control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#simulator-specific-paths">Simulator-specific paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#calibration-switches-times-and-algorithms">Calibration switches, times, and algorithms</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-create-update-matchuptable-required">How To Create / Update MatchupTable (<span class="blue">Required</span>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-prepare-control-signal-file-required">How To Prepare Control (Signal) File (<span class="blue">Required</span>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-prepare-traffic-demand-file-required">How To Prepare Traffic Demand File (<span class="blue">Required</span>)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#from-gradsmart-demands">From GradSmart Demands</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#from-demands-todo">From Demands: TODO…</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-prepare-python-environment-optional">How To Prepare Python Environment (<span class="blue">Optional</span>)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#create-virtual-environment">Create Virtual Environment</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#activate-virtual-environment">Activate Virtual Environment</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pages/realtwin_prepare.html#delete-virtual-environment">Delete Virtual Environment</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#how-to-prepare-elevation-map-in-tiff-format-optional">How To Prepare Elevation Map In TIFF Format (<span class="blue">Optional</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#optional-elevation-data">Optional elevation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_prepare.html#optional-environment-helpers">Optional environment helpers</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_generation.html">Scenario Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pages/realtwin_generation.html">Scenario Generation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_generation.html#sumo-workflow">SUMO workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_generation.html#sumo-and-opendrive-network-identities">SUMO and OpenDrive network identities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_generation.html#aimsun-preparation">Aimsun preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_generation.html#calibration-algorithms-and-independent-stages">Calibration algorithms and independent stages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_generation.html#vissim-preparation">Vissim preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/realtwin_generation.html#vissim-calibration">Vissim calibration</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
@@ -189,6 +205,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pages/api.html">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="pages/api.html#realtwin-api">RealTwin API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/api.html#autonomous-vehicle-api">Autonomous Vehicle API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages/api.html#sumo-and-opendrive-conversion">SUMO and OpenDRIVE Conversion</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pages/api.html#utility-functions">Utility Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pages/api.html#installation-and-environment">Installation and Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pages/api.html#load-inputs">Load Inputs</a></li>
@@ -229,7 +247,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

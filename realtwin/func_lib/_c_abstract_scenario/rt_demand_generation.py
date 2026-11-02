@@ -116,7 +116,8 @@ def is_missing_or_zero(val) -> bool:
     return False
 
 
-def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic_dir: str = "") -> bool:
+def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic_dir: str = "",
+                         *, is_control_data: bool = True) -> bool:
     """ Update the match table with data from user prepared demands and Synchro UTDF file.
 
     Args:
@@ -124,6 +125,7 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
         control_dir (str): the directory where the Synchro UTDF files are located.
         traffic_dir (str): the directory where the traffic data files are located.
         Defaults to "", which means the current directory.
+        is_control_data (bool): Whether to read Synchro control files. Defaults to True.
 
     Returns:
         bool: True if the matchup table is updated successfully, False otherwise.
@@ -224,6 +226,10 @@ def update_matchup_table(path_matchup_table: str, control_dir: str = "", traffic
                 else:
                     print(f'  :There are more turning movements in {file_name} '
                           f'than OpenDrive junction: {junction_id}.')
+
+    if not is_control_data:
+        generate_matchup_table(MatchupTable_UserInput, path_matchup_table)
+        return MatchupTable_UserInput
 
     # Initialize a cache for Synchro files to avoid re-reading files
     synchro_cache = {}

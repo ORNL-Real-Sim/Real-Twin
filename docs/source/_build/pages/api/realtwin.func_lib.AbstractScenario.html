@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c7632d00"></script>
+      <script src="../../_static/documentation_options.js?v=92734c54"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -24,7 +24,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="realtwin.func_lib.load_traffic_volume" href="realtwin.func_lib.load_traffic_volume.html" />
-    <link rel="prev" title="realtwin.func_lib.load_input_config" href="realtwin.func_lib.load_input_config.html" /> 
+    <link rel="prev" title="realtwin.func_lib.load_input_configs" href="realtwin.func_lib.load_input_configs.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,7 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../realtwin_simulator.html">Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../realtwin_simulator.html">Supported Simulators</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../realtwin_prepare.html">Preparation</a></li>
@@ -68,6 +68,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../api.html#realtwin-api">RealTwin API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#autonomous-vehicle-api">Autonomous Vehicle API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#sumo-and-opendrive-conversion">SUMO and OpenDRIVE Conversion</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#utility-functions">Utility Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#installation-and-environment">Installation and Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#load-inputs">Load Inputs</a></li>
@@ -86,6 +88,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../api.html#concrete-scenario-generation">Concrete Scenario Generation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#prepare-simulation-documents">Prepare Simulation Documents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#calibration">Calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#native-vissim-calibration-adapters">Native Vissim Calibration Adapters</a></li>
 </ul>
 </li>
 </ul>
@@ -128,11 +131,11 @@
 <h1>realtwin.func_lib.AbstractScenario<a class="headerlink" href="#realtwin-func-lib-abstractscenario" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="realtwin.func_lib.AbstractScenario">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">realtwin.func_lib.</span></span><span class="sig-name descname"><span class="pre">AbstractScenario</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/realtwin/func_lib/_c_abstract_scenario/_abstractScenario.html#AbstractScenario"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#realtwin.func_lib.AbstractScenario" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">realtwin.func_lib.</span></span><span class="sig-name descname"><span class="pre">AbstractScenario</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/realtwin/func_lib/_c_abstract_scenario/_abstractScenario.html#AbstractScenario"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#realtwin.func_lib.AbstractScenario" title="Link to this definition"></a></dt>
 <dd><p>Initialize an Abstract Scenario</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="realtwin.func_lib.AbstractScenario.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/realtwin/func_lib/_c_abstract_scenario/_abstractScenario.html#AbstractScenario.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#realtwin.func_lib.AbstractScenario.__init__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/realtwin/func_lib/_c_abstract_scenario/_abstractScenario.html#AbstractScenario.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#realtwin.func_lib.AbstractScenario.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <p class="rubric">Methods</p>
@@ -163,14 +166,14 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="realtwin.func_lib.load_input_config.html" class="btn btn-neutral float-left" title="realtwin.func_lib.load_input_config" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="realtwin.func_lib.load_input_configs.html" class="btn btn-neutral float-left" title="realtwin.func_lib.load_input_configs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="realtwin.func_lib.load_traffic_volume.html" class="btn btn-neutral float-right" title="realtwin.func_lib.load_traffic_volume" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

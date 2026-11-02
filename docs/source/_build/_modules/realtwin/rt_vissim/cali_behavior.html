@@ -1,0 +1,430 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin.rt_vissim.cali_behavior &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/realtwin_css.css?v=836a7079" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=92734c54"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            realtwin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/intro.html">About Real-Twin</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_simulator.html">Supported Simulators</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_prepare.html">Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_generation.html">Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/autonomous_vehicles_simulation.html">Autonomous Vehicle Simulation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/api.html">API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#citation-request">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">realtwin.rt_vissim.cali_behavior</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for realtwin.rt_vissim.cali_behavior</h1><div class="highlight"><pre>
+<span></span><span class="c1">##############################################################################</span>
+<span class="c1"># Copyright (c) 2024-, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># All rights reserved.                                                       #</span>
+<span class="c1"># This file is part of RealTwin and is distributed under a GPL license.      #</span>
+<span class="c1"># See the LICENSE file in the top-level directory.                            #</span>
+<span class="c1">##############################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;Vissim driving-behavior calibration against route travel times in seconds.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.rt_vissim.calibrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">calibration_termination</span><span class="p">,</span> <span class="n">make_optimiser</span><span class="p">,</span> <span class="n">speed_up</span>
+
+<span class="c1"># Continuous COM attributes only. W99cc1Distr is a distribution reference,</span>
+<span class="c1"># not a headway in seconds, and cannot be optimized as a floating-point value.</span>
+<span class="n">PARAMETER_LIMITS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;W74ax&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;W74bxAdd&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;W74bxMult&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="s2">&quot;W99cc0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;W99cc2&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;W99cc3&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.001</span><span class="p">),</span>
+    <span class="s2">&quot;W99cc4&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">&quot;W99cc5&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;W99cc6&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="s2">&quot;W99cc7&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;W99cc8&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;W99cc9&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_behavior_config</span><span class="p">(</span><span class="n">calibration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply explicit Vissim behavior settings without changing shared settings.</span>
+
+<span class="sd">    ``Calibration.behavior.vissim`` replaces the corresponding shared behavior</span>
+<span class="sd">    values. Native parameter ranges replace the whole range mapping because</span>
+<span class="sd">    SUMO/Aimsun and Vissim attributes do not share an optimization space.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">resolved</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">calibration</span><span class="p">)</span>
+    <span class="n">behavior</span> <span class="o">=</span> <span class="n">resolved</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;behavior&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">behavior</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Calibration.behavior must be a mapping&quot;</span><span class="p">)</span>
+    <span class="n">native</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;vissim&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">native</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Calibration.behavior.vissim must be a mapping&quot;</span><span class="p">)</span>
+    <span class="n">behavior</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">native</span><span class="p">)</span>
+    <span class="n">resolved</span><span class="p">[</span><span class="s2">&quot;behavior&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">behavior</span>
+    <span class="k">return</span> <span class="n">resolved</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BehaviorProblem</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Explicit native parameter bounds, applied to selected driving behaviors.&quot;&quot;&quot;</span>
+
+    <span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">ranges</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+    <span class="n">driving_behavior_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">physical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Decode normalized optimizer values to the native Vissim units.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">low</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">high</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">solution</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ranges</span><span class="p">)]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">export_behavior_info</span><span class="p">(</span><span class="n">input_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">net_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate parameter names, model IDs and travel-time targets before COM.</span>
+
+<span class="sd">    Routes use the Aimsun contract: (name, start link, end link, observed</span>
+<span class="sd">    travel time in seconds). Vissim measures from position zero on the start</span>
+<span class="sd">    link to the end of the end link, unless behavior.route_positions supplies</span>
+<span class="sd">    explicit marker positions in metres. Native ranges must be supplied explicitly;</span>
+<span class="sd">    SUMO/Aimsun parameter names are not silently translated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">resolve_behavior_config</span><span class="p">(</span><span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;VISSIM&quot;</span><span class="p">][</span><span class="s2">&quot;behavior&quot;</span><span class="p">])</span>
+    <span class="n">behavior</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;behavior&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">ranges</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;params_ranges&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ranges</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ranges</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Vissim behavior.params_ranges must map native COM names to [min, max]. &quot;</span>
+            <span class="s2">&quot;Set Calibration.behavior.vissim.params_ranges or pass &quot;</span>
+            <span class="s2">&quot;update_behavior_algo={&#39;behavior&#39;: {&#39;params_ranges&#39;: {&#39;W74ax&#39;: [1.0, 3.0]}, &quot;</span>
+            <span class="s2">&quot;&#39;driving_behavior_ids&#39;: [1]}} for a Wiedemann 74 model.&quot;</span><span class="p">)</span>
+    <span class="n">bounds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">ranges</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">PARAMETER_LIMITS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported Vissim behavior parameter </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; use native &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;continuous attributes: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PARAMETER_LIMITS</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;behavior.params_ranges.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must contain [min, max]&quot;</span><span class="p">)</span>
+        <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">pair</span><span class="p">)</span>
+        <span class="n">minimum</span><span class="p">,</span> <span class="n">maximum</span> <span class="o">=</span> <span class="n">PARAMETER_LIMITS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">low</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">high</span><span class="p">)</span> <span class="ow">or</span> <span class="n">low</span> <span class="o">&gt;=</span> <span class="n">high</span>
+                <span class="ow">or</span> <span class="p">(</span><span class="n">minimum</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">low</span> <span class="o">&lt;</span> <span class="n">minimum</span><span class="p">)</span>
+                <span class="ow">or</span> <span class="p">(</span><span class="n">maximum</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">high</span> <span class="o">&gt;</span> <span class="n">maximum</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid Vissim bounds for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">pair</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">))</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;driving_behavior_ids&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ids</span>
+            <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">no</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">no</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">no</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">no</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;behavior.driving_behavior_ids must list unique positive Vissim IDs&quot;</span><span class="p">)</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">net_path</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+    <span class="n">driving</span> <span class="o">=</span> <span class="p">{</span><span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;no&quot;</span><span class="p">)):</span> <span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;drivingBehaviors/*&quot;</span><span class="p">)}</span>
+    <span class="k">for</span> <span class="n">no</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">no</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">driving</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Driving behavior </span><span class="si">{</span><span class="n">no</span><span class="si">}</span><span class="s2"> is absent from </span><span class="si">{</span><span class="n">net_path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">driving</span><span class="p">[</span><span class="n">no</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;carFollowModType&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ranges</span><span class="p">:</span>
+            <span class="n">required</span> <span class="o">=</span> <span class="s2">&quot;WIEDEMANN74&quot;</span> <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;W74&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;WIEDEMANN99&quot;</span>
+            <span class="k">if</span> <span class="n">model</span> <span class="o">!=</span> <span class="n">required</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> requires </span><span class="si">{</span><span class="n">required</span><span class="si">}</span><span class="s2">; driving behavior </span><span class="si">{</span><span class="n">no</span><span class="si">}</span><span class="s2"> uses </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">routes</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sel_behavior_routes&quot;</span><span class="p">,</span> <span class="n">behavior</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sel_behavior_routes&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">routes</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">routes</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Behavior calibration requires sel_behavior_routes with observed seconds&quot;</span><span class="p">)</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="p">{</span><span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;no&quot;</span><span class="p">))</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;links/*&quot;</span><span class="p">)}</span>
+    <span class="n">targets</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="p">[],</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">route</span> <span class="ow">in</span> <span class="n">routes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">route</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">route</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Each behavior route must be [name, start_link, end_link, observed_seconds]&quot;</span><span class="p">)</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">observed</span> <span class="o">=</span> <span class="n">route</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Behavior route names must be nonempty and unique&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">no</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">no</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">no</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">links</span>
+               <span class="k">for</span> <span class="n">no</span> <span class="ow">in</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Route </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires existing integer Vissim start/end link IDs&quot;</span><span class="p">)</span>
+        <span class="n">observed</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span> <span class="ow">or</span> <span class="n">observed</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Route </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> observed travel time must be positive seconds&quot;</span><span class="p">)</span>
+        <span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">observed</span><span class="p">))</span>
+        <span class="n">names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">penalty</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">behavior</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;missing_route_penalty&quot;</span><span class="p">,</span> <span class="mf">1.0e4</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">penalty</span><span class="p">)</span> <span class="ow">or</span> <span class="n">penalty</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;behavior.missing_route_penalty must be finite positive seconds&quot;</span><span class="p">)</span>
+    <span class="n">positions</span> <span class="o">=</span> <span class="n">behavior</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;route_positions&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">set</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">-</span> <span class="n">names</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;behavior.route_positions must map configured route names to marker positions&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">markers</span> <span class="ow">in</span> <span class="n">positions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">markers</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">set</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">}:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;route_positions.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must map start/end to positions in metres&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">markers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">position</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">float</span><span class="p">(</span><span class="n">position</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;route_positions.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must contain finite nonnegative metres&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;problem&quot;</span><span class="p">:</span> <span class="n">BehaviorProblem</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ranges</span><span class="p">),</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">ids</span><span class="p">),</span>
+            <span class="s2">&quot;routes&quot;</span><span class="p">:</span> <span class="n">targets</span><span class="p">,</span> <span class="s2">&quot;missing_route_penalty&quot;</span><span class="p">:</span> <span class="n">penalty</span><span class="p">,</span> <span class="s2">&quot;route_positions&quot;</span><span class="p">:</span> <span class="n">positions</span><span class="p">,</span>
+            <span class="s2">&quot;reference_source&quot;</span><span class="p">:</span> <span class="n">behavior</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;reference_source&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;user_supplied&quot;</span><span class="p">})}</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BehaviorEvaluator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reset, assign native parameters and minimize route travel-time MAE.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span> <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">history</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">problem</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;problem&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">routes</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;routes&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;missing_route_penalty&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
+        <span class="n">sim</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">vissim</span><span class="o">.</span><span class="n">Simulation</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&quot;SimPeriod&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;SimBreakAt&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">),</span>
+                            <span class="p">(</span><span class="s2">&quot;StartTm&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;SimRes&quot;</span><span class="p">,</span> <span class="n">resolution</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;RandSeed&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="p">)):</span>
+            <span class="n">sim</span><span class="o">.</span><span class="n">SetAttValue</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">speed_up</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+        <span class="n">evaluation</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">vissim</span><span class="o">.</span><span class="n">Evaluation</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&quot;VehTravTmsCollectData&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;VehTravTmsFromTime&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                            <span class="p">(</span><span class="s2">&quot;VehTravTmsToTime&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;VehTravTmsInterval&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)):</span>
+            <span class="n">evaluation</span><span class="o">.</span><span class="n">SetAttValue</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driving</span> <span class="o">=</span> <span class="p">[</span><span class="n">session</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">DrivingBehaviors</span><span class="o">.</span><span class="n">ItemByKey</span><span class="p">(</span><span class="n">no</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">no</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">driving_behavior_ids</span><span class="p">]</span>
+        <span class="n">measurements</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">VehicleTravelTimeMeasurements</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">AttValue</span><span class="p">(</span><span class="s2">&quot;No&quot;</span><span class="p">))</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">measurements</span><span class="o">.</span><span class="n">GetAll</span><span class="p">()]</span>
+        <span class="n">next_no</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">existing</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measures</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">route_positions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">offset</span><span class="p">,</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">start_link</span><span class="p">,</span> <span class="n">end_link</span><span class="p">,</span> <span class="n">observed</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">routes</span><span class="p">):</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">Links</span><span class="o">.</span><span class="n">ItemByKey</span><span class="p">(</span><span class="n">start_link</span><span class="p">)</span>
+            <span class="n">last</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">Links</span><span class="o">.</span><span class="n">ItemByKey</span><span class="p">(</span><span class="n">end_link</span><span class="p">)</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">last</span><span class="o">.</span><span class="n">AttValue</span><span class="p">(</span><span class="s2">&quot;Length2D&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">length</span><span class="p">)</span> <span class="ow">or</span> <span class="n">length</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Route </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> end link must have positive length&quot;</span><span class="p">)</span>
+            <span class="n">markers</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;route_positions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">start_position</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">markers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">end_position</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">markers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="n">length</span><span class="p">))</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">start_position</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">AttValue</span><span class="p">(</span><span class="s2">&quot;Length2D&quot;</span><span class="p">))</span> <span class="ow">or</span> <span class="n">end_position</span> <span class="o">&gt;</span> <span class="n">length</span>
+                    <span class="ow">or</span> <span class="p">(</span><span class="n">start_link</span> <span class="o">==</span> <span class="n">end_link</span> <span class="ow">and</span> <span class="n">end_position</span> <span class="o">&lt;=</span> <span class="n">start_position</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Route </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> markers must lie within their links and have positive distance&quot;</span><span class="p">)</span>
+            <span class="n">measure</span> <span class="o">=</span> <span class="n">measurements</span><span class="o">.</span><span class="n">AddVehicleTravelTimeMeasurement</span><span class="p">(</span>
+                <span class="n">next_no</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">start_position</span><span class="p">,</span> <span class="n">last</span><span class="p">,</span> <span class="n">end_position</span><span class="p">)</span>
+            <span class="n">measure</span><span class="o">.</span><span class="n">SetAttValue</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">distance</span> <span class="o">=</span> <span class="n">measure</span><span class="o">.</span><span class="n">AttValue</span><span class="p">(</span><span class="s2">&quot;Dist&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">distance</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">distance</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">float</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Route </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has no continuous path between its start/end markers&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">measures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">measure</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">route_positions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">start_position</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="n">end_position</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">history</span><span class="p">:</span>
+            <span class="n">history</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">history</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+                <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="s2">&quot;seconds&quot;</span><span class="p">,</span> <span class="s2">&quot;mae_seconds&quot;</span><span class="p">,</span> <span class="s2">&quot;missing_routes&quot;</span><span class="p">]</span>
+                                           <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solution</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Score all routes; missing completed vehicles incur a finite penalty.&quot;&quot;&quot;</span>
+        <span class="n">sim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">vissim</span><span class="o">.</span><span class="n">Simulation</span>
+        <span class="n">sim</span><span class="o">.</span><span class="n">Stop</span><span class="p">()</span>
+        <span class="n">sim</span><span class="o">.</span><span class="n">SetAttValue</span><span class="p">(</span><span class="s2">&quot;RandSeed&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">solution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">physical</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">driving</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">driving</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">names</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+                    <span class="n">driving</span><span class="o">.</span><span class="n">SetAttValue</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">sim</span><span class="o">.</span><span class="n">RunContinuous</span><span class="p">()</span>
+        <span class="n">rows</span><span class="p">,</span> <span class="n">errors</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">observed</span><span class="p">),</span> <span class="n">measure</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">routes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">measures</span><span class="p">):</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="n">measure</span><span class="o">.</span><span class="n">AttValue</span><span class="p">(</span><span class="s2">&quot;Vehs(Current,Last,All)&quot;</span><span class="p">)</span>
+            <span class="n">travel</span> <span class="o">=</span> <span class="n">measure</span><span class="o">.</span><span class="n">AttValue</span><span class="p">(</span><span class="s2">&quot;TravTm(Current,Last,All)&quot;</span><span class="p">)</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="p">(</span><span class="n">count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">count</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">travel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                     <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">travel</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">travel</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">modelled</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">travel</span><span class="p">)</span> <span class="k">if</span> <span class="n">valid</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">modelled</span> <span class="o">-</span> <span class="n">observed</span><span class="p">)</span> <span class="k">if</span> <span class="n">valid</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">+</span> <span class="n">observed</span>
+            <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">&quot;observed_seconds&quot;</span><span class="p">:</span> <span class="n">observed</span><span class="p">,</span>
+                         <span class="s2">&quot;modelled_seconds&quot;</span><span class="p">:</span> <span class="n">modelled</span><span class="p">,</span> <span class="s2">&quot;vehicles&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">count</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">),</span>
+                         <span class="s2">&quot;absolute_error_seconds&quot;</span><span class="p">:</span> <span class="n">error</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;mae_seconds&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">errors</span><span class="p">),</span>
+                <span class="s2">&quot;missing_routes&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;modelled_seconds&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">),</span>
+                <span class="s2">&quot;routes&quot;</span><span class="p">:</span> <span class="n">rows</span><span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">began</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">best</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">score</span><span class="p">[</span><span class="s2">&quot;mae_seconds&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">best</span> <span class="o">=</span> <span class="p">(</span><span class="n">score</span><span class="p">[</span><span class="s2">&quot;mae_seconds&quot;</span><span class="p">],</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">solution</span><span class="p">],</span> <span class="n">score</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+                <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">began</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                                            <span class="n">score</span><span class="p">[</span><span class="s2">&quot;mae_seconds&quot;</span><span class="p">],</span> <span class="n">score</span><span class="p">[</span><span class="s2">&quot;missing_routes&quot;</span><span class="p">]]</span>
+                                           <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">physical</span><span class="p">(</span><span class="n">solution</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :eval </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2">  travel-time MAE </span><span class="si">{</span><span class="n">score</span><span class="p">[</span><span class="s1">&#39;mae_seconds&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> s  &quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;missing routes </span><span class="si">{</span><span class="n">score</span><span class="p">[</span><span class="s1">&#39;missing_routes&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">  best </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">score</span><span class="p">[</span><span class="s2">&quot;mae_seconds&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="BehaviorCaliVissim">
+<a class="viewcode-back" href="../../../pages/api/realtwin.rt_vissim.cali_behavior.BehaviorCaliVissim.html#realtwin.rt_vissim.cali_behavior.BehaviorCaliVissim">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BehaviorCaliVissim</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GA/SA/TS/BO adapter with the same contract as the other simulators.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">input_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">evaluator</span><span class="p">:</span> <span class="n">BehaviorEvaluator</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">behavior_cfg</span> <span class="o">=</span> <span class="n">input_config</span><span class="p">[</span><span class="s2">&quot;VISSIM&quot;</span><span class="p">][</span><span class="s2">&quot;behavior&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluator</span> <span class="o">=</span> <span class="n">evaluator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">after</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_mealpy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mealpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">FloatVar</span>
+
+        <span class="n">settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">behavior_cfg</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">algorithm</span><span class="si">}</span><span class="s2">_config&quot;</span><span class="p">]</span>
+        <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">bounds</span><span class="p">()</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">make_optimiser</span><span class="p">(</span><span class="n">algorithm</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;obj_func&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluator</span><span class="p">,</span> <span class="s2">&quot;minmax&quot;</span><span class="p">:</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;log_to&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="s2">&quot;bounds&quot;</span><span class="p">:</span> <span class="n">FloatVar</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="n">lower</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">upper</span><span class="p">)},</span>
+            <span class="n">termination</span><span class="o">=</span><span class="n">calibration_termination</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">behavior_cfg</span><span class="p">,</span> <span class="s2">&quot;behavior&quot;</span><span class="p">,</span> <span class="n">settings</span><span class="p">),</span>
+            <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">behavior_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;behavior&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;optimizer_seed&quot;</span><span class="p">,</span> <span class="mi">812</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">best</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">best</span><span class="p">,</span> <span class="n">model</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_GA</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_mealpy</span><span class="p">(</span><span class="s2">&quot;ga&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_SA</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_mealpy</span><span class="p">(</span><span class="s2">&quot;sa&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_TS</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_mealpy</span><span class="p">(</span><span class="s2">&quot;ts&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_BO</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.func_lib._f_calibration.algo_sumo._bayesian_opt</span><span class="w"> </span><span class="kn">import</span> <span class="n">BayesianOptimization</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">BayesianOptimization</span><span class="p">(</span>
+            <span class="n">scenario_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">behavior_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scenario_config&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="n">algo_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">behavior_cfg</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">bounds</span><span class="p">(),</span>
+            <span class="n">simulator</span><span class="o">=</span><span class="s2">&quot;vissim&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">objective_kwargs</span><span class="o">=</span><span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">best</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">best</span><span class="p">,</span> <span class="n">model</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

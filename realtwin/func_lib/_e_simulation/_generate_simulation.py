@@ -33,6 +33,8 @@ class SimPrep:
                         seed: list | int = 812,
                         step_length: float = 0.1):
         """Prepare SUMO documents for simulation.
+
+        Import external signals only when SUMO.is_control_data is enabled.
         """
 
         # check seed type
@@ -41,7 +43,7 @@ class SimPrep:
         elif isinstance(seed, list):
             pass
         else:
-            raise ValueError("  :seed must be an integer or a list of integers.")
+            raise TypeError("  :seed must be an integer or a list of integers.")
         if len(seed) > 1:
             print("  :Multiple seeds are provided, the first one will be used.")
             seed = seed[0]
@@ -56,7 +58,8 @@ class SimPrep:
                                     end_time,
                                     seed,
                                     step_length)
-        self.SUMOSim.importSignal(ConcreteScn)
+        if ConcreteScn.input_config.get("SUMO", {}).get("is_control_data", True):
+            self.SUMOSim.importSignal(ConcreteScn)
         # print("  :SUMO simulation is prepared.")
 
     def create_aimsun_sim(self,

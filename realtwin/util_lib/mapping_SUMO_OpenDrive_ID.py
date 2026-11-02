@@ -18,6 +18,17 @@ import re
 import subprocess
 
 
+def resolve_sumo_edge_id(road_id: str, edge_ids: set[str]) -> str:
+    """Resolve an exact source ID, with fallback for old tables that omitted '-'."""
+    road_id = str(road_id).strip()
+    if road_id in edge_ids:
+        return road_id
+    legacy_id = f"-{road_id}"
+    if legacy_id in edge_ids:
+        return legacy_id
+    raise ValueError(f"Road ID {road_id!r} from the matchup table is not in the SUMO network.")
+
+
 def name_without_suffixes(p: Path) -> str:
     """Return the name of the file without any suffixes."""
     # peel off each suffix until none remain
@@ -198,11 +209,16 @@ def parse_SUMO_TLS_ID(path_matchup_table: str, path_net_file: str) -> bool:
         MatchupTable_UserInput[merged_columns] = MatchupTable_UserInput[merged_columns].ffill()
 
         signalized_junction = MatchupTable_UserInput[MatchupTable_UserInput['Turn_Synchro'].notna()]['JunctionID_OpenDrive'].unique()
-        signalized_junction_string = ",".join(signalized_junction.astype(str))
-
-        cmd = f'cmd /c "netconvert -s {path_net_file} --o {path_net_file} --tls.discard-loaded true --tls.set {signalized_junction_string}"'
-        process = subprocess.Popen(cmd, shell=True)
-        process.wait()
+        root = etree.parse(path_net_file).getroot()
+        edge_junctions = {edge.get("id"): edge.get("to") for edge in root.findall("edge")}
+        controlled_junctions = {edge_junctions.get(conn.get("from"))
+                                for conn in root.findall("connection") if conn.get("tl")}
+        missing_junctions = [junction for junction in signalized_junction if junction not in controlled_junctions]
+        if not missing_junctions:
+            return True
+        # Add control only where needed; loaded controllers retain their original IDs.
+        subprocess.run(["netconvert", "-s", str(path_net_file), "-o", str(path_net_file),
+                        "--tls.set", ",".join(missing_junctions)], check=True)
 
         return True
 

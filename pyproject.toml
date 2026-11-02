@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "realtwin"
-version = "0.1.2"
+version = "0.2.0rc1"
 description = "A Unified Simulation Scenario Generation Tool for Mobility Research"
 authors = [
     {name = "ORNL-RealTwin", email = "realtwin@ornl.gov"},
@@ -30,6 +30,9 @@ requires-python = ">=3.10"
 keywords = ["Real-Twin", "Digital Twin", "Traffic Micro-simulation", "Scenario Generation", "Connected and Automated Vehicles", "CAV", "Traffic Simulation", "SUMO", "VISSIM", "AIMSUN"]
 
 dynamic = ["dependencies"]
+
+[project.optional-dependencies]
+bo = ["scikit-learn>=1.2", "scipy>=1.9"]
 
 [project.urls]
 "Homepage" = 'https://github.com/ORNL-Real-Sim/Real-Twin'

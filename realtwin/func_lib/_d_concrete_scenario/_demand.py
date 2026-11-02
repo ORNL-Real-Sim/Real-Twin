@@ -28,7 +28,7 @@ class Demand:
 
     def is_empty(self):
         """Check if the Demand object is empty."""
-        pass
+        return
 
     def generate_traffic(self, AbsScn):
         '''Generate the traffic demand for the concrete scenario'''

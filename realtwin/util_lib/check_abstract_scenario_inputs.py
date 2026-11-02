@@ -15,18 +15,24 @@ from pathlib import Path
 import pyufunc as pf
 
 
-def check_abstract_inputs(input_dir: str) -> bool:
-    """ Check the input directory for the abstract scenario."""
+def check_abstract_inputs(input_dir: str, *, is_control_data: bool = True) -> bool:
+    """Check scenario inputs, requiring control CSVs only when enabled.
+
+    Args:
+        input_dir: Directory containing traffic, control, and matchup inputs.
+        is_control_data: Whether to require control CSVs. Defaults to True.
+    """
 
     # check If Control folder is empty
-    path_control = pf.path2linux(Path(input_dir) / "Control")
-    if not os.path.exists(path_control):
-        raise Exception(f"  :Error: Control folder does not exist: {path_control}")
+    if is_control_data:
+        path_control = pf.path2linux(Path(input_dir) / "Control")
+        if not os.path.exists(path_control):
+            raise Exception(f"  :Error: Control folder does not exist: {path_control}")
 
-    if not pf.get_filenames_by_ext(path_control, file_ext="csv"):
-        raise Exception(f"  :Error: Control folder is empty: {path_control},"
-                        "Please include Synchro UTDF file (signal) inside Control folder"
-                        " and add the control file name to the input configuration file.")
+        if not pf.get_filenames_by_ext(path_control, file_ext="csv"):
+            raise Exception(f"  :Error: Control folder is empty: {path_control},"
+                            "Please include Synchro UTDF file (signal) inside Control folder"
+                            " and add the control file name to the input configuration file.")
 
     # check If Traffic folder is empty
     path_traffic = pf.path2linux(Path(input_dir) / "Traffic")

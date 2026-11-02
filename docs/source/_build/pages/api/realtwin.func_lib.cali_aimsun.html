@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c7632d00"></script>
+      <script src="../../_static/documentation_options.js?v=92734c54"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../realtwin_simulator.html">Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../realtwin_simulator.html">Supported Simulators</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../realtwin_prepare.html">Preparation</a></li>
@@ -68,6 +68,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../api.html#realtwin-api">RealTwin API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#autonomous-vehicle-api">Autonomous Vehicle API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#sumo-and-opendrive-conversion">SUMO and OpenDRIVE Conversion</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#utility-functions">Utility Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#installation-and-environment">Installation and Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#load-inputs">Load Inputs</a></li>
@@ -85,6 +87,7 @@
 <li class="toctree-l3"><a class="reference internal" href="realtwin.func_lib.TurnInflowCali.html">realtwin.func_lib.TurnInflowCali</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#native-vissim-calibration-adapters">Native Vissim Calibration Adapters</a></li>
 </ul>
 </li>
 </ul>
@@ -125,10 +128,12 @@
 <div></div></blockquote>
 <section id="realtwin-func-lib-cali-aimsun">
 <h1>realtwin.func_lib.cali_aimsun<a class="headerlink" href="#realtwin-func-lib-cali-aimsun" title="Link to this heading"></a></h1>
+<p>Calibration supports genetic algorithm (GA), simulated annealing (SA), tabu
+search (TS), and Bayesian optimization (BO).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="realtwin.func_lib.cali_aimsun">
 <span class="sig-prename descclassname"><span class="pre">realtwin.func_lib.</span></span><span class="sig-name descname"><span class="pre">cali_aimsun</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel_algo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/realtwin/func_lib/_f_calibration/calibration_aimsun.html#cali_aimsun"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#realtwin.func_lib.cali_aimsun" title="Link to this definition"></a></dt>
-<dd><p>Run SUMO calibration based on the selected algorithm and input configuration.</p>
+<dd><p>Run AimSUN calibration based on the selected algorithm and input configuration.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This function is currently a placeholder and does not perform any actual calibration.
@@ -164,7 +169,7 @@ It is intended to be implemented in the future.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

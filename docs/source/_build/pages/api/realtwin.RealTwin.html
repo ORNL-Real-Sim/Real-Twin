@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>realtwin.RealTwin &mdash; realtwin</title>
+  <title>Legacy RealTwin API &mdash; realtwin</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,16 +15,14 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c7632d00"></script>
+      <script src="../../_static/documentation_options.js?v=92734c54"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="realtwin.util_lib.venv_create" href="realtwin.util_lib.venv_create.html" />
-    <link rel="prev" title="API Reference" href="../api.html" /> 
+    <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,7 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../realtwin_simulator.html">Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../realtwin_simulator.html">Supported Simulators</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../realtwin_prepare.html">Preparation</a></li>
@@ -65,24 +63,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../autonomous_vehicles_simulation.html">Autonomous Vehicle Simulation</a></li>
 </ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="../api.html#realtwin-api">RealTwin API</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">realtwin.RealTwin</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#realtwin.RealTwin"><code class="docutils literal notranslate"><span class="pre">RealTwin</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../api.html#utility-functions">Utility Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api.html#installation-and-environment">Installation and Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api.html#load-inputs">Load Inputs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api.html#abstract-scenario-generation">Abstract Scenario Generation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api.html#concrete-scenario-generation">Concrete Scenario Generation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api.html#prepare-simulation-documents">Prepare Simulation Documents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../api.html#calibration">Calibration</a></li>
-</ul>
-</li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../support.html">Contact</a></li>
@@ -106,8 +88,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
-      <li class="breadcrumb-item active">realtwin.RealTwin</li>
+      <li class="breadcrumb-item active">Legacy RealTwin API</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/pages/api/realtwin.RealTwin.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -117,77 +98,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <blockquote>
-<div></div></blockquote>
-<section id="realtwin-realtwin">
-<h1>realtwin.RealTwin<a class="headerlink" href="#realtwin-realtwin" title="Link to this heading"></a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="realtwin.RealTwin">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">realtwin.</span></span><span class="sig-name descname"><span class="pre">RealTwin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_config_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/realtwin/_realtwin.html#RealTwin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#realtwin.RealTwin" title="Link to this definition"></a></dt>
-<dd><p>The real-twin developed by ORNL Applied Research and Mobility System (ARMS) group that
-enables the simulation of twin-structured cities.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="realtwin.RealTwin.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_config_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/realtwin/_realtwin.html#RealTwin.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#realtwin.RealTwin.__init__" title="Link to this definition"></a></dt>
-<dd><p>Initialize the REALTWIN object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>input_config_file</strong> (<em>str</em>) – The directory containing the input files.</p></li>
-<li><p><strong>kwargs</strong> – Additional keyword arguments. Will be used in the future.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<p class="rubric">Methods</p>
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#realtwin.RealTwin.__init__" title="realtwin.RealTwin.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([input_config_file])</p></td>
-<td><p>Initialize the REALTWIN object.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">calibrate</span></code>(*[, sel_algo, ...])</p></td>
-<td><p>Calibrate the turn and inflow, and behavioral parameters using the selected algorithms.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">env_setup</span></code>(*[, sel_sim, sel_dir, ...])</p></td>
-<td><p>Check and set up the environment for the simulation</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_abstract_scenario</span></code>()</p></td>
-<td><p>Generate the abstract scenario: create OpenDrive files</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_concrete_scenario</span></code>()</p></td>
-<td><p>Generate the concrete scenario: generate unified scenario from abstract scenario</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_inputs</span></code>(*[, incl_sumo_net])</p></td>
-<td><p>Generate user inputs, such as MatchUp table, Control and Traffic data</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">post_process</span></code>()</p></td>
-<td><p>Post-process the simulation results.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_simulation</span></code>([start_time, end_time, ...])</p></td>
-<td><p>Simulate the concrete scenario: generate simulation files for the selected simulator</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualize</span></code>()</p></td>
-<td><p>Visualize the simulation results.</p></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+  <section id="legacy-realtwin-api">
+<h1>Legacy RealTwin API<a class="headerlink" href="#legacy-realtwin-api" title="Link to this heading"></a></h1>
+<p>The legacy RealTwin class has been removed. Use <a class="reference internal" href="realtwin.RealTwinSUMO.html#realtwin.RealTwinSUMO" title="realtwin.RealTwinSUMO"><code class="xref py py-class docutils literal notranslate"><span class="pre">realtwin.RealTwinSUMO</span></code></a>
+for SUMO, <a class="reference internal" href="realtwin.RealTwinVISSIM.html#realtwin.RealTwinVISSIM" title="realtwin.RealTwinVISSIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">realtwin.RealTwinVISSIM</span></code></a> for Vissim, or
+<a class="reference internal" href="realtwin.RealTwinAimsun.html#realtwin.RealTwinAimsun" title="realtwin.RealTwinAimsun"><code class="xref py py-class docutils literal notranslate"><span class="pre">realtwin.RealTwinAimsun</span></code></a> for Aimsun workflows.</p>
 </section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../api.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="realtwin.util_lib.venv_create.html" class="btn btn-neutral float-right" title="realtwin.util_lib.venv_create" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

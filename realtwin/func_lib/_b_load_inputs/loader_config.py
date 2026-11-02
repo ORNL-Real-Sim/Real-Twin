@@ -46,7 +46,7 @@ def load_input_configs(path_config: str) -> dict:
     if not os.path.exists(path_config):
         raise FileNotFoundError(f"  :File not found: {path_config}")
 
-    if not (path_config.endswith('.yaml') or path_config.endswith('.yml')):
+    if not (path_config.endswith(('.yaml', '.yml'))):
         raise ValueError(f"  :File is not in yaml format: {path_config}")
 
     # read the yaml file and return the configuration dictionary

@@ -14,7 +14,6 @@
 """Control of module imports for the RealTwin package."""
 
 import sys
-from realtwin._realtwin import RealTwin
 from realtwin.func_lib._a_install_simulator.check_sim_env import (is_sumo_installed,
                                                                   is_vissim_installed,
                                                                   is_aimsun_installed)
@@ -34,28 +33,46 @@ from realtwin.util_lib import get_bbox_from_vertices
 # Autonomous vehicle simulation
 from realtwin.autonomous_veh import SimAV, prepare_av_configs, load_av_configs
 
+from realtwin.rt_sumo import RealTwinSUMO
+from realtwin.rt_aimsun import RealTwinAimsun
+from realtwin.rt_vissim import RealTwinVISSIM
+import warnings
+
+# Suppress warnings for cleaner output
+warnings.filterwarnings("ignore")
 
 __version__ = '0.1.2'
 
 "The minimum required Python version for RealTwin is 3.10"
 
 __all__ = [
-    'RealTwin',
-    'prepare_realtwin_configs',
-    "load_input_configs",
-
-    # util_lib
-    'venv_create', 'venv_delete',
-    'is_sumo_installed', 'is_vissim_installed', 'is_aimsun_installed',
-    "get_bbox_from_vertices",
-
-    # func_lib
-    'install_sumo', 'SimPrep', 'BehaviorCali', 'TurnInflowCali', 'cali_sumo', 'cali_aimsun', 'cali_vissim',
-
+    'BehaviorCali',
+    # rt_aimsun
+    'RealTwinAimsun',
+    # rt_sumo
+    'RealTwinSUMO',
+    # rt_vissim
+    'RealTwinVISSIM',
     # autonomous_veh
     'SimAV',
-    'prepare_av_configs',
+    'SimPrep',
+    'TurnInflowCali',
+    'cali_aimsun',
+    'cali_sumo',
+    'cali_vissim',
+    "get_bbox_from_vertices",
+    # func_lib
+    'install_sumo',
+    'is_aimsun_installed',
+    'is_sumo_installed',
+    'is_vissim_installed',
     'load_av_configs',
+    "load_input_configs",
+    'prepare_av_configs',
+    'prepare_realtwin_configs',
+    # util_lib
+    'venv_create',
+    'venv_delete'
 ]
 
 
@@ -69,7 +86,7 @@ def check_python_version(min_version: str = "3.10") -> tuple:
     major, minor = min_version.split(".")
     try:
         if version_tuple < (int(major), int(minor)):
-            raise EnvironmentError(f"Python version {min_version} or higher is required.")
+            raise OSError(f"Python version {min_version} or higher is required.")
     except Exception:
         print(f"pyufunc supports Python {min_version} or higher.")
     return version_tuple

@@ -32,7 +32,7 @@ class ConcreteScenario:
 
     def is_empty(self):
         """Check if the ConcreteScenario object is empty."""
-        pass
+        return
 
     def get_unified_scenario(self, AbsScn):
         """Generate Concrete Scenario from Abstract Scenario"""
@@ -42,6 +42,6 @@ class ConcreteScenario:
         # generate concrete scenario
         self.Supply.generate_network(AbsScn)
         self.Demand.generate_traffic(AbsScn)
-        self.Behavior.ApplicationInterpreter(AbsScn)
+        # self.Behavior.ApplicationInterpreter(AbsScn)
         self.Route.generate_route(AbsScn)
-        self.TrafficControl.generate_control(AbsScn)
+        # self.TrafficControl.generate_control(AbsScn)

@@ -23,6 +23,7 @@ import pandas as pd
 import io
 import numpy as np
 import pyufunc as pf
+from realtwin.util_lib.mapping_SUMO_OpenDrive_ID import resolve_sumo_edge_id
 pd.options.mode.chained_assignment = None
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -45,7 +46,7 @@ class SUMOPrep:
         self.kwargs = kwargs
 
     def importNetwork(self, ConcreteScn):
-        """The function to import the network from the OpenDrive file and convert it to SUMO network file."""
+        """Copy the source SUMO network into the simulation output directory."""
 
         # self.Network = ConcreteScn.Supply.Network
         # self.NetworkWithElevation = ConcreteScn.Supply.NetworkWithElevation
@@ -59,19 +60,12 @@ class SUMOPrep:
             shutil.rmtree(self.SUMOPath)
         os.mkdir(self.SUMOPath)
 
-        # Sumo combine the OpenDrive file to sumo network file
-        # path_open_drive = pf.path2linux(os.path.join(path_output, f'OpenDrive/{NetworkName}.xodr'))
+        # Keep the source SUMO network as the authoritative simulation input.
         path_open_drive_net = pf.path2linux(os.path.join(path_output, f'OpenDrive/{NetworkName}.net.xml'))
         path_sumo_net = pf.path2linux(os.path.join(path_output, f'SUMO/{NetworkName}.net.xml'))
 
-        # os.system(f'cmd/c "netconvert --opendrive {path_open_drive}'
-        #           f' -o {path_sumo_net} --no-internal-links"')
         self.Network = path_sumo_net
-
-        # if ConcreteScn.input_config.get('incl_sumo_net'):
-        #     shutil.copy(ConcreteScn.input_config["incl_sumo_net"], self.Network)
-
-        # copy converted net file from opendrive to sumo folder
+        # Copy the source net file from the shared network folder.
         shutil.copy(path_open_drive_net, path_sumo_net)
 
         # Load the XML file
@@ -87,7 +81,7 @@ class SUMOPrep:
         #     return list(road_ids)
         def get_road_ids_from_incLanes(incLanes):
             lane_ids = incLanes.split()
-            road_ids = set(lane_id[:lane_id.rfind("_")] if "_" in lane_id else lane_id for lane_id in lane_ids)
+            road_ids = {lane_id[:lane_id.rfind("_")] if "_" in lane_id else lane_id for lane_id in lane_ids}
             return list(road_ids)
 
 
@@ -119,7 +113,8 @@ class SUMOPrep:
         # create turn and inflow and summary df
         path_matchup_table = pf.path2linux(Path(ConcreteScn.input_config["input_dir"]) / "MatchupTable.xlsx")
         traffic_dir = pf.path2linux(Path(ConcreteScn.input_config["input_dir"]) / "Traffic")
-        path_net_SUMO = pf.path2linux(Path(ConcreteScn.input_config["input_dir"]) / f"output/SUMO/{NetworkName}.net.xml")
+        path_net_SUMO = self.Network
+        edge_ids = {edge.get("id") for edge in ET.parse(path_net_SUMO).getroot().findall("edge")}
         MatchupTable_UserInput = read_MatchupTable(path_matchup_table=path_matchup_table)
         TurnDf, IDRef = generate_turn_demand_cali(path_matchup_table=path_matchup_table, traffic_dir=traffic_dir)
         InflowDf_Calibration, _, N_InflowVariable = generate_inflow(path_net_SUMO,
@@ -128,7 +123,8 @@ class SUMOPrep:
                                                                     IDRef)
         (_, TurnDf_Calibration, _, _, _) = generate_turn_summary(TurnDf,
                                                                  MatchupTable_UserInput,
-                                                                 N_InflowVariable)
+                                                                 N_InflowVariable,
+                                                                 path_net=path_net_SUMO)
         InflowDf = InflowDf_Calibration.copy()
         TurnDf = TurnDf_Calibration.copy()
         TurnDf = TurnDf[TurnDf['IntersectionName'].notna()]
@@ -145,14 +141,12 @@ class SUMOPrep:
         v_type.set('id', 'car')
         v_type.set('type', 'passenger')
         InflowDict = InflowDf.to_dict(orient='records')
-        FlowID = 0
-        for InflowData in InflowDict:
-            FlowID += 1
+        for FlowID, InflowData in enumerate(InflowDict, start=1):
             flow = ET.SubElement(routes, 'flow')
             flow.set('id', str(FlowID))
             flow.set('begin', str(InflowData['IntervalStart']))
             flow.set('end', str(InflowData['IntervalEnd']))
-            flow.set('from', f"-{InflowData['OpenDriveFromID']}")
+            flow.set('from', resolve_sumo_edge_id(InflowData['OpenDriveFromID'], edge_ids))
 
             # may need to change
             flow.set('number', str(InflowData['Count']))
@@ -185,10 +179,10 @@ class SUMOPrep:
             for TurnData in TurnDictSubset:
                 edge_relation = ET.SubElement(Interval, 'edgeRelation')
                 edge_relation.set(
-                    'from', f"-{TurnData['OpenDriveFromID']}")
+                    'from', resolve_sumo_edge_id(TurnData['OpenDriveFromID'], edge_ids))
 
                 # may need to change
-                edge_relation.set('to', f"-{TurnData['OpenDriveToID']}")
+                edge_relation.set('to', resolve_sumo_edge_id(TurnData['OpenDriveToID'], edge_ids))
 
                 # may need to change
                 edge_relation.set('probability', str(TurnData['TurnRatio']))
@@ -301,7 +295,10 @@ class SUMOPrep:
         # 10 XML files 'config_1.smocfg' to 'config_10.smocfg' are created with different seed values
 
     def importSignal(self, ConcreteScn):
-        """The function to import the signal from the signal file and convert it to SUMO signal file."""
+        """Import external signal data unless SUMO.is_control_data is disabled."""
+
+        if not ConcreteScn.input_config.get('SUMO', {}).get('is_control_data', True):
+            return
 
         input_dir = ConcreteScn.input_config.get('input_dir')
         path_output = ConcreteScn.input_config.get('output_dir')
@@ -467,7 +464,8 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
     signal_path = pf.path2linux(Path(control_dir) / synchro_file)
     SignalDict = process_signal_data(signal_path)
 
-    df_lanes = SignalDict['Lanes']
+    # Movement columns contain numeric lane/phase records and textual metadata.
+    df_lanes = SignalDict['Lanes'].astype(object)
     target_rows = df_lanes["RECORDNAME"].isin(["Lanes", "Shared","Phase1","PermPhase1","Allow RTOR"])
     for idx in df_lanes[target_rows].index:
         for col in df_lanes.columns:
@@ -644,7 +642,7 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
 
         Synchro[intid]["Phases"] = phases_df
 
-        for idx, thru in Synchro[intid]["Phases"]["Protected"].items():
+        for idx, thru in phases_df["Protected"].items():
             movements = thru.split(",")
             for movement in movements:
                 if movement.endswith("T"):
@@ -656,29 +654,21 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
                         else:
                             continue
 
-                        if pd.isna(lane_value) or lane_value == "0":
+                        if pd.isna(lane_value) or lane_value == 0:
                             continue
                         left_turn = movement[:-1] + "L"
                         right_turn = movement[:-1] + "R"
 
                         turns_to_add = []
-                        if lane_value == "1" and left_turn not in movements:
+                        if lane_value in (1, 3) and left_turn not in movements:
                             turns_to_add.append(left_turn)
-                        elif lane_value == "2" and right_turn not in movements:
-                            if right_turn in Synchro[intid]["Phases"]["RTOR"].at[idx]:
-                                Synchro[intid]["Phases"]["RTOR"].at[idx] = Synchro[intid]["Phases"]["RTOR"].at[idx].replace(right_turn, "").strip(",")
+                        if lane_value in (2, 3) and right_turn not in movements:
+                            if right_turn in phases_df.at[idx, "RTOR"]:
+                                phases_df.at[idx, "RTOR"] = phases_df.at[idx, "RTOR"].replace(right_turn, "").strip(",")
                             turns_to_add.append(right_turn)
-
-                        elif lane_value == "3":
-                            if movement not in movements:
-                                turns_to_add.append(movement)
-                            if right_turn not in movements:
-                                if right_turn in Synchro[intid]["Phases"]["RTOR"].at[idx]:
-                                    Synchro[intid]["Phases"]["RTOR"].at[idx] = Synchro[intid]["Phases"]["RTOR"].at[idx].replace(right_turn, "").strip(",")
-                                turns_to_add.append(right_turn)
                         if turns_to_add:
-                            Synchro[intid]["Phases"]["Protected"].at[idx] = ",".join(movements + turns_to_add)
-                    Synchro[intid]["Phases"]["RTOR"].at[idx] = Synchro[intid]["Phases"]["RTOR"].at[idx].replace(",,", ",").strip(",")
+                            phases_df.at[idx, "Protected"] = ",".join(movements + turns_to_add)
+                    phases_df.at[idx, "RTOR"] = phases_df.at[idx, "RTOR"].replace(",,", ",").strip(",")
 
     with open(path_net, 'r', encoding="utf-8") as file:
         NetworkData = file.read()
@@ -697,6 +687,12 @@ def sumo_signal_import(path_net: str, path_MatchupTable: str, FixedTime: bool = 
 
     for tl in TLLogic:
         TLLogic[tl] = dict(sorted(TLLogic[tl].items()))
+
+    # A controller ID may differ from its junction ID in a supplied SUMO network.
+    edge_junctions = {edge.get("id"): edge.get("to") for edge in tree.getroot().findall("edge")}
+    junction_tls = {edge_junctions.get(conn.get("from")): conn.get("tl")
+                    for conn in tree.getroot().findall("connection") if conn.get("tl")}
+    lookup_df['SumoJunctionID'] = lookup_df['SumoJunctionID'].map(lambda junction: junction_tls.get(junction, junction))
 
     # ## Please note: here we assume there is no phase only for U turn,
     # i.e. U turn is associated with a left turn or through movement
@@ -1119,6 +1115,7 @@ def update_net_before_signal(path_net: str, path_MatchupTable: str) -> bool:
     root = tree.getroot()
 
     from_to_index = {}
+    edge_ids = {edge.get("id") for edge in root.findall("edge")}
     for conn in root.findall(".//connection"):
         f = conn.get("from")
         t = conn.get("to")
@@ -1150,7 +1147,7 @@ def update_net_before_signal(path_net: str, path_MatchupTable: str) -> bool:
                 total_missing_matches += 1
                 continue
 
-            key = (f"-{from_id}", f"-{to_id}")
+            key = (resolve_sumo_edge_id(from_id, edge_ids), resolve_sumo_edge_id(to_id, edge_ids))
             conns = from_to_index.get(key, [])
 
             if not conns:

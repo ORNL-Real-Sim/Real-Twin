@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Supported Simulator &mdash; realtwin</title>
+  <title>Supported Simulators &mdash; realtwin</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c7632d00"></script>
+      <script src="../_static/documentation_options.js?v=92734c54"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Supported Simulator</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Supported Simulators</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="realtwin_prepare.html">Preparation</a></li>
@@ -90,7 +90,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Supported Simulator</li>
+      <li class="breadcrumb-item active">Supported Simulators</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/pages/realtwin_simulator.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -102,17 +102,68 @@
              
   <blockquote>
 <div></div></blockquote>
-<section id="supported-simulator">
-<h1>Supported Simulator<a class="headerlink" href="#supported-simulator" title="Link to this heading"></a></h1>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Add some figures to show the simulator interface and simulation results.</p>
+<section id="supported-simulators">
+<h1>Supported Simulators<a class="headerlink" href="#supported-simulators" title="Link to this heading"></a></h1>
+<p>The current Real-Twin package supports Windows only for all supported
+simulators. Choose the scenario class for the simulator you intend to run. Each class
+checks its own simulator environment and uses native input and output files.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 25.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Simulator</p></th>
+<th class="head"><p>Scenario class</p></th>
+<th class="head"><p>Requirements and workflow</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>SUMO</p></td>
+<td><p><a class="reference internal" href="api/realtwin.RealTwinSUMO.html#realtwin.RealTwinSUMO" title="realtwin.RealTwinSUMO"><code class="xref py py-class docutils literal notranslate"><span class="pre">realtwin.RealTwinSUMO</span></code></a></p></td>
+<td><p>Windows and SUMO tools on <code class="docutils literal notranslate"><span class="pre">PATH</span></code>. Import a <code class="docutils literal notranslate"><span class="pre">.net.xml</span></code> network or generate one
+from the configured polygon, then prepare demand and optional signals.</p></td>
+</tr>
+<tr class="row-odd"><td><p>PTV Vissim</p></td>
+<td><p><a class="reference internal" href="api/realtwin.RealTwinVISSIM.html#realtwin.RealTwinVISSIM" title="realtwin.RealTwinVISSIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">realtwin.RealTwinVISSIM</span></code></a></p></td>
+<td><p>Windows, <code class="docutils literal notranslate"><span class="pre">pywin32</span></code>, a Vissim COM license, and SUMO <code class="docutils literal notranslate"><span class="pre">netconvert</span></code>.
+Import the selected SUMO network through OpenDRIVE and use native
+Vissim link/movement tables.</p></td>
+</tr>
+<tr class="row-even"><td><p>Aimsun Next</p></td>
+<td><p><a class="reference internal" href="api/realtwin.RealTwinAimsun.html#realtwin.RealTwinAimsun" title="realtwin.RealTwinAimsun"><code class="xref py py-class docutils literal notranslate"><span class="pre">realtwin.RealTwinAimsun</span></code></a></p></td>
+<td><p>Windows, a licensed Aimsun installation, an <code class="docutils literal notranslate"><span class="pre">.ang</span></code> model, a configured
+<code class="docutils literal notranslate"><span class="pre">aconsole.exe</span></code> path, and compatible Python packages.</p></td>
+</tr>
+</tbody>
+</table>
+<p>For example, after constructing a SUMO instance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">twin</span><span class="o">.</span><span class="n">env_setup</span><span class="p">(</span><span class="n">sel_sim</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;SUMO&quot;</span><span class="p">])</span>
+</pre></div>
 </div>
-<p>The realtwin package is currently include the following simulators:</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">[&quot;VISSIM&quot;]</span></code> with <code class="docutils literal notranslate"><span class="pre">RealTwinVISSIM</span></code> and <code class="docutils literal notranslate"><span class="pre">[&quot;AIMSUN&quot;]</span></code> with
+<code class="docutils literal notranslate"><span class="pre">RealTwinAimsun</span></code>. Calling <code class="docutils literal notranslate"><span class="pre">env_setup()</span></code> without an argument defaults to
+that class’s simulator. A SUMO instance does not prepare a native Vissim or
+Aimsun scenario.</p>
+<p>SUMO <code class="docutils literal notranslate"><span class="pre">env_setup()</span></code> can check/select a version and search additional executable
+directories. Commercial simulator installation and licensing must be completed
+before running their tutorials. Aimsun’s version check and scenario stages use
+<code class="docutils literal notranslate"><span class="pre">AIMSUN.aimsun_exe_path</span></code>, even when <code class="docutils literal notranslate"><span class="pre">sel_dir</span></code> is used for discovery.</p>
+<p>All three scenario workflows support optional external signal control and
+independent turn/inflow and behavior calibration with genetic algorithm (GA),
+simulated annealing (SA), tabu search (TS), or Bayesian optimization (BO).
+Disabling external control preserves existing source/model control objects;
+it does not make a signalized network unsignalized. See
+<a class="reference internal" href="realtwin_prepare.html"><span class="doc">Preparation</span></a> for the input locations and
+<a class="reference internal" href="realtwin_generation.html"><span class="doc">Scenario Generation</span></a> for executable examples.</p>
+<p>The <a class="reference internal" href="api/realtwin.SimAV.html#realtwin.SimAV" title="realtwin.SimAV"><code class="xref py py-class docutils literal notranslate"><span class="pre">realtwin.SimAV</span></code></a> workflow is SUMO-specific and is described in
+<a class="reference internal" href="autonomous_vehicles_simulation.html"><span class="doc">Autonomous Vehicle Simulation</span></a>.</p>
+<p>Simulator information:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://sumo.dlr.de/docs/index.html">SUMO</a>: Simulation of Urban MObility, a traffic simulation package.</p></li>
-<li><p><a class="reference external" href="https://www.aimsun.com/">AimSUN</a>: Aimsun is a traffic simulation software that provides a comprehensive platform for modeling and simulating transportation systems.</p></li>
-<li><p><a class="reference external" href="https://www.ptvgroup.com/en/solutions/ptv-vissim/">VISSIM</a>: VISSIM is a traffic simulation software that allows for the modeling and analysis of complex traffic scenarios.</p></li>
+<li><p><a class="reference external" href="https://sumo.dlr.de/docs/index.html">SUMO</a></p></li>
+<li><p><a class="reference external" href="https://www.aimsun.com/">Aimsun Next</a></p></li>
+<li><p><a class="reference external" href="https://www.ptvgroup.com/en/solutions/ptv-vissim/">PTV Vissim</a></p></li>
 </ul>
 </section>
 
@@ -127,7 +178,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

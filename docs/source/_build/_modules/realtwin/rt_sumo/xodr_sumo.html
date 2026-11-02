@@ -1,0 +1,879 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin.rt_sumo.xodr_sumo &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/realtwin_css.css?v=836a7079" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=92734c54"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            realtwin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/intro.html">About Real-Twin</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_simulator.html">Supported Simulators</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_prepare.html">Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_generation.html">Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/autonomous_vehicles_simulation.html">Autonomous Vehicle Simulation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/api.html">API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#citation-request">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">realtwin.rt_sumo.xodr_sumo</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for realtwin.rt_sumo.xodr_sumo</h1><div class="highlight"><pre>
+<span></span><span class="c1">##############################################################################</span>
+<span class="c1"># Copyright (c) 2024-, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># All rights reserved.                                                       #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># This file is part of RealTwin and is distributed under a GPL               #</span>
+<span class="c1"># license. For the licensing terms see the LICENSE file in the top-level     #</span>
+<span class="c1"># directory.                                                                 #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># Contributors: ORNL Real-Twin Team                                          #</span>
+<span class="c1"># Contact: realtwin@ornl.gov                                                 #</span>
+<span class="c1">##############################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;Helpers for converting between OpenDRIVE and SUMO networks.</span>
+
+<span class="sd">This module uses SUMO&#39;s ``netconvert`` binary for OpenDRIVE/SUMO conversion and</span>
+<span class="sd">returns Python objects for callers.</span>
+
+<span class="sd">Attributes:</span>
+<span class="sd">    _SOURCE_NET_FILE_ATTR: Attribute name used to remember the generated SUMO</span>
+<span class="sd">        ``.net.xml`` file on returned ``sumolib.net.Net`` objects.</span>
+<span class="sd">    _TEMP_DIR_ATTR: Attribute name used to retain temporary directories while</span>
+<span class="sd">        returned objects may still need their generated files.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright 2026 Xiangyong Luo</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of pyopendrive.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0.</span>
+<span class="c1"># You may obtain a copy of the License at:</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.xodr_reader</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenDriveMap</span><span class="p">,</span> <span class="n">readXodr</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sumolib.net</span>
+
+<span class="n">_SOURCE_NET_FILE_ATTR</span> <span class="o">=</span> <span class="s2">&quot;_pyopendrive_sumo_net_file&quot;</span>
+<span class="n">_TEMP_DIR_ATTR</span> <span class="o">=</span> <span class="s2">&quot;_pyopendrive_temp_dir&quot;</span>
+<span class="n">_ORIGINAL_NODE_ID_PARAM</span> <span class="o">=</span> <span class="s2">&quot;pyopendrive.original_node_id&quot;</span>
+<span class="n">_ORIGINAL_LINK_ID_PARAM</span> <span class="o">=</span> <span class="s2">&quot;pyopendrive.original_link_id&quot;</span>
+<span class="n">_ORIGINAL_LANE_ID_PARAM</span> <span class="o">=</span> <span class="s2">&quot;pyopendrive.original_lane_id&quot;</span>
+<span class="n">_ORIGINAL_LANE_INDEX_PARAM</span> <span class="o">=</span> <span class="s2">&quot;pyopendrive.original_lane_index&quot;</span>
+<span class="n">_FROM_NODE_ID_PARAM</span> <span class="o">=</span> <span class="s2">&quot;pyopendrive.from_node_id&quot;</span>
+<span class="n">_TO_NODE_ID_PARAM</span> <span class="o">=</span> <span class="s2">&quot;pyopendrive.to_node_id&quot;</span>
+<span class="n">_SUMO_SIGNALS_CODE</span> <span class="o">=</span> <span class="s2">&quot;realtwin.sumo_signals&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_require_sumolib</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">sumolib.net</span>  <span class="c1"># type: ignore</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># pragma: no cover - depends on local SUMO install</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;sumolib is required for SUMO conversion. Install SUMO and make its &quot;</span>
+            <span class="s2">&quot;tools directory importable, or install a compatible sumolib package.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+    <span class="k">return</span> <span class="n">sumolib</span><span class="o">.</span><span class="n">net</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_netconvert_binary</span><span class="p">(</span><span class="n">binary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">binary</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">binary</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">&quot;netconvert&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;SUMO netconvert was not found on PATH. Pass netconvert_binary=... &quot;</span>
+            <span class="s2">&quot;or add SUMO&#39;s bin directory to PATH.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_append_options</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">options</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">option</span> <span class="o">=</span> <span class="n">key</span> <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;--</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">option</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">option</span><span class="p">)</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">command</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">option</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_run_netconvert</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="nb">list</span><span class="p">(</span><span class="n">command</span><span class="p">),</span>
+        <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">detail</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">part</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">proc</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span> <span class="k">if</span> <span class="n">part</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;netconvert failed with code </span><span class="si">{</span><span class="n">proc</span><span class="o">.</span><span class="n">returncode</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="si">{</span><span class="n">detail</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_output_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="kc">None</span>
+    <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;pyopendrive_sumo_&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">temp_dir</span>
+
+
+<div class="viewcode-block" id="xodr_to_net_xml">
+<a class="viewcode-back" href="../../../pages/api/realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml.html#realtwin.rt_sumo.xodr_sumo.xodr_to_net_xml">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">xodr_to_net_xml</span><span class="p">(</span>
+    <span class="n">xodr_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">net_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">netconvert_binary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">netconvert_options</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">read_options</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">import_all_lanes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">with_internal</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sumolib</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">Net</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an OpenDRIVE ``.xodr`` file to a ``sumolib.net.Net`` object.</span>
+
+<span class="sd">    Files exported by :func:`xodr_from_net_xml` carry metadata for restoring</span>
+<span class="sd">    source SUMO junction, edge and lane IDs, TLS programs and controlled lane</span>
+<span class="sd">    connections. OpenDrive uses local integer lane IDs; SUMO lane names are</span>
+<span class="sd">    retained separately in ``userData``. For other OpenDrive files, native</span>
+<span class="sd">    generated IDs are retained and their OpenDrive origins are recorded as</span>
+<span class="sd">    parameters. Roads split by netconvert retain generated segment IDs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        xodr_file: Source OpenDRIVE file.</span>
+<span class="sd">        net_file: output SUMO ``.net.xml`` path.</span>
+<span class="sd">        netconvert_binary: Optional path or executable name for SUMO</span>
+<span class="sd">            ``netconvert``. When omitted, ``netconvert`` is resolved from</span>
+<span class="sd">            ``PATH``.</span>
+<span class="sd">        netconvert_options: Extra command-line options for ``netconvert`` as</span>
+<span class="sd">            ``{&quot;option&quot;: value}``.</span>
+<span class="sd">        read_options: Extra keyword arguments passed to</span>
+<span class="sd">            ``sumolib.net.readNet``.</span>
+<span class="sd">        import_all_lanes: Whether to pass ``--opendrive.import-all-lanes``.</span>
+<span class="sd">        with_internal: Value passed as ``withInternal`` to</span>
+<span class="sd">            ``sumolib.net.readNet`` unless overridden by ``read_options``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        sumolib.net.Net: The converted network object.</span>
+<span class="sd">            The generated SUMO net XML file is retained and its path is attached to the returned object as an attribute.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        RuntimeError: If ``sumolib`` or ``netconvert`` is unavailable, or if</span>
+<span class="sd">            ``netconvert`` exits with an error.</span>
+<span class="sd">        ValueError: If the output would overwrite the input, original-name</span>
+<span class="sd">            metadata is disabled, or controlled lane connections cannot be</span>
+<span class="sd">            restored after conversion.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">sumo_net</span> <span class="o">=</span> <span class="n">_require_sumolib</span><span class="p">()</span>
+    <span class="n">output_file</span><span class="p">,</span> <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">_make_output_path</span><span class="p">(</span><span class="n">net_file</span><span class="p">,</span> <span class="s2">&quot;network.net.xml&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">output_file</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">==</span> <span class="n">Path</span><span class="p">(</span><span class="n">xodr_file</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;SUMO output must differ from the source OpenDrive file.&quot;</span><span class="p">)</span>
+    <span class="n">output_file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">command</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">_netconvert_binary</span><span class="p">(</span><span class="n">netconvert_binary</span><span class="p">),</span>
+        <span class="s2">&quot;--opendrive-files&quot;</span><span class="p">,</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">xodr_file</span><span class="p">),</span>
+        <span class="s2">&quot;--output-file&quot;</span><span class="p">,</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">output_file</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="n">import_all_lanes</span><span class="p">:</span>
+        <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--opendrive.import-all-lanes&quot;</span><span class="p">)</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">):</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="n">netconvert_options</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output.original-names&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;output.original-names is required to preserve OpenDrive IDs.&quot;</span><span class="p">)</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;output.original-names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">_append_options</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+    <span class="c1"># netconvert interprets a leading &#39;-&#39; in road IDs as a direction marker.</span>
+    <span class="c1"># Use private numeric road IDs during import; metadata restores the source IDs.</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;realtwin_xodr_import_&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">import_dir</span><span class="p">:</span>
+        <span class="n">import_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">import_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;network.xodr&quot;</span>
+        <span class="n">import_tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">xodr_file</span><span class="p">)</span>
+        <span class="n">import_root</span> <span class="o">=</span> <span class="n">import_tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">_get_xodr_user_data</span><span class="p">(</span><span class="n">road</span><span class="p">,</span> <span class="n">_ORIGINAL_LINK_ID_PARAM</span><span class="p">)</span> <span class="k">for</span> <span class="n">road</span> <span class="ow">in</span> <span class="n">import_root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;road&quot;</span><span class="p">)):</span>
+            <span class="n">road_ids</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">road</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">import_root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;road&quot;</span><span class="p">),</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">road_ids</span><span class="p">[</span><span class="n">road</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+                <span class="n">road</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+            <span class="n">_restore_road_references</span><span class="p">(</span><span class="n">import_root</span><span class="p">,</span> <span class="n">road_ids</span><span class="p">)</span>
+        <span class="n">_write_xml</span><span class="p">(</span><span class="n">import_tree</span><span class="p">,</span> <span class="n">import_file</span><span class="p">)</span>
+        <span class="n">command</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">import_file</span><span class="p">)</span>
+        <span class="n">_run_netconvert</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+        <span class="n">_annotate_sumo_net_ids</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">import_file</span><span class="p">)</span>
+
+    <span class="n">read_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;withInternal&quot;</span><span class="p">:</span> <span class="n">with_internal</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">read_options</span><span class="p">:</span>
+        <span class="n">read_kwargs</span> <span class="o">|=</span> <span class="n">read_options</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">sumo_net</span><span class="o">.</span><span class="n">readNet</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">output_file</span><span class="p">),</span> <span class="o">**</span><span class="n">read_kwargs</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">_SOURCE_NET_FILE_ATTR</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_file</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">temp_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">_TEMP_DIR_ATTR</span><span class="p">,</span> <span class="n">temp_dir</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">net</span></div>
+
+
+
+<div class="viewcode-block" id="xodr_from_net_xml">
+<a class="viewcode-back" href="../../../pages/api/realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml.html#realtwin.rt_sumo.xodr_sumo.xodr_from_net_xml">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">xodr_from_net_xml</span><span class="p">(</span>
+    <span class="n">net_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">xodr_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">net</span><span class="p">:</span> <span class="n">sumolib</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">Net</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">netconvert_binary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">netconvert_options</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">opendrive_map_kwargs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpenDriveMap</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a ``.net.xml`` file or ``sumolib.net.Net`` object to :class:`pyopendrive.OpenDriveMap`.</span>
+
+<span class="sd">    ``sumolib.net.Net`` does not provide a native writer.  If ``net_file`` is not</span>
+<span class="sd">    passed, this function first reuses the source file attached by</span>
+<span class="sd">    :func:`xodr_to_net_xml`. If no source path is available, it writes a</span>
+<span class="sd">    minimal SUMO net XML representation from the in-memory object and passes that</span>
+<span class="sd">    to ``netconvert``.</span>
+
+<span class="sd">    The source SUMO file is never edited. Road and junction identities are</span>
+<span class="sd">    restored from netconvert&#39;s source metadata, independently of XML order.</span>
+<span class="sd">    Source lane IDs and signal programs are retained in OpenDrive ``userData``</span>
+<span class="sd">    for an explicit conversion back into a separate SUMO output.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        net_file: Optional SUMO ``.net.xml`` path to use as the source for</span>
+<span class="sd">            ``netconvert``.</span>
+<span class="sd">        xodr_file: Optional output OpenDRIVE ``.xodr`` path. When omitted, a</span>
+<span class="sd">            temporary file is created and retained through an attribute on the</span>
+<span class="sd">            returned map.</span>
+<span class="sd">        net: Optional ``sumolib.net.Net`` object to convert. if net_file is not provided,</span>
+<span class="sd">            this is required to resolve the source net.</span>
+<span class="sd">        netconvert_binary: Optional path or executable name for SUMO</span>
+<span class="sd">            ``netconvert``. When omitted, ``netconvert`` is resolved from</span>
+<span class="sd">            ``PATH``.</span>
+<span class="sd">        netconvert_options: Extra command-line options for ``netconvert`` as</span>
+<span class="sd">            ``{&quot;option&quot;: value}``.</span>
+<span class="sd">        opendrive_map_kwargs: Extra keyword arguments passed to</span>
+<span class="sd">            :class:`pyopendrive.OpenDriveMap`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A :class:`pyopendrive.OpenDriveMap` loaded from the generated</span>
+<span class="sd">        OpenDRIVE file.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        RuntimeError: If ``netconvert`` is unavailable or exits with an error.</span>
+<span class="sd">        ValueError: If the output would overwrite the input or required source</span>
+<span class="sd">            edge mappings are missing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">source_net_file</span><span class="p">,</span> <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">_resolve_sumo_net_file</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">net_file</span><span class="p">)</span>
+    <span class="n">output_file</span><span class="p">,</span> <span class="n">output_temp_dir</span> <span class="o">=</span> <span class="n">_make_output_path</span><span class="p">(</span><span class="n">xodr_file</span><span class="p">,</span> <span class="s2">&quot;network.xodr&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">output_file</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">==</span> <span class="n">source_net_file</span><span class="o">.</span><span class="n">resolve</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;OpenDrive output must differ from the source SUMO file.&quot;</span><span class="p">)</span>
+    <span class="n">output_file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">command</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">_netconvert_binary</span><span class="p">(</span><span class="n">netconvert_binary</span><span class="p">),</span>
+        <span class="s2">&quot;--sumo-net-file&quot;</span><span class="p">,</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">source_net_file</span><span class="p">),</span>
+        <span class="s2">&quot;--opendrive-output&quot;</span><span class="p">,</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">output_file</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">):</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="n">netconvert_options</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output.original-names&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;output.original-names is required to preserve SUMO IDs.&quot;</span><span class="p">)</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;output.original-names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">_append_options</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+    <span class="n">_run_netconvert</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+    <span class="n">_restore_opendrive_ids</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">source_net_file</span><span class="p">)</span>
+
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">opendrive_map_kwargs</span> <span class="ow">or</span> <span class="p">{})</span>
+    <span class="n">odr_map</span> <span class="o">=</span> <span class="n">readXodr</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">odr_map</span><span class="o">.</span><span class="n">sumo_net_file</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">source_net_file</span><span class="p">)</span>
+    <span class="n">odr_map</span><span class="o">.</span><span class="n">xodr_file</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">temp_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">odr_map</span><span class="o">.</span><span class="n">_pyopendrive_sumo_temp_dir</span> <span class="o">=</span> <span class="n">temp_dir</span>
+    <span class="k">if</span> <span class="n">output_temp_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">odr_map</span><span class="o">.</span><span class="n">_pyopendrive_xodr_temp_dir</span> <span class="o">=</span> <span class="n">output_temp_dir</span>
+    <span class="k">return</span> <span class="n">odr_map</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_sumo_net_file</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">net_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">net_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">net_file</span><span class="p">),</span> <span class="kc">None</span>
+
+    <span class="n">attached</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">_SOURCE_NET_FILE_ATTR</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">attached</span><span class="p">:</span>
+        <span class="n">attached_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">attached</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attached_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">attached_path</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">output_file</span><span class="p">,</span> <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">_make_output_path</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;in_memory.net.xml&quot;</span><span class="p">)</span>
+    <span class="n">_write_minimal_sumo_net_xml</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">temp_dir</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_write_minimal_sumo_net_xml</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">output_file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;net&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="s2">&quot;getVersion&quot;</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">)()</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+
+    <span class="n">boundary</span> <span class="o">=</span> <span class="n">_safe_call</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="s2">&quot;getBoundary&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">_safe_call</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="s2">&quot;getBBoxXY&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">boundary</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">boundary</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">min_x</span><span class="p">,</span> <span class="n">min_y</span><span class="p">,</span> <span class="n">max_x</span><span class="p">,</span> <span class="n">max_y</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">boundary</span><span class="p">[:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+            <span class="n">root</span><span class="p">,</span>
+            <span class="s2">&quot;location&quot;</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;netOffset&quot;</span><span class="p">:</span> <span class="s2">&quot;0.00,0.00&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;convBoundary&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">min_x</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">min_y</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">max_x</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">max_y</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;origBoundary&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">min_x</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">min_y</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">max_x</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">max_y</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;projParameter&quot;</span><span class="p">:</span> <span class="s2">&quot;!&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">net</span><span class="o">.</span><span class="n">getNodes</span><span class="p">():</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">getCoord</span><span class="p">()</span>
+        <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+            <span class="n">root</span><span class="p">,</span>
+            <span class="s2">&quot;junction&quot;</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getID</span><span class="p">()),</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getType</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">&quot;priority&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">net</span><span class="o">.</span><span class="n">getEdges</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">getFunction</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="n">edge_elem</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+            <span class="n">root</span><span class="p">,</span>
+            <span class="s2">&quot;edge&quot;</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">getID</span><span class="p">()),</span>
+                <span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">getFromNode</span><span class="p">()</span><span class="o">.</span><span class="n">getID</span><span class="p">()),</span>
+                <span class="s2">&quot;to&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">getToNode</span><span class="p">()</span><span class="o">.</span><span class="n">getID</span><span class="p">()),</span>
+                <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">getPriority</span><span class="p">()),</span>
+                <span class="s2">&quot;speed&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">getSpeed</span><span class="p">())</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">edge_type</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">getType</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">edge_type</span><span class="p">:</span>
+            <span class="n">edge_elem</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">edge_type</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">lane</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">getLanes</span><span class="p">()):</span>
+            <span class="n">lane_shape</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">lane</span><span class="o">.</span><span class="n">getShape</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">lane</span><span class="o">.</span><span class="n">getID</span><span class="p">()),</span>
+                <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span>
+                <span class="s2">&quot;speed&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">lane</span><span class="o">.</span><span class="n">getSpeed</span><span class="p">())</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">lane</span><span class="o">.</span><span class="n">getLength</span><span class="p">())</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">lane</span><span class="o">.</span><span class="n">getWidth</span><span class="p">())</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="n">lane_shape</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lane_shape</span>
+            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">edge_elem</span><span class="p">,</span> <span class="s2">&quot;lane&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">net</span><span class="o">.</span><span class="n">getEdges</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">getFunction</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">to_edge</span><span class="p">,</span> <span class="n">connections</span> <span class="ow">in</span> <span class="n">edge</span><span class="o">.</span><span class="n">getOutgoing</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">to_edge</span><span class="o">.</span><span class="n">getFunction</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">conn</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">:</span>
+                <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                    <span class="n">root</span><span class="p">,</span>
+                    <span class="s2">&quot;connection&quot;</span><span class="p">,</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">getID</span><span class="p">()),</span>
+                        <span class="s2">&quot;to&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">to_edge</span><span class="o">.</span><span class="n">getID</span><span class="p">()),</span>
+                        <span class="s2">&quot;fromLane&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">getFromLane</span><span class="p">()</span><span class="o">.</span><span class="n">getIndex</span><span class="p">()),</span>
+                        <span class="s2">&quot;toLane&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">getToLane</span><span class="p">()</span><span class="o">.</span><span class="n">getIndex</span><span class="p">()),</span>
+                    <span class="p">},</span>
+                <span class="p">)</span>
+
+    <span class="n">ET</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_annotate_sumo_net_ids</span><span class="p">(</span><span class="n">net_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">xodr_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Restore source identities when the OpenDrive file contains our metadata.&quot;&quot;&quot;</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">net_file</span><span class="p">)</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+    <span class="n">xodr_root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">xodr_file</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+    <span class="n">roads</span> <span class="o">=</span> <span class="p">{</span><span class="n">road</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">):</span> <span class="n">road</span> <span class="k">for</span> <span class="n">road</span> <span class="ow">in</span> <span class="n">xodr_root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;road&quot;</span><span class="p">)}</span>
+    <span class="n">node_id_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">junction</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">):</span> <span class="n">_get_xodr_user_data</span><span class="p">(</span><span class="n">junction</span><span class="p">,</span> <span class="n">_ORIGINAL_NODE_ID_PARAM</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">junction</span> <span class="ow">in</span> <span class="n">xodr_root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;junction&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_get_xodr_user_data</span><span class="p">(</span><span class="n">junction</span><span class="p">,</span> <span class="n">_ORIGINAL_NODE_ID_PARAM</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="c1"># origId on imported lanes identifies the OpenDrive road and local lane.</span>
+    <span class="n">edge_roads</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;edge&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;function&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">lane</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;lane&quot;</span><span class="p">)</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">_get_param</span><span class="p">(</span><span class="n">lane</span><span class="p">,</span> <span class="s2">&quot;origId&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">lane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">origin</span><span class="p">:</span>
+            <span class="n">edge_roads</span><span class="p">[</span><span class="n">edge</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">origin</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">road_counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">edge_roads</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">edge_id_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">lane_id_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">lane_index_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">used_edge_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">road_id</span><span class="p">,</span> <span class="n">road</span> <span class="ow">in</span> <span class="n">roads</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">original_id</span> <span class="o">=</span> <span class="n">_get_xodr_user_data</span><span class="p">(</span><span class="n">road</span><span class="p">,</span> <span class="n">_ORIGINAL_LINK_ID_PARAM</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">original_id</span> <span class="ow">and</span> <span class="n">road_counts</span><span class="p">[</span><span class="n">road_id</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">used_edge_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">original_id</span><span class="p">)</span>
+    <span class="n">used_lane_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;edge&quot;</span><span class="p">):</span>
+        <span class="n">edge_id</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">edge_id</span> <span class="ow">or</span> <span class="n">edge</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;function&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">road_id</span> <span class="o">=</span> <span class="n">edge_roads</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">edge_id</span><span class="p">)</span>
+        <span class="n">road</span> <span class="o">=</span> <span class="n">roads</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">road_id</span><span class="p">)</span>
+        <span class="n">original_id</span> <span class="o">=</span> <span class="n">_get_xodr_user_data</span><span class="p">(</span><span class="n">road</span><span class="p">,</span> <span class="n">_ORIGINAL_LINK_ID_PARAM</span><span class="p">)</span>
+        <span class="n">one_to_one</span> <span class="o">=</span> <span class="n">road_counts</span><span class="p">[</span><span class="n">road_id</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">new_id</span> <span class="o">=</span> <span class="n">original_id</span> <span class="k">if</span> <span class="n">original_id</span> <span class="ow">and</span> <span class="n">one_to_one</span> <span class="k">else</span> <span class="n">edge_id</span>
+        <span class="k">if</span> <span class="n">original_id</span> <span class="ow">and</span> <span class="n">one_to_one</span><span class="p">:</span>
+            <span class="n">edge_id_map</span><span class="p">[</span><span class="n">edge_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_id</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">edge_id_map</span><span class="p">[</span><span class="n">edge_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">_unique_id</span><span class="p">(</span><span class="n">new_id</span><span class="p">,</span> <span class="n">used_edge_ids</span><span class="p">)</span>
+        <span class="n">edge</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">edge_id_map</span><span class="p">[</span><span class="n">edge_id</span><span class="p">])</span>
+        <span class="n">_set_param</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">_ORIGINAL_LINK_ID_PARAM</span><span class="p">,</span> <span class="n">original_id</span> <span class="ow">or</span> <span class="n">road_id</span> <span class="ow">or</span> <span class="n">edge_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">original_id</span> <span class="ow">and</span> <span class="n">one_to_one</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&quot;from&quot;</span><span class="p">,</span> <span class="n">_FROM_NODE_ID_PARAM</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;to&quot;</span><span class="p">,</span> <span class="n">_TO_NODE_ID_PARAM</span><span class="p">)):</span>
+                <span class="n">source_node</span> <span class="o">=</span> <span class="n">_get_xodr_user_data</span><span class="p">(</span><span class="n">road</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">source_node</span><span class="p">:</span>
+                    <span class="n">node_id_map</span><span class="p">[</span><span class="n">edge</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">)]</span> <span class="o">=</span> <span class="n">source_node</span>
+        <span class="n">road_lanes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">road</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">road_lanes</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">lane</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">):</span> <span class="n">lane</span>
+                <span class="k">for</span> <span class="n">lane</span> <span class="ow">in</span> <span class="n">road</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;./lanes/laneSection/*/lane&quot;</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="k">for</span> <span class="n">lane</span> <span class="ow">in</span> <span class="n">edge</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;lane&quot;</span><span class="p">):</span>
+            <span class="n">old_lane_id</span> <span class="o">=</span> <span class="n">lane</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">origin</span> <span class="o">=</span> <span class="n">_get_param</span><span class="p">(</span><span class="n">lane</span><span class="p">,</span> <span class="s2">&quot;origId&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">local_lane</span> <span class="o">=</span> <span class="n">origin</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">origin</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">road_lane</span> <span class="o">=</span> <span class="n">road_lanes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">local_lane</span><span class="p">)</span>
+            <span class="n">original_lane</span> <span class="o">=</span> <span class="n">_get_xodr_user_data</span><span class="p">(</span><span class="n">road_lane</span><span class="p">,</span> <span class="n">_ORIGINAL_LANE_ID_PARAM</span><span class="p">)</span>
+            <span class="n">original_index</span> <span class="o">=</span> <span class="n">_get_xodr_user_data</span><span class="p">(</span><span class="n">road_lane</span><span class="p">,</span> <span class="n">_ORIGINAL_LANE_INDEX_PARAM</span><span class="p">)</span>
+            <span class="n">new_lane_id</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">original_lane</span> <span class="k">if</span> <span class="n">original_lane</span> <span class="ow">and</span> <span class="n">one_to_one</span> <span class="k">else</span> <span class="n">old_lane_id</span>
+            <span class="p">)</span>
+            <span class="n">lane_id_map</span><span class="p">[</span><span class="n">old_lane_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">_unique_id</span><span class="p">(</span><span class="n">new_lane_id</span><span class="p">,</span> <span class="n">used_lane_ids</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">original_index</span> <span class="ow">and</span> <span class="n">one_to_one</span><span class="p">:</span>
+                <span class="n">lane_index_map</span><span class="p">[(</span><span class="n">edge_id</span><span class="p">,</span> <span class="n">lane</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">))]</span> <span class="o">=</span> <span class="n">original_index</span>
+                <span class="n">lane</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="n">original_index</span><span class="p">)</span>
+            <span class="n">lane</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">lane_id_map</span><span class="p">[</span><span class="n">old_lane_id</span><span class="p">])</span>
+            <span class="n">_set_param</span><span class="p">(</span>
+                <span class="n">lane</span><span class="p">,</span> <span class="n">_ORIGINAL_LANE_ID_PARAM</span><span class="p">,</span>
+                <span class="n">original_lane</span> <span class="ow">or</span> <span class="n">origin</span> <span class="ow">or</span> <span class="n">old_lane_id</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">original_id</span> <span class="ow">and</span> <span class="n">local_lane</span><span class="p">:</span>
+                <span class="n">_set_param</span><span class="p">(</span><span class="n">lane</span><span class="p">,</span> <span class="s2">&quot;origId&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">original_id</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">local_lane</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">edge</span><span class="p">[:]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">child</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)))</span>
+
+    <span class="c1"># Internal edges follow their junction IDs, including lane lists and via refs.</span>
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;edge&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;function&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">old_id</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">new_id</span> <span class="o">=</span> <span class="n">old_id</span>
+        <span class="n">old_node</span><span class="p">,</span> <span class="n">separator</span><span class="p">,</span> <span class="n">connection_id</span> <span class="o">=</span> <span class="n">old_id</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">separator</span> <span class="ow">and</span> <span class="n">old_node</span> <span class="ow">in</span> <span class="n">node_id_map</span><span class="p">:</span>
+            <span class="n">new_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{</span><span class="n">node_id_map</span><span class="p">[</span><span class="n">old_node</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">connection_id</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">edge_id_map</span><span class="p">[</span><span class="n">old_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">_unique_id</span><span class="p">(</span><span class="n">new_id</span><span class="p">,</span> <span class="n">used_edge_ids</span><span class="p">)</span>
+        <span class="n">edge</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">edge_id_map</span><span class="p">[</span><span class="n">old_id</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">lane</span> <span class="ow">in</span> <span class="n">edge</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;lane&quot;</span><span class="p">):</span>
+            <span class="n">old_lane_id</span> <span class="o">=</span> <span class="n">lane</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">new_lane_id</span> <span class="o">=</span> <span class="n">_replace_edge_id_prefix</span><span class="p">(</span><span class="n">old_lane_id</span><span class="p">,</span> <span class="n">old_id</span><span class="p">,</span> <span class="n">edge_id_map</span><span class="p">[</span><span class="n">old_id</span><span class="p">])</span>
+            <span class="n">lane_id_map</span><span class="p">[</span><span class="n">old_lane_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">_unique_id</span><span class="p">(</span><span class="n">new_lane_id</span><span class="p">,</span> <span class="n">used_lane_ids</span><span class="p">)</span>
+            <span class="n">lane</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">lane_id_map</span><span class="p">[</span><span class="n">old_lane_id</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;connection&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">lane_attr</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&quot;from&quot;</span><span class="p">,</span> <span class="s2">&quot;fromLane&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;to&quot;</span><span class="p">,</span> <span class="s2">&quot;toLane&quot;</span><span class="p">)):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">connection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">),</span> <span class="n">connection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">lane_attr</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">lane_index_map</span><span class="p">:</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">lane_attr</span><span class="p">,</span> <span class="n">lane_index_map</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">root</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;edge&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;from&quot;</span><span class="p">,</span> <span class="s2">&quot;to&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="ow">in</span> <span class="n">node_id_map</span><span class="p">:</span>
+                    <span class="n">element</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">node_id_map</span><span class="p">[</span><span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">)])</span>
+        <span class="k">elif</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;junction&quot;</span><span class="p">:</span>
+            <span class="n">node_id</span> <span class="o">=</span> <span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">node_id_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_id</span><span class="p">,</span> <span class="n">node_id</span><span class="p">))</span>
+            <span class="n">_set_param</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">_ORIGINAL_NODE_ID_PARAM</span><span class="p">,</span> <span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;connection&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;from&quot;</span><span class="p">,</span> <span class="s2">&quot;to&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="ow">in</span> <span class="n">edge_id_map</span><span class="p">:</span>
+                    <span class="n">element</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">edge_id_map</span><span class="p">[</span><span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">)])</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;incLanes&quot;</span><span class="p">,</span> <span class="s2">&quot;intLanes&quot;</span><span class="p">,</span> <span class="s2">&quot;via&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
+                <span class="n">element</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+                    <span class="n">attr</span><span class="p">,</span>
+                    <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lane_id_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                             <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()),</span>
+                <span class="p">)</span>
+    <span class="n">_restore_sumo_signals</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">xodr_root</span><span class="p">)</span>
+    <span class="n">_write_xml</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">net_file</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_restore_sumo_signals</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span> <span class="n">xodr_root</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Restore programs only when all their controlled lane connections survive.&quot;&quot;&quot;</span>
+    <span class="n">signals</span> <span class="o">=</span> <span class="n">xodr_root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;userData[@code=&#39;</span><span class="si">{</span><span class="n">_SUMO_SIGNALS_CODE</span><span class="si">}</span><span class="s2">&#39;]&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">signals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">attrs</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;from&quot;</span><span class="p">,</span> <span class="s2">&quot;to&quot;</span><span class="p">,</span> <span class="s2">&quot;fromLane&quot;</span><span class="p">,</span> <span class="s2">&quot;toLane&quot;</span><span class="p">)</span>
+    <span class="n">source_connections</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nb">tuple</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">):</span> <span class="n">conn</span>
+        <span class="k">for</span> <span class="n">conn</span> <span class="ow">in</span> <span class="n">signals</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;sumoConnection&quot;</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="n">imported_connections</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nb">tuple</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">):</span> <span class="n">conn</span>
+        <span class="k">for</span> <span class="n">conn</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;connection&quot;</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="n">imported_controlled</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">conn</span> <span class="ow">in</span> <span class="n">imported_connections</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">conn</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tl&quot;</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">source_connections</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">imported_connections</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="n">imported_controlled</span> <span class="o">&lt;=</span> <span class="n">source_connections</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Cannot restore SUMO signal IDs: controlled lane connections &quot;</span>
+            <span class="s2">&quot;changed during OpenDrive conversion.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">source_connections</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">connection</span> <span class="o">=</span> <span class="n">imported_connections</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;tl&quot;</span><span class="p">,</span> <span class="s2">&quot;linkIndex&quot;</span><span class="p">,</span> <span class="s2">&quot;linkIndex2&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">source</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">source</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">used_tls</span> <span class="o">=</span> <span class="p">{</span><span class="n">conn</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tl&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">conn</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;connection&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">conn</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tl&quot;</span><span class="p">)}</span>
+    <span class="n">source_tls</span> <span class="o">=</span> <span class="p">{</span><span class="n">logic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">logic</span> <span class="ow">in</span> <span class="n">signals</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;sumoTlLogic&quot;</span><span class="p">)}</span>
+    <span class="k">for</span> <span class="n">logic</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;tlLogic&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">logic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">source_tls</span> <span class="ow">or</span> <span class="n">logic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">used_tls</span><span class="p">:</span>
+            <span class="n">root</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">logic</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">logic</span> <span class="ow">in</span> <span class="n">signals</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;sumoTlLogic&quot;</span><span class="p">):</span>
+        <span class="n">restored_logic</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">logic</span><span class="p">)</span>
+        <span class="n">restored_logic</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;tlLogic&quot;</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">restored_logic</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_replace_edge_id_prefix</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">old_edge_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">new_edge_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">old_edge_id</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">new_edge_id</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">old_edge_id</span><span class="si">}</span><span class="s2">_&quot;</span>
+    <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">new_edge_id</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">value</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">):]</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_restore_opendrive_ids</span><span class="p">(</span><span class="n">xodr_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">source_net_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">source_root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">source_net_file</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="p">{</span><span class="n">edge</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">):</span> <span class="n">edge</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">source_root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;edge&quot;</span><span class="p">)}</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">xodr_file</span><span class="p">)</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+    <span class="n">roads</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;road&quot;</span><span class="p">)</span>
+    <span class="c1"># Reserve external IDs first so connector road IDs cannot steal them.</span>
+    <span class="n">used_ids</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">edge_id</span> <span class="k">for</span> <span class="n">edge_id</span><span class="p">,</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;function&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;internal&quot;</span>
+    <span class="p">}</span>
+    <span class="n">road_id_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">road</span> <span class="ow">in</span> <span class="n">roads</span><span class="p">:</span>
+        <span class="n">old_id</span> <span class="o">=</span> <span class="n">road</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">source_id</span> <span class="o">=</span> <span class="n">road</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">road</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;junction&quot;</span><span class="p">,</span> <span class="s2">&quot;-1&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;-1&quot;</span><span class="p">:</span>
+            <span class="n">source_id</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">road</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;userData&quot;</span><span class="p">)</span>
+                 <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;sumoId&quot;</span><span class="p">),</span>
+                <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">source_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;No source SUMO edge mapping for OpenDrive road </span><span class="si">{</span><span class="n">old_id</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">new_id</span> <span class="o">=</span> <span class="n">source_id</span>
+            <span class="n">_set_xodr_user_data</span><span class="p">(</span><span class="n">road</span><span class="p">,</span> <span class="n">_ORIGINAL_LINK_ID_PARAM</span><span class="p">,</span> <span class="n">source_id</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&quot;from&quot;</span><span class="p">,</span> <span class="n">_FROM_NODE_ID_PARAM</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;to&quot;</span><span class="p">,</span> <span class="n">_TO_NODE_ID_PARAM</span><span class="p">)):</span>
+                <span class="n">_set_xodr_user_data</span><span class="p">(</span><span class="n">road</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">edges</span><span class="p">[</span><span class="n">source_id</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_id</span> <span class="o">=</span> <span class="n">_unique_id</span><span class="p">(</span><span class="n">source_id</span> <span class="ow">or</span> <span class="n">old_id</span><span class="p">,</span> <span class="n">used_ids</span><span class="p">)</span>
+        <span class="n">road</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">new_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">old_id</span><span class="p">:</span>
+            <span class="n">road_id_map</span><span class="p">[</span><span class="n">old_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_id</span>
+        <span class="n">source_edge</span> <span class="o">=</span> <span class="n">edges</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">source_edge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">source_lanes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="n">source_edge</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;lane&quot;</span><span class="p">),</span>
+                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">lane</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">lane</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)),</span>
+            <span class="p">)</span>
+            <span class="c1"># SUMO lane 0 is rightmost; OpenDrive right lanes count outwards from -1.</span>
+            <span class="k">for</span> <span class="n">lane</span> <span class="ow">in</span> <span class="n">road</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;./lanes/laneSection/*/lane&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">lane</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;0&quot;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_lanes</span><span class="p">)</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">lane</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)))</span>
+                <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_lanes</span><span class="p">):</span>
+                    <span class="n">source_lane</span> <span class="o">=</span> <span class="n">source_lanes</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+                    <span class="n">_set_xodr_user_data</span><span class="p">(</span>
+                        <span class="n">lane</span><span class="p">,</span> <span class="n">_ORIGINAL_LANE_ID_PARAM</span><span class="p">,</span> <span class="n">source_lane</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="n">_set_xodr_user_data</span><span class="p">(</span>
+                        <span class="n">lane</span><span class="p">,</span> <span class="n">_ORIGINAL_LANE_INDEX_PARAM</span><span class="p">,</span> <span class="n">source_lane</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">)</span>
+                    <span class="p">)</span>
+    <span class="n">_restore_road_references</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">road_id_map</span><span class="p">)</span>
+    <span class="n">node_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">junction</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">junction</span> <span class="ow">in</span> <span class="n">source_root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;junction&quot;</span><span class="p">)}</span>
+    <span class="n">junction_id_map</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">junction</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;junction&quot;</span><span class="p">):</span>
+        <span class="n">source_id</span> <span class="o">=</span> <span class="n">junction</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">source_id</span> <span class="ow">in</span> <span class="n">node_ids</span><span class="p">:</span>
+            <span class="n">junction_id_map</span><span class="p">[</span><span class="n">junction</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">source_id</span>
+            <span class="n">junction</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">source_id</span><span class="p">)</span>
+            <span class="n">_set_xodr_user_data</span><span class="p">(</span><span class="n">junction</span><span class="p">,</span> <span class="n">_ORIGINAL_NODE_ID_PARAM</span><span class="p">,</span> <span class="n">source_id</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">road</span> <span class="ow">in</span> <span class="n">roads</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">road</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;junction&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">junction_id_map</span><span class="p">:</span>
+            <span class="n">road</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;junction&quot;</span><span class="p">,</span> <span class="n">junction_id_map</span><span class="p">[</span><span class="n">road</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;junction&quot;</span><span class="p">)])</span>
+        <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">road</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;./link/*&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;elementType&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;junction&quot;</span>
+                    <span class="ow">and</span> <span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;elementId&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">junction_id_map</span><span class="p">):</span>
+                <span class="n">link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;elementId&quot;</span><span class="p">,</span> <span class="n">junction_id_map</span><span class="p">[</span><span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;elementId&quot;</span><span class="p">)])</span>
+    <span class="n">signals</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;userData&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="n">_SUMO_SIGNALS_CODE</span><span class="p">})</span>
+    <span class="k">for</span> <span class="n">logic</span> <span class="ow">in</span> <span class="n">source_root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;tlLogic&quot;</span><span class="p">):</span>
+        <span class="n">saved_logic</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">logic</span><span class="p">)</span>
+        <span class="n">saved_logic</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;sumoTlLogic&quot;</span>
+        <span class="n">signals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">saved_logic</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="n">source_root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;connection&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">connection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tl&quot;</span><span class="p">):</span>
+            <span class="n">saved_connection</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+            <span class="n">saved_connection</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;sumoConnection&quot;</span>
+            <span class="n">signals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">saved_connection</span><span class="p">)</span>
+    <span class="n">_write_xml</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">xodr_file</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_restore_road_references</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span> <span class="n">road_id_map</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">road</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;road&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">road</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;./link/*&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;elementType&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;road&quot;</span><span class="p">:</span>
+                <span class="n">element_id</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;elementId&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">element_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">element_id</span> <span class="ow">in</span> <span class="n">road_id_map</span><span class="p">:</span>
+                    <span class="n">link</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;elementId&quot;</span><span class="p">,</span> <span class="n">road_id_map</span><span class="p">[</span><span class="n">element_id</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;./junction/connection&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;incomingRoad&quot;</span><span class="p">,</span> <span class="s2">&quot;connectingRoad&quot;</span><span class="p">):</span>
+            <span class="n">road_id</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">road_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">road_id</span> <span class="ow">in</span> <span class="n">road_id_map</span><span class="p">:</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">road_id_map</span><span class="p">[</span><span class="n">road_id</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">priority</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;./junction/priority&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;high&quot;</span><span class="p">,</span> <span class="s2">&quot;low&quot;</span><span class="p">):</span>
+            <span class="n">road_id</span> <span class="o">=</span> <span class="n">priority</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">road_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">road_id</span> <span class="ow">in</span> <span class="n">road_id_map</span><span class="p">:</span>
+                <span class="n">priority</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">road_id_map</span><span class="p">[</span><span class="n">road_id</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_xodr_user_data</span><span class="p">(</span><span class="n">parent</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">vector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">parent</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;./userData/vector&quot;</span><span class="p">)</span>
+         <span class="k">if</span> <span class="n">vector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">key</span><span class="p">),</span>
+        <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_set_param</span><span class="p">(</span><span class="n">parent</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">parent</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;param&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="s2">&quot;param&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_param</span><span class="p">(</span><span class="n">parent</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">parent</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;param&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">key</span>
+        <span class="p">),</span>
+        <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_set_xodr_user_data</span><span class="p">(</span><span class="n">parent</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">user_data</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;userData&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">user_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">user_data</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="s2">&quot;userData&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">user_data</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;vector&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">vector</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
+            <span class="n">vector</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span>
+    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">user_data</span><span class="p">,</span> <span class="s2">&quot;vector&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_unique_id</span><span class="p">(</span><span class="n">id_value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">used_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">candidate</span> <span class="o">=</span> <span class="n">id_value</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">used_ids</span><span class="p">:</span>
+        <span class="n">suffix</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">candidate</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">id_value</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">used_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">candidate</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_write_xml</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">output_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="n">ET</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">space</span><span class="o">=</span><span class="s2">&quot;    &quot;</span><span class="p">)</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_safe_call</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">method</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;xodr_from_net_xml&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;xodr_to_net_xml&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

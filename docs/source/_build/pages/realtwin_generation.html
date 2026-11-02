@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c7632d00"></script>
+      <script src="../_static/documentation_options.js?v=92734c54"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,13 +54,21 @@
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">Supported Simulators</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="realtwin_prepare.html">Preparation</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Scenario Generation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Scenario Generation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#sumo-workflow">SUMO workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sumo-and-opendrive-network-identities">SUMO and OpenDrive network identities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#aimsun-preparation">Aimsun preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calibration-algorithms-and-independent-stages">Calibration algorithms and independent stages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#vissim-preparation">Vissim preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#vissim-calibration">Vissim calibration</a></li>
+</ul>
+</li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="autonomous_vehicles_simulation.html">Autonomous Vehicle Simulation</a></li>
@@ -104,52 +112,359 @@
 <div></div></blockquote>
 <section id="scenario-generation">
 <h1>Scenario Generation<a class="headerlink" href="#scenario-generation" title="Link to this heading"></a></h1>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
-<span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="c1"># Please refer to the official documentation for more details on RealTwin preparation before running the simulation</span>
-<span class="linenos"> 4</span><span class="c1"># # https://real-twin.readthedocs.io/en/latest/index.html</span>
-<span class="linenos"> 5</span>
-<span class="linenos"> 6</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-<span class="linenos"> 7</span>
-<span class="linenos"> 8</span>    <span class="c1"># Step 1: Prepare your configuration file (in YAML format)</span>
-<span class="hll"><span class="linenos"> 9</span>    <span class="n">CONFIG_FILE</span> <span class="o">=</span> <span class="s2">&quot;./realtwin_config.yaml&quot;</span>
-</span><span class="linenos">10</span>
-<span class="linenos">11</span>    <span class="c1"># Step 2: initialize the realtwin object</span>
-<span class="linenos">12</span>    <span class="n">twin</span> <span class="o">=</span> <span class="n">rt</span><span class="o">.</span><span class="n">RealTwin</span><span class="p">(</span><span class="n">input_config_file</span><span class="o">=</span><span class="n">CONFIG_FILE</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos">13</span>
-<span class="linenos">14</span>    <span class="c1"># Step 3: check simulator env: if SUMO, VISSIM, Aimsun, etc... are installed</span>
-<span class="linenos">15</span>    <span class="n">twin</span><span class="o">.</span><span class="n">env_setup</span><span class="p">(</span><span class="n">sel_sim</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;SUMO&quot;</span><span class="p">,</span> <span class="s2">&quot;VISSIM&quot;</span><span class="p">])</span>
-<span class="linenos">16</span>
-<span class="linenos">17</span>    <span class="c1"># Step 4: Create Matchup Table from SUMO network</span>
-<span class="linenos">18</span>    <span class="n">updated_sumo_net</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;./datasets/example2/chatt.net.xml&quot;</span>
-<span class="linenos">19</span>    <span class="n">twin</span><span class="o">.</span><span class="n">generate_inputs</span><span class="p">(</span><span class="n">incl_sumo_net</span><span class="o">=</span><span class="n">updated_sumo_net</span><span class="p">)</span>
-<span class="linenos">20</span>
-<span class="linenos">21</span>    <span class="c1"># BEFORE step 5, there are three steps to be performed:</span>
-<span class="linenos">22</span>    <span class="c1"># 1. Prepare Traffic Demand and save it to Traffic Folder in input directory</span>
-<span class="linenos">23</span>    <span class="c1"># 2. Prepare Control Data (Signal) and save it to Control Folder in input directory</span>
-<span class="linenos">24</span>    <span class="c1"># 3. Manually fill in the Matchup Table in the input directory</span>
-<span class="linenos">25</span>
-<span class="linenos">26</span>    <span class="c1"># Step 5: generate abstract scenario</span>
-<span class="linenos">27</span>    <span class="n">twin</span><span class="o">.</span><span class="n">generate_abstract_scenario</span><span class="p">()</span>
-<span class="linenos">28</span>
-<span class="linenos">29</span>    <span class="c1"># AFTER step 5, Double-check the Matchup Table in the input directory to ensure it is correct.</span>
-<span class="linenos">30</span>
-<span class="linenos">31</span>    <span class="c1"># Step 6: generate scenarios</span>
-<span class="linenos">32</span>    <span class="n">twin</span><span class="o">.</span><span class="n">generate_concrete_scenario</span><span class="p">()</span>
-<span class="linenos">33</span>
-<span class="linenos">34</span>    <span class="c1"># Step 7: simulate the scenario</span>
-<span class="linenos">35</span>    <span class="n">twin</span><span class="o">.</span><span class="n">prepare_simulation</span><span class="p">()</span>
-<span class="linenos">36</span>
-<span class="linenos">37</span>    <span class="c1"># Step 8: perform calibration, Available algorithms: GA: Genetic Algorithm, SA: Simulated Annealing, TS: Tabu Search</span>
-<span class="linenos">38</span>    <span class="n">twin</span><span class="o">.</span><span class="n">calibrate</span><span class="p">(</span><span class="n">sel_algo</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;GA&quot;</span><span class="p">,</span> <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;GA&quot;</span><span class="p">})</span>
-<span class="linenos">39</span>
-<span class="linenos">40</span>    <span class="c1"># Step 9 (ongoing): post-process the simulation results</span>
-<span class="linenos">41</span>    <span class="n">twin</span><span class="o">.</span><span class="n">post_process</span><span class="p">()</span>  <span class="c1"># keyword arguments can be passed to specify the post-processing options</span>
-<span class="linenos">42</span>
-<span class="linenos">43</span>    <span class="c1"># Step 10 (ongoing): visualize the simulation results</span>
-<span class="linenos">44</span>    <span class="n">twin</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>  <span class="c1"># keyword arguments can be passed to specify the visualization options</span>
+<p>The current Real-Twin package supports Windows only. Use the class for your
+simulator and complete <a class="reference internal" href="realtwin_prepare.html"><span class="doc">Preparation</span></a> first.
+The repository scripts share the
+<a class="reference download internal" download="" href="../_downloads/9dee7f4a6eebdb3912f38b0132e52615/realtwin_config.yaml"><code class="xref download docutils literal notranslate"><span class="pre">tutorial</span> <span class="pre">YAML</span></code></a>.
+It uses <code class="docutils literal notranslate"><span class="pre">datasets/example1</span></code> for observations and
+<code class="docutils literal notranslate"><span class="pre">datasets/example1/output</span></code> for generated files. The SUMO and Vissim scripts
+separately import <code class="docutils literal notranslate"><span class="pre">datasets/example2/updated.net.xml</span></code>.</p>
+<p>Calibration supports genetic algorithm (GA), simulated annealing (SA), tabu
+search (TS), and Bayesian optimization (BO). The current scripts select BO
+for enabled stages.</p>
+<nav class="contents local" id="on-this-page">
+<p class="topic-title">On this page</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#sumo-workflow" id="id1">SUMO workflow</a></p></li>
+<li><p><a class="reference internal" href="#sumo-and-opendrive-network-identities" id="id2">SUMO and OpenDrive network identities</a></p></li>
+<li><p><a class="reference internal" href="#aimsun-preparation" id="id3">Aimsun preparation</a></p></li>
+<li><p><a class="reference internal" href="#calibration-algorithms-and-independent-stages" id="id4">Calibration algorithms and independent stages</a></p></li>
+<li><p><a class="reference internal" href="#vissim-preparation" id="id5">Vissim preparation</a></p></li>
+<li><p><a class="reference internal" href="#vissim-calibration" id="id6">Vissim calibration</a></p></li>
+</ul>
+</nav>
+<section id="sumo-workflow">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">SUMO workflow</a><a class="headerlink" href="#sumo-workflow" title="Link to this heading"></a></h2>
+<p>Run from the repository root:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python tutorials/tutorial_realtwin_SUMO.py
 </pre></div>
 </div>
+<p>For interactive inspection, use
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">jupyter</span> <span class="pre">notebook</span> <span class="pre">tutorials/tutorial_realtwin_SUMO.ipynb</span></code>.
+The script’s main stages are:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+
+<span class="n">twin</span> <span class="o">=</span> <span class="n">rt</span><span class="o">.</span><span class="n">RealTwinSUMO</span><span class="p">(</span>
+    <span class="n">input_config_file</span><span class="o">=</span><span class="s2">&quot;./tutorials/realtwin_config.yaml&quot;</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">env_setup</span><span class="p">(</span><span class="n">sel_sim</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;SUMO&quot;</span><span class="p">])</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">generate_inputs</span><span class="p">(</span><span class="n">incl_sumo_net</span><span class="o">=</span><span class="s2">&quot;./datasets/example2/updated.net.xml&quot;</span><span class="p">)</span>
+
+<span class="c1"># Fill datasets/example1/MatchupTable.xlsx at the preparation prompt.</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">generate_abstract_scenario</span><span class="p">()</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">generate_concrete_scenario</span><span class="p">()</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">prepare_simulation</span><span class="p">()</span>
+
+<span class="n">sel_behavior_routes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;route_1&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="s2">&quot;route_list&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;-90&quot;</span><span class="p">,</span> <span class="s2">&quot;-96&quot;</span><span class="p">,</span> <span class="s2">&quot;-103&quot;</span><span class="p">,</span> <span class="s2">&quot;-105&quot;</span><span class="p">,</span> <span class="s2">&quot;-106&quot;</span><span class="p">,</span> <span class="s2">&quot;-99&quot;</span><span class="p">,</span> <span class="s2">&quot;-94&quot;</span><span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;route_2&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span>
+        <span class="s2">&quot;route_list&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;-97&quot;</span><span class="p">,</span> <span class="s2">&quot;-95&quot;</span><span class="p">,</span> <span class="s2">&quot;-100&quot;</span><span class="p">,</span> <span class="s2">&quot;-107&quot;</span><span class="p">,</span> <span class="s2">&quot;-104&quot;</span><span class="p">,</span> <span class="s2">&quot;-102&quot;</span><span class="p">,</span> <span class="s2">&quot;-93&quot;</span><span class="p">],</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">calibrate</span><span class="p">(</span>
+    <span class="n">sel_algo</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;BO&quot;</span><span class="p">,</span> <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;BO&quot;</span><span class="p">},</span>
+    <span class="n">sel_behavior_routes</span><span class="o">=</span><span class="n">sel_behavior_routes</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Put demand workbooks in <code class="docutils literal notranslate"><span class="pre">&lt;input_dir&gt;/Traffic</span></code> and optional Synchro signal
+CSVs in <code class="docutils literal notranslate"><span class="pre">&lt;input_dir&gt;/Control</span></code>. Complete the generated matchup table and check
+the observation movements against the network bearings before continuing.
+Replace the example routes and travel times (seconds) with your observations.
+The tutorial YAML enables behavior and disables turn/inflow calibration, so
+only behavior runs despite selecting algorithms for both stages.</p>
+<p>SUMO’s no-argument <code class="docutils literal notranslate"><span class="pre">prepare_simulation()</span></code> prepares 08:00-10:00. To match the
+tutorial’s 08:00-09:00 calibration window, pass
+<code class="docutils literal notranslate"><span class="pre">start_time=28800,</span> <span class="pre">end_time=32400</span></code>. Generated SUMO preparation files are
+under <code class="docutils literal notranslate"><span class="pre">&lt;output_dir&gt;/SUMO/</span></code>. The script’s <code class="docutils literal notranslate"><span class="pre">post_process()</span></code> and
+<code class="docutils literal notranslate"><span class="pre">visualize()</span></code> calls remain ongoing hooks.</p>
+<p>Set <code class="docutils literal notranslate"><span class="pre">SUMO.is_control_data:</span> <span class="pre">false</span></code> in the YAML configuration to skip external
+SUMO signal loading. Control CSVs are optional in this mode; traffic data and
+<code class="docutils literal notranslate"><span class="pre">MatchupTable.xlsx</span></code> remain required. The source network’s existing signal
+logic is preserved. Omitting the flag keeps signal loading enabled.
+<code class="docutils literal notranslate"><span class="pre">generate_inputs()</span></code> sets the flag to false when the Control folder is missing
+or empty. If control data is added afterwards, set
+<code class="docutils literal notranslate"><span class="pre">twin.input_config[&quot;SUMO&quot;][&quot;is_control_data&quot;]</span> <span class="pre">=</span> <span class="pre">True</span></code> before generating the
+abstract scenario to enable loading again.</p>
+</section>
+<section id="sumo-and-opendrive-network-identities">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">SUMO and OpenDrive network identities</a><a class="headerlink" href="#sumo-and-opendrive-network-identities" title="Link to this heading"></a></h2>
+<p>Input generation retains the source SUMO <code class="docutils literal notranslate"><span class="pre">.net.xml</span></code> and exports a separate
+OpenDrive <code class="docutils literal notranslate"><span class="pre">.xodr</span></code>. It does not convert OpenDrive back over the source network.
+SUMO simulation preparation copies the source network into its output folder.
+New matchup tables keep exact source road IDs, including leading <code class="docutils literal notranslate"><span class="pre">-</span></code> and
+underscores. Legacy tables that omitted <code class="docutils literal notranslate"><span class="pre">-</span></code> use a fallback only when the exact
+ID is absent from the network.</p>
+<p>For explicit conversions into separate output files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">realtwin.rt_sumo.xodr_sumo</span><span class="w"> </span><span class="kn">import</span> <span class="n">xodr_from_net_xml</span><span class="p">,</span> <span class="n">xodr_to_net_xml</span>
+
+<span class="n">odr_map</span> <span class="o">=</span> <span class="n">xodr_from_net_xml</span><span class="p">(</span><span class="s2">&quot;source.net.xml&quot;</span><span class="p">,</span> <span class="s2">&quot;export.xodr&quot;</span><span class="p">)</span>
+<span class="n">sumo_net</span> <span class="o">=</span> <span class="n">xodr_to_net_xml</span><span class="p">(</span><span class="s2">&quot;export.xodr&quot;</span><span class="p">,</span> <span class="s2">&quot;converted.net.xml&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The exporter restores source road and junction IDs using netconvert metadata.
+Original SUMO lane IDs and signal programs are saved in OpenDrive <code class="docutils literal notranslate"><span class="pre">userData</span></code>;
+OpenDrive lane IDs remain local integers. The reverse helper restores identities
+where roads and lanes correspond one to one, and restores signal programs and
+controlled connection indices. Native conversion may change geometry and internal
+connections; split roads keep generated segment IDs. Missing saved signal
+connections cause a conversion error. OpenDrive files without this metadata keep
+native generated SUMO IDs with their OpenDrive origins recorded as parameters.
+The helpers require <code class="docutils literal notranslate"><span class="pre">netconvert</span></code> on <code class="docutils literal notranslate"><span class="pre">PATH</span></code> or an explicit executable path,
+and importable <code class="docutils literal notranslate"><span class="pre">sumolib</span></code>.</p>
+</section>
+<section id="aimsun-preparation">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Aimsun preparation</a><a class="headerlink" href="#aimsun-preparation" title="Link to this heading"></a></h2>
+<p>Before running Aimsun, replace the machine-specific <code class="docutils literal notranslate"><span class="pre">AIMSUN.model_fname</span></code>,
+<code class="docutils literal notranslate"><span class="pre">model_xdor</span></code>, <code class="docutils literal notranslate"><span class="pre">site_packages</span></code>, and <code class="docutils literal notranslate"><span class="pre">aimsun_exe_path</span></code> settings in the YAML.
+Use a copy of the model because preparation saves changes to it. The Aimsun
+runtime’s Python packages must match its Python version; <code class="docutils literal notranslate"><span class="pre">sel_dir</span></code> alone does
+not replace the configured console path.</p>
+<p>The checked-in <code class="docutils literal notranslate"><span class="pre">tutorials/tutorial_realtwin_Aimsun.py</span></code> currently checks the
+environment and calibrates an already prepared model. Its generation and
+simulation-preparation calls are commented out. For a new model, enable those
+calls or run:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+
+<span class="n">twin</span> <span class="o">=</span> <span class="n">rt</span><span class="o">.</span><span class="n">RealTwinAimsun</span><span class="p">(</span>
+    <span class="n">input_config_file</span><span class="o">=</span><span class="s2">&quot;./tutorials/realtwin_config.yaml&quot;</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">env_setup</span><span class="p">(</span><span class="n">sel_sim</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;AIMSUN&quot;</span><span class="p">])</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">generate_inputs</span><span class="p">()</span>
+<span class="c1"># Complete MatchupTable.xlsx beside the model at the preparation prompt.</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">generate_abstract_scenario</span><span class="p">()</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">generate_concrete_scenario</span><span class="p">()</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">prepare_simulation</span><span class="p">()</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">calibrate</span><span class="p">(</span>
+    <span class="n">sel_algo</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;BO&quot;</span><span class="p">,</span> <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;BO&quot;</span><span class="p">},</span>
+    <span class="n">sel_behavior_routes</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;Subpath1&quot;</span><span class="p">,</span> <span class="mi">2071</span><span class="p">,</span> <span class="mi">2092</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">)],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Replace the section IDs and the 60-second example target with field
+observations. Calibration requires a prepared model with a replication and
+SQLite output; <code class="docutils literal notranslate"><span class="pre">prepare_simulation()</span></code> creates the scenario, experiment, and
+replication and configures that output. A behavior-only run uses demand already
+in the model.</p>
+<p>Set <code class="docutils literal notranslate"><span class="pre">AIMSUN.is_control_data:</span> <span class="pre">false</span></code> in the YAML configuration to skip
+external control loading. Aimsun reads <code class="docutils literal notranslate"><span class="pre">Control</span></code> and <code class="docutils literal notranslate"><span class="pre">Traffic</span></code> beside
+<code class="docutils literal notranslate"><span class="pre">AIMSUN.model_fname</span></code>. Input, abstract and concrete generation also set the
+flag to false when that Control folder is missing or has no signal CSV files.
+The flag defaults to true when omitted and data is available.</p>
+<p>Disabled control skips Synchro reads, signal detector generation, signal import
+and RealTwin control-plan creation. Demand generation continues, and simulation
+preparation creates a scenario without requiring or assigning the RealTwin
+master control plan. Existing model control objects remain unchanged;
+calibration uses the same <code class="docutils literal notranslate"><span class="pre">.ang</span></code> model. Traffic data and the matchup table
+remain required. After adding signal CSVs, set
+<code class="docutils literal notranslate"><span class="pre">twin.input_config[&quot;AIMSUN&quot;][&quot;is_control_data&quot;]</span> <span class="pre">=</span> <span class="pre">True</span></code> and regenerate the
+abstract and concrete scenarios.</p>
+</section>
+<section id="calibration-algorithms-and-independent-stages">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Calibration algorithms and independent stages</a><a class="headerlink" href="#calibration-algorithms-and-independent-stages" title="Link to this heading"></a></h2>
+<p>All three scenario classes support GA (default), SA, TS, and BO and accept
+<code class="docutils literal notranslate"><span class="pre">sel_algo={&quot;turn_inflow&quot;:</span> <span class="pre">&quot;BO&quot;,</span> <span class="pre">&quot;behavior&quot;:</span> <span class="pre">&quot;BO&quot;}</span></code> at the calibration step.
+Install the optional dependencies with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">&quot;.[bo]&quot;</span></code>
+from the checkout, in the Python environment used by the tutorial. SUMO and
+<code class="docutils literal notranslate"><span class="pre">jtrrouter</span></code> must be on <code class="docutils literal notranslate"><span class="pre">PATH</span></code> and <code class="docutils literal notranslate"><span class="pre">SUMO_HOME</span></code> must be configured.</p>
+<p>The packaged and tutorial YAML files include <code class="docutils literal notranslate"><span class="pre">Calibration.bo_config</span></code>.
+Settings are <code class="docutils literal notranslate"><span class="pre">kernel_type</span></code> (default <code class="docutils literal notranslate"><span class="pre">RBF</span></code>), <code class="docutils literal notranslate"><span class="pre">target</span></code> (0), <code class="docutils literal notranslate"><span class="pre">tolerance</span></code> (3),
+<code class="docutils literal notranslate"><span class="pre">random_points</span></code> (4000), <code class="docutils literal notranslate"><span class="pre">max_evaluations</span></code> (100), <code class="docutils literal notranslate"><span class="pre">total_run</span></code> (1), and
+<code class="docutils literal notranslate"><span class="pre">seed</span></code> (812). Supported kernels are RBF, Matern, RationalQuadratic,
+ExpSineSquared, and Combined. ExpSineSquared uses a fixed period equal to each
+parameter’s bound span. The candidate pool must contain at least
+<code class="docutils literal notranslate"><span class="pre">max_evaluations</span></code> points. Per-stage overrides such as
+<code class="docutils literal notranslate"><span class="pre">update_behavior_algo={&quot;bo_config&quot;:</span> <span class="pre">{&quot;max_evaluations&quot;:</span> <span class="pre">30}}</span></code> merge with
+the shared settings.</p>
+<p>The evaluation budget includes initial samples. BO stops when the best fitness
+is at most <code class="docutils literal notranslate"><span class="pre">target</span> <span class="pre">+</span> <span class="pre">tolerance</span></code>: mean GEH for turn/inflow, and travel-time
+RMSE in seconds for SUMO behavior, or MAE in seconds for Aimsun behavior. Each run uses a distinct reproducible seed.
+Each stage applies the best candidate in one additional simulation outside
+the search budget, then exports fitness/parameter/best-per-run CSVs and
+convergence PNGs to <code class="docutils literal notranslate"><span class="pre">turn_inflow_bo_result</span></code> or <code class="docutils literal notranslate"><span class="pre">behavior_bo_result</span></code> under
+that stage’s SUMO directory, or beside the Aimsun model with CSV filenames
+prefixed by <code class="docutils literal notranslate"><span class="pre">aimsun_bayesopt</span></code>. GA remains the default.</p>
+<p>Enable <code class="docutils literal notranslate"><span class="pre">Calibration.turn_inflow.is_calibration</span></code> and
+<code class="docutils literal notranslate"><span class="pre">Calibration.behavior.is_calibration</span></code> independently. The packaged starter
+disables both; the repository tutorial enables behavior only. Disabled stages
+can be omitted from <code class="docutils literal notranslate"><span class="pre">sel_algo</span></code>. Algorithm selection does not enable a stage,
+and both flags false make <code class="docutils literal notranslate"><span class="pre">calibrate()</span></code> return <code class="docutils literal notranslate"><span class="pre">False</span></code> without optimizing.
+SUMO behavior-only calibration can
+use a prepared scenario without prior turn/inflow calibration. Aimsun uses
+demand already in its model. Aimsun behavior routes are tuples of
+<code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">start_section_id,</span> <span class="pre">end_section_id,</span> <span class="pre">observed_seconds)</span></code>; they
+are required only when behavior is enabled and can be passed to calibrate()
+or stored under <code class="docutils literal notranslate"><span class="pre">Calibration.behavior.sel_behavior_routes</span></code>.</p>
+<p>For a prepared Vissim instance with behavior enabled and routes configured in
+the tutorial YAML, reduce the BO search budget with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">twin</span><span class="o">.</span><span class="n">calibrate</span><span class="p">(</span>
+    <span class="n">sel_algo</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;BO&quot;</span><span class="p">},</span>
+    <span class="n">update_behavior_algo</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;bo_config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;max_evaluations&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">}},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>SUMO and Aimsun accept the same override. Retain their
+<code class="docutils literal notranslate"><span class="pre">sel_behavior_routes</span></code> argument when supplying observed routes in Python.</p>
+<p>Aimsun BO CSV parameters are normalized to [0, 1]. The objectives map
+these values to turning percentages, inflows, or physical behavior ranges.
+Both enabled stages receive a final application of their best candidate;
+an enabled stage without its required inputs reports a failure.</p>
+</section>
+<section id="vissim-preparation">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Vissim preparation</a><a class="headerlink" href="#vissim-preparation" title="Link to this heading"></a></h2>
+<p>Install <code class="docutils literal notranslate"><span class="pre">pywin32</span></code> in the environment running Real-Twin, make SUMO’s
+<code class="docutils literal notranslate"><span class="pre">netconvert</span></code> available, and verify your Vissim COM license. Run
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">tutorials/tutorial_realtwin_Vissim.py</span></code> from the repository root, or
+follow the stages interactively:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+
+<span class="n">twin</span> <span class="o">=</span> <span class="n">rt</span><span class="o">.</span><span class="n">RealTwinVISSIM</span><span class="p">(</span>
+    <span class="n">input_config_file</span><span class="o">=</span><span class="s2">&quot;./tutorials/realtwin_config.yaml&quot;</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">env_setup</span><span class="p">(</span><span class="n">sel_sim</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;VISSIM&quot;</span><span class="p">])</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">generate_inputs</span><span class="p">(</span><span class="n">incl_sumo_net</span><span class="o">=</span><span class="s2">&quot;./datasets/example2/updated.net.xml&quot;</span><span class="p">)</span>
+<span class="c1"># Complete &lt;output_dir&gt;/VISSIM/MatchupTable.xlsx at the prompt.</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">generate_abstract_scenario</span><span class="p">()</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">generate_concrete_scenario</span><span class="p">()</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">prepare_simulation</span><span class="p">()</span>
+<span class="n">twin</span><span class="o">.</span><span class="n">calibrate</span><span class="p">(</span><span class="n">sel_algo</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;turn_inflow&quot;</span><span class="p">:</span> <span class="s2">&quot;BO&quot;</span><span class="p">,</span> <span class="s2">&quot;behavior&quot;</span><span class="p">:</span> <span class="s2">&quot;BO&quot;</span><span class="p">})</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">RealTwinVISSIM.generate_inputs(incl_sumo_net=...)</span></code> imports the supplied
+SUMO network before exporting its native Vissim movement and link tables.
+All preparation stages read <code class="docutils literal notranslate"><span class="pre">Traffic</span></code> and <code class="docutils literal notranslate"><span class="pre">Control</span></code> under the configured
+<code class="docutils literal notranslate"><span class="pre">input_dir</span></code>. Edit the generated <code class="docutils literal notranslate"><span class="pre">&lt;output_dir&gt;/VISSIM/MatchupTable.xlsx</span></code>;
+keep its native link numbers and internal paths. A SUMO workbook cannot replace
+this table, even if its column headings are renamed.</p>
+<p>For this non-demo workflow, <code class="docutils literal notranslate"><span class="pre">incl_sumo_net</span></code> takes precedence over
+<code class="docutils literal notranslate"><span class="pre">VISSIM.sumo_xml_file</span></code>. If the argument is omitted, set that configuration
+path to a valid SUMO network; its checked-in value is machine-specific. The
+import exports native link, movement, and junction CSVs alongside the Vissim
+network. Preserve <code class="docutils literal notranslate"><span class="pre">FromLinkNo_Vissim</span></code>, <code class="docutils literal notranslate"><span class="pre">ToLinkNo_Vissim</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">InternalLinks_Vissim</span></code> in the workbook and enter <code class="docutils literal notranslate"><span class="pre">File_GridSmart</span></code> for each
+surveyed junction, plus <code class="docutils literal notranslate"><span class="pre">File_Synchro</span></code> and <code class="docutils literal notranslate"><span class="pre">IntersectionID_Synchro</span></code> when
+control is enabled.</p>
+<p>Control data is optional. Set <code class="docutils literal notranslate"><span class="pre">VISSIM.is_control_data:</span> <span class="pre">false</span></code> in the YAML
+configuration to skip Synchro reads and external signal loading. Input,
+abstract and concrete generation also set this flag to false when
+<code class="docutils literal notranslate"><span class="pre">&lt;input_dir&gt;/Control</span></code> is missing or contains no signal CSV files. Demand
+generation continues; simulation and calibration use
+<code class="docutils literal notranslate"><span class="pre">&lt;NetworkName&gt;_demand.inpx</span></code> instead of <code class="docutils literal notranslate"><span class="pre">&lt;NetworkName&gt;_demand_signals.inpx</span></code>.
+Signals already present in the source network are retained. When control data
+is available, omitting the flag keeps loading enabled. After adding signal
+CSVs, set <code class="docutils literal notranslate"><span class="pre">twin.input_config[&quot;VISSIM&quot;][&quot;is_control_data&quot;]</span> <span class="pre">=</span> <span class="pre">True</span></code> and regenerate
+the abstract and concrete scenarios. Standalone stage 2 accepts <code class="docutils literal notranslate"><span class="pre">--no-control</span></code>
+to skip deriving signal columns while retaining existing workbook references.</p>
+<p>To reuse observations from a SUMO workbook, run stage 2 with <code class="docutils literal notranslate"><span class="pre">--seed-from</span></code>;
+its <code class="docutils literal notranslate"><span class="pre">&lt;network&gt;_junctions.csv</span></code> translates SUMO junction IDs into the imported
+OpenDrive IDs. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">realtwin</span><span class="o">.</span><span class="n">rt_vissim</span><span class="mf">.02</span><span class="n">_matchup_table</span> <span class="o">--</span><span class="n">movements</span> <span class="o">&lt;</span><span class="n">output_dir</span><span class="o">&gt;/</span><span class="n">VISSIM</span><span class="o">/&lt;</span><span class="n">network</span><span class="o">&gt;</span><span class="n">_movements</span><span class="o">.</span><span class="n">csv</span> <span class="o">--</span><span class="n">outdir</span> <span class="o">&lt;</span><span class="n">output_dir</span><span class="o">&gt;/</span><span class="n">VISSIM</span> <span class="o">--</span><span class="n">traffic</span><span class="o">-</span><span class="nb">dir</span> <span class="o">&lt;</span><span class="n">input_dir</span><span class="o">&gt;/</span><span class="n">Traffic</span> <span class="o">--</span><span class="n">control</span><span class="o">-</span><span class="nb">dir</span> <span class="o">&lt;</span><span class="n">input_dir</span><span class="o">&gt;/</span><span class="n">Control</span> <span class="o">--</span><span class="n">seed</span><span class="o">-</span><span class="kn">from</span><span class="w"> </span><span class="o">&lt;</span><span class="n">SUMO_MatchupTable</span><span class="o">.</span><span class="n">xlsx</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>An existing table with missing link numbers or movement IDs from another
+network is rejected before its cells are updated. Back it up before adding
+<code class="docutils literal notranslate"><span class="pre">--regenerate</span></code> to rebuild from the current movement table, then seed or enter
+its observations again. <code class="docutils literal notranslate"><span class="pre">generate_inputs()</span></code> stops on import or table errors
+so subsequent stages cannot silently reuse an invalid network/table pair.</p>
+<p>Concrete generation creates <code class="docutils literal notranslate"><span class="pre">&lt;NetworkName&gt;_demand.inpx</span></code> and, when external
+control is enabled, <code class="docutils literal notranslate"><span class="pre">&lt;NetworkName&gt;_demand_signals.inpx</span></code>. <code class="docutils literal notranslate"><span class="pre">prepare_simulation()</span></code>
+runs the appropriate network for 900 seconds. This short run is separate from
+the configured calibration window. Standalone stages use
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">realtwin.rt_vissim.&lt;stage&gt;</span></code> so package imports resolve correctly.</p>
+</section>
+<section id="vissim-calibration">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Vissim calibration</a><a class="headerlink" href="#vissim-calibration" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">RealTwinVISSIM.calibrate()</span></code> supports GA (default), SA, TS and BO for unmeasured inflows
+and turn splits at junctions marked <code class="docutils literal notranslate"><span class="pre">Need</span> <span class="pre">calibration?</span> <span class="pre">=</span> <span class="pre">Y</span></code> in the Vissim
+matchup table. Prepare the demand/signals network and observed GridSmart data
+first. Enable <code class="docutils literal notranslate"><span class="pre">Calibration.turn_inflow.is_calibration</span></code> for this stage.
+<code class="docutils literal notranslate"><span class="pre">Calibration.behavior.is_calibration</span></code> independently enables native driving
+behavior calibration against observed route travel times in seconds. When both
+are enabled, behavior uses the demand stage’s saved network; when the demand
+stage has no variables, it explicitly passes its input network forward.</p>
+<p><code class="docutils literal notranslate"><span class="pre">realtwin.rt_vissim.calibrate_vissim.cali_vissim</span></code> imports separate adapters
+from <code class="docutils literal notranslate"><span class="pre">cali_turn_inflow</span></code> and <code class="docutils literal notranslate"><span class="pre">cali_behavior</span></code> and dispatches their
+run_GA/run_SA/run_TS/run_BO methods through the shared
+<code class="docutils literal notranslate"><span class="pre">run_calibration_algorithm</span></code> function, following the Aimsun package pattern.
+BO reuses the existing BayesianOptimization and shared bo_config on normalized
+parameter bounds. Select <code class="docutils literal notranslate"><span class="pre">sel_algo={&quot;turn_inflow&quot;:</span> <span class="pre">&quot;BO&quot;}</span></code> and update bo_config
+through <code class="docutils literal notranslate"><span class="pre">update_turn_inflow_algo</span></code>. Its results use the <code class="docutils literal notranslate"><span class="pre">vissim_bayesopt</span></code>
+CSV prefix, with convergence plots in <code class="docutils literal notranslate"><span class="pre">&lt;calibrated_stem&gt;_bo_result</span></code>.</p>
+<p>Per-call <code class="docutils literal notranslate"><span class="pre">update_turn_inflow_algo</span></code> and <code class="docutils literal notranslate"><span class="pre">update_behavior_algo</span></code> merge algorithm,
+<code class="docutils literal notranslate"><span class="pre">scenario_config</span></code> and stage-specific blocks into independent effective configurations.
+The subprocess receives these live settings, the selected algorithm, the
+output network/tables and the input Traffic directory. The shared Calibration
+mapping remains reusable. Simulation start/end are seconds after midnight;
+<code class="docutils literal notranslate"><span class="pre">calibration_time_step</span></code> is seconds per step and must correspond to 1-20
+Vissim steps per second. GEH and GEHPercent control the reported target.
+Observed count intervals must cover the whole demand window without gaps;
+partial observations cannot be compared with a longer full simulation.</p>
+<p>Optional turn_inflow settings include <code class="docutils literal notranslate"><span class="pre">objective</span></code> (approach or movement),
+<code class="docutils literal notranslate"><span class="pre">budget</span></code>, <code class="docutils literal notranslate"><span class="pre">seed</span></code> (Vissim), <code class="docutils literal notranslate"><span class="pre">optimizer_seed</span></code> and <code class="docutils literal notranslate"><span class="pre">out</span></code> (a separate
+calibrated model). Every candidate resets the simulation with the fixed seed.
+The best model, history/approach CSVs, summary JSON and charts are written
+beside the prepared model by default; the source is preserved. A failed
+subprocess raises an exception. A successful or no-variable run returns True.
+GA/SA/TS honor stage <code class="docutils literal notranslate"><span class="pre">max_epoch</span></code>, <code class="docutils literal notranslate"><span class="pre">max_fe</span></code>, <code class="docutils literal notranslate"><span class="pre">max_time</span></code> (seconds) and
+<code class="docutils literal notranslate"><span class="pre">max_early_stop</span></code>, with scenario_config as fallback and the algorithm’s epoch
+as a cap. BO retains the shared bo_config evaluation and target stop settings.</p>
+<p>Behavior requires explicit native <code class="docutils literal notranslate"><span class="pre">Calibration.behavior.params_ranges</span></code> and
+<code class="docutils literal notranslate"><span class="pre">driving_behavior_ids</span></code>. Supported continuous attributes are <code class="docutils literal notranslate"><span class="pre">W74ax</span></code>,
+<code class="docutils literal notranslate"><span class="pre">W74bxAdd</span></code>, <code class="docutils literal notranslate"><span class="pre">W74bxMult</span></code>, <code class="docutils literal notranslate"><span class="pre">W99cc0</span></code> and <code class="docutils literal notranslate"><span class="pre">W99cc2</span></code> through <code class="docutils literal notranslate"><span class="pre">W99cc9</span></code>.
+Selected driving behaviors must use the corresponding Wiedemann model;
+<code class="docutils literal notranslate"><span class="pre">W99cc1Distr</span></code> is a distribution reference and is not optimized as a number.
+Replace the shared SUMO parameter names when configuring Vissim behavior.
+For shared configurations, put native settings under
+<code class="docutils literal notranslate"><span class="pre">Calibration.behavior.vissim</span></code>; these replace the corresponding shared
+behavior values for Vissim, including the entire parameter-range mapping.
+Per-call <code class="docutils literal notranslate"><span class="pre">update_behavior_algo</span></code> settings take precedence over that block.
+The shared configuration remains unchanged. Enabled behavior inputs are
+validated before either stage starts; missing settings raise a descriptive
+<code class="docutils literal notranslate"><span class="pre">ValueError</span></code> in the caller instead of a subprocess traceback.
+Stage <code class="docutils literal notranslate"><span class="pre">calibration_time_step</span></code> values override the shared scenario step. The
+tutorial uses 0.1 seconds to match its signal controller’s 10 updates per second.
+For example, use <code class="docutils literal notranslate"><span class="pre">params_ranges={&quot;W74ax&quot;:</span> <span class="pre">[1.0,</span> <span class="pre">3.0]}</span></code> and
+<code class="docutils literal notranslate"><span class="pre">driving_behavior_ids=[1]</span></code> for a model using Wiedemann 74 behavior 1.</p>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">sel_behavior_routes=[[&quot;corridor&quot;,</span> <span class="pre">start_link,</span> <span class="pre">end_link,</span> <span class="pre">observed_seconds]]</span></code>
+to calibrate, or set <code class="docutils literal notranslate"><span class="pre">Calibration.behavior.sel_behavior_routes</span></code> or
+<code class="docutils literal notranslate"><span class="pre">Calibration.behavior.vissim.sel_behavior_routes</span></code>. The method
+argument takes precedence. Measurements span position zero on the start link
+to the end of the end link and aggregate completed vehicles across all classes.
+Override these markers with <code class="docutils literal notranslate"><span class="pre">behavior.route_positions</span></code>, for example
+<code class="docutils literal notranslate"><span class="pre">{&quot;corridor&quot;:</span> <span class="pre">{&quot;start&quot;:</span> <span class="pre">0.0,</span> <span class="pre">&quot;end&quot;:</span> <span class="pre">0.5}}</span></code> in metres along the respective links.
+Match the field measurement locations and choose markers vehicles cross;
+connectors can divert vehicles before they reach the full link length. Actual
+marker positions are recorded in the summary.
+An optional <code class="docutils literal notranslate"><span class="pre">reference_source</span></code> mapping is also recorded, to distinguish
+simulated tutorial references from field observations.
+The Vissim tutorial uses westbound links 9 to 15, with markers at 0.0 and 0.5
+metres. Its 39.198670-second reference is the simulated mean of 162 completed
+vehicles during 08:00-09:00 with seed 42. The checksummed reference record is
+saved in the generated VISSIM <code class="docutils literal notranslate"><span class="pre">behavior_reference</span></code> folder. This demonstrates
+calibration execution; replace the target and <code class="docutils literal notranslate"><span class="pre">reference_source</span></code> metadata
+with field observations for real calibration.
+The objective is route travel-time MAE in seconds. Missing measurements receive
+<code class="docutils literal notranslate"><span class="pre">missing_route_penalty</span> <span class="pre">+</span> <span class="pre">observed_seconds</span></code> (default penalty: 10,000 seconds).
+A best candidate with missing routes raises an error before saving the model.
+Behavior writes a separate <code class="docutils literal notranslate"><span class="pre">&lt;source_stem&gt;_behavior_&lt;algo&gt;.inpx</span></code>, history/routes
+CSVs and summary JSON, plus BO exports when selected. Its <code class="docutils literal notranslate"><span class="pre">seed</span></code>,
+<code class="docutils literal notranslate"><span class="pre">optimizer_seed</span></code>, <code class="docutils literal notranslate"><span class="pre">budget</span></code> and <code class="docutils literal notranslate"><span class="pre">out</span></code> settings follow the demand stage’s
+format and can be overridden independently.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">realtwin.rt_vissim.06_calibrate_turn_inflow</span> <span class="pre">--help</span></code> for the
+standalone stage. Explicit network, matchup, link, movement and Traffic paths
+replace project-specific defaults. <code class="docutils literal notranslate"><span class="pre">--config</span></code> reads YAML or JSON settings;
+<code class="docutils literal notranslate"><span class="pre">--dry-run</span></code> validates settings and lists variables without starting Vissim.
+Use <code class="docutils literal notranslate"><span class="pre">--stage</span> <span class="pre">behavior</span> <span class="pre">--inpx</span> <span class="pre">&lt;model&gt;</span> <span class="pre">--config</span> <span class="pre">&lt;config&gt;</span></code> for behavior calibration;
+it does not require Traffic or matchup tables.
+Real calibration requires Windows, pywin32 and a Vissim COM licence.</p>
+</section>
 </section>
 
 
@@ -163,7 +478,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

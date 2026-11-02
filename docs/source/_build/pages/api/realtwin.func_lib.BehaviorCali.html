@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c7632d00"></script>
+      <script src="../../_static/documentation_options.js?v=92734c54"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../realtwin_simulator.html">Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../realtwin_simulator.html">Supported Simulators</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../realtwin_prepare.html">Preparation</a></li>
@@ -68,6 +68,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../api.html#realtwin-api">RealTwin API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#autonomous-vehicle-api">Autonomous Vehicle API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#sumo-and-opendrive-conversion">SUMO and OpenDRIVE Conversion</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#utility-functions">Utility Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#installation-and-environment">Installation and Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api.html#load-inputs">Load Inputs</a></li>
@@ -85,6 +87,7 @@
 <li class="toctree-l3"><a class="reference internal" href="realtwin.func_lib.TurnInflowCali.html">realtwin.func_lib.TurnInflowCali</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#native-vissim-calibration-adapters">Native Vissim Calibration Adapters</a></li>
 </ul>
 </li>
 </ul>
@@ -125,6 +128,8 @@
 <div></div></blockquote>
 <section id="realtwin-func-lib-behaviorcali">
 <h1>realtwin.func_lib.BehaviorCali<a class="headerlink" href="#realtwin-func-lib-behaviorcali" title="Link to this heading"></a></h1>
+<p>Calibration supports genetic algorithm (GA), simulated annealing (SA), tabu
+search (TS), and Bayesian optimization (BO).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="realtwin.func_lib.BehaviorCali">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">realtwin.func_lib.</span></span><span class="sig-name descname"><span class="pre">BehaviorCali</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scenario_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">behavior_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/realtwin/func_lib/_f_calibration/algo_sumo/cali_behavior.html#BehaviorCali"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#realtwin.func_lib.BehaviorCali" title="Link to this definition"></a></dt>
@@ -153,7 +158,7 @@
 termination_dict: <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination">https://mealpy.readthedocs.io/en/latest/pages/general/advance_guide.html#stopping-condition-termination</a></p>
 </div>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="kn">import</span> <span class="n">BehaviorOpt</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">realtwin</span><span class="w"> </span><span class="kn">import</span> <span class="n">BehaviorCali</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">prob_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;obj_func&quot;</span><span class="p">:</span> <span class="n">partial</span><span class="p">(</span><span class="n">fitness_func</span><span class="p">,</span> <span class="n">scenario_config</span><span class="o">=</span><span class="n">scenario_config</span><span class="p">,</span> <span class="n">error_func</span><span class="o">=</span><span class="s2">&quot;rmse&quot;</span><span class="p">),</span>
 <span class="go">                &quot;bounds&quot;: FloatVar(lb=[1.0, 2.5, 4, 0.0, 0.25, 5.0], ub=[3.0, 3.0, 5.3, 1.0, 1.25, 9.3],),</span>
 <span class="go">                &quot;minmax&quot;: &quot;max&quot;,  # maximize or minimize</span>
@@ -161,7 +166,7 @@ termination_dict: <a class="reference external" href="https://mealpy.readthedocs
 <span class="go">                &quot;save_population&quot;: True}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">init_solution</span> <span class="o">=</span> <span class="p">[</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">2.6</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">9.0</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">term_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;max_epoch&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">&quot;max_fe&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span> <span class="s2">&quot;max_time&quot;</span><span class="p">:</span> <span class="mi">3600</span><span class="p">,</span> <span class="s2">&quot;max_early_stop&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">BehaviorOpt</span><span class="p">(</span><span class="n">problem_dict</span><span class="o">=</span><span class="n">prob_dict</span><span class="p">,</span> <span class="n">init_solution</span><span class="o">=</span><span class="n">init_solution</span><span class="p">,</span> <span class="n">term_dict</span><span class="o">=</span><span class="n">term_dict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">BehaviorCali</span><span class="p">(</span><span class="n">problem_dict</span><span class="o">=</span><span class="n">prob_dict</span><span class="p">,</span> <span class="n">init_solution</span><span class="o">=</span><span class="n">init_solution</span><span class="p">,</span> <span class="n">term_dict</span><span class="o">=</span><span class="n">term_dict</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g_best</span><span class="p">,</span> <span class="n">model_opt</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">run_GA</span><span class="p">(</span><span class="n">epoch</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">pop_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">pc</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">pm</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">sel_model</span><span class="o">=</span><span class="s2">&quot;BaseGA&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -180,17 +185,20 @@ termination_dict: <a class="reference external" href="https://mealpy.readthedocs
 <tr class="row-odd"><td><p><a class="reference internal" href="#realtwin.func_lib.BehaviorCali.__init__" title="realtwin.func_lib.BehaviorCali.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([scenario_config, behavior_config, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_GA</span></code>(**kwargs)</p></td>
-<td><p>Run Genetic Algorithm (GA) for behavior optimization.</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_BO</span></code>()</p></td>
+<td><p>Optimize with BO, then restore simulation files using the best solution.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_SA</span></code>(**kwargs)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_GA</span></code>(**kwargs)</p></td>
+<td><p>Run GA and apply the best solution to this simulator's inputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_SA</span></code>(**kwargs)</p></td>
 <td><p>Run Simulated Annealing (SA) for behavior optimization.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_TS</span></code>(**kwargs)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_TS</span></code>(**kwargs)</p></td>
 <td><p>Run Tabu Search (TS) for behavior optimization.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_vis</span></code>(output_dir, model)</p></td>
-<td><p>Save the results of the optimization.</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_vis</span></code>(output_dir, model)</p></td>
+<td><p>Export BO results or the Mealpy global-objectives chart.</p></td>
 </tr>
 </tbody>
 </table>
@@ -209,7 +217,7 @@ termination_dict: <a class="reference external" href="https://mealpy.readthedocs
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

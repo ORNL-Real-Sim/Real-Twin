@@ -1,0 +1,8 @@
+realtwin.rt_vissim.cali_turn_inflow.TurnInflowCaliVissim
+========================================================
+
+Calibration supports genetic algorithm (GA), simulated annealing (SA), tabu
+search (TS), and Bayesian optimization (BO).
+
+.. autoclass:: realtwin.rt_vissim.cali_turn_inflow.TurnInflowCaliVissim
+   :members:

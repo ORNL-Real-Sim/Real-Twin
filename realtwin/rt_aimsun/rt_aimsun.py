@@ -1,0 +1,545 @@
+##############################################################################
+# Copyright (c) 2024-, Oak Ridge National Laboratory                          #
+# All rights reserved.                                                       #
+#                                                                            #
+# This file is part of RealTwin and is distributed under a GPL               #
+# license. For the licensing terms see the LICENSE file in the top-level     #
+# directory.                                                                 #
+#                                                                            #
+# Contributors: ORNL Real-Twin Team                                          #
+# Contact: realtwin@ornl.gov                                                 #
+##############################################################################
+
+import re
+import subprocess
+import os
+from pathlib import Path
+import time
+import pyufunc as pf
+from rich.console import Console
+from rich import json
+# environment setup
+from realtwin.util_lib.create_venv import venv_create, venv_delete
+from realtwin.util_lib.find_executable_path import find_executable_on_win
+from realtwin.func_lib._a_install_simulator.inst_aimsun import install_aimsun
+
+# input data loading
+from realtwin.func_lib._b_load_inputs.loader_config import load_input_configs
+
+from realtwin.func_lib._f_calibration._calibration_workflow import (
+    apply_calibration_overrides,
+    select_calibration_algorithms,
+)
+from realtwin.rt_aimsun.calibrate_aimsun import cali_aimsun
+
+# scenario generation
+# simulation
+# calibration
+
+console = Console()
+# info: dim cyan, warning: magenta, danger: bold red
+
+
+class RealTwinInputConfigError(Exception):
+    """Raised when a required RealTwin input configuration file is missing."""
+
+
+class RealTwinAimsun:
+    """The RealTwin Aimsun integration developed by ORNL Applied Research and Mobility System (ARMS) group that
+    enables the simulation of twin-structured cities.
+    """
+    def __init__(self, input_config_file: str = "", **kwargs):
+        """Initialize the Aimsun Object
+
+        Args:
+            input_config_file (str): The directory containing the input files.
+            kwargs: Additional keyword arguments. Will be used in the future.
+
+        Raises:
+            RealTwinInputConfigError: Raised when no input configuration file is supplied.
+        """
+
+        # initialize the input directory
+        if not input_config_file:
+            raise RealTwinInputConfigError(
+                "\n  :Input configuration file is not provided."
+                "\n  :RealTwin requires a configuration file to be provided.")
+
+        self.input_config = load_input_configs(input_config_file)
+        if self.input_config.get("AIMSUN") is None:
+            self.input_config["AIMSUN"] = {}
+        self.input_config["AIMSUN"].setdefault("is_control_data", True)
+
+        # add venv_create and delete as object methods
+        self.venv_create = venv_create
+        self.venv_delete = venv_delete
+        self._venv_name = "venv_rt"
+        self._proj_dir = os.getcwd()  # get current working directory
+
+        # extract data from kwargs
+        self.verbose = kwargs.get("verbose", False)
+
+        # whether to stop the program to let user confirm input
+        self._input_confirm = kwargs.get("input_confirm", True)
+
+        # check and print out the Aimsun version and Aimsun's python version
+
+        self.aimsun_file= {
+            "step0.0": pf.path2linux(Path(__file__).parent / "Step0_aimsum_py_version.py"),
+            "step0.1": pf.path2linux(Path(__file__).parent / "Step0_NetworkImport.py"),
+            "step1": pf.path2linux(Path(__file__).parent / "Step1_MatchupTableGeneration.py"),
+            "step2": pf.path2linux(Path(__file__).parent / "Step2_MatchupTableDataInput.py"),
+            "step3": pf.path2linux(Path(__file__).parent / "Step3_DemandImport.py"),
+            "step4.1": pf.path2linux(Path(__file__).parent / "Step4.1_DetectorGeneration.py"),
+            "step4.2": pf.path2linux(Path(__file__).parent / "Step4.2_SignalImport.py"),
+            "step4.3": pf.path2linux(Path(__file__).parent / "Step4.3_ControlPlanConfiguration.py"),
+            "step5.1": pf.path2linux(Path(__file__).parent / "Step5.1_ScenarioGeneration.py"),
+            "step5.2": pf.path2linux(Path(__file__).parent / "Step5.2_ScenarioOutputConfiguration.py"),
+            "step6.1": pf.path2linux(Path(__file__).parent / "Step6.1_CalibrationInfoExport.py"),
+            "step6.2": pf.path2linux(Path(__file__).parent / "Step6.2_DemandAssign.py"),
+            "step7.1": pf.path2linux(Path(__file__).parent / "Step7.1_SubpathGeneration.py"),
+            "step7.2": pf.path2linux(Path(__file__).parent / "Step7.2_DrivingBehaviorAssign.py"),
+        }
+        self.input_config["AIMSUN"]["aimsun_file"] = self.aimsun_file
+
+    def env_setup(self,
+                  *,
+                  sel_sim: list | None = None,
+                  sel_dir: list | None = None,
+                  **kwargs) -> str:
+        """Check and set up the environment for the simulation
+
+        Args:
+            sel_sim (list): select simulator to be set up. Default is None.
+                Currently available options are ["AIMSUN"].
+            sel_dir (list): A list of directories to search for the executables. Defaults to None.
+            kwargs: Additional keyword arguments.
+
+        Examples:
+            >>> import realtwin as rt
+            >>> twin = rt.RealTwinAimsun(input_config_file="config.yaml", verbose=True)
+
+            check simulator is installed or not, default to SUMO, optional: VISSIM, AIMSUN
+            >>> twin.env_setup(sel_sim=["AIMSUN"])
+
+            add additional directories to search for the executables
+            >>> additional_dir = [r"path-to-your-local-installed-aimsun-bin"]
+            >>> twin.env_setup(sel_sim=["AIMSUN"], sel_dir=additional_dir)
+
+        Returns:
+            str: The selected simulator installation status.
+        """
+
+        # 0. Check if the sim_env is selected,
+        #    default to AIMSUN, case insensitive and add self.sel_sim as a class attribute
+        sel_sim = [sim.lower() for sim in sel_sim] if sel_sim else ["aimsun"]
+
+        # 1. Check simulator installation - mapping function
+        simulator_installation = {
+            "sumo": None,
+            "vissim": None,
+            "aimsun": install_aimsun,
+        }
+
+        # 2. check if the simulator is installed, if not, install it
+        console.print("\n[bold green]Check / Install the selected simulators:")
+
+        kwargs['sel_dir'] = sel_dir
+        kwargs['verbose'] = self.verbose
+
+        invalid_sim = []
+        for simulator in sel_sim:
+            try:
+                sim_status = simulator_installation.get(simulator)(**kwargs)
+                if not sim_status:
+                    invalid_sim.append(simulator)
+            except Exception:
+                invalid_sim.append(simulator)
+                print(f"  :Could not install {simulator} on your operation system", end="")
+
+        sel_sim_ = list(set(sel_sim) - set(invalid_sim))
+
+        if not sel_sim_:
+            raise Exception("  :Error: No simulator is available. Please select available version(s).")
+        self.sel_sim = sel_sim_
+
+        # check Aimsun version installation
+        try:
+            print("  :Check Aimsun version installation:")
+            # path_to_aimsun = pf.path2linux(find_executable_on_win("aconsole.exe", sel_dir=sel_dir, verbose=False)[0])
+            path_to_aimsun = self.input_config["AIMSUN"]["aimsun_exe_path"]
+            # print(f"  :[bold green]Aimsun executable path: {path_to_aimsun}", end="")
+            model_path = self.input_config["AIMSUN"]["model_fname"]
+            cmd = [
+                rf"{path_to_aimsun}",
+                "-script",
+                rf"{self.aimsun_file.get('step0.0')}",
+                rf"{model_path}"
+            ]
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
+            out, _ = process.communicate()
+
+            # split the output by lines
+            version_flag = False
+            for line in out.splitlines():
+                if "Aimsun Python Version" in line and "Not Found" not in line:
+                    version_flag = True
+                    self.input_config["AIMSUN"]["python_version"] = line.split(":")[-1].strip()
+                    self.input_config["AIMSUN"]["exe_path"] = path_to_aimsun
+                    print(f"  :{line}")
+                    print(
+                        "  :Please ensure that your Python site-packages are compatible with the Aimsun Python version you are using.", end="")
+                    break
+            if not version_flag:
+                print("  :Could not check AIMSUN version, no dongle found or not installed properly.", end="")
+
+        except Exception as e:
+            print(f"  :Could not check Aimsun version: {e}, no dongle found", end="")
+            return f"  :Info: Selected simulators: {sel_sim_} are installed successfully."
+
+        return f"  :Info: Selected simulators: {sel_sim_} are installed successfully."
+
+    def _control_data_enabled(self) -> bool:
+        """Honor the control flag and check for signal CSVs beside the model."""
+        if self.input_config.get("AIMSUN") is None:
+            self.input_config["AIMSUN"] = {}
+        aimsun_config = self.input_config["AIMSUN"]
+        if not aimsun_config.setdefault("is_control_data", True):
+            return False
+
+        path_control = Path(aimsun_config["model_fname"]).parent / "Control"
+        if not path_control.is_dir() or not any(
+            path.is_file() and path.suffix.lower() == ".csv"
+            for path in path_control.iterdir()
+        ):
+            aimsun_config["is_control_data"] = False
+            console.print(
+                f"  [dim cyan]:No signal CSVs in {path_control}; "
+                "AIMSUN.is_control_data=False. External signal loading is skipped.")
+            return False
+        return True
+
+    def generate_inputs(self, **kwargs) -> str:
+        """Generate the required input files for the simulation.
+
+        Args:
+            kwargs: Additional keyword arguments.
+        """
+        is_control_data = self._control_data_enabled()
+        with console.status("[bold cyan]Generating inputs...", spinner="dots"):
+
+            # Load the input xodr file and import it into Aimsun
+            console.print("\n[bold green]Load the input network")
+
+            cmd = [
+                self.input_config["AIMSUN"]["exe_path"],
+                "-script",
+                self.aimsun_file.get('step0.1'),
+                self.input_config["AIMSUN"]["model_fname"],
+                json.dumps(self.input_config)
+            ]
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                text=True, encoding="utf-8", errors="replace")
+            out, _ = process.communicate()
+            if "Cannot load the network" in out:
+                raise Exception("  :Error: Cannot load the network. Please check the Aimsun model file path and ensure it is correct.")
+
+            # check demand and control data
+            # check if Control folder exists in the input directory
+            path_model = Path(self.input_config["AIMSUN"]["model_fname"]).parent
+            path_control = pf.path2linux(path_model / "Control")
+            if not os.path.exists(path_control):
+                os.makedirs(path_control)
+
+            if is_control_data:
+                console.print(f"  [dim cyan]:Control folder exists: {path_control}.[/dim cyan]\n"
+                              "  :NOTICE: [bold red]Please include Synchro UTDF file (signal) inside Control folder\n")
+
+            # check if Traffic folder exists in the input directory
+            path_traffic = pf.path2linux(path_model / "Traffic")
+            if not os.path.exists(path_traffic):
+                os.makedirs(path_traffic)
+
+            # check if the Traffic folder is empty
+            elif not os.listdir(path_traffic):
+                console.print(f"  [magenta]:Traffic folder is empty: {path_traffic}.")
+
+            console.print(f"  [dim cyan]:Traffic folder exists: {path_traffic}.[/dim cyan]\n"
+                            "  :NOTICE: [bold red]Please include turn movement file for each intersection "
+                            "inside Traffic folder and add the file names to the MatchupTable.xlsx "
+                            "(You will notice the generated MatchupTable.xlsx inside your input folder)."
+                            " For how to fill the MatchupTable.xlsx, please refer to official documentation\n",
+                            soft_wrap=True, no_wrap=False)
+
+            # generate the matchup table and save it to the input directory
+            console.print("\n[bold green]Generate the matchup table")
+            cmd = [
+                self.input_config["AIMSUN"]["exe_path"],
+                "-script",
+                self.aimsun_file.get('step1'),
+                self.input_config["AIMSUN"]["model_fname"],
+                # json.dumps(self.input_config)
+            ]
+
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                       text=True, encoding="utf-8", errors="replace")
+            out, _ = process.communicate()
+            for line in out.splitlines():
+                # if it's not log line, print it
+                if not re.match(r"^\[[^\]]+\]\s*", line):
+                    print(f"{line}")
+                    if "Matchup table saved to" in line:
+                        self.input_config["AIMSUN"]["matchup_table_path"] = line.split(":")[-1].strip()
+
+            if self.input_config["AIMSUN"]["matchup_table_path"] is None:
+                raise Exception("  :Error: Could not generate the matchup table. Please check the Aimsun model file and ensure it is correct.")
+
+            console.print(
+                f"  [dim cyan]:NOTE: Matchup table is generated and saved to {self.input_config['AIMSUN']['matchup_table_path']}.[/dim cyan]\n"
+                "  :NOTICE: [bold red]Please update the Matchup table from input folder"
+                " and then run generate_abstract_scenario()."
+                " For details please refer to official documentation: \n", soft_wrap=True, no_wrap=False)
+
+            # whether to stop the program to let user confirm input
+            if self._input_confirm:
+                required_data = "Control and Traffic" if is_control_data else "Traffic"
+                signal_instructions = (" fill in column K of this row with Synchro_signal.csv, "
+                                       "fill in column L of this row with 4,"
+                                       if is_control_data else "")
+                console.rule(f"[bold green]Program stopped. Please prepare the {required_data} data and "
+                            "fill in the Matchup Table before proceeding.\n"
+                            "[bold red] As an example, open the aimsun network, double click on the left-most intersection (Shallowford & Amin) ,get its node id, close aimsun! In the MatchupTable.xlsx, find the row with this node id, fill in column G of this row with Shallowford+Amin_07112023.xls"
+                            f"{signal_instructions} then save and close. \n")
+                time.sleep(2)  # wait for 2 seconds before exiting
+                usr_input = False
+                while not usr_input:
+                    usr_input = console.input(":warning: [bold magenta]Please update the generated Matchup table from "
+                                                "input folder before pressing Enter or type 'y' / 'yes' to continue")
+                    if usr_input in {"", "y", "Y", "yes", "Yes"}:
+                        console.print("  [dim cyan]:INFO: User confirmed to continue (Matchup Table Updated).")
+                        usr_input = True
+
+    def generate_abstract_scenario(self, **kwargs) -> str:
+
+        is_control_data = self._control_data_enabled()
+        # Grab Data From Traffic and Control Folder into Matchup Table
+        data_sources = "Traffic and Control" if is_control_data else "Traffic"
+        console.print(f"[bold green]  :Importing {data_sources} Intersection Info into Matchup Table")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file.get("step2"),
+            self.input_config["AIMSUN"]["model_fname"],
+            json.dumps(self.input_config)
+        ]
+
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+        # print(out)
+
+        # add another stop info
+        if self._input_confirm:
+            # Tell user to manually check correctness of the Matchup Table
+            required_data = "demand and control" if is_control_data else "demand"
+            console.input(":warning: [bold magenta]In the Matchup Table, please check if the turn movement in the "
+                          f"{required_data} data match with bearings in the network data. Enter any key to continue...")
+
+        console.print("\n[bold green]Abstract Scenario successfully generated.")
+
+    def generate_concrete_scenario(self, **kwargs) -> str:
+        is_control_data = self._control_data_enabled()
+        # Import Demand
+        console.print("[bold green]  :Importing Demand Data into Aimsun")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file.get("step3"),
+            self.input_config["AIMSUN"]["model_fname"],
+            json.dumps(self.input_config)
+        ]
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+        # print(out)
+
+        if not is_control_data:
+            console.print("  [dim cyan]:Skipping external signal loading into Aimsun.")
+            console.print("\n[bold green]Concrete Scenario successfully generated.")
+            return
+
+        # Import Signal Part 1: generate detector
+        console.print("[bold green]  :Importing Signal Data into Aimsun: Part 1 - generate detector")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file.get("step4.1"),
+            self.input_config["AIMSUN"]["model_fname"],
+            json.dumps(self.input_config)
+        ]
+
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+        # print(out)
+
+        # Import Signal Part 2: import signal
+        console.print("[bold green]  :Importing Signal Data into Aimsun: Part 2 - import signal")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file.get("step4.2"),
+            self.input_config["AIMSUN"]["model_fname"],
+            json.dumps(self.input_config)
+        ]
+
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+        # print(out)
+
+        # Import Signal Part 3: configure Aimsun control plan
+        console.print("[bold green]  :Importing Signal Data into Aimsun: Part 3 - configure Aimsun control plan")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file.get("step4.3"),
+            self.input_config["AIMSUN"]["model_fname"],
+            json.dumps(self.input_config)
+        ]
+
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        # print(out)
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+
+        console.print("\n[bold green]Concrete Scenario successfully generated.")
+
+    def prepare_simulation(self, **kwargs) -> str:
+
+        # Generate Scenario
+        console.print("[bold green]  :Generating Scenario in Aimsun")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file.get("step5.1"),
+            self.input_config["AIMSUN"]["model_fname"],
+            json.dumps(self.input_config)
+        ]
+
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                   text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+        # print(out)
+        console.print("[bold green]  :Configuring Simulation Output Path in Scenario")
+
+        # Configure Simulation Output Path in Scenario
+        console.print("  :Configuring Simulation Output Path in Scenario")
+        cmd = [
+            self.input_config["AIMSUN"]["exe_path"],
+            "-script",
+            self.aimsun_file.get("step5.2"),
+            self.input_config["AIMSUN"]["model_fname"],
+            # json.dumps(self.input_config)
+        ]
+        console.print("[bold green]  :Executing Aimsun Script for Configuring Simulation Output Path")
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                   text=True, encoding="utf-8", errors="replace")
+        out, _ = process.communicate()
+        # print(out)
+        for line in out.splitlines():
+            # if it's not log line, print it
+            if not re.match(r"^\[[^\]]+\]\s*", line):
+                print(f"{line}")
+
+    def calibrate(
+        self,
+        *,
+        sel_algo: dict | None = None,
+        sel_behavior_routes: list | None = None,
+        update_turn_inflow_algo: dict | None = None,
+        update_behavior_algo: dict | None = None,
+    ) -> bool:
+        """Calibrate enabled turn/inflow and driving-behavior stages.
+
+        Args:
+            sel_algo: Algorithms keyed by stage, e.g. {"turn_inflow": "bo"}.
+                Supports GA, SA, TS, and BO case-insensitively; defaults to GA.
+                Calibration.<stage>.is_calibration controls each stage
+                independently. Selectors for disabled stages are ignored.
+            sel_behavior_routes: Tuples of (name, start_section_id,
+                end_section_id, observed_travel_time_seconds). Required when
+                behavior is enabled, either here or in Calibration.behavior.
+            update_turn_inflow_algo: Per-stage configuration overrides,
+                e.g. {"bo_config": {"max_evaluations": 50}}.
+            update_behavior_algo: Behavior-stage overrides in the same format.
+                Dictionary settings merge one level deep with shared settings.
+
+        Returns:
+            True when calibration succeeds; False when disabled or rejected.
+        """
+
+        calibration = self.input_config.get("Calibration", {})
+        algorithms = select_calibration_algorithms(
+            calibration, sel_algo, console=console
+        )
+        if algorithms is None:
+            return False
+
+        # Stage overrides replace nested mappings to keep shared settings reusable.
+        if not self.input_config.get("AIMSUN"):
+            self.input_config["AIMSUN"] = {}
+        aimsun_config = self.input_config["AIMSUN"]
+        aimsun_config["turn_inflow"] = calibration.copy()
+        aimsun_config["behavior"] = calibration.copy()
+
+        apply_calibration_overrides(
+            aimsun_config,
+            turn_inflow=update_turn_inflow_algo,
+            behavior=update_behavior_algo,
+        )
+
+        if calibration.get("behavior", {}).get("is_calibration", False):
+            if sel_behavior_routes is None:
+                sel_behavior_routes = calibration.get("behavior", {}).get(
+                    "sel_behavior_routes"
+                )
+            if not sel_behavior_routes:
+                console.print(
+                    "  [bold red]:Behavior calibration requires sel_behavior_routes "
+                    "with observed travel times. Supply routes or disable Calibration.behavior.is_calibration."
+                )
+                return False
+            aimsun_config["behavior"]["sel_behavior_routes"] = sel_behavior_routes
+
+        if not cali_aimsun(
+            sel_algo=algorithms, input_config=self.input_config, verbose=self.verbose
+        ):
+            return False
+
+        console.print("\n[bold green]  :Calibration completed successfully.")
+        return True

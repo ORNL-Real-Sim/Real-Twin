@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c7632d00"></script>
+      <script src="../_static/documentation_options.js?v=92734c54"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -23,7 +23,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Supported Simulator" href="realtwin_simulator.html" />
+    <link rel="next" title="Supported Simulators" href="realtwin_simulator.html" />
     <link rel="prev" title="About Real-Twin" href="intro.html" /> 
 </head>
 
@@ -52,12 +52,16 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#potential-issues">Potential Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#published-package">Published package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#repository-tutorials">Repository tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optional-calibration-and-simulator-dependencies">Optional calibration and simulator dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#build-the-documentation">Build the documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#common-installation-problems">Common installation problems</a></li>
 </ul>
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">Supported Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realtwin_simulator.html">Supported Simulators</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="realtwin_prepare.html">Preparation</a></li>
@@ -107,22 +111,97 @@
 <div></div></blockquote>
 <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
-<p>You can install the latest stable release of the package at <a class="reference external" href="https://pypi.org/project/osm2gmns">PyPI</a> using <a class="reference external" href="https://packaging.python.org/key_projects/#pip">pip</a>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>realtwin
+<p>The current Real-Twin package supports Windows only and requires Python 3.10
+or newer. Install it in the Windows Python environment that will run your
+scenario scripts.</p>
+<section id="published-package">
+<h2>Published package<a class="headerlink" href="#published-package" title="Link to this heading"></a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python -m pip install realtwin
 </pre></div>
 </div>
-<p>By running the command above, the realtwin package along with required dependency packages (<a class="reference external" href="https://pyyaml.org/">PyYAML</a>, <a class="reference external" href="https://github.com/Toblerity/Shapely">Shapely</a>, <a class="reference external" href="https://github.com/osmcode/pyosmium">traci</a>, <a class="reference external" href="https://github.com/numpy/numpy">Requests</a>, <a class="reference external" href="https://github.com/xyluo25/pyufunc">pyufunc</a>, <a class="reference external" href="https://mealpy.readthedocs.io/en/latest/">mealpy</a>, <a class="reference external" href="https://matplotlib.org/">matplotlib</a>, <a class="reference external" href="https://networkx.org/">networkx</a>) will be installed to your running environment (if they have not been installed yet).</p>
-<section id="potential-issues">
-<h2>Potential Issues<a class="headerlink" href="#potential-issues" title="Link to this heading"></a></h2>
+<p>This installs the package’s required Python dependencies. Simulator executables
+and commercial simulator licenses must be prepared separately; see
+<a class="reference internal" href="realtwin_simulator.html"><span class="doc">Supported Simulators</span></a>.</p>
+</section>
+<section id="repository-tutorials">
+<h2>Repository tutorials<a class="headerlink" href="#repository-tutorials" title="Link to this heading"></a></h2>
+<p>The tutorial scripts and datasets are available in the repository checkout.
+From the repository root, create and activate an environment:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python -m venv .venv
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># Windows PowerShell
+.venv\Scripts\Activate.ps1
+
+# Windows Command Prompt
+.venv\Scripts\activate.bat
+</pre></div>
+</div>
+<p>Then install the checkout and its dependencies:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python -m pip install --upgrade pip
+python -m pip install -e .
+</pre></div>
+</div>
+<p>An editable installation makes the current checkout available to the tutorial
+scripts and their subprocesses. Activate an existing conda environment instead
+if you already maintain one for Real-Twin.</p>
+</section>
+<section id="optional-calibration-and-simulator-dependencies">
+<h2>Optional calibration and simulator dependencies<a class="headerlink" href="#optional-calibration-and-simulator-dependencies" title="Link to this heading"></a></h2>
+<p>The current SUMO, Vissim, and Aimsun scenario scripts select Bayesian
+optimization (BO). Install its Gaussian-process dependencies in the same
+environment:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python -m pip install -e &quot;.[bo]&quot;
+</pre></div>
+</div>
+<p>For a published release containing BO, use:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python -m pip install &quot;realtwin[bo]&quot;
+</pre></div>
+</div>
+<p>Genetic algorithm (GA), simulated annealing (SA), and tabu search (TS) do not
+require the BO extra. Vissim’s native Windows integration
+also requires:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python -m pip install pywin32
+</pre></div>
+</div>
+<p>For the interactive SUMO notebook:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python -m pip install notebook
+python -m jupyter notebook tutorials/tutorial_realtwin_SUMO.ipynb
+</pre></div>
+</div>
+<p>Aimsun uses its own compatible Python runtime. Set
+<code class="docutils literal notranslate"><span class="pre">AIMSUN.site_packages</span></code> to packages installed for that runtime, and set
+<code class="docutils literal notranslate"><span class="pre">AIMSUN.aimsun_exe_path</span></code> to the licensed console executable. See
+<a class="reference internal" href="realtwin_prepare.html"><span class="doc">Preparation</span></a> before running the Aimsun example.</p>
+</section>
+<section id="build-the-documentation">
+<h2>Build the documentation<a class="headerlink" href="#build-the-documentation" title="Link to this heading"></a></h2>
+<p>From the repository root, install the documentation dependencies and build HTML:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python -m pip install -r docs/source/requirements_dev.txt
+python -m sphinx -b html -W --keep-going docs/source docs/_build/html
+</pre></div>
+</div>
+<p>Open <code class="docutils literal notranslate"><span class="pre">docs/_build/html/index.html</span></code> to review the output. Build artifacts belong
+under <code class="docutils literal notranslate"><span class="pre">docs/_build/</span></code>, outside the source pages.</p>
+</section>
+<section id="common-installation-problems">
+<h2>Common installation problems<a class="headerlink" href="#common-installation-problems" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Shapely</p></li>
+<li><p><strong>Import errors:</strong> activate the intended environment and install the checkout
+there. Use <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span></code> so installation targets the selected interpreter.</p></li>
+<li><p><strong>BO dependency errors:</strong> install the <code class="docutils literal notranslate"><span class="pre">bo</span></code> extra or select GA, SA, or TS.</p></li>
+<li><p><strong>SUMO tools are missing:</strong> make <code class="docutils literal notranslate"><span class="pre">sumo</span></code>, <code class="docutils literal notranslate"><span class="pre">netconvert</span></code>, and <code class="docutils literal notranslate"><span class="pre">jtrrouter</span></code>
+available on <code class="docutils literal notranslate"><span class="pre">PATH</span></code>; calibration also expects <code class="docutils literal notranslate"><span class="pre">SUMO_HOME</span></code>.</p></li>
+<li><p><strong>Vissim COM errors:</strong> check Windows, <code class="docutils literal notranslate"><span class="pre">pywin32</span></code>, and your Vissim COM license.</p></li>
+<li><p><strong>Aimsun import/version errors:</strong> match <code class="docutils literal notranslate"><span class="pre">site_packages</span></code> to the Python version
+used by the installed Aimsun release.</p></li>
+<li><p><strong>Shapely DLL errors in a conda environment:</strong> check the Shapely installation
+in that environment. A conda-provided installation can be installed with
+<code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">shapely</span></code>.</p></li>
 </ul>
-<p>If you install realtwin in a conda environment, you may get an error message: “OSError: [WinError 126]
-The specified module could not be found” when importing realtwin. To resolve this issue, you need to uninstall
-the <a class="reference external" href="https://github.com/Toblerity/Shapely">Shapely</a> package first, and reinstall it manually using the command below.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>shapely
-</pre></div>
-</div>
+<p>Package releases are available on <a class="reference external" href="https://pypi.org/project/realtwin/">PyPI</a>,
+and source examples are in the
+<a class="reference external" href="https://github.com/ORNL-Real-Sim/Real-Twin">Real-Twin repository</a>.</p>
 </section>
 </section>
 
@@ -131,13 +210,13 @@ the <a class="reference external" href="https://github.com/Toblerity/Shapely">Sh
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="intro.html" class="btn btn-neutral float-left" title="About Real-Twin" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="realtwin_simulator.html" class="btn btn-neutral float-right" title="Supported Simulator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="realtwin_simulator.html" class="btn btn-neutral float-right" title="Supported Simulators" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025 - 2025, ORNL-RealTwin.</p>
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

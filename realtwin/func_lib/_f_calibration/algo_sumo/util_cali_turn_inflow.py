@@ -22,6 +22,7 @@ import warnings
 import pandas as pd
 import numpy as np
 import pyufunc as pf
+from realtwin.util_lib.mapping_SUMO_OpenDrive_ID import resolve_sumo_edge_id
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -34,7 +35,7 @@ else:
 import traci
 
 
-def update_turn_flow_from_solution(initial_solution: np.array,
+def update_turn_inflow_from_solution(initial_solution: np.array,
                                    TurnDf: pd.DataFrame,
                                    TurnToCalibrate: pd.DataFrame,
                                    InflowDf: pd.DataFrame,
@@ -55,6 +56,10 @@ def update_turn_flow_from_solution(initial_solution: np.array,
     Returns:
         tuple: the updated turn and inflow dataframes
     """
+
+    # Optimizer values and scaled inflows can be fractional, even for integer inputs.
+    TurnDf["TurnRatio"] = TurnDf["TurnRatio"].astype(float)
+    InflowDf["Count"] = InflowDf["Count"].astype(float)
 
     i = 0  # index into initial_solution
     # Loop through each group of (JunctionID_OpenDrive, Numbering)
@@ -144,6 +149,7 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
 
     dir_rou = Path(path_rou).parent
     dir_net = Path(path_net).parent
+    edge_ids = {edge.get("id") for edge in ET.parse(path_net).getroot().findall("edge")}
     path_turn = pf.path2linux(dir_rou / f"{network_name}.turn.xml")
     path_flow = pf.path2linux(dir_rou / f"{network_name}.flow.xml")
 
@@ -165,8 +171,8 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
             edge_relation = ET.SubElement(Interval, 'edgeRelation')
             # edge_relation.set('from', f"-{TurnData['OpenDriveFromID']}")
             # edge_relation.set('to', f"-{TurnData['OpenDriveToID']}")
-            edge_relation.set('from', "-" + str(TurnData['OpenDriveFromID']))
-            edge_relation.set('to',   "-" + str(TurnData['OpenDriveToID']))  
+            edge_relation.set('from', resolve_sumo_edge_id(TurnData['OpenDriveFromID'], edge_ids))
+            edge_relation.set('to', resolve_sumo_edge_id(TurnData['OpenDriveToID'], edge_ids))
             edge_relation.set('probability', str(TurnData['TurnRatio']))
     # <edgeRelation from="" probability="" to=""/>
     TreeTurn = ET.ElementTree(turns)
@@ -190,7 +196,7 @@ def run_jtrrouter_to_create_rou_xml(network_name: str, path_net: str,
         flow.set('begin', str(InflowData['IntervalStart']))
         flow.set('end', str(InflowData['IntervalEnd']))
         # flow.set('from', f"-{InflowData['OpenDriveFromID']}")
-        flow.set('from', "-" + str(InflowData['OpenDriveFromID']))
+        flow.set('from', resolve_sumo_edge_id(InflowData['OpenDriveFromID'], edge_ids))
         flow.set('number', str(int(InflowData['Count'])))
         # flow.set('number', str(int(int(InflowData['Count'])/CablibrationInterval*DemandInterval)))
         flow.set('type', 'car')
@@ -281,7 +287,7 @@ def result_analysis_on_EdgeData(Summary_data: pd.DataFrame,
     """
     RealSummary = Summary_data[Summary_data["realcount"].notna()]
     RealSummary['IntervalStart'] = pd.to_numeric(RealSummary['IntervalStart'], errors='coerce')
-    RealSummary['IntervalEnd']   = pd.to_numeric(RealSummary['IntervalEnd'], errors='coerce')    
+    RealSummary['IntervalEnd']   = pd.to_numeric(RealSummary['IntervalEnd'], errors='coerce')
     Interval =   (RealSummary['IntervalEnd'].max()-RealSummary['IntervalStart'].min())/3600
 
     ApproachSummary = RealSummary.groupby(['IntersectionName',
@@ -466,7 +472,8 @@ def generate_turn_demand_cali(*, path_matchup_table: str | pd.DataFrame,
                     df_data = pd.read_excel(gs_file_path, header=[start_row, start_row + 1])
 
                     # Fill merged cells in the first row
-                    df_data.columns = df_data.columns.to_frame().fillna(method="ffill").agg("".join, axis=1)
+                    df_data.columns = df_data.columns.to_frame().ffill().agg("".join, axis=1)
+
 
                     # Remove spaces from column names
                     df_data.columns = [col.replace(" ", "") for col in df_data.columns]
@@ -553,8 +560,6 @@ def generate_inflow(path_net: str,
     MergedDf1 = pd.merge(Count, IDRef, on=['IntersectionName', 'Turn'], how='left')
     Count['OpenDriveFromID'] = MergedDf1['OpenDriveFromID']
     Count['OpenDriveToID'] = MergedDf1['OpenDriveToID']
-    Count['Count'] = Count['Count'].replace('', 0)  # Replace empty strings with 0
-    Count['Count'] = Count['Count'].fillna(0)       # Fill NaNs with 0
     Count['Count'] = pd.to_numeric(Count['Count'], errors='coerce').fillna(0).astype(int)  # Ensure it's int
     Count = Count.groupby(['IntervalStart', 'IntervalEnd', 'IntersectionName', 'OpenDriveFromID'],
                           as_index=False)['Count'].sum()
@@ -563,6 +568,11 @@ def generate_inflow(path_net: str,
 
     tree = ET.parse(path_net)
     root = tree.getroot()
+    edge_ids = {edge.get("id") for edge in root.findall("edge")}
+    MatchupTable_UserInput = MatchupTable_UserInput.copy()
+    MatchupTable_UserInput["FromRoadID_OpenDrive"] = MatchupTable_UserInput["FromRoadID_OpenDrive"].map(
+        lambda road: resolve_sumo_edge_id(road, edge_ids) if pd.notna(road) and str(road).strip() else road)
+    Count["OpenDriveFromID"] = Count["OpenDriveFromID"].map(lambda road: resolve_sumo_edge_id(road, edge_ids))
     # DeadEndJunction = set()
     # for junction in root.findall('junction'):
     #     if junction.attrib.get('type') == 'dead_end':
@@ -594,9 +604,9 @@ def generate_inflow(path_net: str,
             continue
 
         lane_ids = incLanes.strip().split()
-        edge_ids = set(lane.split('_')[0] for lane in lane_ids)
+        incoming_edges = {lane.rsplit('_', 1)[0] for lane in lane_ids}
         match = True
-        for edge_id in edge_ids:
+        for edge_id in incoming_edges:
             if edge_id in conn_from_map:
                 if any(d != 't' for d in conn_from_map[edge_id]):
                     match = False
@@ -611,10 +621,10 @@ def generate_inflow(path_net: str,
         edge_to = edge.attrib.get('to')
         edge_id = edge.attrib.get('id')
         if edge_from in DeadEndJunction:
-            InflowRoad.append(edge_id[1:] if edge_id.startswith('-') else edge_id)
+            InflowRoad.append(edge_id)
         if edge_from in DeadEndJunction and edge_to in DeadEndJunction:
-            SingleRoad.append(edge_id[1:] if edge_id.startswith('-') else edge_id)
-    FromRoadID_Sumo = ["-" + str(x) for x in MatchupTable_UserInput["FromRoadID_OpenDrive"].dropna().unique()]
+            SingleRoad.append(edge_id)
+    FromRoadID_Sumo = MatchupTable_UserInput["FromRoadID_OpenDrive"].dropna().unique()
     Lookup_InflowEdge = pd.DataFrame(columns=["FromRoadID_Sumo", "InflowID_Sumo"])
     edges = {edge.get("id"): edge for edge in root.findall("edge")}
     junctions = {junc.get("id"): junc for junc in root.findall("junction")}
@@ -636,7 +646,7 @@ def generate_inflow(path_net: str,
             incLanes = junction.get("incLanes")
             if not incLanes:
                 break
-            lane_ids = [lane.split("_")[0] for lane in incLanes.split()]
+            lane_ids = [lane.rsplit("_", 1)[0] for lane in incLanes.split()]
             lane_ids = list(set(lane_ids))  # Unique
             lane_ids = [x for x in lane_ids if x]  # Remove empty strings
             if len(lane_ids) != 1:
@@ -646,28 +656,22 @@ def generate_inflow(path_net: str,
                 break
             current_id = next_id
 
-    Lookup_InflowEdge["FromRoadID_Sumo_stripped"] = Lookup_InflowEdge["FromRoadID_Sumo"].str.replace(r"^-", "", regex=True)
     Count = Count.merge(
         Lookup_InflowEdge,
         left_on="OpenDriveFromID",
-        right_on="FromRoadID_Sumo_stripped",
+        right_on="FromRoadID_Sumo",
         how="left"
     )
-    Count["InflowID_Sumo_stripped"] = Count["InflowID_Sumo"].str.replace(r"^-", "", regex=True)
-    InflowCount = Count[Count["InflowID_Sumo_stripped"].isin(InflowRoad)].copy()
-    InflowCount.loc[InflowCount["InflowID_Sumo_stripped"].notna(),
-                    "OpenDriveFromID"] = InflowCount["InflowID_Sumo_stripped"]
+    InflowCount = Count[Count["InflowID_Sumo"].isin(InflowRoad)].copy()
+    InflowCount.loc[InflowCount["InflowID_Sumo"].notna(),
+                    "OpenDriveFromID"] = InflowCount["InflowID_Sumo"]
     InflowCount.drop(columns=["InflowID_Sumo",
-                              "InflowID_Sumo_stripped",
-                              "FromRoadID_Sumo",
-                              "FromRoadID_Sumo_stripped"],
+                              "FromRoadID_Sumo"],
                      inplace=True)
     Count.drop(columns=["InflowID_Sumo",
-                        "InflowID_Sumo_stripped",
-                        "FromRoadID_Sumo",
-                        "FromRoadID_Sumo_stripped"],
+                        "FromRoadID_Sumo"],
                inplace=True)
-    
+
     # create InflowDf_Calibration for turn and inflow purpose
     InflowDf_Calibration = InflowCount[(InflowCount["IntervalStart"] >= sim_begin) &
                                        (InflowCount["IntervalEnd"] <= sim_end)].copy()
@@ -704,8 +708,20 @@ def generate_inflow(path_net: str,
     return InflowDf_Calibration, InflowEdgeToCalibrate, N_InflowVariable
 
 
-def generate_turn_summary(TurnDf: pd.DataFrame, MatchupTable_UserInput: pd.DataFrame, N_InflowVariable: int, sim_begin: int = 28800, sim_end: int = 32400, allow_u_turn: bool = False):
-    """ Generate turn summary for calibration."""
+def generate_turn_summary(TurnDf: pd.DataFrame, MatchupTable_UserInput: pd.DataFrame,
+                          N_InflowVariable: int, sim_begin: int = 28800,
+                          sim_end: int = 32400, allow_u_turn: bool = False, *,
+                          path_net: str | None = None):
+    """Generate turn summaries using exact network IDs when path_net is supplied.
+
+    Omitting path_net retains the legacy negative-prefix summary behavior.
+    """
+    if path_net is not None:
+        edge_ids = {edge.get("id") for edge in ET.parse(path_net).getroot().findall("edge")}
+        MatchupTable_UserInput = MatchupTable_UserInput.copy()
+        for column in ("FromRoadID_OpenDrive", "ToRoadID_OpenDrive"):
+            MatchupTable_UserInput[column] = MatchupTable_UserInput[column].map(
+                lambda road: resolve_sumo_edge_id(road, edge_ids) if pd.notna(road) and str(road).strip() else road)
 
     # create TurnDf_Calibration for turn and inflow purpose
     TurnDfTemp = TurnDf.melt(id_vars=['IntersectionName', 'IntervalStart', 'IntervalEnd'],
@@ -715,8 +731,6 @@ def generate_turn_summary(TurnDf: pd.DataFrame, MatchupTable_UserInput: pd.DataF
     TurnDfTemp.reset_index(drop=True, inplace=True)
     TurnDfTemp['Bound'] = TurnDfTemp['Turn'].str[0]
     TurnDfTemp['Direction'] = TurnDfTemp['Turn'].str[-1]
-    TurnDfTemp['Count'] = TurnDfTemp['Count'].replace('', 0)  # Replace empty strings with 0
-    TurnDfTemp['Count'] = TurnDfTemp['Count'].fillna(0)       # Fill NaNs with 0
     TurnDfTemp['Count'] = pd.to_numeric(TurnDfTemp['Count'], errors='coerce').fillna(
         0).astype(int)  # Ensure integer type
     FlowTemp = TurnDfTemp.groupby(['IntervalStart',
@@ -803,8 +817,9 @@ def generate_turn_summary(TurnDf: pd.DataFrame, MatchupTable_UserInput: pd.DataF
 
     # create RealSummary_Calibration for turn and inflow purpose
     RealSummary_Calibration = Turn_Calibration.copy()
-    RealSummary_Calibration["entrance_sumo"] = "-" + RealSummary_Calibration["FromRoadID_OpenDrive"].astype(str)
-    RealSummary_Calibration["exit_sumo"] = "-" + RealSummary_Calibration["ToRoadID_OpenDrive"].astype(str)
+    prefix = "" if path_net is not None else "-"
+    RealSummary_Calibration["entrance_sumo"] = prefix + RealSummary_Calibration["FromRoadID_OpenDrive"].astype(str)
+    RealSummary_Calibration["exit_sumo"] = prefix + RealSummary_Calibration["ToRoadID_OpenDrive"].astype(str)
 
     return TurnToCalibrate, TurnDf_Calibration, RealSummary_Calibration, N_Variable, N_TurnVariable
 

@@ -29,6 +29,8 @@ sys.path.insert(1, os.path.abspath('../../realtwin'))
 root = Path(__file__).resolve().parents[2]
 sys.path = [str(root)] + sys.path
 
+from realtwin import __version__
+
 logger = logging.getLogger(__name__)
 
 # Python's default allowed recursion depth is 1000.
@@ -38,7 +40,7 @@ sys.setrecursionlimit(5000)
 project = "realtwin"
 copyright = f'2025 - {datetime.datetime.now().year}, ORNL-RealTwin'
 author = 'ORNL-RealTwin'
-version = "0.0.9.dev2"
+version = __version__
 release = version
 language = "en"
 
@@ -47,6 +49,7 @@ source_suffix = {'.rst': 'restructuredtext',
                  '.md': 'markdown'}  # allow .md files to be processed as rst, if markdown is installed
 source_encoding = "utf-8"
 master_doc = "index"
+exclude_patterns = ['_build', 'requirements_dev.txt', 's5defs.txt']
 
 # -- General configuration -----------------------------------------------
 extensions = [
@@ -65,6 +68,8 @@ extensions = [
     'sphinx_copybutton',
 ]
 autosummary_generate = True
+# Preserve maintained API pages when generating missing reference stubs.
+autosummary_generate_overwrite = False
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -91,6 +96,15 @@ html_short_title = "realtwin"
 # html_logo = "./_static/realsim_logo.ico"
 # html_favicon = "./_static/realsim_logo_01.ico"
 html_static_path = ["_static"]
+
+# Omit web-only assets from the downloadable book.
+epub_exclude_files = [
+    'search.html',
+    '.nojekyll',
+    str(Path('_static') / 'chat_net.pptx'),
+    str(Path('_static') / 'realsim_logo.ico'),
+    str(Path('_static') / 'realsim_logo_01.ico'),
+]
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = "realtwin"

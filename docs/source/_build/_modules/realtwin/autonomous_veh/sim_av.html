@@ -1,0 +1,412 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>realtwin.autonomous_veh.sim_av &mdash; realtwin</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/realtwin_css.css?v=836a7079" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=92734c54"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            realtwin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Real-Twin Navigation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/intro.html">About Real-Twin</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_simulator.html">Supported Simulators</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_prepare.html">Preparation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/realtwin_generation.html">Scenario Generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/autonomous_vehicles_simulation.html">Autonomous Vehicle Simulation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/api.html">API Reference</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#citation-request">Citation Request</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#official-links">Official Links</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/support.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">realtwin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">realtwin.autonomous_veh.sim_av</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for realtwin.autonomous_veh.sim_av</h1><div class="highlight"><pre>
+<span></span><span class="c1">##############################################################################</span>
+<span class="c1"># Copyright (c) 2024--, Oak Ridge National Laboratory                          #</span>
+<span class="c1"># All rights reserved.                                                       #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># This file is part of RealTwin and is distributed under a GPL               #</span>
+<span class="c1"># license. For the licensing terms see the LICENSE file in the top-level     #</span>
+<span class="c1"># directory.                                                                 #</span>
+<span class="c1">#                                                                            #</span>
+<span class="c1"># Contributors: ORNL Real-Twin Team                                          #</span>
+<span class="c1"># Contact: realtwin@ornl.gov                                                 #</span>
+<span class="c1">##############################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;Autonomous Vehicle Simulation in SUMO.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyufunc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pf</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._load_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_av_configs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._sim_av_util</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">create_veh_type_attributes</span><span class="p">,</span>
+                           <span class="n">create_sumo_rou_xml</span><span class="p">,</span>
+                           <span class="n">update_sumo_flow_xml</span><span class="p">,</span>
+                           <span class="n">add_veh_types_to_rou</span><span class="p">,</span>
+                           <span class="n">create_sumo_config</span><span class="p">,</span>
+                           <span class="n">run_sumo_simulation</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._generate_loop_detector</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_sumo_loop_detector_add_xml</span>
+
+
+<div class="viewcode-block" id="prepare_av_configs">
+<a class="viewcode-back" href="../../../pages/api/realtwin.prepare_av_configs.html#realtwin.prepare_av_configs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_av_configs</span><span class="p">(</span><span class="n">dest_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate configuration files for autonomous vehicles simulation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dest_dir (str): Directory where the configuration files will be saved.</span>
+<span class="sd">        If the directory does not exist, use the current working directory.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from realtwin import prepare_av_configs</span>
+<span class="sd">        &gt;&gt;&gt; prepare_av_configs(dest_dir=&quot;path/to/directory&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; &quot;Autonomous vehicle configuration file created at: path/to/directory/AVConfig.yml&quot;</span>
+<span class="sd">        &gt;&gt;&gt; True</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the configuration files were successfully created, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># check if output directory exists</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">dest_dir</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">dest_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+
+    <span class="c1"># copy the default configuration file to the output directory</span>
+    <span class="n">default_config</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;data_lib/config_av.yaml&#39;</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dest_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;config_av.yaml&#39;</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Autonomous vehicle configuration file created at: </span><span class="si">{</span><span class="n">pf</span><span class="o">.</span><span class="n">path2linux</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="SimAV">
+<a class="viewcode-back" href="../../../pages/api/realtwin.SimAV.html#realtwin.SimAV">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SimAV</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Autonomous Vehicle Simulation</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        &quot;config_file&quot;: you can run `prepare_av_configs` to generate a default configuration file.</span>
+<span class="sd">        for details, refer to the `prepare_av_configs` function in the `realtwin` module.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_config</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the SimAV class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path_config (str | Path): Path to the configuration file for autonomous vehicle simulation.</span>
+<span class="sd">            verbose (bool): If True, print detailed information during the simulation.</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">            &quot;config_file&quot;: you can run `prepare_av_configs` to generate a default configuration file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TDD</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path_config</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path_config</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path_config</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;  :Error: path_config must be a string or Path object.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_config</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Configuration file not found: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path_config</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># self.av_config = load_av_configs(self.path_config)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+<div class="viewcode-block" id="SimAV.prepare_av_configs">
+<a class="viewcode-back" href="../../../pages/api/realtwin.SimAV.html#realtwin.SimAV.prepare_av_configs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_av_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate configuration files for autonomous vehicles simulation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dest_dir (str): Directory where the configuration files will be saved.</span>
+<span class="sd">            If the directory does not exist, use the current working directory.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; from realtwin import prepare_av_configs</span>
+<span class="sd">            &gt;&gt;&gt; prepare_av_configs(dest_dir=&quot;path/to/directory&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; &quot;Autonomous vehicle configuration file created at: path/to/directory/AVConfig.yml&quot;</span>
+<span class="sd">            &gt;&gt;&gt; True</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the configuration files were successfully created, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">prepare_av_configs</span><span class="p">(</span><span class="n">dest_dir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimAV.load_config">
+<a class="viewcode-back" href="../../../pages/api/realtwin.SimAV.html#realtwin.SimAV.load_config">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_config</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the configuration file for autonomous vehicles simulation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path_config (str): Path to the configuration file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Loaded configuration data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span> <span class="o">=</span> <span class="n">load_av_configs</span><span class="p">(</span><span class="n">path_config</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Error loading configuration data: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="SimAV.run_simulation">
+<a class="viewcode-back" href="../../../pages/api/realtwin.SimAV.html#realtwin.SimAV.run_simulation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">av_config</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the autonomous vehicle simulation.&quot;&quot;&quot;</span>
+
+        <span class="c1"># check if av_config is provided</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">av_config</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
+            <span class="c1"># load configuration from file</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span> <span class="o">=</span> <span class="n">load_av_configs</span><span class="p">(</span><span class="n">av_config</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">av_config</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># use the provided configuration dictionary</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span> <span class="o">=</span> <span class="n">av_config</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;av_config&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span> <span class="o">=</span> <span class="n">load_av_configs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path_config</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s2">&quot;  :Error: No AV configuration provided or loaded.&quot;</span>
+                    <span class="s2">&quot; Please run `load_config` or provide a valid config file or dictionary.&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+        <span class="c1"># check if required inputs are valid</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">check_inputs_from_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">av_config</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;  :Error: Invalid inputs in the configuration file,&quot;</span>
+                            <span class="s2">&quot; please check the input directory and files.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># get paths from the configuration</span>
+        <span class="n">input_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;input_dir&#39;</span><span class="p">]</span>
+        <span class="n">path_net</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;net_file&#39;</span><span class="p">]</span>
+        <span class="n">path_rou</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_without_suffixes</span><span class="p">(</span><span class="n">path_net</span><span class="p">)</span><span class="si">}</span><span class="s2">.rou.xml&quot;</span><span class="p">)</span>
+        <span class="n">path_flow</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;flow_file&#39;</span><span class="p">]</span>
+        <span class="n">path_turn</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">][</span><span class="s1">&#39;turn_file&#39;</span><span class="p">]</span>
+
+        <span class="c1"># create/update output directory</span>
+        <span class="n">output_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;output_AV&#39;</span>
+        <span class="k">if</span> <span class="n">output_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="n">output_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># copy input files to output directory</span>
+        <span class="n">path_net_output</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="n">path_net</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">path_rou_output</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="n">path_rou</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">path_flow_output</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="n">path_flow</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">path_turn_output</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="n">path_turn</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">path_net</span><span class="p">,</span> <span class="n">path_net_output</span><span class="p">)</span>
+        <span class="c1"># shutil.copy(path_rou, path_rou_output)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">path_flow</span><span class="p">,</span> <span class="n">path_flow_output</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">path_turn</span><span class="p">,</span> <span class="n">path_turn_output</span><span class="p">)</span>
+
+        <span class="c1"># generate loop detector add XML file</span>
+        <span class="n">path_add</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="s1">&#39;detector.add.xml&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path_add</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">generate_sumo_loop_detector_add_xml</span><span class="p">(</span><span class="n">path_net_output</span><span class="p">,</span>
+                                                <span class="n">detector_type</span><span class="o">=</span><span class="s2">&quot;E1&quot;</span><span class="p">,</span>
+                                                <span class="n">add_fname</span><span class="o">=</span><span class="n">path_add</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                <span class="n">dest_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">)</span>
+
+        <span class="c1"># create vehicle type attributes</span>
+        <span class="n">veh_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span><span class="p">[</span><span class="s1">&#39;veh_types&#39;</span><span class="p">]</span>
+        <span class="n">veh_type_attributes</span> <span class="o">=</span> <span class="n">create_veh_type_attributes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">av_config</span><span class="p">)</span>
+
+        <span class="c1"># update SUMO flow XML with new vehicle types</span>
+        <span class="n">update_sumo_flow_xml</span><span class="p">(</span><span class="n">path_flow_output</span><span class="p">,</span> <span class="n">veh_types</span><span class="p">,</span> <span class="n">veh_type_attributes</span><span class="p">)</span>
+
+        <span class="c1"># create SUMO route XML</span>
+        <span class="n">create_sumo_rou_xml</span><span class="p">(</span><span class="n">path_net_output</span><span class="p">,</span> <span class="n">path_flow_output</span><span class="p">,</span> <span class="n">path_turn_output</span><span class="p">,</span> <span class="n">path_rou_output</span><span class="p">)</span>
+
+        <span class="c1"># add vehicle types to the route file</span>
+        <span class="n">add_veh_types_to_rou</span><span class="p">(</span><span class="n">path_rou_output</span><span class="p">,</span> <span class="n">veh_types</span><span class="p">,</span> <span class="n">veh_type_attributes</span><span class="p">)</span>
+
+        <span class="c1"># create SUMO configuration file</span>
+        <span class="n">sim_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sim_name&#39;</span><span class="p">,</span> <span class="s1">&#39;chatt&#39;</span><span class="p">)</span>
+        <span class="n">sim_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sim_start&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">sim_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">av_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sim_time&#39;</span><span class="p">,</span> <span class="mi">3600</span><span class="p">)</span>
+        <span class="n">sim_end</span> <span class="o">=</span> <span class="n">sim_start</span> <span class="o">+</span> <span class="n">sim_time</span>
+        <span class="n">path_cfg</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sim_name</span><span class="si">}</span><span class="s1">.sumocfg&#39;</span>
+        <span class="n">create_sumo_config</span><span class="p">(</span><span class="n">path_cfg</span><span class="p">,</span>
+                           <span class="n">sim_name</span><span class="o">=</span><span class="n">sim_name</span><span class="p">,</span>
+                           <span class="n">sim_start</span><span class="o">=</span><span class="n">sim_start</span><span class="p">,</span>
+                           <span class="n">sim_end</span><span class="o">=</span><span class="n">sim_end</span><span class="p">)</span>
+
+        <span class="c1"># run simulation</span>
+        <span class="n">run_sumo_simulation</span><span class="p">(</span><span class="n">path_cfg</span><span class="p">,</span> <span class="n">sim_time</span><span class="o">=</span><span class="n">sim_time</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Simulation completed successfully. Output files are saved in: </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_inputs_from_config</span><span class="p">(</span><span class="n">av_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the required inputs are present in the configuration&quot;&quot;&quot;</span>
+
+    <span class="n">input_dict</span> <span class="o">=</span> <span class="n">av_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">input_dict</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Warning: No inputs found in the configuration.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">input_dir</span> <span class="o">=</span> <span class="n">input_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;input_dir&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">input_dir</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Warning: Input directory not specified in the configuration.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Warning: Input directory does not exist: </span><span class="si">{</span><span class="n">input_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Warning: Input path is not a directory: </span><span class="si">{</span><span class="n">input_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Input directory is valid: </span><span class="si">{</span><span class="n">input_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># check net, flow, rou and turn files</span>
+    <span class="n">net_file</span> <span class="o">=</span> <span class="n">input_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;net_file&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">net_file</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Warning: Network file not specified in the configuration.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">path_net</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">net_file</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path_net</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Warning: Network file does not exist: </span><span class="si">{</span><span class="n">path_net</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">flow_file</span> <span class="o">=</span> <span class="n">input_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;flow_file&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">flow_file</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Warning: Flow file not specified in the configuration.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">path_flow</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">flow_file</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path_flow</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Warning: Flow file does not exist: </span><span class="si">{</span><span class="n">path_flow</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">turn_file</span> <span class="o">=</span> <span class="n">input_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;turn_file&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">turn_file</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :Warning: Turn file not specified in the configuration.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">path_turn</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">turn_file</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path_turn</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  :Warning: Turn file does not exist: </span><span class="si">{</span><span class="n">path_turn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  :All input files are valid.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">name_without_suffixes</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the name of the file without any suffixes.&quot;&quot;&quot;</span>
+    <span class="c1"># peel off each suffix until none remain</span>
+    <span class="k">while</span> <span class="n">p</span><span class="o">.</span><span class="n">suffix</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 - 2026, ORNL-RealTwin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
