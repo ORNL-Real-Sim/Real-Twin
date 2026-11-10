@@ -608,9 +608,8 @@ def write_conflict_areas(session, decisions: dict) -> tuple[int, list[str]]:
             warnings.append(f"Conflict area {conflict_id} could not be set to "
                             f"{status}: {str(exc)[:60]}")
     if applied:
-        warnings.append(f"{applied} conflict areas now have a yielding stream, so "
-                        "permissive turns give way instead of driving through "
-                        "opposing traffic.")
+        warnings.append(f"{applied} conflict areas changed to the US right-of-way "
+                        "rule.")
     return applied, warnings
 
 

@@ -38,7 +38,7 @@ sys.path.insert(1, str(Path(__file__).resolve().parents[2]))
 from rt_vissim.dataset import data_dir  # noqa: E402
 from rt_vissim.com import VissimSession  # noqa: E402
 from rt_vissim.conflicts import (degenerate_uturn_paths,  # noqa: E402
-                                 link_turns, plan_conflicts)
+                                 link_turns, major_roads, plan_conflicts)
 from rt_vissim.conflicts import summarise as summarise_conflicts  # noqa: E402
 from rt_vissim.heads import (build_detectors, build_lane_control,  # noqa: E402
                              build_signal_heads, check_coverage, rtor_allowed,
@@ -211,10 +211,12 @@ def main(argv: list[str] | None = None) -> int:
 
         if not args.no_conflicts and Path(args.movements).exists():
             pairs = read_conflict_areas(session)
-            owners = link_turns(pd.read_csv(args.movements), links)
             moves = pd.read_csv(args.movements)
+            owners = link_turns(moves, links)
             decisions, notes = plan_conflicts(
-                pairs, owners, degenerate_uturn_paths(links, moves))
+                pairs, owners, degenerate_uturn_paths(links, moves),
+                major_roads(moves, links, signalised=junctions), links,
+                signalised=junctions)
             print(f"  :Conflicts: {summarise_conflicts(decisions, pairs)}")
             for note in notes:
                 print(f"  :{note}")

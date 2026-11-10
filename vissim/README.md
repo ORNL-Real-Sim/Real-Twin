@@ -150,11 +150,11 @@ detectors shortened on short approaches. The finished model is
 python vissim/scripts/05_check_run.py --inpx vissim/work/phoenix/phoenix_demand_signals.inpx --compare-counts --matchup vissim/work/phoenix/MatchupTable.xlsx --links vissim/work/phoenix/phoenix_links.csv
 ```
 
-Expect about 42 vehicles removed, input 5 (7th St southbound) short by about
-285, and:
+Expect about 44 vehicles removed, input 5 (7th St southbound) short by about
+294, and:
 
 ```
-:Counted entries: 15, ingested 9,843 veh/h, entered 9,558 (97.1%).
+:Counted entries: 15, ingested 9,843 veh/h, entered 9,549 (97.0%).
 :15 approaches fed straight from a counted entry -- simulated should equal counted:
 :   volume: ... GEH<5 on 97.7% of 44 movements ... and 93.3% of approaches
 :35 approaches fed from upstream junctions -- volume needs the missing demand (stage 6); ...
@@ -355,6 +355,48 @@ never called.
 A Synchro `INTID` need not be a number (Phoenix has `J9`); such an
 intersection gets the next free controller number above the numeric ones.
 
+**Conflict areas follow US right of way.** Vissim detects every conflict area
+on import and gives each a status. Those for diverges are right; many for
+merges and crossings are not US rules. Phoenix's import put 353 right turns
+ahead of the through traffic they merge into, 117 lefts ahead of the cross
+street's through, and 39 U-turns ahead of other traffic. Stage 4 therefore
+re-decides every conflict between two movements of one intersection
+(`rt_vissim/conflicts.py`), whatever Vissim gave it:
+
+| Where the two movements meet | Status | Why |
+|---|---|---|
+| **Diverge**: both leave the same approach | both red (`UNDETERMINED`) | Vissim's status for branching: each vehicle sees the other and they keep their order; neither yields |
+| **Merge or crossing**, signalised junction | the higher turn has right of way: **through > right > left > U-turn** | the turning driver yields; a left yields to the oncoming through *and* the oncoming right (UVC 11-401) |
+| **Merge or crossing**, unsignalised junction | the **major road** movement first, then the turn rank | a stop or yield sign on the minor approach (UVC 11-403); the major road is the one with more lanes |
+| **Tie** at an unsignalised junction: equal rank (two throughs, two lefts), neither on a major road | the **vehicle on the right** has right of way, read off the two approaches' headings | UVC 11-401. Two approaches meeting head-on have no right and keep Vissim's status |
+| **U-turn** against anything | the U-turn yields, even to a minor road | a U-turn may be made only where it does not interfere with other traffic |
+| **U-turn joining its exit link** | the U-turn yields to the traffic already on the exit | the same U-turn rule; the exit link carries every movement that has joined it. Two Phoenix U-turns were coming back from the import ahead of it |
+| **Right-turn channel** inside the intersection | yields to the through traffic it joins, as any right | it is one of the junction's right-turn paths, so the merge rule covers it |
+| **Slip lane** that leaves the approach early and rejoins the cross street outside the intersection, and any other **merge outside an intersection** (on-ramp, lane drop) | the road with **more lanes** has right of way; the narrower stream yields | a yield sign at the end of the channel or ramp. Phoenix's 7th St southbound slip lane at Indian School Rd was coming back from the import ahead of the westbound through |
+| **Right on red** | yields to the through traffic it joins | the RTOR stop sign holds it first; the conflict area then gives way |
+
+What the rule leaves at Vissim's status:
+
+- two movements of **equal rank** (two throughs, two lefts) **at a signal**:
+  the phases separate them, so no yield is needed;
+- conflict areas Vissim made **passive** (both amber), because Vissim judged
+  the overlap not to be an interaction;
+- a movement against **its own approach link**: a diverge, which the import
+  already leaves both red or passive;
+- other conflicts involving an **approach or exit link**, or two **different
+  intersections**, since no turn rule covers them. The same applies to a merge
+  outside an intersection whose two streams have the same lane count. Diverges
+  outside an intersection, where a slip lane splits off, stay both red, as
+  Vissim sets them;
+- a **U-turn that retraces its own approach**: this is set passive, because its
+  polygon folds into a bowtie.
+
+One limit of a static status: a right and the opposing left that merge into
+the same street are both green during a permissive phase, when the left
+yields (UVC 11-401). On red, the right yields to the protected left. One
+status cannot express both. Stage 4 gives the right priority, which covers the
+busier case. The RTOR stop sign still makes the right-on-red vehicle stop first.
+
 ### Step 5 — check what the run did
 
 ```bash
@@ -514,14 +556,14 @@ are copied along, since Vissim reads them from the model's folder):
 
 `--plot-only` redraws the charts from a finished run's files.
 
-**On Chattanooga** (GA, 110 simulations, 122 min), against SUMO's saved GA run
+**On Chattanooga** (GA, 110 simulations, 163 min), against SUMO's saved GA run
 scored by SUMO's own code:
 
 ```
                          per approach (22)       per movement (80)
                          mean GEH   GEH<5        mean GEH   GEH<5
-as built                   8.86     59.1%          3.69     77.5%
-Vissim, GA                 3.85     77.3%          1.75     90.0%
+as built                   8.85     59.1%          3.69     77.5%
+Vissim, GA                 3.84     77.3%          1.75     90.0%
 SUMO,   GA                 4.28     77.3%            --       --
 ```
 
@@ -585,7 +627,7 @@ has the same 2, Synchro's model 3 — so its queue reaches the network edge.
 ### Tests
 
 ```bash
-python -m pytest vissim/tests/ -q        # 182 tests, no Vissim licence needed
+python -m pytest vissim/tests/ -q        # 209 tests, no Vissim licence needed
 ```
 
 ---
@@ -635,7 +677,7 @@ bearings and turns from the Vissim network itself.
 | 4 | Ring Barrier Controllers (`.prbc`): phases, rings, barriers, min/max green, yellow, all-red, extension, recall, cycle, offset | Synchro | NEMA `tlLogic` from the same fields |
 | 4 | a signal head per signalised lane, on its Synchro phase; "Or" group for protected-permissive | Synchro | per-connection signal states |
 | 4 | a detector per signalised lane, calling its phase | Synchro, or SUMO's lengths when Synchro gives no placement | NEMA detectors on every lane |
-| 4 | conflict areas with a yielding stream, so permissive turns give way | movement turns | junction right of way |
+| 4 | conflict areas by US right of way: diverges both red; through > right > left > U-turn; major road first where unsignalised, then the vehicle on the right | movement turns, lane counts, approach headings | junction right of way |
 | 4 | right-turn-on-red stop signs where Synchro allows RTOR | Synchro `Allow RTOR` | permissive `s` in the state string |
 | 5, 6 | data collection on every counted movement, at run time only | MatchupTable | edge data |
 
@@ -758,7 +800,7 @@ vissim/
     04_write_signals.py       controllers, heads, detectors, conflicts, RTOR
     05_check_run.py           what Vissim removed during a simulation
     06_calibrate_turn_inflow.py   estimate the demand nobody measured
-  tests/                      182 tests, no Vissim licence needed
+  tests/                      209 tests, no Vissim licence needed
   work/                       generated artefacts (gitignored)
   VISSIM_previous/            prior ORNL VISSIM work, kept for reference
 ```
@@ -879,13 +921,20 @@ Everything else is derived from the network.
   links start at zero volume and their approaches at an even split; stage 6
   estimates both. That is a data gap, not a code gap.
 - **Entry link 43.** A 7.5 m stub whose routing decision sits 3.8 m before the
-  diverge; Vissim strands about 29 of its 49 vehicles an hour. Needs a longer
-  entry link.
+  diverge; Vissim strands about 28 of its 49 vehicles an hour. Its signal head
+  is 6.1 m from where vehicles are created, so a vehicle generated at speed
+  on a red cannot stop in time and crosses it: watching the right-turn-on-red
+  sign there over 15 minutes, 3 vehicles entered on red without stopping, all
+  of them created moments earlier. Every other sign behaved: 26 vehicles
+  stopped on red and then turned, none went through. Needs a longer entry
+  link.
 - **Calibration.** Driver-behaviour calibration is not built, and stage 6 is not
   wired into `RealTwin.Calibration.Vissim`, which is still a stub.
 - **Right turn on red.** Not a port of the SUMO path. SUMO has no RTOR concept,
   so RealTwin folds Synchro's `Allow RTOR` into the `tlLogic` state string as a
   permissive `s`. Stage 4 models it as Vissim does, structurally: a stop sign
   on the right-turn connector that releases on red once the vehicle has
-  stopped. No stop or yield signs are written on unsignalised approaches; who
-  gives way there is whatever their conflict areas say.
+  stopped. No stop or yield signs are written on unsignalised approaches. Who
+  gives way there is set by their conflict areas: the major road first, judged
+  by lane count, because the dataset has no record of which approaches carry
+  stop signs; where no road is wider, the vehicle on the right.
