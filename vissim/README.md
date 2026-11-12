@@ -30,6 +30,11 @@ here, and the SUMO one is only ever used for **comparison**.
 Steps 1–4 build the model and step 5 checks it. Step 6 is optional and takes
 hours; run it once the model is right.
 
+Bringing a **new site** through? [docs/NEW_SITE.md](docs/NEW_SITE.md) is the
+procedure: what to get first, what must be true after each stage, and a
+symptom → cause → proof → fix table for everything the first two sites turned
+up. The diagnostics it names are in `scripts/diagnostics/`.
+
 ### What you need
 
 |                                  |                                          |
@@ -456,6 +461,16 @@ Volumes are scored by GEH per movement and per approach; shares by the largest
 gap per approach, judged only where 50 or more vehicles arrived. The table is
 saved as `<name>_ingested_vs_simulated.csv`.
 
+**Looking closer.** Four diagnostics in `scripts/diagnostics/` each take the
+build folder (`--work vissim/work/<site>`) and find the rest:
+
+| script | question it answers | needs Vissim |
+|---|---|---|
+| `describe_link.py N ...` | what is on link N: length, lanes, connectors in and out, inputs, routing decisions, heads, signs — the first stop when stage 5 names a link | no |
+| `conflict_dryrun.py` | what the conflict rules decide, and which pairs inside a junction no rule reaches (`--list` for every change) | no |
+| `rtor_signs.py` | Synchro's raw `Allow RTOR` row against the right-turn-on-red signs in the model, mismatch by mismatch (`--flags` reads `OnlyOnRed` back over COM) | `--flags` only |
+| `rtor_watch.py` | during a run, does each vehicle reaching an RTOR sign on red stop first? every one that does not is printed with its speed history | yes |
+
 ### Step 6 — calibrate the demand nobody measured
 
 Junctions without a camera give step 3 nothing to write: their entry links get
@@ -627,7 +642,7 @@ has the same 2, Synchro's model 3 — so its queue reaches the network edge.
 ### Tests
 
 ```bash
-python -m pytest vissim/tests/ -q        # 209 tests, no Vissim licence needed
+python -m pytest vissim/tests/ -q        # 214 tests, no Vissim licence needed
 ```
 
 ---
@@ -800,7 +815,9 @@ vissim/
     04_write_signals.py       controllers, heads, detectors, conflicts, RTOR
     05_check_run.py           what Vissim removed during a simulation
     06_calibrate_turn_inflow.py   estimate the demand nobody measured
-  tests/                      209 tests, no Vissim licence needed
+    diagnostics/              describe_link, conflict_dryrun, rtor_signs, rtor_watch
+  docs/NEW_SITE.md            bringing a new site through: checks and triage
+  tests/                      214 tests, no Vissim licence needed
   work/                       generated artefacts (gitignored)
   VISSIM_previous/            prior ORNL VISSIM work, kept for reference
 ```
